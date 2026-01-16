@@ -1,0 +1,9 @@
+# nix build links
+result
+
+# macos
+.DS_Store
+
+# swap files
+*.swp
+*~

@@ -1,0 +1,282 @@
+'$schema' = 'https://starship.rs/config-schema.json'
+
+### MAIN SHELL
+# directory | username@hostname | cmd duration | sudo | VCS | language versions | kubernetes
+# > input after line break
+
+format = """
+${custom.top}\
+$directory\
+$username\
+$hostname\
+$sudo\
+$shlvl\
+$git_branch\
+$git_commit\
+$git_state\
+$git_metrics\
+$git_status\
+$cmd_duration\
+$status\
+$fill\
+\
+$time\
+$package\
+$c\
+$cmake\
+$haskell\
+$ocaml\
+$deno\
+$golang\
+$lua\
+$nodejs\
+$php\
+$python\
+$rust\
+\
+$line_break\
+$shell\
+${custom.bottom}\
+[ ](bold green)\
+$character"""
+
+scan_timeout = 50
+add_newline = true
+
+follow_symlinks = false
+
+[directory.substitutions]
+'.config' = ' '
+'dev' = ' '
+'Desktop' = ' '
+'Documents' = ' '
+'Downloads' = ' '
+'Music' = ' '
+'Pictures' = ' '
+'/mnt/c' = ' '
+
+[shell]
+bash_indicator = "bash"
+fish_indicator = "fish"
+zsh_indicator = "zsh"
+powershell_indicator = "pwsh"
+cmd_indicator = "cmd"
+
+[custom.top]
+symbol = "┌┤"
+style = "bold black"
+when = true
+
+[custom.bottom]
+symbol = "└"
+style = "bold black"
+when = true
+
+[character]
+success_symbol = '[▶](bold cyan)'
+error_symbol = '[▶](bold red)'
+vimcmd_symbol = '[▷](bold cyan)'
+
+[directory]
+format = "[$path]($style)[$read_only]($read_only_style)[├](fg:black)"
+style = 'fg:bright-cyan'
+read_only = ''
+use_os_path_sep = false
+truncation_length = 5
+truncate_to_repo = false
+truncation_symbol = "…/"
+
+[username]
+format = '[┤](fg:black)[$user]($style)[├](fg:black)'
+
+[sudo]
+disabled = false
+format = '[┤](fg:black)[$symbol]($style)[├](fg:black)'
+style = 'fg:red'
+symbol = ' '
+
+[git_branch]
+symbol = ' '
+format = '[┤](fg:black)[$symbol$branch]($style)[├](fg:black)'
+style = 'fg:bright-purple'
+
+[git_status]
+format = '([┤](fg:black)[$all_status$ahead_behind]($style)[├](fg:black))'
+ahead = "↑"
+behind = "↓"
+conflicted = "!"
+deleted = "×"
+diverged = "↕"
+modified = "~"
+renamed = "»"
+untracked = "+"
+style = 'fg:bright-purple'
+
+[hg_branch]
+format = '[┤](fg:black)[$symbol$branch]($style)[├](fg:black)'
+
+[cmd_duration]
+format = '[┤](fg:black)[󰚭 $duration]($style)[├](fg:black)'
+min_time = 0
+show_milliseconds = true
+
+[fill]
+symbol = '─'
+style = 'fg:black'
+
+[time]
+disabled = false
+# todo: get clock icon
+format = '[┤](fg:black)[ $time]($style)[├](fg:black)'
+
+### LANGUAGE VERSION INDICATORS
+[c]
+format = '[┤](fg:black)[$symbol($version(-$name))]($style)[├](fg:black)'
+
+[cmake]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[cobol]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[conda]
+format = '[┤](fg:black)[$symbol$environment]($style)[├](fg:black)'
+
+[crystal]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[dart]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[deno]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[dotnet]
+format = '[┤](fg:black)[$symbol($version)(🎯 $tfm)]($style)[├](fg:black)'
+
+[elixir]
+format = '[┤](fg:black)[$symbol($version \(OTP $otp_version\))]($style)[├](fg:black)'
+
+[elm]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[erlang]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[golang]
+symbol = ' '
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[haskell]
+symbol = ' '
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[helm]
+symbol = 'ﴱ '
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[java]
+symbol = ' '
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[julia]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[kotlin]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[lua]
+symbol = ' '
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[nim]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[nix_shell]
+format = '[┤](fg:black)[$symbol$state( \($name\))]($style)[├](fg:black)'
+
+[nodejs]
+symbol = ' '
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+detect_extensions = []
+style = 'green'
+
+[ocaml]
+format = '[┤](fg:black)[$symbol($version)(\($switch_indicator$switch_name\))]($style)[├](fg:black)'
+
+[package]
+symbol = ' '
+format = '[┤](fg:black)[$symbol$version]($style)[├](fg:black)'
+style = '16'
+
+[perl]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[php]
+symbol = ' '
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[pulumi]
+format = '[┤](fg:black)[$symbol$stack]($style)[├](fg:black)'
+
+[purescript]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[python]
+symbol = ' '
+format = '[┤](fg:black)[${symbol}${pyenv_prefix}(${version})(\($virtualenv\))]($style)[├](fg:black)'
+
+[red]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[ruby]
+symbol = ' '
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[rust]
+symbol = ' '
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[scala]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[spack]
+format = '[┤](fg:black)[$symbol$environment]($style)[├](fg:black)'
+
+[swift]
+symbol = ' '
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[vagrant]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[vlang]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+[zig]
+format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+
+### CONTEXT INDICATORS
+[aws]
+symbol = ' '
+format = '[┤](fg:black)[$symbol($profile)(\($region\))(\[$duration[├](fg:black))]($style)\]'
+
+[docker_context]
+symbol = ' '
+format = '[┤](fg:black)[$symbol$context]($style)[├](fg:black)'
+
+[gcloud]
+symbol = ' '
+format = '[┤](fg:black)[$symbol$account(@$domain)(\($region\))]($style)[├](fg:black)'
+
+[kubernetes]
+symbol = ' '
+format = '[┤](fg:black)[$symbol($cluster/$namespace)]($style)[├](fg:black)'
+disabled = false
+
+[openstack]
+symbol = ' '
+format = '[┤](fg:black)[$symbol$cloud(\($project\))]($style)[├](fg:black)'
+
+[terraform]
+format = '[┤](fg:black)[$symbol$workspace]($style)[├](fg:black)'

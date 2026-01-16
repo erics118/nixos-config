@@ -1,0 +1,26 @@
+keys:
+  - &eric_host age1sdpqasukvs6nzdjf5n9wrmsypfxk2ze7e9peg2mdv90pyjg9n9wsnj4mpm
+
+  - &eric_nixos_vm age10j857u3fqdc7kkvpf5h2dhvswf88xlmg5tq20pw90ftrfjmqpquqm02tmq
+  - &eric_squid age18vncnjkr6xekx9ze2p48zerlpqn70ayma8glrsjd0a2nv7g2tqqq5plygg
+
+  - &server_nixos_vm age1mr56qrysexl3su2gd9ye2lzvkvppg64jddqytkrj9azrknnrlegsutnxcf
+  
+  - &server_squid age1tnsh8jma2s6kgjj2cfafs5jd3p9k4t340ct5j60avwhls4v6qftsxyhtjh
+
+creation_rules:
+  - path_regex: secrets/[^\/]+\.yaml$
+    key_groups:
+    - age:
+      - *eric_nixos_vm
+      - *eric_squid
+      - *server_nixos_vm
+      - *server_squid
+
+stores:
+  json:
+    indent: 2
+  json_binary:
+    indent: 2
+  yaml:
+    indent: 2
