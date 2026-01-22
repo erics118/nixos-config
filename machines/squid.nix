@@ -15,6 +15,7 @@
     ../modules/ssh.nix
     ../modules/rust.nix
     ../modules/sops.nix
+    ../modules/docker.nix
   ];
 
   # extra modules just in case

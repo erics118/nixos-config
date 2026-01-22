@@ -53,29 +53,53 @@
   };
 
   outputs =
-    inputs@{
-      nixpkgs,
-      home-manager,
-      sops-nix,
-      catppuccin,
-      ...
-    }:
-    let
-      system = "aarch64-linux";
-    in
-    {
-      nixosConfigurations.nixos-vm = nixpkgs.lib.nixosSystem {
-        inherit system;
+    inputs@{ flake-parts, nixpkgs, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
 
-        specialArgs = { inherit inputs; };
+      perSystem =
+        {
+          inputs',
+          pkgs,
+          system,
+          ...
+        }:
+        {
+          devShells.default = pkgs.mkShell {
+            packages = [
+              pkgs.sops
+              pkgs.ssh-to-age
+            ];
+          };
+        };
 
-        modules = [
+      flake.nixosConfigurations =
+        let
+          commonModules = [
+            inputs.catppuccin.nixosModules.catppuccin
+            inputs.home-manager.nixosModules.home-manager
+            inputs.sops-nix.nixosModules.sops
+          ];
+        in
+        {
+          squid = nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            specialArgs = {
+              inherit inputs;
+            };
+            modules = commonModules ++ [ ./machines/squid.nix ];
+          };
 
-          ./machines/nixos-vm.nix
-          catppuccin.nixosModules.catppuccin
-          home-manager.nixosModules.home-manager
-          sops-nix.nixosModules.sops
-        ];
-      };
+          nixos-vm = nixpkgs.lib.nixosSystem {
+            system = "aarch64-linux";
+            specialArgs = {
+              inherit inputs;
+            };
+            modules = commonModules ++ [ ./machines/nixos-vm.nix ];
+          };
+        };
     };
 }

@@ -31,6 +31,7 @@
     tokei
     yq-go
     github-copilot-cli
+    fastfetch
 
     # nix cli
     nixfmt-rfc-style
