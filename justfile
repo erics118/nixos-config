@@ -20,3 +20,6 @@ fmt:
 # switch the nixos confiuration
 switch:
 	sudo nixos-rebuild switch
+
+test:
+	sudo nixos-rebuild test
