@@ -10,7 +10,6 @@
     ./ssh.nix
     ./shell.nix
     ./catppuccin.nix
-    # ./sops.nix
   ];
 
   home.packages = with pkgs; [

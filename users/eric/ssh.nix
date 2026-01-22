@@ -17,12 +17,10 @@
         controlPath = "~/.ssh/master-%r@%n:%p";
         controlPersist = "no";
       };
-      "eric-host" = {
-        hostname = "eric";
-        user = "eric";
+      "github.com" = {
+        user = "git";
         identitiesOnly = true;
-        identityFile = "~/.ssh/id_ed25519_eric_host";
-        port = 22;
+        identityFile = "~/.ssh/id_ed25519";
       };
     };
   };

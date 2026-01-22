@@ -37,6 +37,18 @@
     };
   };
 
+# ensure extra cachix subtituors
+  nixConfig = {
+    extra-substituters = [
+      "https://nix-community.cachix.org"
+      "https://numtide.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "numtide.cachix.org-1:2ps1H2rnf9zOKvTjK8vI2v066vXmInD68pS7f66M4I0="
+    ];
+  };
+
   outputs =
     inputs@{
       nixpkgs,
@@ -60,16 +72,6 @@
           catppuccin.nixosModules.catppuccin
           home-manager.nixosModules.home-manager
           sops-nix.nixosModules.sops
-
-          # {
-          #   # if you use home-manager
-          #   home-manager.users.eric = {
-          #     imports = [
-          #       ../users/eric/home-manager.nix
-          #       catppuccin.homeModules.catppuccin
-          #     ];
-          #   };
-          # }
         ];
       };
     };
