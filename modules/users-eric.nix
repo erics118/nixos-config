@@ -14,7 +14,6 @@
     extraGroups = [
       "networkmanager"
       "wheel"
-      "docker"
     ];
     shell = pkgs.zsh;
     openssh.authorizedKeys.keys = [

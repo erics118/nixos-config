@@ -68,7 +68,6 @@
     git
     sops
     just
-    inputs.compose2nix.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 
   environment.pathsToLink = [ "/share/zsh" ];

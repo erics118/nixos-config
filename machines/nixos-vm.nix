@@ -22,8 +22,4 @@
   systemd.user.services.prlcc.enable = false;
 
   services.tailscale.enable = true;
-
-  virtualisation.docker = {
-    enable = true;
-  };
 }

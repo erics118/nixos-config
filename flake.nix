@@ -4,6 +4,11 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
 
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
+
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -37,15 +42,13 @@
     };
   };
 
-# ensure extra cachix subtituors
+  # ensure extra cachix substituters
   nixConfig = {
     extra-substituters = [
       "https://nix-community.cachix.org"
-      "https://numtide.cachix.org"
     ];
     extra-trusted-public-keys = [
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      "numtide.cachix.org-1:2ps1H2rnf9zOKvTjK8vI2v066vXmInD68pS7f66M4I0="
     ];
   };
 
