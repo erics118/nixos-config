@@ -16,6 +16,7 @@
     ../modules/rust.nix
     ../modules/sops.nix
     ../modules/docker.nix
+    ../modules/tailscale.nix
   ];
 
   # extra modules just in case

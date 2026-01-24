@@ -8,6 +8,7 @@
     ../modules/ssh.nix
     ../modules/rust.nix
     ../modules/sops.nix
+    ../modules/tailscale.nix
   ];
 
   networking.hostName = "nixos-vm";
@@ -20,6 +21,4 @@
   hardware.parallels.enable = true;
 
   systemd.user.services.prlcc.enable = false;
-
-  services.tailscale.enable = true;
 }
