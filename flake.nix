@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
@@ -30,6 +31,8 @@
 
     nixvim = {
       url = "github:erics118/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "flake-parts";
     };
 
     catppuccin = {
@@ -59,22 +62,6 @@
         "x86_64-linux"
         "aarch64-linux"
       ];
-
-      perSystem =
-        {
-          inputs',
-          pkgs,
-          system,
-          ...
-        }:
-        {
-          devShells.default = pkgs.mkShell {
-            packages = [
-              pkgs.sops
-              pkgs.ssh-to-age
-            ];
-          };
-        };
 
       flake.nixosConfigurations =
         let
