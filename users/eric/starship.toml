@@ -1,8 +1,8 @@
 '$schema' = 'https://starship.rs/config-schema.json'
 
 ### MAIN SHELL
-# directory | username@hostname | cmd duration | sudo | VCS | language versions | kubernetes
-# > input after line break
+# directory | username | hostname | cmd duration | sudo | shlvl | VCS | language versions | docker
+# os > input after line break
 
 format = """
 ${custom.top}\
@@ -17,7 +17,7 @@ $git_state\
 $git_metrics\
 $git_status\
 $cmd_duration\
-$status\
+$direnv\
 $fill\
 \
 $time\
@@ -37,25 +37,27 @@ $rust\
 $line_break\
 $shell\
 ${custom.bottom}\
-[ ](bold green)\
+$os\
 $character"""
 
 scan_timeout = 50
+command_timeout = 500
 add_newline = true
 
 follow_symlinks = false
 
 [directory.substitutions]
 '.config' = ' '
+'nixos-config' = ' '
 'dev' = ' '
 'Desktop' = ' '
 'Documents' = ' '
 'Downloads' = ' '
 'Music' = ' '
 'Pictures' = ' '
-'/mnt/c' = ' '
 
 [shell]
+disabled = true
 bash_indicator = "bash"
 fish_indicator = "fish"
 zsh_indicator = "zsh"
@@ -77,6 +79,21 @@ success_symbol = '[▶](bold cyan)'
 error_symbol = '[▶](bold red)'
 vimcmd_symbol = '[▷](bold cyan)'
 
+[os]
+disabled = false
+format = '[$symbol]($style)'
+style = 'fg:green'
+
+[os.symbols]
+Macos = ' '
+Linux = ' '
+Windows = ' '
+NixOS = ' '
+Ubuntu = ' '
+Arch = ' '
+Debian = ' '
+Fedora = ' '
+
 [directory]
 format = "[$path]($style)[$read_only]($read_only_style)[├](fg:black)"
 style = 'fg:bright-cyan'
@@ -86,6 +103,13 @@ truncation_length = 5
 truncate_to_repo = false
 truncation_symbol = "…/"
 
+[hostname]
+disabled = true
+ssh_only = true
+ssh_symbol = '󰣀 '
+format = '[┤](fg:black)[$ssh_symbol$hostname]($style)[├](fg:black)'
+style = 'fg:bright-yellow'
+
 [username]
 format = '[┤](fg:black)[$user]($style)[├](fg:black)'
 
@@ -94,6 +118,29 @@ disabled = false
 format = '[┤](fg:black)[$symbol]($style)[├](fg:black)'
 style = 'fg:red'
 symbol = ' '
+
+[shlvl]
+disabled = true
+format = "[$symbol]($style) "
+threshold = 2
+symbol = "*"
+repeat = true
+
+[direnv]
+disabled = false
+format='[┤](fg:black)[$symbol$allowed$loaded]($style)[├](fg:black)'
+symbol=' '
+allowed_msg=''
+not_allowed_msg=''
+denied_msg='×'
+loaded_msg='✓'
+unloaded_msg= '-'
+
+[git_metrics]
+disabled = true
+format = '[┤](fg:black)[+$added](fg:green)/[-$deleted](fg:red)[├](fg:black)'
+added_style = 'fg:green'
+deleted_style = 'fg:red'
 
 [git_branch]
 symbol = ' '
@@ -259,7 +306,7 @@ format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
 ### CONTEXT INDICATORS
 [aws]
 symbol = ' '
-format = '[┤](fg:black)[$symbol($profile)(\($region\))(\[$duration[├](fg:black))]($style)\]'
+format = '[┤](fg:black)[$symbol($profile)(\($region\))(\[$duration\])]($style)[├](fg:black)'
 
 [docker_context]
 symbol = ' '

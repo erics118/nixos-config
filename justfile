@@ -21,5 +21,6 @@ fmt:
 switch:
 	sudo nixos-rebuild switch
 
+# test the nixos configuration
 test:
 	sudo nixos-rebuild test

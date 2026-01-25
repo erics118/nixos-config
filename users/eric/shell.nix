@@ -21,6 +21,18 @@
       bindkey "^[[1;5D" beginning-of-line
       # ctrl-right
       bindkey "^[[1;5C" end-of-line
+
+      # shell title hooks 
+      preexec_title() {
+        print -Pn "\e]0;%n@%m: %~ - $1\a"
+      }
+
+      precmd_title() {
+        print -Pn "\e]0;%n@%m: %~ - $1\a"
+      }
+
+      add-zsh-hook preexec preexec_title
+      add-zsh-hook precmd precmd_title
     '';
 
     localVariables = {
@@ -139,6 +151,21 @@
     # dizable eza aliases, set up manually
     # this doesnt disable it though?
     enableZshIntegration = false;
+  };
+
+  programs.tealdeer = {
+    enable = true;
+    enableAutoUpdates = true;
+    settings = {
+      display = {
+        compact = false;
+        use_pager = false;
+        show_title = true;
+      };
+      updates = {
+        auto_update = false;
+      };
+    };
   };
 
   programs.jq = {
