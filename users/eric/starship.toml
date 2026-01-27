@@ -48,7 +48,7 @@ follow_symlinks = false
 
 [directory.substitutions]
 '.config' = ' '
-'nixos-config' = ' '
+'nixos-config' = ' '
 'dev' = ' '
 'Desktop' = ' '
 'Documents' = ' '

@@ -28,7 +28,7 @@
       }
 
       precmd_title() {
-        print -Pn "\e]0;%n@%m: %~ - $1\a"
+        print -Pn "\e]0;%n@%m: %~\a"
       }
 
       add-zsh-hook preexec preexec_title
