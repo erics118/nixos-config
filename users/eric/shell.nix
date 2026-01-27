@@ -70,13 +70,14 @@
         ga = "git add";
         gb = "git branch";
         gc = "git commit";
-        gC = "git commit -v --amend";
+        gca = "git commit -v --amend";
         gcb = "git checkout -b";
         gcl = "git clone";
         gcm = "git commit -m \"{{}}\"";
         gco = "git checkout";
         gchp = "git cherry-pick";
         gd = "git diff";
+        gds = "git diff --staged";
         gl = "git log";
         glg = "git lg";
         gm = "git merge";
