@@ -13,4 +13,8 @@
       UsePAM = true;
     };
   };
+
+  programs.mosh = {
+    enable = true;
+  };
 }
