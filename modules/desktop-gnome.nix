@@ -1,4 +1,6 @@
 {
+  programs.firefox.enable = true;
+
   services.xserver.enable = true;
 
   services.displayManager.gdm.enable = true;

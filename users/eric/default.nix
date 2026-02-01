@@ -5,21 +5,23 @@
 
 {
   imports = [
+    ./catppuccin.nix
+    ./cli.nix
     ./git.nix
     ./nixvim.nix
-    ./ssh.nix
     ./shell.nix
-    ./catppuccin.nix
+    ./ssh.nix
+    ./nh.nix
   ];
 
   home.packages = with pkgs; [
-
     # dev tools
     gnumake
     yarn
     nodejs
     gccgo15
     ninja
+    rust-bin.stable.latest.default
 
     # cli tools
     httpie
@@ -32,6 +34,7 @@
     yq-go
     github-copilot-cli
     fastfetch
+    shfmt
 
     # nix cli
     nixfmt-rfc-style
@@ -41,8 +44,6 @@
     _1password-gui
     _1password-cli
   ];
-
-  home.shell.enableZshIntegration = true;
 
   home.stateVersion = "25.11";
 }

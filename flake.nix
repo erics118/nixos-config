@@ -56,37 +56,40 @@
   };
 
   outputs =
-    inputs@{ flake-parts, nixpkgs, ... }:
+    inputs@{
+      flake-parts,
+      nixpkgs,
+      home-manager,
+      ...
+    }:
+    let
+      lib = import ./lib { inherit inputs nixpkgs home-manager; };
+    in
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [
         "x86_64-linux"
         "aarch64-linux"
       ];
 
-      flake.nixosConfigurations =
-        let
-          commonModules = [
-            inputs.catppuccin.nixosModules.catppuccin
-            inputs.home-manager.nixosModules.home-manager
-            inputs.sops-nix.nixosModules.sops
-          ];
-        in
-        {
-          squid = nixpkgs.lib.nixosSystem {
+      flake = {
+        inherit (lib) overlays;
+
+        nixosConfigurations = {
+          squid = lib.mkNixos {
             system = "x86_64-linux";
-            specialArgs = {
-              inherit inputs;
-            };
-            modules = commonModules ++ [ ./machines/squid.nix ];
+            modules = [ ./machines/squid.nix ];
           };
 
-          nixos-vm = nixpkgs.lib.nixosSystem {
+          nixos-vm = lib.mkNixos {
             system = "aarch64-linux";
-            specialArgs = {
-              inherit inputs;
-            };
-            modules = commonModules ++ [ ./machines/nixos-vm.nix ];
+            modules = [ ./machines/nixos-vm.nix ];
           };
         };
+
+        homeConfigurations = {
+          "eric@squid" = lib.mkHome "x86_64-linux";
+          "eric@nixos-vm" = lib.mkHome "aarch64-linux";
+        };
+      };
     };
 }

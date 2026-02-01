@@ -1,6 +1,7 @@
 set shell := ["zsh", "-uc"]
 
 # list all commands
+[private]
 default:
 	@just --list
 
@@ -10,17 +11,20 @@ update:
 
 # garbage collect unused nix store entries
 gc:
-	sudo nix-collect-garbage --delete-older-than 7d
-	nix-collect-garbage --delete-older-than 7d
+	nh clean all
 
 # format nix files
 fmt:
 	find . -type f -name "*.nix" -exec nixfmt {} \;
 
-# switch the nixos confiuration
+# switch the NixOS configuration
 switch:
-	sudo nixos-rebuild switch
+	nh os switch
 
-# test the nixos configuration
+# test the NixOS configuration
 test:
-	sudo nixos-rebuild test
+	nh os test
+
+# switch home-manager configuration
+home:
+	nh home switch

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ ... }:
 
 {
   programs.zsh = {
@@ -22,7 +22,7 @@
       # ctrl-right
       bindkey "^[[1;5C" end-of-line
 
-      # shell title hooks 
+      # shell title hooks
       preexec_title() {
         print -Pn "\e]0;%n@%m: %~ - $1\a"
       }
@@ -60,7 +60,9 @@
       rm = "rm -i";
 
       cloc = "tokei";
-      sshn = "ssh -o PubkeyAuthentication=no";
+      sshn = "ssh -F /dev/null -o PubkeyAuthentication=no";
+
+      j = "just";
     };
 
     zsh-abbr = {
@@ -100,96 +102,4 @@
 
   # Force overwrite zsh-abbr user-abbreviations file
   xdg.configFile."zsh-abbr/user-abbreviations".force = true;
-
-  programs.starship = {
-    enable = true;
-    settings = fromTOML (builtins.readFile ./starship.toml);
-  };
-
-  programs.zoxide = {
-    enable = true;
-    options = [
-      "--cmd"
-      ","
-    ];
-  };
-
-  programs.direnv = {
-    enable = true;
-    nix-direnv.enable = true;
-    config = {
-      global = {
-        load_dotenv = true;
-        strict_env = true;
-        hide_env_diff = true;
-      };
-    };
-  };
-
-  programs.fzf = {
-    enable = true;
-    defaultOptions = [
-      "--preview"
-      "'bat --color=always --style=numbers --line-range=:500 {}'"
-    ];
-  };
-
-  programs.atuin = {
-    enable = true;
-    forceOverwriteSettings = true;
-    flags = [
-      "--disable-up-arrow"
-    ];
-    settings = {
-      enter_accept = false;
-    };
-  };
-
-  programs.eza = {
-    enable = true;
-    colors = "auto";
-    icons = "auto";
-    # dizable eza aliases, set up manually
-    # this doesnt disable it though?
-    enableZshIntegration = false;
-  };
-
-  programs.tealdeer = {
-    enable = true;
-    enableAutoUpdates = true;
-    settings = {
-      display = {
-        compact = false;
-        use_pager = false;
-        show_title = true;
-      };
-      updates = {
-        auto_update = false;
-      };
-    };
-  };
-
-  programs.jq = {
-    enable = true;
-  };
-
-  programs.ripgrep = {
-    enable = true;
-  };
-
-  programs.fd = {
-    enable = true;
-  };
-
-  programs.btop = {
-    enable = true;
-  };
-
-  programs.lazygit = {
-    enable = true;
-  };
-
-  programs.bat = {
-    enable = true;
-  };
 }

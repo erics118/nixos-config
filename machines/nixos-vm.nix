@@ -6,7 +6,6 @@
     ../modules/users-eric.nix
     # ../modules/ros-kilted.nix
     ../modules/ssh.nix
-    ../modules/rust.nix
     ../modules/sops.nix
     ../modules/tailscale.nix
   ];

@@ -1,14 +1,8 @@
-{
-  inputs,
-  pkgs,
-  ...
-}:
+{ pkgs, ... }:
 
-let
-  nixvimPackage = inputs.nixvim.packages.${pkgs.stdenv.hostPlatform.system}.default;
-in
 {
-  home.packages = [ nixvimPackage ];
+  # Uses the flake-inputs overlay: pkgs.inputs.nixvim.default
+  home.packages = [ pkgs.inputs.nixvim.default ];
 
   home.sessionVariables = {
     EDITOR = "nvim";

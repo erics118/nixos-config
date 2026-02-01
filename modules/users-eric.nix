@@ -31,7 +31,7 @@
     extraSpecialArgs = { inherit inputs; };
     users.eric = {
       imports = [
-        ../users/eric/home-manager.nix
+        ../users/eric
         inputs.catppuccin.homeModules.catppuccin
         # inputs.sops-nix.homeModules.sops
       ];
