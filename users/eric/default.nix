@@ -23,6 +23,14 @@
     ninja
     rust-bin.stable.latest.default
 
+    # ocaml
+    ocaml
+    opam
+    dune_3
+    ocamlPackages.findlib
+    ocamlPackages.ocaml-lsp
+    ocamlPackages.utop
+
     # cli tools
     httpie
     cachix
