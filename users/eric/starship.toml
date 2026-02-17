@@ -254,7 +254,7 @@ format = '[┤](fg:black)[$symbol($version)(\($switch_indicator$switch_name\))](
 [package]
 symbol = ' '
 format = '[┤](fg:black)[$symbol$version]($style)[├](fg:black)'
-style = '16'
+style = 'white'
 
 [perl]
 format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
