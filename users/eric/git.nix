@@ -7,6 +7,7 @@
       "*~"
       "*.swp"
       ".DS_Store"
+      ".claude/*.local.*"
     ];
     settings = {
       user = {
