@@ -20,13 +20,10 @@
     cachix
     killall
     xclip
-    ntfy-sh
-    railway
-    tokei
     yq-go
-    github-copilot-cli
     fastfetch
     shfmt
+    scc
 
     # nix cli
     nixd
@@ -35,7 +32,6 @@
     # apps
     _1password-gui
     _1password-cli
-    scc
   ];
 
   home.stateVersion = "25.11";
