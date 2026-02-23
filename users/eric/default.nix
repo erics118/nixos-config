@@ -15,22 +15,6 @@
   ];
 
   home.packages = with pkgs; [
-    # dev tools
-    gnumake
-    yarn
-    nodejs
-    gccgo15
-    ninja
-    rust-bin.stable.latest.default
-
-    # ocaml
-    ocaml
-    opam
-    dune_3
-    ocamlPackages.findlib
-    ocamlPackages.ocaml-lsp
-    ocamlPackages.utop
-
     # cli tools
     httpie
     cachix
@@ -45,7 +29,6 @@
     shfmt
 
     # nix cli
-    nixfmt-rfc-style
     nixd
 
     # apps

@@ -91,4 +91,13 @@
   programs.bat = {
     enable = true;
   };
+
+  programs.screen = {
+    enable = true;
+  };
+
+  # configure later
+  programs.claude-code = {
+    enable = true;
+  };
 }

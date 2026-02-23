@@ -16,8 +16,6 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  nixpkgs.config.allowUnfree = true;
-
   system = {
     stateVersion = "25.11";
     autoUpgrade = {
@@ -31,6 +29,9 @@
   };
 
   nix = {
+    registry.nixpkgs.flake = inputs.nixpkgs;
+    nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
+
     settings = {
       experimental-features = [
         "nix-command"
@@ -39,13 +40,11 @@
       warn-dirty = false;
       log-lines = 50;
       auto-optimise-store = true;
-      substituters = [
-        "https://cache.nixos.org"
+      extra-substituters = [
         "https://nix-community.cachix.org"
         "https://numtide.cachix.org"
       ];
-      trusted-public-keys = [
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      extra-trusted-public-keys = [
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
         "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
       ];

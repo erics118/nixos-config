@@ -42,16 +42,27 @@ let
 
   # Helper to create standalone home-manager configuration
   mkHome =
-    system:
+    {
+      system,
+      modules ? [ ],
+      homeDirectory ? null,
+    }:
+    let
+      defaultHomeDir =
+        if nixpkgs.lib.strings.hasSuffix "darwin" system then "/Users/eric" else "/home/eric";
+    in
     home-manager.lib.homeManagerConfiguration {
       pkgs = mkPkgs system;
       extraSpecialArgs = { inherit inputs; };
-      modules = ericHomeModules ++ [
-        {
-          home.username = "eric";
-          home.homeDirectory = "/home/eric";
-        }
-      ];
+      modules =
+        ericHomeModules
+        ++ modules
+        ++ [
+          {
+            home.username = "eric";
+            home.homeDirectory = if homeDirectory != null then homeDirectory else defaultHomeDir;
+          }
+        ];
     };
 
   # Helper to create NixOS configuration
@@ -67,12 +78,7 @@ in
 {
   inherit
     overlays
-    overlaysList
-    mkPkgs
     mkHome
     mkNixos
-    nixpkgsModule
-    commonNixosModules
-    ericHomeModules
     ;
 }

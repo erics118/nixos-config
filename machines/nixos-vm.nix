@@ -4,11 +4,13 @@
     ../modules/base.nix
     ../modules/desktop-gnome.nix
     ../modules/users-eric.nix
-    # ../modules/ros-kilted.nix
+    ../modules/ros-kilted.nix
     ../modules/ssh.nix
     ../modules/sops.nix
     ../modules/tailscale.nix
   ];
+
+  # modules.ros-kilted.enable = true;
 
   networking.hostName = "nixos-vm";
 

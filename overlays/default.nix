@@ -15,15 +15,6 @@
     ) inputs;
   };
 
-  # adds pkgs.unstable for nixpkgs-unstable packages
-  # eg: pkgs.unstable.package-name
-  unstable = final: _: {
-    unstable = import inputs.nixpkgs-unstable {
-      inherit (final) system;
-      config.allowUnfree = true;
-    };
-  };
-
   # rust toolchain overlay
   rust = inputs.rust-overlay.overlays.default;
 }
