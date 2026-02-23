@@ -83,12 +83,20 @@
         gl = "git log";
         glg = "git lg";
         gm = "git merge";
+        gmc = "git merge --continue";
+        gma = "git merge --abort";
+        gms = "git merge --squash";
         gP = "git pull";
         gp = "git push";
         gpf = "git push -f";
         gs = "git status";
-        gr = "git rebase";
-        gri = "git rebase -i";
+        gsw = "git switch";
+        gst = "git stash";
+        gr = "git rebase -i";
+        grc = "git rebase --continue";
+        gra = "git rebase --abort";
+        grh = "git reset HEAD";
+        grhh = "git reset --hard HEAD";
 
         la = "ls -la";
         lah = "ls -lah";
@@ -96,6 +104,11 @@
         tree = "ls --tree";
 
         lg = "lazygit";
+      };
+
+      globalAbbreviations = {
+        "..." = "../..";
+        "...." = "../../..";
       };
     };
   };
