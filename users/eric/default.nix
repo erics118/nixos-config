@@ -30,6 +30,7 @@
 
     # nix cli
     nixd
+    nixfmt
 
     # apps
     _1password-gui
