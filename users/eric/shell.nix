@@ -92,6 +92,10 @@
         gs = "git status";
         gsw = "git switch";
         gst = "git stash";
+        gstl = "git stash list";
+        gstd = "git stash drop";
+        gsta = "git stash apply";
+        gstp = "git stash pop";
         gr = "git rebase -i";
         grc = "git rebase --continue";
         gra = "git rebase --abort";
