@@ -35,6 +35,7 @@
     # apps
     _1password-gui
     _1password-cli
+    scc
   ];
 
   home.stateVersion = "25.11";
