@@ -24,6 +24,7 @@
     fastfetch
     shfmt
     scc
+    devenv
 
     # nix cli
     nixd
