@@ -34,18 +34,19 @@ repl:
 
 # ── System ────────────────────────────────────────────────────────────────────
 
-# switch the NixOS configuration
+# switch the system configuration
 [group('system')]
 switch:
-    nh os switch
+    {{ if os() == "macos" { "nh darwin switch" } else { "nh os switch" } }}
 
-# build the NixOS configuration
+# build the system configuration
 [group('system')]
 build:
-    nh os build
+    {{ if os() == "macos" { "nh darwin build" } else { "nh os build" } }}
 
-# test the NixOS configuration
+# test the NixOS configuration (Linux only)
 [group('system')]
+[linux]
 test:
     nh os test
 

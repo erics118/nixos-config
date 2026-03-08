@@ -1,9 +1,10 @@
-{ ... }:
+{ config, ... }:
 
 {
   programs.zsh = {
     enable = true;
     enableCompletion = true;
+    dotDir = "${config.home.homeDirectory}/.config/zsh";
 
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
@@ -11,6 +12,8 @@
     defaultKeymap = "emacs";
 
     autocd = false;
+
+    history.path = "$HOME/.cache/zsh/history";
 
     initContent = ''
       # opt-left
