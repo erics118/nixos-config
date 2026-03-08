@@ -1,11 +1,10 @@
 set shell := ["zsh", "-uc"]
+system_target := if os() == "macos" { "darwin" } else { "os" }
 
 # list all commands
 [private]
 default:
     @just --list --unsorted
-
-# ── Flake ─────────────────────────────────────────────────────────────────────
 
 # update all flake inputs
 [group('flake')]
@@ -32,17 +31,15 @@ check:
 repl:
     nix repl .#
 
-# ── System ────────────────────────────────────────────────────────────────────
-
 # switch the system configuration
 [group('system')]
 switch:
-    {{ if os() == "macos" { "nh darwin switch" } else { "nh os switch" } }}
+    nh {{system_target}} switch
 
 # build the system configuration
 [group('system')]
 build:
-    {{ if os() == "macos" { "nh darwin build" } else { "nh os build" } }}
+    nh {{system_target}} build
 
 # test the NixOS configuration (Linux only)
 [group('system')]
