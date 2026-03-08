@@ -55,7 +55,7 @@
         AppleShowScrollBars = "WhenScrolling";
         AppleTemperatureUnit = "Celsius";
         InitialKeyRepeat = 15;
-        KeyRepeat = 2;
+        KeyRepeat = 1;
         NSAutomaticCapitalizationEnabled = false;
         NSAutomaticDashSubstitutionEnabled = false;
         NSAutomaticInlinePredictionEnabled = false;
@@ -65,7 +65,6 @@
         "com.apple.keyboard.fnState" = true;
         "com.apple.mouse.tapBehavior" = 1;
         "com.apple.sound.beep.feedback" = 0;
-        # "com.apple.sound.beep.flash" = 0;
         "com.apple.sound.beep.volume" = 0.0;
         "com.apple.trackpad.forceClick" = true;
       };
@@ -104,39 +103,22 @@
 
   homebrew = {
     enable = true;
-    # onActivation.cleanup = "zap";
+    onActivation.cleanup = "zap";
 
     taps = [
-      "charmbracelet/tap"
-      "cloudflare/cloudflare"
       "felixkratz/formulae"
       "koekeishiya/formulae"
-      "nextdns/tap"
-      "spicetify/tap"
-      "supabase/tap"
-      "wez/wezterm"
-      "ynqa/tap"
       "yqrashawn/goku"
     ];
 
     brews = [
-      #   "grc"
-      #   "hcxtools"
-      #   "htop"
-      #   "http-server"
-      #   "jump"
-      #   "kakoune"
-      #   "less"
       {
         name = "llvm";
         link = true;
       }
-      "llvm@19"
-      #   "lolcat"
-      #   "lsd"
       "ltex-ls"
       "lua"
-      #   "lynx"
+      "starship"
       {
         name = "macos-trash";
         link = true;
@@ -145,54 +127,28 @@
         name = "mysql-client";
         link = true;
       }
-      "neofetch"
+      "onefetch"
       "nginx"
       "ninja"
-      #   "nowplaying-cli"
-      #   "ntfy"
-      #   "pcre"
       {
         name = "perl";
         link = false;
       }
-      #   "pipes-sh"
       "pipx"
       "pkgconf"
       "prek"
-      #   "proselint"
-      #   "python-tk@3.14"
       {
         name = "python@3.13";
         link = false;
       }
-      #   "railway"
-      #   "rmpc"
       "rsync"
-      #   "screenresolution"
       "serve"
       "spicetify-cli"
       "spotify_player"
-      #   "stylua" # nixpkgs version crashes on darwin; keep here
-      #   "swift-format"
-      #   "swiftformat"
-      #   "switchaudio-osx"
-      #   "tccutil"
-      #   "tesseract"
-      #   "topgrade"
       "vercel-cli"
       "virustotal-cli"
-      #   "vscode-langservers-extracted"
       "watch"
-      #   "whisper-cpp"
-      #   # tap-prefixed formulas
-      #   "charmbracelet/tap/charm"
-      #   "charmbracelet/tap/confettysh"
-      #   "charmbracelet/tap/melt"
-      #   "charmbracelet/tap/pop"
-      #   "charmbracelet/tap/skate"
-      #   "charmbracelet/tap/soft-serve"
-      #   "charmbracelet/tap/wishlist"
-      #   { name = "felixkratz/formulae/borders"; args = [ "HEAD" ]; }
+      "glow"
       "felixkratz/formulae/sketchybar"
       "felixkratz/formulae/svim"
       "koekeishiya/formulae/skhd"
@@ -200,14 +156,17 @@
         name = "koekeishiya/formulae/yabai";
         args = [ "HEAD" ];
       }
-      "nextdns/tap/nextdns"
+      "nextdns"
+      "supabase"
+      "yqrashawn/goku/goku"
     ];
 
     casks = [
       "1password"
       "font-sf-pro"
-      "ghostty"
+      "font-hack-nerd-font"
       "raycast"
+      "wezterm"
     ];
 
     masApps = { };
