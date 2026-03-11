@@ -1,6 +1,8 @@
 { inputs, pkgs, ... }:
 
 {
+  imports = [ ./common.nix ];
+
   time.timeZone = "America/New_York";
 
   i18n.defaultLocale = "en_US.UTF-8";
@@ -33,27 +35,12 @@
     nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
 
     settings = {
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-      warn-dirty = false;
       log-lines = 50;
       auto-optimise-store = true;
-      extra-substituters = [
-        "https://nix-community.cachix.org"
-        "https://numtide.cachix.org"
-      ];
-      extra-trusted-public-keys = [
-        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-        "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
-      ];
     };
 
     gc = {
-      automatic = true;
       dates = "weekly";
-      options = "--delete-older-than 14d";
     };
   };
 
@@ -61,12 +48,7 @@
   zramSwap.enable = true;
 
   environment.systemPackages = with pkgs; [
-    vim
-    wget
-    curl
-    git
     sops
-    just
   ];
 
   environment.pathsToLink = [ "/share/zsh" ];
@@ -76,7 +58,6 @@
     firewall.enable = false;
   };
 
-  programs.zsh.enable = true;
   programs.nix-ld.enable = true;
 
   security.sudo.wheelNeedsPassword = false;

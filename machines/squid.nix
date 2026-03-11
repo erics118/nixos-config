@@ -3,7 +3,7 @@
 {
   imports = [
     ./hardware/x86_64-hetzner.nix
-    ../modules/base.nix
+    ../modules/linux-common.nix
     # ../modules/desktop-gnome.nix
     ../modules/users-eric.nix
     ../modules/ssh.nix

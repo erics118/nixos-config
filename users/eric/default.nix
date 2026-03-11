@@ -7,7 +7,7 @@
 {
   imports = [
     ./catppuccin.nix
-    ./cli.nix
+    ./cli
     ./git.nix
     ./nixvim.nix
     ./shell.nix
@@ -23,7 +23,6 @@
       cachix
       killall
       yq-go
-      fastfetch
       shfmt
       scc
 

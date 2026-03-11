@@ -1,43 +1,24 @@
 { pkgs, ... }:
 {
+  imports = [ ./common.nix ];
+
+  environment.systemPackages = with pkgs; [ wezterm ];
+
   nix = {
     settings = {
       trusted-users = [
         "@admin"
         "eric"
       ];
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-      warn-dirty = false;
-      extra-substituters = [
-        "https://nix-community.cachix.org"
-        "https://numtide.cachix.org"
-      ];
-      extra-trusted-public-keys = [
-        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-        "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
-      ];
     };
     gc = {
-      automatic = true;
       interval = {
         Weekday = 0;
         Hour = 2;
         Minute = 0;
       };
-      options = "--delete-older-than 14d";
     };
   };
-
-  environment.systemPackages = with pkgs; [
-    vim
-    wget
-    curl
-    git
-    just
-  ];
 
   system = {
     checks.verifyNixPath = false;
@@ -103,15 +84,32 @@
 
   homebrew = {
     enable = true;
-    onActivation.cleanup = "zap";
+    onActivation = {
+      autoUpdate = false;
+      cleanup = "none";
+      upgrade = false;
+    };
+    global = {
+      brewfile = true;
+    };
 
     taps = [
       "felixkratz/formulae"
       "koekeishiya/formulae"
       "yqrashawn/goku"
+      "supabase/tap"
+      "nextdns/tap"
+      "charmbracelet/tap"
     ];
 
     brews = [
+      "opam"
+      "dune"
+      "ocaml"
+      "cmake"
+      "gmp"
+      "libffi"
+      "llvm@19"
       {
         name = "llvm";
         link = true;
@@ -145,10 +143,10 @@
       "serve"
       "spicetify-cli"
       "spotify_player"
-      "vercel-cli"
+      # "vercel-cli"
       "virustotal-cli"
       "watch"
-      "glow"
+      "charmbracelet/tap/glow"
       "felixkratz/formulae/sketchybar"
       "felixkratz/formulae/svim"
       "koekeishiya/formulae/skhd"
@@ -165,14 +163,13 @@
       "1password"
       "font-sf-pro"
       "font-hack-nerd-font"
+      "font-sketchybar-app-font"
       "raycast"
-      "wezterm"
+      "espanso"
     ];
 
     masApps = { };
   };
-
-  programs.zsh.enable = true;
 
   security.pam.services.sudo_local.touchIdAuth = true;
 }
