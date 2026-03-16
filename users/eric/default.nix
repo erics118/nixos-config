@@ -28,32 +28,25 @@
 
       # nix cli
       nixd
+      nil # some things require nil for some reason
       nixfmt
 
       # apps
       _1password-cli
-      codex
+      nodejs-slim_24 # for agent context protocol
 
       # utilities
       hyperfine
       imagemagick
-      mosh
       nmap
       onefetch
       pandoc
       watchexec
       yazi
       yt-dlp
-
-      # language servers & formatters
-      #   pyright
-      #   lua-language-server
-      #   typescript-language-server
-      #   yaml-language-server
-      #   tailwindcss-language-server
-      #   taplo
-      #   rust-analyzer
-      #   ruff
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      mosh
     ]
     ++ lib.optionals stdenv.hostPlatform.isLinux [
       xclip

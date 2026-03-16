@@ -96,16 +96,13 @@
     taps = [
       "felixkratz/formulae"
       "koekeishiya/formulae"
-      "yqrashawn/goku"
+      # "yqrashawn/goku"
       "supabase/tap"
       "nextdns/tap"
       "charmbracelet/tap"
     ];
 
     brews = [
-      "opam"
-      "dune"
-      "ocaml"
       "cmake"
       "gmp"
       "libffi"
@@ -116,7 +113,6 @@
       }
       "ltex-ls"
       "lua"
-      "starship"
       {
         name = "macos-trash";
         link = true;
@@ -125,7 +121,6 @@
         name = "mysql-client";
         link = true;
       }
-      "onefetch"
       "nginx"
       "ninja"
       {
@@ -156,7 +151,7 @@
       }
       "nextdns"
       "supabase"
-      "yqrashawn/goku/goku"
+      # "yqrashawn/goku/goku"
     ];
 
     casks = [
