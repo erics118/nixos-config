@@ -42,8 +42,7 @@ build:
     nh {{system_target}} build
 
 # test the NixOS configuration (Linux only)
-[group('system')]
-[linux]
+[group('system'), linux]
 test:
     nh os test
 

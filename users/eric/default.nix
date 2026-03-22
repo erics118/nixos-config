@@ -25,6 +25,7 @@
       yq-go
       shfmt
       scc
+      gemini-cli
 
       # nix cli
       nixd
