@@ -80,7 +80,6 @@
       cp = "cp -i";
       rm = "rm -i";
 
-      cloc = "tokei";
       sshn = "ssh -F /dev/null -o PubkeyAuthentication=no";
 
       j = "just";
@@ -89,6 +88,7 @@
     zsh-abbr = {
       enable = true;
       abbreviations = {
+        # git
         g = "git";
         ga = "git add";
         gb = "git branch";
@@ -123,6 +123,38 @@
         grh = "git reset HEAD";
         grhh = "git reset --hard HEAD";
 
+        # docker
+        d = "docker";
+        db = "docker build";
+        de = "docker exec";
+        di = "docker inspect";
+        dl = "docker logs";
+        dlf = "docker logs -f";
+        dr = "docker run";
+        ds = "docker stop";
+        drm = "docker rm";
+        dps = "docker ps";
+        dpsa = "docker ps -a";
+        dim = "docker images";
+
+        dcu = "docker compose up";
+        dcub = "docker compose up --build";
+        dcud = "docker compose up -d";
+        dcudb = "docker compose up --build -d";
+        dcd = "docker compose down";
+        dce = "docker compose exec";
+        dci = "docker compose inspect";
+        dcl = "docker compose logs";
+        dclf = "docker compose logs -f";
+        dcr = "docker compose run";
+        dcrs = "docker compose restart";
+        dcs = "docker compose stop";
+        dcrm = "docker compose rm";
+        dcps = "docker compose ps";
+        dcpsa = "docker compose ps -a";
+        dcim = "docker compose images";
+
+        # ls
         la = "ls -la";
         lah = "ls -lah";
         lt = "ls --tree";
