@@ -2,6 +2,7 @@
   inputs,
   nixpkgs,
   home-manager,
+  darwin,
 }:
 
 let
@@ -32,6 +33,20 @@ let
     inputs.catppuccin.nixosModules.catppuccin
     inputs.home-manager.nixosModules.home-manager
     inputs.sops-nix.nixosModules.sops
+  ];
+
+  # common darwin modules for all macOS machines
+  commonDarwinModules = [
+    nixpkgsModule
+    inputs.home-manager.darwinModules.home-manager
+    inputs.nix-homebrew.darwinModules.nix-homebrew
+    {
+      nix-homebrew = {
+        user = "eric";
+        enable = true;
+        autoMigrate = true;
+      };
+    }
   ];
 
   # Shared home-manager modules for user eric
@@ -74,11 +89,21 @@ let
       modules = commonNixosModules ++ modules;
     };
 
+  # Helper to create macOS (nix-darwin) configuration
+  mkDarwin =
+    { system, modules }:
+    darwin.lib.darwinSystem {
+      inherit system;
+      specialArgs = { inherit inputs; };
+      modules = commonDarwinModules ++ modules;
+    };
+
 in
 {
   inherit
     overlays
     mkHome
     mkNixos
+    mkDarwin
     ;
 }

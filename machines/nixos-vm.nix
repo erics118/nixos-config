@@ -1,7 +1,7 @@
 {
   imports = [
     ./hardware/vm-aarch64-prl.nix
-    ../modules/base.nix
+    ../modules/linux-common.nix
     ../modules/desktop-gnome.nix
     ../modules/users-eric.nix
     ../modules/ros-kilted.nix

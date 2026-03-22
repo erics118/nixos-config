@@ -17,4 +17,20 @@
 
   # rust toolchain overlay
   rust = inputs.rust-overlay.overlays.default;
+
+  # custom wezterm fork (temporarily disabled)
+  wezterm =
+    final: prev:
+    let
+      system = final.stdenv.hostPlatform.system;
+    in
+    {
+      wezterm = inputs.wezterm-src.packages.${system}.default.overrideAttrs (old: {
+        # version = "erics118-custom";
+        env = (old.env or { }) // {
+          CC_aarch64_apple_darwin = "${prev.stdenv.cc.cc}/bin/clang";
+        };
+      });
+    };
+
 }

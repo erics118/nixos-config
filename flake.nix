@@ -14,6 +14,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    darwin = {
+      url = "github:LnL7/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    nix-homebrew = {
+      url = "github:zhaofengli-wip/nix-homebrew";
+    };
+
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -48,18 +57,11 @@
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-  };
 
-  # ensure extra cachix substituters
-  nixConfig = {
-    extra-substituters = [
-      "https://nix-community.cachix.org"
-      "https://numtide.cachix.org"
-    ];
-    extra-trusted-public-keys = [
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
-    ];
+    wezterm-src = {
+      url = "github:erics118/wezterm?ref=eric&dir=nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -67,11 +69,19 @@
       flake-parts,
       nixpkgs,
       home-manager,
+      darwin,
       treefmt-nix,
       ...
     }:
     let
-      lib = import ./lib { inherit inputs nixpkgs home-manager; };
+      lib = import ./lib {
+        inherit
+          inputs
+          nixpkgs
+          home-manager
+          darwin
+          ;
+      };
     in
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [ treefmt-nix.flakeModule ];
@@ -111,9 +121,17 @@
           };
         };
 
+        darwinConfigurations = {
+          macbook = lib.mkDarwin {
+            system = "aarch64-darwin";
+            modules = [ ./machines/macbook.nix ];
+          };
+        };
+
         homeConfigurations = {
           "eric@squid" = lib.mkHome { system = "x86_64-linux"; };
           "eric@nixos-vm" = lib.mkHome { system = "aarch64-linux"; };
+          "eric@macbook" = lib.mkHome { system = "aarch64-darwin"; };
         };
       };
     };

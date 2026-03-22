@@ -4,9 +4,7 @@
   ...
 }:
 {
-  imports = [
-    ../users/eric/sops.nix
-  ];
+  imports = [ ../users/eric/sops.nix ];
 
   users.users.eric = {
     isNormalUser = true;
@@ -33,7 +31,6 @@
       imports = [
         ../users/eric
         inputs.catppuccin.homeModules.catppuccin
-        # inputs.sops-nix.homeModules.sops
       ];
     };
   };
