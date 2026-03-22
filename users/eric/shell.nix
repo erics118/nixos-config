@@ -30,6 +30,10 @@
     ];
 
     initContent = ''
+      # don't highlight path separators
+      ZSH_HIGHLIGHT_STYLES[path_pathseparator]="none"
+      ZSH_HIGHLIGHT_STYLES[path_prefix_pathseparator]="none"
+
       # opt-left
       bindkey "^[[1;3D" backward-word
       # opt-right
