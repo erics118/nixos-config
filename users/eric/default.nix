@@ -26,6 +26,8 @@
       shfmt
       scc
       gemini-cli
+      coreutils-prefixed
+
 
       # nix cli
       nixd
@@ -52,6 +54,7 @@
     ++ lib.optionals stdenv.hostPlatform.isLinux [
       xclip
       _1password-gui
+      wezterm
     ];
 
   home.sessionPath = [ "$HOME/.local/bin" ];
