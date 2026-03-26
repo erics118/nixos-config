@@ -25,9 +25,11 @@ in
       "Temporary Items"
       ".apdisk"
       "*.dSYM"
-      ".cache/**"
-      "cache/**"
-      ".claude/*.local.*"
+      "**/.cache/**"
+      "**/cache/**"
+      "**/.claude/*.local.*"
+      "**/.direnv/"
+      "**/.devenv/"
     ];
     settings = {
       user = {
