@@ -110,6 +110,10 @@
     enable = true;
   };
 
+  programs.tmux = {
+    enable = true;
+  };
+
   # configure later
   programs.claude-code = {
     enable = true;

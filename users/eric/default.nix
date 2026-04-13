@@ -18,35 +18,41 @@
   home.packages =
     with pkgs;
     [
-      # cli tools
-      httpie
-      cachix
-      killall
-      yq-go
-      shfmt
-      scc
-      gemini-cli
-      coreutils-prefixed
-
-
-      # nix cli
+      # nix
       nixd
       nil # some things require nil for some reason
       nixfmt
+      cachix
 
       # apps
       _1password-cli
       nodejs-slim_24 # for agent context protocol
 
-      # utilities
-      hyperfine
-      imagemagick
+      # system utilities
+      coreutils-prefixed
       nmap
-      onefetch
+      dust
+      rsync
+      wget
+      killall
+
+      # converting
+      imagemagick
       pandoc
-      watchexec
-      yazi
+      ffmpeg
       yt-dlp
+
+      # development
+      hyperfine
+      onefetch
+      shfmt
+      httpie
+      yq-go
+      watchexec
+      delta
+      yazi
+      scc
+      gemini-cli
     ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
       mosh
