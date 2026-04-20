@@ -40,8 +40,16 @@ in
       init.defaultBranch = "main";
       color.ui = "auto";
       core = {
+        pager = "delta";
         editor = "nvim";
         ignorecase = false;
+      };
+      interactive = {
+        diffFilter = "delta --color-only";
+      };
+      delta = {
+        navigate = true;
+        dark = true;
       };
       pull.ff = "only";
       push = {
@@ -52,6 +60,9 @@ in
       gpg = {
         format = "ssh";
         ssh.program = lib.mkIf isDarwin "/Applications/1Password.app/Contents/MacOS/op-ssh-sign";
+      };
+      merge = {
+        conflictStyle = "zdiff3";
       };
       mergetool.prompt = false;
       filter.lfs = {

@@ -22,7 +22,9 @@
       nixd
       nil # some things require nil for some reason
       nixfmt
+      statix
       cachix
+      comma
 
       # apps
       _1password-cli
