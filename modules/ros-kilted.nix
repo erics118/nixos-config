@@ -14,10 +14,10 @@ in
 
   config = lib.mkIf cfg.enable (
     let
-      nix-ros-overlay = inputs.nix-ros-overlay;
+      inherit (inputs) nix-ros-overlay;
 
       rosPkgs = import nix-ros-overlay.inputs.nixpkgs {
-        system = pkgs.stdenv.hostPlatform.system;
+        inherit (pkgs.stdenv.hostPlatform) system;
         overlays = [ nix-ros-overlay.overlays.default ];
       };
 

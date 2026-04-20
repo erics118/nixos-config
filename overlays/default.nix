@@ -22,7 +22,7 @@
   wezterm =
     final: prev:
     let
-      system = final.stdenv.hostPlatform.system;
+      inherit (final.stdenv.hostPlatform) system;
     in
     {
       wezterm = inputs.wezterm-src.packages.${system}.default.overrideAttrs (old: {
