@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   imports = [
@@ -115,5 +115,6 @@
 
   programs.codex = {
     enable = true;
+    package = pkgs.inputs.llm-agents.codex;
   };
 }

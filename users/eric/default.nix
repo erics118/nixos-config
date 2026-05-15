@@ -55,7 +55,7 @@
       delta
       yazi
       scc
-      gemini-cli
+      inputs.llm-agents.gemini-cli
     ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
       mosh
