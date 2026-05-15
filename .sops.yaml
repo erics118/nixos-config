@@ -5,18 +5,18 @@ keys:
   - &eric_squid age18vncnjkr6xekx9ze2p48zerlpqn70ayma8glrsjd0a2nv7g2tqqq5plygg
 
   - &server_nixos_vm age1mr56qrysexl3su2gd9ye2lzvkvppg64jddqytkrj9azrknnrlegsutnxcf
-  
+
   - &server_squid age1tnsh8jma2s6kgjj2cfafs5jd3p9k4t340ct5j60avwhls4v6qftsxyhtjh
 
 creation_rules:
   - path_regex: secrets/[^\/]+\.yaml$
     key_groups:
-    - age:
-      - *eric_host
-      - *eric_nixos_vm
-      - *eric_squid
-      - *server_nixos_vm
-      - *server_squid
+      - age:
+          - *eric_host
+          - *eric_nixos_vm
+          - *eric_squid
+          - *server_nixos_vm
+          - *server_squid
 
 stores:
   json:

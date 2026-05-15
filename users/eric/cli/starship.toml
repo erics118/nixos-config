@@ -128,13 +128,13 @@ repeat = true
 
 [direnv]
 disabled = false
-format='[┤](fg:black)[$symbol$allowed$loaded]($style)[├](fg:black)'
-symbol=' '
-allowed_msg=''
-not_allowed_msg=''
-denied_msg='×'
-loaded_msg='✓'
-unloaded_msg= '-'
+format = '[┤](fg:black)[$symbol$allowed$loaded]($style)[├](fg:black)'
+symbol = ' '
+allowed_msg = ''
+not_allowed_msg = ''
+denied_msg = '×'
+loaded_msg = '✓'
+unloaded_msg = '-'
 
 [git_metrics]
 disabled = true

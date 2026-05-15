@@ -14,7 +14,7 @@ update-all:
 # update a single flake input
 [group('flake')]
 update input:
-    nix flake update {{input}}
+    nix flake update {{ input }}
 
 # format nix files
 [group('flake')]
@@ -34,15 +34,16 @@ repl:
 # switch the system configuration
 [group('system')]
 switch:
-    nh {{system_target}} switch
+    nh {{ system_target }} switch
 
 # build the system configuration
 [group('system')]
 build:
-    nh {{system_target}} build
+    nh {{ system_target }} build
 
 # test the NixOS configuration (Linux only)
-[group('system'), linux]
+[group('system')]
+[linux]
 test:
     nh os test
 
