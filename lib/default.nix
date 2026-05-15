@@ -53,6 +53,7 @@ let
   ericHomeModules = [
     ../users/eric
     inputs.catppuccin.homeModules.catppuccin
+    inputs.sops-nix.homeManagerModules.sops
   ];
 
   # Helper to create standalone home-manager configuration

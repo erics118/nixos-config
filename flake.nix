@@ -62,6 +62,11 @@
       url = "github:erics118/wezterm?ref=eric&dir=nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nia-rules = {
+      url = "github:nozomio-labs/nia-rules-for-agents";
+      flake = false;
+    };
   };
 
   outputs =

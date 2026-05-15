@@ -13,6 +13,7 @@
     ./shell.nix
     ./ssh.nix
     ./nh.nix
+    ./sops-hm.nix
   ];
 
   home.packages =

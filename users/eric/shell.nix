@@ -54,6 +54,11 @@
 
       add-zsh-hook preexec preexec_title
       add-zsh-hook precmd precmd_title
+
+      # api keys from sops-nix decrypted secrets
+      _nia_key_file="$HOME/.config/sops-nix/secrets/api/nia"
+      [[ -r "$_nia_key_file" ]] && export NIA_API_KEY="$(<"$_nia_key_file")"
+      unset _nia_key_file
     '';
 
     localVariables = {

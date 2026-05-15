@@ -7,5 +7,6 @@
     "api/claude" = { };
     "api/openrouter" = { };
     "api/openai" = { };
+    "api/nia" = { };
   };
 }
