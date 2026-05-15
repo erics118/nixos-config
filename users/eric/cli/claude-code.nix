@@ -49,8 +49,9 @@
           "Bash(npm run dev:*)"
           "Bash(npm run start:*)"
           "mcp__ide__getDiagnostics"
-          "mcp__context7"
-          "mcp__nia"
+          "mcp__context7__"
+          "mcp__apigcp__"
+          "Skill(nia)"
         ];
       };
 
