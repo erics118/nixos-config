@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Claude Code status line script
+set -uo pipefail
 
 input=$(cat)
 
@@ -10,16 +11,16 @@ five_hour=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // emp
 seven_day=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
 
 # ANSI color codes
-CYAN='\033[36m'
-GREEN='\033[32m'
-MAGENTA='\033[35m'
-YELLOW='\033[33m'
-RESET='\033[0m'
+CYAN=$'\033[36m'
+GREEN=$'\033[32m'
+MAGENTA=$'\033[35m'
+YELLOW=$'\033[33m'
+RESET=$'\033[0m'
 
 # Shorten home directory to ~
 if [ -n "$cwd" ]; then
   home="$HOME"
-  cwd="${cwd/#$home/\~}"
+  cwd="${cwd/#"$home"/\~}"
 fi
 
 # Get git branch from the cwd
@@ -31,17 +32,17 @@ fi
 
 # Build context usage string
 ctx_str=""
-if [ -n "$used_pct" ]; then
-  ctx_str=$(printf "${YELLOW}ctx:%.0f%%${RESET}" "$used_pct")
+if [[ $used_pct =~ ^[0-9.]+$ ]]; then
+  ctx_str=$(printf '%sctx:%.0f%%%s' "$YELLOW" "$used_pct" "$RESET")
 fi
 
 # Build rate limit string
 rate_str=""
-if [ -n "$five_hour" ]; then
-  rate_str=$(printf "${YELLOW}5h:%.0f%%${RESET}" "$five_hour")
+if [[ $five_hour =~ ^[0-9.]+$ ]]; then
+  rate_str=$(printf '%s5h:%.0f%%%s' "$YELLOW" "$five_hour" "$RESET")
 fi
-if [ -n "$seven_day" ]; then
-  week_str=$(printf "${YELLOW}7d:%.0f%%${RESET}" "$seven_day")
+if [[ $seven_day =~ ^[0-9.]+$ ]]; then
+  week_str=$(printf '%s7d:%.0f%%%s' "$YELLOW" "$seven_day" "$RESET")
   if [ -n "$rate_str" ]; then
     rate_str="$rate_str $week_str"
   else
@@ -57,4 +58,4 @@ parts=()
 [ -n "$ctx_str" ] && parts+=("$ctx_str")
 [ -n "$rate_str" ] && parts+=("$rate_str")
 
-printf "%b" "${parts[*]}"
+printf '%s' "${parts[*]}"
