@@ -10,14 +10,16 @@
         "secrets/**"
       ];
 
-      programs.nixfmt.enable = true;
-      programs.deadnix.enable = true;
-      programs.statix.enable = true;
-      programs.prettier.enable = true;
-      programs.shfmt.enable = true;
-      programs.shellcheck.enable = true;
-      programs.just.enable = true;
-      programs.taplo.enable = true;
+      programs = {
+        nixfmt.enable = true;
+        deadnix.enable = true;
+        statix.enable = true;
+        prettier.enable = true;
+        shfmt.enable = true;
+        shellcheck.enable = true;
+        just.enable = true;
+        taplo.enable = true;
+      };
     };
   };
 }

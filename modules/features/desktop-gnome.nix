@@ -2,25 +2,27 @@
   flake.modules.nixos.desktop-gnome = {
     programs.firefox.enable = true;
 
-    services.xserver.enable = true;
+    services = {
+      xserver.enable = true;
 
-    services.displayManager.gdm.enable = true;
-    services.desktopManager.gnome.enable = true;
+      displayManager.gdm.enable = true;
+      desktopManager.gnome.enable = true;
 
-    services.xserver.xkb = {
-      layout = "us";
-      variant = "";
-    };
+      xserver.xkb = {
+        layout = "us";
+        variant = "";
+      };
 
-    services.printing.enable = true;
+      printing.enable = true;
 
-    services.pulseaudio.enable = false;
-    security.rtkit.enable = true;
-    services.pipewire = {
-      enable = true;
-      alsa.enable = true;
-      alsa.support32Bit = true;
-      pulse.enable = true;
+      pulseaudio.enable = false;
+      rtkit.enable = true;
+      pipewire = {
+        enable = true;
+        alsa.enable = true;
+        alsa.support32Bit = true;
+        pulse.enable = true;
+      };
     };
   };
 }

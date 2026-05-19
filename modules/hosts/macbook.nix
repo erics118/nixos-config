@@ -23,13 +23,7 @@ in
         useGlobalPkgs = true;
         useUserPackages = true;
         extraSpecialArgs = { inherit inputs; };
-        users.eric = {
-          imports = [
-            ../_home/eric
-            inputs.catppuccin.homeModules.catppuccin
-            inputs.sops-nix.homeManagerModules.sops
-          ];
-        };
+        users.eric.imports = [ m.homeManager.base ];
       };
     };
 

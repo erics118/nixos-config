@@ -1,6 +1,5 @@
-{ config, pkgs, ... }:
-
 {
+  flake.modules.homeManager.base = { config, pkgs, ... }: {
   programs.zsh = {
     enable = true;
     enableCompletion = true;
@@ -177,4 +176,5 @@
 
   # Force overwrite zsh-abbr user-abbreviations file
   xdg.configFile."zsh-abbr/user-abbreviations".force = true;
+  };
 }

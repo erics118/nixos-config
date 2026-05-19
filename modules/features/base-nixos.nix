@@ -1,4 +1,7 @@
-{ inputs, ... }:
+{ inputs, config, ... }:
+let
+  hmBase = config.flake.modules.homeManager.base;
+in
 {
   flake.modules.nixos.base =
     { pkgs, ... }:
@@ -80,13 +83,7 @@
         useUserPackages = true;
         useGlobalPkgs = true;
         extraSpecialArgs = { inherit inputs; };
-        users.eric = {
-          imports = [
-            ../_home/eric
-            inputs.catppuccin.homeModules.catppuccin
-            inputs.sops-nix.homeManagerModules.sops
-          ];
-        };
+        users.eric.imports = [ hmBase ];
       };
 
     };

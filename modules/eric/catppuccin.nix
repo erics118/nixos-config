@@ -1,5 +1,5 @@
 {
-  catppuccin = {
+  flake.modules.homeManager.base.catppuccin = {
     accent = "mauve";
     flavor = "mocha";
 
