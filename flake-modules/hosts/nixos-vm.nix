@@ -18,7 +18,10 @@ in
   configurations.homeManager."eric@nixos-vm" = {
     system = "aarch64-linux";
     module = {
-      imports = [ m.homeManager.base ];
+      imports = [
+        m.homeManager.base
+        ../../users/eric/gui-linux.nix
+      ];
       home.username = "eric";
       home.homeDirectory = "/home/eric";
     };
