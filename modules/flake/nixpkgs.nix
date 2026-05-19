@@ -1,6 +1,6 @@
 { inputs, ... }:
 let
-  overlays = import ../overlays { inherit inputs; };
+  overlays = import ../../overlays { inherit inputs; };
   overlaysList = builtins.attrValues overlays;
 in
 {
