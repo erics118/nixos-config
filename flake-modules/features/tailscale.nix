@@ -1,3 +1,5 @@
 {
-  flake.modules.nixos.tailscale = ../../modules/tailscale.nix;
+  flake.modules.nixos.tailscale = {
+    services.tailscale.enable = true;
+  };
 }

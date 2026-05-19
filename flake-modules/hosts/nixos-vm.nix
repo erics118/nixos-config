@@ -7,6 +7,7 @@ in
     imports = [
       m.nixos.base
       m.nixos.desktop-gnome
+      m.nixos.ros-kilted
       m.nixos.ssh-server
       m.nixos.sops
       m.nixos.tailscale

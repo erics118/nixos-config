@@ -1,7 +1,5 @@
 { inputs, pkgs, ... }:
 {
-  imports = [ ../modules/darwin.nix ];
-
   networking.hostName = "macbook";
 
   users.users.eric = {

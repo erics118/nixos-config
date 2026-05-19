@@ -3,13 +3,6 @@
 {
   imports = [
     ./hardware/x86_64-hetzner.nix
-    ../modules/linux-common.nix
-    # ../modules/desktop-gnome.nix
-    ../modules/users-eric.nix
-    ../modules/ssh.nix
-    ../modules/sops.nix
-    ../modules/docker.nix
-    ../modules/tailscale.nix
   ];
 
   # extra modules just in case
