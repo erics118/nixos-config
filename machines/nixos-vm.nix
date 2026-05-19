@@ -12,6 +12,8 @@
 
   # modules.ros-kilted.enable = true;
 
+  home-manager.users.eric.imports = [ ../users/eric/gui-linux.nix ];
+
   networking.hostName = "nixos-vm";
 
   boot.loader = {
