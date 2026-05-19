@@ -4,12 +4,12 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-    llm-agents.url = "github:numtide/llm-agents.nix";
-
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
+
+    import-tree.url = "github:vic/import-tree";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -77,86 +77,8 @@
   };
 
   outputs =
-    inputs@{
-      flake-parts,
-      nixpkgs,
-      home-manager,
-      darwin,
-      treefmt-nix,
-      ...
-    }:
-    let
-      lib = import ./lib {
-        inherit
-          inputs
-          nixpkgs
-          home-manager
-          darwin
-          ;
-      };
-    in
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [ treefmt-nix.flakeModule ];
-
-      systems = [
-        "x86_64-linux"
-        "aarch64-linux"
-        "aarch64-darwin"
-        "x86_64-darwin"
-      ];
-
-      perSystem =
-        { config, pkgs, ... }:
-        {
-          treefmt = {
-            projectRootFile = "flake.nix";
-
-            settings.excludes = [
-              "secrets/**"
-            ];
-
-            programs.nixfmt.enable = true;
-            programs.deadnix.enable = true;
-            programs.statix.enable = true;
-            programs.prettier.enable = true;
-            programs.shfmt.enable = true;
-            programs.shellcheck.enable = true;
-            programs.just.enable = true;
-            programs.taplo.enable = true;
-          };
-
-          devShells.default = pkgs.mkShell {
-            packages = [ config.treefmt.build.wrapper ];
-          };
-        };
-
-      flake = {
-        inherit (lib) overlays;
-
-        nixosConfigurations = {
-          squid = lib.mkNixos {
-            system = "x86_64-linux";
-            modules = [ ./machines/squid.nix ];
-          };
-
-          nixos-vm = lib.mkNixos {
-            system = "aarch64-linux";
-            modules = [ ./machines/nixos-vm.nix ];
-          };
-        };
-
-        darwinConfigurations = {
-          macbook = lib.mkDarwin {
-            system = "aarch64-darwin";
-            modules = [ ./machines/macbook.nix ];
-          };
-        };
-
-        homeConfigurations = {
-          "eric@squid" = lib.mkHome { system = "x86_64-linux"; };
-          "eric@nixos-vm" = lib.mkHome { system = "aarch64-linux"; };
-          "eric@macbook" = lib.mkHome { system = "aarch64-darwin"; };
-        };
-      };
-    };
+    inputs:
+    inputs.flake-parts.lib.mkFlake {
+      inherit inputs;
+    } (inputs.import-tree ./flake-modules);
 }

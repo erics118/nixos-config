@@ -31,6 +31,7 @@
       imports = [
         ../users/eric
         inputs.catppuccin.homeModules.catppuccin
+        inputs.sops-nix.homeManagerModules.sops
       ];
     };
   };

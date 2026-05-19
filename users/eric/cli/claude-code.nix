@@ -2,7 +2,6 @@
   inputs,
   lib,
   config,
-  pkgs,
   ...
 }:
 
@@ -14,7 +13,6 @@
 
   programs.claude-code = {
     enable = true;
-    package = pkgs.inputs.llm-agents.claude-code;
 
     # settings intentionally left unset so the HM module does not symlink
     # ~/.claude/settings.json to a read-only /nix/store path. We install a

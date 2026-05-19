@@ -25,7 +25,6 @@
     final: _:
     let
       src = inputs.adversarial-review;
-      llmAgents = inputs.llm-agents.packages.${final.stdenv.hostPlatform.system};
     in
     {
       adversarial-review = final.writeShellApplication {
@@ -34,8 +33,8 @@
           final.jq
           final.coreutils
           final.bash
-          llmAgents.claude-code
-          llmAgents.codex
+          final.claude-code
+          final.codex
         ];
         text = ''
           state_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/adversarial-review"

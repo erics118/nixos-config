@@ -16,7 +16,7 @@ in
       "~/.ssh/1Password/config"
     ];
 
-    matchBlocks = {
+    settings = {
       "github.com" = {
         hostname = "github.com";
         user = "git";
@@ -42,9 +42,7 @@ in
         controlMaster = "no";
         controlPath = "~/.ssh/master-%r@%n:%p";
         controlPersist = "no";
-        extraOptions = lib.mkIf isDarwin {
-          IdentityAgent = "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
-        };
+        identityAgent = lib.mkIf isDarwin "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
       };
     };
   };

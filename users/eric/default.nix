@@ -55,7 +55,6 @@
       delta
       yazi
       scc
-      inputs.llm-agents.gemini-cli
       adversarial-review
     ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
