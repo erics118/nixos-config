@@ -13,6 +13,7 @@
             statix
             cachix
             comma
+            home-manager
 
             # apps
             _1password-cli

@@ -4,7 +4,7 @@
 
     {
       home.file.".claude/statusline-command.sh" = {
-        source = ./files/statusline-command.sh;
+        source = repoFile "modules/eric/cli/files/statusline-command.sh";
         executable = true;
       };
 
