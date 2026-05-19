@@ -1,5 +1,6 @@
+{ inputs, ... }:
 let
-  body =
+  shared =
     { pkgs, ... }:
     {
       nix = {
@@ -33,18 +34,27 @@ let
         };
       };
 
+      programs.zsh.enable = true;
+
+      nixpkgs = {
+        config.allowUnfree = true;
+        overlays = builtins.attrValues (import ../../overlays { inherit inputs; });
+      };
+
       environment.systemPackages = with pkgs; [
         vim
         wget
         curl
         git
         just
+        sops
       ];
-
-      programs.zsh.enable = true;
     };
 in
 {
-  flake.modules.nixos.common-nix = body;
-  flake.modules.darwin.common-nix = body;
+  flake.modules.nixos.base = {
+    imports = [ shared ];
+    nix.gc.dates = "weekly";
+  };
+  flake.modules.darwin.base = shared;
 }

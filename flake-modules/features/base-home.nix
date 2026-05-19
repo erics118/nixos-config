@@ -2,7 +2,7 @@
 {
   flake.modules.homeManager.base = {
     imports = [
-      ../../users/eric
+      ../_home/eric
       inputs.catppuccin.homeModules.catppuccin
       inputs.sops-nix.homeManagerModules.sops
     ];

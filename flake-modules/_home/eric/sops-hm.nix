@@ -8,7 +8,7 @@
 lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   sops = {
     age.keyFile = "${config.home.homeDirectory}/Library/Application Support/sops/age/keys.txt";
-    defaultSopsFile = ../../secrets/secrets.yaml;
+    defaultSopsFile = ../../../secrets/secrets.yaml;
     secrets."api/nia" = { };
   };
 }

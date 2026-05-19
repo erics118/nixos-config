@@ -1,15 +1,24 @@
-{ inputs, config, ... }:
+{ inputs, ... }:
 {
   flake.modules.nixos.base =
     { pkgs, ... }:
     {
       imports = [
-        config.flake.modules.nixos.common-nix
         inputs.catppuccin.nixosModules.catppuccin
         inputs.home-manager.nixosModules.home-manager
         inputs.sops-nix.nixosModules.sops
-        ../../users/eric/sops.nix
       ];
+
+      nix = {
+        settings = {
+          log-lines = 50;
+          auto-optimise-store = true;
+          trusted-users = [ "eric" ];
+        };
+
+        registry.nixpkgs.flake = inputs.nixpkgs;
+        nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
+      };
 
       # linux-common
       time.timeZone = "America/New_York";
@@ -39,24 +48,8 @@
         };
       };
 
-      nix = {
-        registry.nixpkgs.flake = inputs.nixpkgs;
-        nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
-
-        settings = {
-          log-lines = 50;
-          auto-optimise-store = true;
-        };
-
-        gc = {
-          dates = "weekly";
-        };
-      };
-
       boot.tmp.cleanOnBoot = true;
       zramSwap.enable = true;
-
-      environment.systemPackages = with pkgs; [ sops ];
 
       environment.pathsToLink = [ "/share/zsh" ];
 
@@ -83,25 +76,18 @@
         ];
       };
 
-      nix.settings.trusted-users = [ "eric" ];
-
       home-manager = {
         useUserPackages = true;
         useGlobalPkgs = true;
         extraSpecialArgs = { inherit inputs; };
         users.eric = {
           imports = [
-            ../../users/eric
+            ../_home/eric
             inputs.catppuccin.homeModules.catppuccin
             inputs.sops-nix.homeManagerModules.sops
           ];
         };
       };
 
-      # nixpkgs config + overlays
-      nixpkgs = {
-        config.allowUnfree = true;
-        overlays = builtins.attrValues (import ../../overlays { inherit inputs; });
-      };
     };
 }
