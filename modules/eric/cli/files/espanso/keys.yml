@@ -1,0 +1,54 @@
+matches:
+  # Arrows
+  - trigger: "-key:up"
+    replace: "↑"
+  - trigger: "-key:down"
+    replace: "↓"
+  - trigger: "-key:left"
+    replace: "←"
+  - trigger: "-key:right"
+    replace: "→"
+
+  # Page navigation
+  - triggers: ["-key:pgup", "-key:pageup", "-key:pup"]
+    replace: "⇞"
+  - triggers: ["-key:pgdwn", "-key:pgdown", "-key:pagedown", "-key:pdown"]
+    replace: "⇟"
+  - trigger: "-key:home"
+    replace: "↖"
+  - trigger: "-key:end"
+    replace: "↘"
+
+  # Deleting
+  - triggers: ["-key:reversedel", "-key:rdel", "-key:forwarddel", "-key:fdel"]
+    replace: "⌦"
+  - triggers: ["-key:bkspc", "-key:backspace"]
+    replace: "⌫"
+  - trigger: "-key:delete"
+    replace: "⌫"
+
+  # Modifier Keys
+  - triggers: ["-key:cmd"]
+    replace: "⌘"
+  - triggers: ["-key:option", "-key:alt"]
+    replace: "⌥"
+  - triggers: ["-key:ctrl", "-key:control"]
+    replace: "⌃"
+  - triggers: ["-key:shift"]
+    replace: "⇧"
+  - triggers: ["-key:capslock", "-key:caps_lock"]
+    replace: "⇪"
+  - trigger: "-key:hyper"
+    replace: "✦"
+
+  # Special keys
+  - triggers: ["-key:tab", "-key:bktab", "-key:backtab"]
+    replace: "⇥"
+  - triggers: ["-key:spc", "-key:space"]
+    replace: "␣"
+  - triggers: ["-key:return", "-key:enter"]
+    replace: "↵"
+  - triggers: ["-key:escape"]
+    replace: "⎋"
+  - triggers: ["-key:eject"]
+    replace: "⏏"

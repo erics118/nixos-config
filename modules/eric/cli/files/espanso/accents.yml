@@ -1,0 +1,112 @@
+matches:
+  - trigger: ";'a"
+    replace: "á"
+    propagate_case: true
+  - trigger: ";`a"
+    replace: "à"
+    propagate_case: true
+  - trigger: ";^a"
+    replace: "â"
+    propagate_case: true
+  - trigger: ";~a"
+    replace: "ã"
+    propagate_case: true
+  - triggers: [";:a", ';"a']
+    replace: "ä"
+    propagate_case: true
+
+  - trigger: ";'e"
+    replace: "é"
+    propagate_case: true
+  - trigger: ";`e"
+    replace: "è"
+    propagate_case: true
+  - trigger: ";^e"
+    replace: "ê"
+    propagate_case: true
+  - trigger: ";~e"
+    replace: "ẽ"
+    propagate_case: true
+  - triggers: [";:e", ';"e']
+    replace: "ë"
+    propagate_case: true
+
+  - trigger: ";'i"
+    replace: "í"
+    propagate_case: true
+  - trigger: ";`i"
+    replace: "ì"
+    propagate_case: true
+  - trigger: ";^i"
+    replace: "î"
+    propagate_case: true
+  - trigger: ";~i"
+    replace: "ĩ"
+    propagate_case: true
+  - triggers: [";:i", ';"i']
+    replace: "ï"
+    propagate_case: true
+
+  - trigger: ";'o"
+    replace: "ó"
+    propagate_case: true
+  - trigger: ";`o"
+    replace: "ò"
+    propagate_case: true
+  - trigger: ";^o"
+    replace: "ô"
+    propagate_case: true
+  - trigger: ";~o"
+    replace: "õ"
+    propagate_case: true
+  - triggers: [";:o", '";"o']
+    replace: "ö"
+    propagate_case: true
+
+  - trigger: ";'u"
+    replace: "ú"
+    propagate_case: true
+  - trigger: ";`u"
+    replace: "ù"
+    propagate_case: true
+  - trigger: ";^u"
+    replace: "û"
+    propagate_case: true
+  - trigger: ";~u"
+    replace: "ũ"
+    propagate_case: true
+  - triggers: [";:u", ';"u']
+    replace: "ü"
+    propagate_case: true
+
+  - trigger: ";'y"
+    replace: "ý"
+    propagate_case: true
+  - trigger: ";`y"
+    replace: "ỳ"
+    propagate_case: true
+  - trigger: ";^y"
+    replace: "ŷ"
+    propagate_case: true
+  - trigger: ";~y"
+    replace: "ỹ"
+    propagate_case: true
+  - triggers: [";:y", ';"y']
+    replace: "ÿ"
+    propagate_case: true
+
+  - trigger: ";,c"
+    replace: "ç"
+    propagate_case: true
+
+  - trigger: ";~n"
+    replace: "ñ"
+    propagate_case: true
+
+  - trigger: ";'s"
+    replace: "ś"
+    propagate_case: true
+
+  - trigger: ";'z"
+    replace: "ź"
+    propagate_case: true
