@@ -1,5 +1,4 @@
 {
-  inputs,
   lib,
   config,
   ...
@@ -19,14 +18,14 @@
     # writable copy via home.activation below from ./claude-settings.json
     # so local edits are possible (overwritten on the next home-manager switch).
 
-    mcpServers.nia = {
-      type = "http";
-      url = "https://apigcp.trynia.ai/mcp";
-      headers.Authorization = "Bearer \${NIA_API_KEY}";
-    };
+    # mcpServers.nia = {
+    #   type = "http";
+    #   url = "https://apigcp.trynia.ai/mcp";
+    #   headers.Authorization = "Bearer \${NIA_API_KEY}";
+    # };
 
-    agents.nia = builtins.readFile (inputs.nia-rules + "/.claude/agents/nia.md");
-    skills.nia = "${inputs.nia-rules}/.claude/skills/nia";
+    # agents.nia = builtins.readFile (inputs.nia-rules + "/.claude/agents/nia.md");
+    # skills.nia = "${inputs.nia-rules}/.claude/skills/nia";
   };
 
   home.activation.installClaudeSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

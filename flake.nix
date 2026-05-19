@@ -65,10 +65,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nia-rules = {
-      url = "github:nozomio-labs/nia-rules-for-agents";
-      flake = false;
-    };
+    # nia-rules = {
+    #   url = "github:nozomio-labs/nia-rules-for-agents";
+    #   flake = false;
+    # };
 
     adversarial-review = {
       url = "github:alecnielsen/adversarial-review";

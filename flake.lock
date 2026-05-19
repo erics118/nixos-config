@@ -274,22 +274,6 @@
         "type": "github"
       }
     },
-    "nia-rules": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1770145944,
-        "narHash": "sha256-ykFcobn4G3/jUAd4pjjPr+8wDZvOQnwEM4one1OeD2o=",
-        "owner": "nozomio-labs",
-        "repo": "nia-rules-for-agents",
-        "rev": "57f773881747069b91a962869e37c7aaebdcb573",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nozomio-labs",
-        "repo": "nia-rules-for-agents",
-        "type": "github"
-      }
-    },
     "nix-homebrew": {
       "inputs": {
         "brew-src": "brew-src"
@@ -474,7 +458,6 @@
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
         "import-tree": "import-tree",
-        "nia-rules": "nia-rules",
         "nix-homebrew": "nix-homebrew",
         "nix-ros-overlay": "nix-ros-overlay",
         "nixpkgs": "nixpkgs_2",
