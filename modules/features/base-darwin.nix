@@ -11,6 +11,8 @@
       "eric"
     ];
 
+    home-manager.backupFileExtension = "bak";
+
     nix-homebrew = {
       user = "eric";
       enable = true;

@@ -47,7 +47,7 @@
       };
     };
 
-  # custom wezterm fork (temporarily disabled)
+  # custom wezterm fork
   wezterm =
     final: prev:
     let
@@ -55,7 +55,6 @@
     in
     {
       wezterm = inputs.wezterm-src.packages.${system}.default.overrideAttrs (old: {
-        # version = "erics118-custom";
         env = (old.env or { }) // {
           CC_aarch64_apple_darwin = "${prev.stdenv.cc.cc}/bin/clang";
         };
