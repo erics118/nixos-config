@@ -1,13 +1,12 @@
 {
   flake.modules.homeManager.base =
-    { pkgs, ... }:
+    { config, ... }:
     {
       programs.nh = {
         enable = true;
         clean.enable = true;
         clean.extraArgs = "--keep-since 4d --keep 3";
-        flake =
-          if pkgs.stdenv.hostPlatform.isDarwin then "/Users/eric/nixos-config" else "/home/eric/nixos-config";
+        flake = "${config.home.homeDirectory}/.flake";
       };
     };
 }
