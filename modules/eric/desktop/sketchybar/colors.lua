@@ -1,0 +1,101 @@
+local theme = {
+    rosewater = 0xfff5e0dc,
+    flamingo = 0xfff2cdcd,
+    pink = 0xfff5c2e7,
+    mauve = 0xffcba6f7,
+    red = 0xfff38ba8,
+    maroon = 0xffeba0ac,
+    peach = 0xfffab387,
+    yellow = 0xfff9e2af,
+    green = 0xffa6e3a1,
+    teal = 0xff94e2d5,
+    sky = 0xff89dceb,
+    sapphire = 0xff74c7ec,
+    blue = 0xff89b4fa,
+    lavender = 0xffb4befe,
+    text = 0xffcdd6f4,
+    subtext1 = 0xffbac2de,
+    subtext0 = 0xffa6adc8,
+    overlay2 = 0xff9399b2,
+    overlay1 = 0xff7f849c,
+    overlay0 = 0xff6c7086,
+    surface2 = 0xff585b70,
+    surface1 = 0xff45475a,
+    surface0 = 0xff313244,
+    base = 0xff1e1e2e,
+    mantle = 0xff181825,
+    crust = 0xff11111b,
+
+    transparent = 0x00000000,
+}
+
+local colors = {
+
+    red = theme.red,
+    orange = theme.peach,
+    yellow = theme.yellow,
+    green = theme.green,
+    blue = theme.blue,
+    purple = theme.mauve,
+
+    black = theme.base,
+
+    text = theme.subtext0,
+
+    transparent = theme.transparent,
+
+    bar_color = theme.base,
+
+    item = {
+        bg = theme.surface0,
+        border = theme.transparent,
+        highlighted_border = theme.surface2,
+    },
+
+    popup = {
+        bg = theme.base,
+        border = theme.surface0,
+    },
+
+    with_alpha = function(color, alpha)
+        if alpha > 1.0 or alpha < 0.0 then return color end
+        return (color & 0x00ffffff) | (math.floor(alpha * 255.0) << 24)
+    end,
+}
+
+setmetatable(colors, {
+    __index = function(_table, _key)
+        return 0xffff0000
+    end
+})
+
+return colors
+
+
+--[[
+local old_ctp = {
+    red = 0xffe37d96,
+    orange = 0xffe6996a,
+    yellow = 0xffebca52,
+    green = 0xff87e088,
+    blue = 0xff74c7ec,
+    purple = 0xffc89eff,
+    white = 0xffe2e2e3,
+    grey = 0xff6d717c,
+    black = 0xff181819,
+
+    transparent = 0x00000000,
+
+    bar_color = 0xff000000,
+
+    item = {
+        bg = 0xff000000,
+        border = 0xff3d3d3d,
+    },
+
+    popup = {
+        bg = 0xff2c2e34,
+        border = 0xff7f8490,
+    }
+}
+--]]

@@ -12,6 +12,7 @@
         age.keyFile = "${config.home.homeDirectory}/Library/Application Support/sops/age/keys.txt";
         defaultSopsFile = ../../secrets/secrets.yaml;
         secrets."api/nia" = { };
+        secrets."api/weather" = { };
       };
     };
 }

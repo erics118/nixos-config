@@ -37,6 +37,7 @@
             hyperfine
             onefetch
             shfmt
+            lua5_5 # for sketchybar
             httpie
             yq-go
             watchexec

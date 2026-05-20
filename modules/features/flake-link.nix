@@ -3,8 +3,7 @@
     { lib, config, ... }:
     {
       _module.args.repoFile =
-        relPath:
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.flake/${relPath}";
+        relPath: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.flake/${relPath}";
 
       home.activation.checkFlakeLink = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
         if ! test -L "$HOME/.flake"; then
