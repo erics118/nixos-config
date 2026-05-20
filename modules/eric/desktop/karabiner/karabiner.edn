@@ -1,0 +1,185 @@
+;; !  | mandatory
+;; #  | optional
+;; C  | left_command
+;; T  | left_control
+;; O  | left_option
+;; S  | left_shift
+;; F  | fn
+;; Q  | right_command
+;; W  | right_control
+;; E  | right_option
+;; R  | right_shift
+;; P  | caps_lock
+;; !! | mandatory rhyper
+;; ## | optional any
+
+{:profiles {:Default {:sim 70 ;; basic.simultaneous_threshold_milliseconds
+                      :delay 500 ;; basic.to_delayed_action_delay_milliseconds
+                      :alone 300 ;; basic.to_if_alone_timeout_milliseconds
+                      :held 500 ;; basic.to_if_held_down_threshold_milliseconds
+                      :default true}}
+
+ :applications {:chrome ["^com\\.google\\.Chrome$"]
+                :safari ["^com\\.apple\\.Safari$"]
+                :vscode ["^com\\.microsoft\\.VSCode$"]
+                :wezterm ["^com\\.github\\.wez\\.wezterm$"]
+                :orion ["^com\\.kagi\\.kagimacOS\\.RC$"]
+                :coding ["^com\\.microsoft\\.VSCode$" "^com\\.jetbrains\\..*$" "^com\\.todesktop\\..*$"]
+
+                ;; :fn_mods_apps ["^com.jetbrains\\..*$" "^com.parallels.desktop.console$" "^com\\.microsoft\\.VSCode$"]
+                }
+
+ ;;  :modifiers
+ ;;  {:11 [:left_command :left_control]
+ ;;   :111 [:left_command :left_option :left_shift]}
+ ;;  :templates {:front "front -n '%s'"
+ ;;              :front-p "front -p '%s'"
+ ;;              :front-b "front -b '%s'"
+ ;;             ;;  :mode "%s && sketchybar --trigger skhd_mode_changed INFO=%s"
+ ;;              }
+
+ ;;  :simlayers {:a-mode {:key :a}}
+
+ :main
+ [{:des "hyper key: caps_lock to hyper, hyper-tab to caps_lock"
+   :rules [[:##caps_lock :!QWEright_shift nil
+            {:alone :escape
+             :delayed {:canceled :vk_none}}]
+           [:!!##tab :caps_lock]]}
+
+;;   ;; ralt-l to lock screen
+;;   {:des "right_option+l to lock screen"
+;;    :rules [;;    [:!El :!CTq]
+;;            [:!El "pmset displaysleepnow"]]}
+
+  ;; use caps_lock for escape
+  {:des "escape to vk_none"
+   :rules [[:##escape :vk_none]]}
+
+  {:des "disable annoying shortcuts: hyper+comma to none"
+   :rules [[:!!##comma :vk_none]
+           [:!!##period :vk_none]]}
+
+  {:des "hyper navigation: hyper-(any-)hjkl to (any-)arrows)"
+   :rules [[:!!##h :left_arrow]
+           [:!!##j :down_arrow]
+           [:!!##k :up_arrow]
+           [:!!##l :right_arrow]]}
+
+  ;;   {:des "fn keys: fn-[1-0] to [f1-f10]"
+  ;;    :rules [[:!F##1 :f1]
+  ;;            [:!F##2 :f2]
+  ;;            [:!F##3 :f3]
+  ;;            [:!F##4 :f4]
+  ;;            [:!F##5 :f5]
+  ;;            [:!F##6 :f6]
+  ;;            [:!F##7 :f7]
+  ;;            [:!F##8 :f8]
+  ;;            [:!F##9 :f9]
+  ;;            [:!F##0 :f10]]}
+
+  {:des "hyper function: hyper/1finger+[f1-f12] to custom keys"
+   :rules [[:!!#Pf1 :display_brightness_decrement]
+           [:#Pf1 :display_brightness_decrement ["multitouch_extension_finger_count_total" 1]]
+           [:!!#Pf2 :display_brightness_increment]
+           [:#Pf2 :display_brightness_increment ["multitouch_extension_finger_count_total" 1]]
+
+           [:!!S#Pf1 :!OSdisplay_brightness_decrement]
+           [:!S#Pf1 :!OSdisplay_brightness_decrement ["multitouch_extension_finger_count_total" 1]]
+           [:!!S#Pf2 :!OSdisplay_brightness_increment]
+           [:!S#Pf2 :!OSdisplay_brightness_increment ["multitouch_extension_finger_count_total" 1]]
+
+           [:!!C#Pf1 :illumination_decrement]
+           [:!C#Pf1 :illumination_decrement ["multitouch_extension_finger_count_total" 1]]
+           [:!!C#Pf2 :illumination_increment]
+           [:!C#Pf2 :illumination_increment ["multitouch_extension_finger_count_total" 1]]
+
+           [:!!SC#Pf1 :!OSillumination_decrement]
+           [:!SC#Pf1 :!OSillumination_decrement ["multitouch_extension_finger_count_total" 1]]
+           [:!!S#Pf2 :!OSillumination_increment]
+           [:!S#Pf2 :!OSillumination_increment ["multitouch_extension_finger_count_total" 1]]
+
+           [:!!#Pf3 :mission_control]
+           [:#Pf3 :mission_control ["multitouch_extension_finger_count_total" 1]]
+           [:!!f4 :launchpad]
+           [:f4 :launchpad ["multitouch_extension_finger_count_total" 1]]
+           [:!!f5 :vk_none]
+           [:f5 :vk_none ["multitouch_extension_finger_count_total" 1]]
+           [:!!f6 :illumination_increment]
+           [:f6 :illumination_increment ["multitouch_extension_finger_count_total" 1]]
+
+           [:!!#Pf7 :rewind]
+           [:#Pf7 :rewind ["multitouch_extension_finger_count_total" 1]]
+           [:!!#Pf8 :play_or_pause]
+           [:#Pf8 :play_or_pause ["multitouch_extension_finger_count_total" 1]]
+           [:!!#Pf9 :fast_forward]
+           [:#Pf9 :fast_forward ["multitouch_extension_finger_count_total" 1]]
+           [:!!#Pf10 :mute]
+           [:#Pf10 :mute ["multitouch_extension_finger_count_total" 1]]
+           [:!!#Pf11 :volume_decrement]
+           [:#Pf11 :volume_decrement ["multitouch_extension_finger_count_total" 1]]
+           [:!!#Pf12 :volume_increment]
+           [:#Pf12 :volume_increment ["multitouch_extension_finger_count_total" 1]]]}
+
+  {:des "latex: in vscode: rcmd -> $, ralt -> _, lshift -> (, rshift -> )"
+   :rules [[:right_command :right_command :vscode {:alone :!S4 :delayed {:invoked :vk_none}}]
+           [:right_option :right_option :vscode {:alone :!Shyphen :delayed {:invoked :vk_none}}]
+
+           [:left_shift :left_shift :vscode {:alone :!S9 :delayed {:invoked :vk_none}}]
+           [:right_shift :right_shift :vscode {:alone :!S0 :delayed {:invoked :vk_none}}]
+           ;; hi
+           ]}
+
+  ;;   {:des "launch apps"
+  ;;    :rules [[:!!q [:front "Todoist"]]
+  ;;            [:!!Cq [:front "Notion"]]
+  ;;            [:!!w [:front "Preview"]]
+  ;;            [:!!e [:front "CotEditor"]]
+  ;;            [:!!r [:front "Orion RC"]]
+  ;;            [:!!t [:front "WezTerm"]]
+  ;;            [:!!Ct [:front "Photos"]]
+  ;;            [:!!Ot [:front "Notes"]]
+  ;;            [:!!s [:front "System Settings"]]
+  ;;            [:!!Cs [:front "Spotify"]]
+  ;;            [:!!Os [:front "Slack"]]
+  ;;            [:!!d [:front "Discord"]]
+  ;;            [:!!f [:front-p "/System/Library/CoreServices/Finder.app"]]
+  ;;            [:!!Cf [:front "Messages"]]
+  ;;            [:!!g [:front "Notion Mail"]]
+  ;;            [:!!z [:front "zoom.us"]]
+  ;;            [:!!c [:front "Fantastical"]]
+  ;;            [:!!Cc [:front "Google Chrome"]]
+  ;;            [:!!Oc [:front "ChatGPT"]]
+  ;;            [:!!v [:front "Visual Studio Code"]]
+  ;;            [:!!Cv [:front "Cursor"]]]}
+
+  ;;   {:des "activate mode"
+  ;;    :rules [[:!!a ["sketchybar --trigger skhd_mode_changed default" ["activate-mode" 1]]]
+  ;;            :activate-mode
+  ;;            [:escape ["sketchybar --trigger skhd_mode_changed INFO=default" ["activate-mode" 0]]] 
+  ;;            [:e ["open 'raycast://extensions/mooxl/deepcast/englishUS?arguments=%7B%22text%22%3A%22%22%7D' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
+  ;;            [:s ["open 'raycast://extensions/mooxl/deepcast/spanish?arguments=%7B%22text%22%3A%22%22%7D' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
+  ;;            [:c ["open 'raycast://extensions/thomas/color-picker/pick-color' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
+  ;;            [:1 ["open 'raycast://extensions/abielzulio/chatgpt/ask' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
+  ;;            [:h ["open 'raycast://extensions/abielzulio/chatgpt/conversation' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
+  ;;            [:b ["open 'raycast://extensions/jomifepe/bitwarden/search' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
+  ;;            [:v ["open 'cleanshot://scrolling-capture' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
+  ;;            [:k ["open 'raycast://extensions/rolandleth/kill-process/index' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
+  ;;            [:f ["open 'raycast://extensions/raycast/file-search/search-files' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
+  ;;            [:t ["open 'raycast://extensions/doist/todoist/home' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]]}
+
+  ;;   {:des "tap w to set w-layer to 1"
+  ;;    :rules [
+  ;;                 ;; ;; ctrl+y to command+v when one finger on trackpad
+  ;;                 ;; [:!Ty :!Cv :multitouch_extension_finger_count_total]
+  ;;                 ;; ;; ctrl+y to command+v when one finger on trackpad
+  ;;                 ;; [:!Ty :!Cv ["multitouch_extension_finger_count_total" 1]]
+  ;;                 ;; ;; ctrl+y to command+v when two finger on trackpad
+  ;;                 ;; [:!Ty :!Cv ["multitouch_extension_finger_count_total" 2]]
+  ;;                 ;; ;; ctrl+y to command+v when three finger on the upper half of trackpad
+  ;;            :multitouch_extension_finger_count_right_quarter_area
+  ;;            :multitouch_extension_finger_count_total
+  ;;            :multitouch_extension_finger_count_bottom_quarter_area
+  ;;            [:!!#P9 :!Cv]]
+  ;;    }
+  ]}
