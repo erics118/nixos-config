@@ -21,14 +21,20 @@ in
         useGlobalPkgs = true;
         useUserPackages = true;
         extraSpecialArgs = { inherit inputs; };
-        users.eric.imports = [ m.homeManager.base ];
+        users.eric.imports = [
+          m.homeManager.base
+          m.homeManager.darwin
+        ];
       };
     };
 
   configurations.homeManager."eric@macbook" = {
     system = "aarch64-darwin";
     module = {
-      imports = [ m.homeManager.base ];
+      imports = [
+        m.homeManager.base
+        m.homeManager.darwin
+      ];
       home.username = "eric";
       home.homeDirectory = "/Users/eric";
     };

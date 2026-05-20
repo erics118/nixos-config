@@ -5,7 +5,7 @@
       environment.systemPackages = [ pkgs.wezterm ];
     };
 
-  flake.modules.homeManager.base =
+  flake.modules.homeManager.darwin =
     { config, ... }:
     {
       # single live-symlink so edits to lua take effect without a rebuild

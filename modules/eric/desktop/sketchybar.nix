@@ -1,5 +1,5 @@
 {
-  flake.modules.homeManager.base =
+  flake.modules.homeManager.darwin =
     { config, ... }:
     {
       # single live-symlink: edits to lua/scripts take effect without a rebuild

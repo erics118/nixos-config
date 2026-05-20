@@ -1,5 +1,5 @@
 {
-  flake.modules.homeManager.base =
+  flake.modules.homeManager.darwin =
     { repoFile, ... }:
     {
       home.file.".config/karabiner.edn".source = repoFile "modules/eric/desktop/karabiner/karabiner.edn";
