@@ -46,7 +46,28 @@
             adversarial-review
           ]
           ++ lib.optionals stdenv.hostPlatform.isDarwin [
+
+            # build tools
+            cmake
+            ninja
+            pkg-config
+
+            # cli tools
             mosh
+            glow
+            ltex-ls
+            prek
+            nextdns
+            supabase-cli
+            spicetify-cli
+            serve
+
+            # fonts
+            nerd-fonts.hack
+            sketchybar-app-font
+
+            # apps
+            espanso
           ];
 
         sessionPath = [ "$HOME/.local/bin" ];

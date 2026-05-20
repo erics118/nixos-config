@@ -85,7 +85,7 @@
       enable = true;
       onActivation = {
         autoUpdate = false;
-        cleanup = "none";
+        cleanup = "zap"; # or "none"
         upgrade = false;
       };
       global = {
@@ -95,52 +95,14 @@
       taps = [
         "felixkratz/formulae"
         "koekeishiya/formulae"
-        # "yqrashawn/goku"
-        "supabase/tap"
-        "nextdns/tap"
-        "charmbracelet/tap"
+        "erics118/tap"
       ];
 
       brews = [
-        "cmake"
-        "gmp"
-        "libffi"
-        "llvm@19"
-        {
-          name = "llvm";
-          link = true;
-        }
-        "ltex-ls"
-        "lua"
         {
           name = "macos-trash";
           link = true;
         }
-        {
-          name = "mysql-client";
-          link = true;
-        }
-        "nginx"
-        "ninja"
-        {
-          name = "perl";
-          link = false;
-        }
-        "pipx"
-        "pkgconf"
-        "prek"
-        {
-          name = "python@3.13";
-          link = false;
-        }
-        "rsync"
-        "serve"
-        "spicetify-cli"
-        "spotify_player"
-        # "vercel-cli"
-        "virustotal-cli"
-        "watch"
-        "charmbracelet/tap/glow"
         "felixkratz/formulae/sketchybar"
         "felixkratz/formulae/svim"
         "koekeishiya/formulae/skhd"
@@ -148,18 +110,12 @@
           name = "koekeishiya/formulae/yabai";
           args = [ "HEAD" ];
         }
-        "nextdns"
-        "supabase"
-        # "yqrashawn/goku/goku"
+        "erics118/tap/goku"
       ];
 
       casks = [
         "1password"
         "font-sf-pro"
-        "font-hack-nerd-font"
-        "font-sketchybar-app-font"
-        "raycast"
-        "espanso"
       ];
 
       masApps = { };
