@@ -1,8 +1,4 @@
-{
-  config,
-  lib,
-  ...
-}:
+{ config, lib, ... }:
 let
   m = config.flake.modules;
 in
@@ -37,9 +33,7 @@ in
     networking = {
       hostName = "squid";
       domain = "";
-      nameservers = [
-        "8.8.8.8"
-      ];
+      nameservers = [ "8.8.8.8" ];
       defaultGateway = {
         address = "172.31.1.1";
         interface = "eth0";

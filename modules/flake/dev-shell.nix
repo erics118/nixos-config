@@ -2,9 +2,7 @@
   perSystem =
     { config, pkgs, ... }:
     {
-      devShells.default = pkgs.mkShell {
-        packages = [ config.treefmt.build.wrapper ];
-      };
+      devShells.default = pkgs.mkShell { packages = [ config.treefmt.build.wrapper ]; };
 
       devShells.sketchybar = pkgs.mkShell {
         packages = with pkgs; [

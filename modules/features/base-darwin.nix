@@ -55,7 +55,7 @@
           FXEnableExtensionChangeWarning = false;
           FXPreferredViewStyle = "clmv";
           ShowPathbar = true;
-          ShowStatusBar = false;
+          ShowStatusBar = true;
         };
 
         trackpad = {

@@ -13,9 +13,7 @@
     programs.atuin = {
       enable = true;
       forceOverwriteSettings = true;
-      flags = [
-        "--disable-up-arrow"
-      ];
+      flags = [ "--disable-up-arrow" ];
       settings = {
         enter_accept = false;
       };
@@ -25,9 +23,7 @@
       enable = true;
       colors = "auto";
       icons = "auto";
-      extraOptions = [
-        "-F"
-      ];
+      extraOptions = [ "-F" ];
       # disable eza aliases, as we set them up manually
       enableZshIntegration = false;
     };

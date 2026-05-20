@@ -69,4 +69,4 @@ yabai -m rule --add label="dev apps" app="^knot$" manage=off
 
 yabai -m rule --apply
 
-printf'loaded unmanage rules..\n'
+printf 'loaded unmanage rules..\n'

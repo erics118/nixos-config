@@ -6,9 +6,7 @@ in
   configurations.darwin.macbook.module =
     { pkgs, ... }:
     {
-      imports = [
-        m.darwin.base
-      ];
+      imports = [ m.darwin.base ];
       nixpkgs.hostPlatform = "aarch64-darwin";
 
       networking.hostName = "macbook";

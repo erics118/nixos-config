@@ -10,12 +10,8 @@
     type = lib.types.lazyAttrsOf (
       lib.types.submodule {
         options = {
-          system = lib.mkOption {
-            type = lib.types.str;
-          };
-          module = lib.mkOption {
-            type = lib.types.deferredModule;
-          };
+          system = lib.mkOption { type = lib.types.str; };
+          module = lib.mkOption { type = lib.types.deferredModule; };
         };
       }
     );

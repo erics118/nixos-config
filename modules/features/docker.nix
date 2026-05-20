@@ -1,10 +1,6 @@
 {
   flake.modules.nixos.docker =
-    {
-      pkgs,
-      inputs,
-      ...
-    }:
+    { pkgs, inputs, ... }:
     let
       compose2nix-pkg = inputs.compose2nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
     in
