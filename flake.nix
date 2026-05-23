@@ -30,10 +30,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-ros-overlay = {
-      url = "github:lopsided98/nix-ros-overlay/master";
-    };
-
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -64,11 +60,6 @@
       url = "github:erics118/wezterm?ref=eric&dir=nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # nia-rules = {
-    #   url = "github:nozomio-labs/nia-rules-for-agents";
-    #   flake = false;
-    # };
 
     adversarial-review = {
       url = "github:alecnielsen/adversarial-review";
