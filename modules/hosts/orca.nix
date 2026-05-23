@@ -3,13 +3,13 @@ let
   m = config.flake.modules;
 in
 {
-  configurations.darwin.macbook.module =
+  configurations.darwin.orca.module =
     { pkgs, ... }:
     {
       imports = [ m.darwin.base ];
       nixpkgs.hostPlatform = "aarch64-darwin";
 
-      networking.hostName = "macbook";
+      networking.hostName = "orca";
 
       users.users.eric = {
         name = "eric";
@@ -28,7 +28,7 @@ in
       };
     };
 
-  configurations.homeManager."eric@macbook" = {
+  configurations.homeManager."eric@orca" = {
     system = "aarch64-darwin";
     module = {
       imports = [
