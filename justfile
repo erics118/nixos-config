@@ -56,3 +56,8 @@ home:
 [group('system')]
 gc:
     nh clean all --keep-since 14d
+
+# optimize the nix store
+[group('system')]
+optimise:
+  sudo -H nix store optimise
