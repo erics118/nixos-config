@@ -1,4 +1,5 @@
 keys:
+  - &eric_narwhal age1memhn2lgevwuj022l6xrjalhcwn2y8pv2srwz8flm200x9j2af5q9gmty2
   - &eric_host age1a3wxn9nm4mh0af3c3dq9t84ga4rfuw4ja69x5pguqttepqr9muzs33uru3
 
   - &eric_nixos_vm age10j857u3fqdc7kkvpf5h2dhvswf88xlmg5tq20pw90ftrfjmqpquqm02tmq
@@ -17,6 +18,7 @@ creation_rules:
           - *eric_squid
           - *server_nixos_vm
           - *server_squid
+          - *eric_narwhal
 
 stores:
   json:
