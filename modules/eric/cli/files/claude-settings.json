@@ -69,7 +69,7 @@
     "claude-md-management@claude-plugins-official": true,
     "impeccable@impeccable": true,
     "skill-creator@claude-plugins-official": false,
-    "hookify@claude-plugins-official": true
+    "hookify@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
     "impeccable": {
