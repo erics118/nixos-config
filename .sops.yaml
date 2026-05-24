@@ -1,24 +1,26 @@
 keys:
+  - &eric_orca age1a3wxn9nm4mh0af3c3dq9t84ga4rfuw4ja69x5pguqttepqr9muzs33uru3
+
   - &eric_narwhal age1memhn2lgevwuj022l6xrjalhcwn2y8pv2srwz8flm200x9j2af5q9gmty2
-  - &eric_host age1a3wxn9nm4mh0af3c3dq9t84ga4rfuw4ja69x5pguqttepqr9muzs33uru3
+  - &host_narwhal age1dndmw64zh7a28wqfe9rudzktvrjdt7g7l2znak6sqdhlrgx88dksmge29g
 
   - &eric_nixos_vm age10j857u3fqdc7kkvpf5h2dhvswf88xlmg5tq20pw90ftrfjmqpquqm02tmq
+  - &host_nixos_vm age1mr56qrysexl3su2gd9ye2lzvkvppg64jddqytkrj9azrknnrlegsutnxcf
+
   - &eric_squid age18vncnjkr6xekx9ze2p48zerlpqn70ayma8glrsjd0a2nv7g2tqqq5plygg
-
-  - &server_nixos_vm age1mr56qrysexl3su2gd9ye2lzvkvppg64jddqytkrj9azrknnrlegsutnxcf
-
-  - &server_squid age1tnsh8jma2s6kgjj2cfafs5jd3p9k4t340ct5j60avwhls4v6qftsxyhtjh
+  - &host_squid age1tnsh8jma2s6kgjj2cfafs5jd3p9k4t340ct5j60avwhls4v6qftsxyhtjh
 
 creation_rules:
   - path_regex: secrets/[^\/]+\.yaml$
     key_groups:
       - age:
-          - *eric_host
+          - *eric_orca
           - *eric_nixos_vm
+          - *host_nixos_vm
           - *eric_squid
-          - *server_nixos_vm
-          - *server_squid
+          - *host_squid
           - *eric_narwhal
+          - *host_narwhal
 
 stores:
   json:
