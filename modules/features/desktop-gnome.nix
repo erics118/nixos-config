@@ -1,6 +1,19 @@
 {
+  flake.modules.homeManager.desktop-gnome = {
+    programs.gnome-terminal = {
+      enable = true;
+      profile."b1dcc9dd-5262-4d8d-a863-c897e6d979b9" = {
+        default = true;
+        visibleName = "Default";
+        font = "Hack Nerd Font Mono 12";
+      };
+    };
+  };
+
   flake.modules.nixos.desktop-gnome = {
     programs.firefox.enable = true;
+
+    security.rtkit.enable = true;
 
     services = {
       xserver.enable = true;
@@ -16,7 +29,6 @@
       printing.enable = true;
 
       pulseaudio.enable = false;
-      rtkit.enable = true;
       pipewire = {
         enable = true;
         alsa.enable = true;
