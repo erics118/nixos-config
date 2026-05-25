@@ -40,7 +40,11 @@ c.font = wezterm.font("Hack Nerd Font")
 c.font_size = 14.0
 
 -- window
-c.window_decorations = "RESIZE | TITLE | MACOS_FORCE_ENABLE_SHADOW | MACOS_USE_BACKGROUND_COLOR_AS_TITLEBAR_COLOR"
+if wezterm.target_triple:find("linux") then
+    c.window_decorations = "NONE"
+else
+    c.window_decorations = "RESIZE | TITLE | MACOS_FORCE_ENABLE_SHADOW | MACOS_USE_BACKGROUND_COLOR_AS_TITLEBAR_COLOR"
+end
 
 c.window_padding = {
     left = 6,

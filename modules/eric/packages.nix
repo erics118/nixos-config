@@ -38,6 +38,7 @@
             onefetch
             shfmt
             lua5_5 # for sketchybar
+            python3
             httpie
             yq-go
             watchexec
@@ -64,7 +65,6 @@
             serve
 
             # fonts
-            nerd-fonts.hack
             sketchybar-app-font
 
             # apps

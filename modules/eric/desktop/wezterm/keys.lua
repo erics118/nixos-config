@@ -3,6 +3,10 @@ local utils = require("utils")
 
 local act = wezterm.action
 
+local is_mac = wezterm.target_triple:find("darwin") ~= nil
+local MOD    = is_mac and "CMD"       or "CTRL|SHIFT"
+local SMOD   = is_mac and "SHIFT|CMD" or "CTRL|ALT"
+
 local shortcuts = {}
 
 local map = function(key, mods, action)
@@ -46,7 +50,7 @@ map("\\", "LEADER", act.SplitHorizontal({ domain = "CurrentPaneDomain" }))
 map("=", "LEADER", act.SplitVertical({ domain = "CurrentPaneDomain" }))
 -- map 1-9 to switch to tab 1-9, 0 for the last tab
 for i = 1, 9 do
-    map(tostring(i), { "LEADER", "CMD" }, act.ActivateTab(i - 1))
+    map(tostring(i), { "LEADER", MOD }, act.ActivateTab(i - 1))
 end
 map("e", { "SHIFT|CTRL" }, act.SpawnCommandInNewTab({ args = { "C:\\WINDOWS\\system32\\wsl.exe" } }))
 map("0", { "LEADER" }, act.ActivateTab(-1))
@@ -63,17 +67,17 @@ map("l", { "LEADER" }, act.ActivatePaneDirection("Right"))
 -- spawn & close
 map("c", "LEADER", act.SpawnTab("CurrentPaneDomain"))
 map("x", "LEADER", act.CloseCurrentPane({ confirm = true }))
-map("t", { "CMD" }, act.SpawnTab("CurrentPaneDomain"))
-map("w", { "CMD" }, act.CloseCurrentTab({ confirm = true }))
-map("n", { "SHIFT|CMD" }, act.SpawnWindow)
+map("t", { MOD }, act.SpawnTab("CurrentPaneDomain"))
+map("w", { MOD }, act.CloseCurrentTab({ confirm = true }))
+map("n", { SMOD }, act.SpawnWindow)
 -- zoom states
 map("z", { "LEADER" }, act.TogglePaneZoomState)
 map("Z", { "LEADER" }, toggleTabBar)
 -- copy & paste
 map("v", "LEADER", act.ActivateCopyMode)
-map("c", { "CMD" }, act.CopyTo("Clipboard"))
-map("v", { "CMD" }, act.PasteFrom("Clipboard"))
-map("f", { "SHIFT|CMD" }, act.Search("CurrentSelectionOrEmptyString"))
+map("c", { MOD }, act.CopyTo("Clipboard"))
+map("v", { MOD }, act.PasteFrom("Clipboard"))
+map("f", { SMOD }, act.Search("CurrentSelectionOrEmptyString"))
 -- rotation
 map("r", { "LEADER" }, act.RotatePanes("Clockwise"))
 map("r", { "LEADER|SHIFT" }, act.RotatePanes("CounterClockwise"))
@@ -81,19 +85,19 @@ map("r", { "LEADER|SHIFT" }, act.RotatePanes("CounterClockwise"))
 map(" ", "LEADER", act.QuickSelect)
 map("o", { "LEADER" }, openUrl)
 map("p", { "LEADER" }, act.PaneSelect({ alphabet = "asdfghjkl" }))
-map("r", { "LEADER|CMD" }, act.ReloadConfiguration)
-map("u", "SHIFT|CMD", act.CharSelect)
-map("p", { "SHIFT|CMD" }, act.ActivateCommandPalette)
+map("r", { "LEADER|" .. MOD }, act.ReloadConfiguration)
+map("u", SMOD, act.CharSelect)
+map("p", { SMOD }, act.ActivateCommandPalette)
 -- view
 map("Enter", "ALT", act.ToggleFullScreen)
-map("-", { "CMD" }, act.DecreaseFontSize)
-map("=", { "CMD" }, act.IncreaseFontSize)
-map("0", { "CMD" }, act.ResetFontSize)
+map("-", { MOD }, act.DecreaseFontSize)
+map("=", { MOD }, act.IncreaseFontSize)
+map("0", { MOD }, act.ResetFontSize)
 -- debug
-map("l", "SHIFT|CMD", act.ShowDebugOverlay)
+map("l", SMOD, act.ShowDebugOverlay)
 -- app
-map("q", "CMD", act.QuitApplication)
-map("h", "CMD", act.HideApplication)
+map("q", MOD, act.QuitApplication)
+map("h", MOD, act.HideApplication)
 map("r", "ALT|SHIFT", act.ReloadConfiguration)
 -- map(
 -- 	"k",
@@ -108,8 +112,8 @@ map("r", "ALT|SHIFT", act.ReloadConfiguration)
 map("UpArrow", "SHIFT", act.ScrollByLine(-1))
 map("DownArrow", "SHIFT", act.ScrollByLine(1))
 
-map("LeftArrow", "CMD", act.SendKey({ key = "LeftArrow", mods = "CTRL" }))
-map("RightArrow", "CMD", act.SendKey({ key = "RightArrow", mods = "CTRL" }))
+map("LeftArrow", MOD, act.SendKey({ key = "LeftArrow", mods = "CTRL" }))
+map("RightArrow", MOD, act.SendKey({ key = "RightArrow", mods = "CTRL" }))
 
 
 -- map("E", "CTRL|SHIFT", act.PromptInputLine({
@@ -158,8 +162,8 @@ local M = {}
 
 M.apply_to_config = function(c)
     c.leader = {
-        key = "s",
-        mods = "CMD",
+        key  = is_mac and "s"   or "a",
+        mods = is_mac and "CMD" or "CTRL",
         timeout_milliseconds = math.maxinteger,
     }
     c.keys = shortcuts

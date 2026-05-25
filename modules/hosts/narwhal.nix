@@ -3,7 +3,7 @@ let
   m = config.flake.modules;
 in
 {
-  configurations.nixos.narwhal.module = {
+  configurations.nixos.narwhal.module = { pkgs, ... }: {
     imports = [
       m.nixos.base
       m.nixos.ssh-server
@@ -11,10 +11,15 @@ in
       m.nixos.docker
       m.nixos.tailscale
       m.nixos.cachix-push
-      m.nixos.desktop-gnome
+      m.nixos.base-linux
       m.nixos.desktop-hyprland
       ./_hardware/x86_64-narwhal.nix
     ];
+
+    home-manager.users.eric.imports = [
+      m.homeManager.desktop-hyprland
+    ];
+
     nixpkgs.hostPlatform = "x86_64-linux";
     networking.hostName = "narwhal";
     networking.networkmanager.enable = true;
@@ -25,14 +30,16 @@ in
   
     services.xserver.videoDrivers = [ "nvidia" ];
 
-    hardware.graphics.enable = true;
+    hardware.graphics = {
+      enable = true;
+      extraPackages = [ pkgs.nvidia-vaapi-driver ];
+    };
 
     hardware.nvidia = {
       modesetting.enable = true;
-      open = false;
+      powerManagement.enable = true;
+      open = true;
       nvidiaSettings = true;
-      # package = config.boot.kernelPackages.nvidiaPackages.stable;
-
     };
 
   };
@@ -40,7 +47,7 @@ in
   configurations.homeManager."eric@narwhal" = {
     system = "x86_64-linux";
     module = {
-      imports = [ m.homeManager.base m.homeManager.desktop-gnome m.homeManager.desktop-hyprland ];
+      imports = [ m.homeManager.base m.homeManager.desktop-hyprland ];
       home.username = "eric";
       home.homeDirectory = "/home/eric";
     };

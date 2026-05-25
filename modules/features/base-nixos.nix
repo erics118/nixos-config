@@ -54,6 +54,8 @@ in
       boot.tmp.cleanOnBoot = true;
       zramSwap.enable = true;
 
+      fonts.packages = [ pkgs.nerd-fonts.hack ];
+
       environment.pathsToLink = [ "/share/zsh" ];
 
       networking = {
