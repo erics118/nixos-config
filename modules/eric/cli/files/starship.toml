@@ -7,8 +7,7 @@
 format = """
 ${custom.top}\
 $directory\
-$username\
-$hostname\
+${custom.user_host}\
 $sudo\
 $shlvl\
 $git_branch\
@@ -21,18 +20,6 @@ $direnv\
 $fill\
 \
 $time\
-$package\
-$c\
-$cmake\
-$haskell\
-$ocaml\
-$deno\
-$golang\
-$lua\
-$nodejs\
-$php\
-$python\
-$rust\
 \
 $line_break\
 $shell\
@@ -103,15 +90,11 @@ truncation_length = 5
 truncate_to_repo = false
 truncation_symbol = "…/"
 
-[hostname]
-disabled = false
-ssh_only = true
-ssh_symbol = '󰣀 '
-format = '[┤](fg:black)[$ssh_symbol$hostname]($style)[├](fg:black)'
+[custom.user_host]
+format = '[┤](fg:black)[$output]($style)[├](fg:black)'
 style = 'fg:bright-yellow'
-
-[username]
-format = '[┤](fg:black)[$user]($style)[├](fg:black)'
+when = true
+command = 'if [ -n "$SSH_CONNECTION$SSH_TTY" ]; then printf "%s@%s" "$USER" "$(hostname -s)"; else printf "%s" "$USER"; fi'
 
 [sudo]
 disabled = false
