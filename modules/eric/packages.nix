@@ -9,11 +9,17 @@
             # nix
             nixd
             nil # some things require nil for some reason
-            nixfmt
             statix
             cachix
             comma
             home-manager
+
+            # system-wide formatters
+            nixfmt
+            shfmt
+            taplo
+            typos
+            vale
 
             # apps
             _1password-cli
@@ -36,7 +42,6 @@
             # development
             hyperfine
             onefetch
-            shfmt
             python3
             httpie
             yq-go
