@@ -1,8 +1,4 @@
-{ inputs, ... }:
-let
-  overlays = import ../../overlays { inherit inputs; };
-  overlaysList = builtins.attrValues overlays;
-in
+{ inputs, config, ... }:
 {
   perSystem =
     { system, ... }:
@@ -10,9 +6,7 @@ in
       _module.args.pkgs = import inputs.nixpkgs {
         inherit system;
         config.allowUnfree = true;
-        overlays = overlaysList;
+        overlays = builtins.attrValues config.flake.overlays;
       };
     };
-
-  flake.overlays = overlays;
 }

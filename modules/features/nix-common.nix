@@ -1,5 +1,6 @@
-{ inputs, ... }:
+{ config, ... }:
 let
+  overlays = builtins.attrValues config.flake.overlays;
   shared =
     { pkgs, ... }:
     {
@@ -38,7 +39,7 @@ let
 
       nixpkgs = {
         config.allowUnfree = true;
-        overlays = builtins.attrValues (import ../../overlays { inherit inputs; });
+        inherit overlays;
       };
 
       environment.systemPackages = with pkgs; [

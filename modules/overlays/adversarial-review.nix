@@ -1,27 +1,9 @@
-{ inputs }:
-
-# each attribute is an overlay that is applied to nixpkgs
+{ inputs, ... }:
 {
-  # aliases 'pkgs.inputs.${flake}' to the flake's packages
-  # eg: pkgs.inputs.nixvim.default
-  flake-inputs = final: _: {
-    inputs = builtins.mapAttrs (
-      _: flake:
-      let
-        legacyPackages = (flake.legacyPackages or { }).${final.stdenv.hostPlatform.system} or { };
-        packages = (flake.packages or { }).${final.stdenv.hostPlatform.system} or { };
-      in
-      if legacyPackages != { } then legacyPackages else packages
-    ) inputs;
-  };
-
-  # rust toolchain overlay
-  rust = inputs.rust-overlay.overlays.default;
-
   # adversarial-review wrapper
   # the upstream script writes artifacts/logs/tracking.json next to itself,
   # so we stage symlinks in $XDG_STATE_HOME at runtime and exec from there.
-  adversarial-review =
+  flake.overlays.adversarial-review =
     final: _:
     let
       src = inputs.adversarial-review;
@@ -46,15 +28,4 @@
         '';
       };
     };
-
-  # custom wezterm fork
-  wezterm =
-    final: prev:
-    let
-      inherit (final.stdenv.hostPlatform) system;
-    in
-    {
-      wezterm = inputs.wezterm-src.packages.${system}.default;
-    };
-
 }

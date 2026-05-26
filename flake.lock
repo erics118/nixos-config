@@ -559,11 +559,11 @@
       },
       "locked": {
         "dir": "nix",
-        "lastModified": 1779757786,
-        "narHash": "sha256-e3zpC2B3rSnHopViyBPGFPHIL3e/gYC5PqWWc0Wvioo=",
+        "lastModified": 1779760569,
+        "narHash": "sha256-Y2aCczNNlj783P+QLS+I7kPpOJK2GE0NnyU/qWz3QoI=",
         "owner": "erics118",
         "repo": "wezterm",
-        "rev": "4611a05b9f8ed4d3d035bb38c9356b4e0dceca87",
+        "rev": "232439bd3cb9f34a2216bad0b87eb96c21632cca",
         "type": "github"
       },
       "original": {
