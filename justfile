@@ -60,4 +60,4 @@ gc:
 # optimize the nix store
 [group('system')]
 optimise:
-  sudo -H nix store optimise
+    sudo -H nix store optimise

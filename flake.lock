@@ -428,33 +428,12 @@
         "nix-homebrew": "nix-homebrew",
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim",
-        "rust-overlay": "rust-overlay",
         "sops-nix": "sops-nix",
         "treefmt-nix": "treefmt-nix",
         "wezterm-src": "wezterm-src"
       }
     },
     "rust-overlay": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1779160702,
-        "narHash": "sha256-frUihZLlBLdcFN95mq5QiQmxF2M16nxtmw1GH4rhZmg=",
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "rev": "8cd592658d4448c57326aaa819e1c2f91086eb40",
-        "type": "github"
-      },
-      "original": {
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "rust-overlay_2": {
       "inputs": {
         "nixpkgs": [
           "wezterm-src",
@@ -554,7 +533,7 @@
         "nixpkgs": [
           "nixpkgs"
         ],
-        "rust-overlay": "rust-overlay_2",
+        "rust-overlay": "rust-overlay",
         "zlib": "zlib"
       },
       "locked": {

@@ -28,6 +28,6 @@
         enable = true;
         powerOnBoot = true;
       };
-      services.blueman.enable = true;  # tray applet + pairing UI
+      services.blueman.enable = true; # tray applet + pairing UI
     };
 }
