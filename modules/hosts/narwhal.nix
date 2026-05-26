@@ -4,7 +4,7 @@ let
 in
 {
   configurations.nixos.narwhal.module =
-    { pkgs, ... }:
+    { ... }:
     {
       imports = [
         m.nixos.base
