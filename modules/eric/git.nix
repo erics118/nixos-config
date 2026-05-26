@@ -37,7 +37,7 @@
           user = {
             name = "erics118";
             email = "52634785+erics118@users.noreply.github.com";
-            signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO2fRl3E9j8GZxoB3JMJoho4GWM6nY90Ob+bqxASZMrM";
+            signingkey = "~/.ssh/id_ed25519_github_erics118.pub";
           };
           init.defaultBranch = "main";
           color.ui = "auto";
