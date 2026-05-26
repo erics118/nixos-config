@@ -104,7 +104,7 @@ truncate_to_repo = false
 truncation_symbol = "…/"
 
 [hostname]
-disabled = true
+disabled = false
 ssh_only = true
 ssh_symbol = '󰣀 '
 format = '[┤](fg:black)[$ssh_symbol$hostname]($style)[├](fg:black)'
