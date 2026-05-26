@@ -31,6 +31,11 @@
         ];
 
         initContent = ''
+          # disable command path hashing so nix profile switches
+          # don't leave stale /nix/store paths cached
+          unsetopt hash_cmds
+          unsetopt hash_dirs
+
           # don't highlight path separators
           ZSH_HIGHLIGHT_STYLES[path_pathseparator]="none"
           ZSH_HIGHLIGHT_STYLES[path_prefix_pathseparator]="none"

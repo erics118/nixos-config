@@ -37,7 +37,6 @@
             hyperfine
             onefetch
             shfmt
-            lua5_5 # for sketchybar
             python3
             httpie
             yq-go
@@ -46,6 +45,9 @@
             yazi
             scc
             adversarial-review
+
+            # fonts
+            nerd-fonts.hack
           ]
           ++ lib.optionals stdenv.hostPlatform.isDarwin [
 
@@ -67,6 +69,8 @@
             # fonts
             sketchybar-app-font
 
+            # development
+            lua5_5 # for sketchybar
             # apps
             espanso
           ];

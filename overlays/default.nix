@@ -54,11 +54,7 @@
       inherit (final.stdenv.hostPlatform) system;
     in
     {
-      wezterm = inputs.wezterm-src.packages.${system}.default.overrideAttrs (old: {
-        env = (old.env or { }) // {
-          CC_aarch64_apple_darwin = "${prev.stdenv.cc.cc}/bin/clang";
-        };
-      });
+      wezterm = inputs.wezterm-src.packages.${system}.default;
     };
 
 }
