@@ -1,7 +1,4 @@
-{ inputs, config, ... }:
-let
-  hmBase = config.flake.modules.homeManager.base;
-in
+{ inputs, ... }:
 {
   flake.modules.nixos.base =
     { pkgs, ... }:
@@ -23,7 +20,6 @@ in
         nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
       };
 
-      # linux-common
       time.timeZone = "America/New_York";
 
       i18n.defaultLocale = "en_US.UTF-8";
@@ -39,17 +35,7 @@ in
         LC_TIME = "en_US.UTF-8";
       };
 
-      system = {
-        stateVersion = "25.11";
-        autoUpgrade = {
-          enable = true;
-          flake = inputs.self.outPath;
-          flags = [
-            "-L" # print build logs
-          ];
-          dates = "weekly";
-        };
-      };
+      system.stateVersion = "25.11";
 
       boot.tmp.cleanOnBoot = true;
       zramSwap.enable = true;
@@ -67,7 +53,6 @@ in
 
       security.sudo.wheelNeedsPassword = false;
 
-      # users-eric
       users.users.eric = {
         isNormalUser = true;
         description = "eric";
@@ -79,13 +64,6 @@ in
         openssh.authorizedKeys.keys = [
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEZe2bb+e+CkJyE9johAfKiIcIaf20EtKPmS+bK/I+ZJ eric@eric.local"
         ];
-      };
-
-      home-manager = {
-        useUserPackages = true;
-        useGlobalPkgs = true;
-        extraSpecialArgs = { inherit inputs; };
-        users.eric.imports = [ hmBase ];
       };
 
     };

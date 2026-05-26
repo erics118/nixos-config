@@ -13,7 +13,7 @@ in
         m.nixos.docker
         m.nixos.tailscale
         m.nixos.cachix-push
-        m.nixos.base-linux
+        m.nixos.desktop-linux
         m.nixos.desktop-hyprland
         m.nixos.nvidia
         ./_hardware/x86_64-narwhal.nix
@@ -23,7 +23,6 @@ in
 
       nixpkgs.hostPlatform = "x86_64-linux";
       networking.hostName = "narwhal";
-      networking.networkmanager.enable = true;
 
       boot.loader.systemd-boot.enable = true;
       boot.loader.efi.canTouchEfiVariables = true;

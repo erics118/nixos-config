@@ -1,32 +1,16 @@
-{ inputs, config, ... }:
+{ config, ... }:
 let
   m = config.flake.modules;
 in
 {
-  configurations.darwin.orca.module =
-    { pkgs, ... }:
-    {
-      imports = [ m.darwin.base ];
-      nixpkgs.hostPlatform = "aarch64-darwin";
+  configurations.darwin.orca.module = {
+    imports = [ m.darwin.base ];
+    nixpkgs.hostPlatform = "aarch64-darwin";
 
-      networking.hostName = "orca";
+    networking.hostName = "orca";
 
-      users.users.eric = {
-        name = "eric";
-        home = "/Users/eric";
-        shell = pkgs.zsh;
-      };
-
-      home-manager = {
-        useGlobalPkgs = true;
-        useUserPackages = true;
-        extraSpecialArgs = { inherit inputs; };
-        users.eric.imports = [
-          m.homeManager.base
-          m.homeManager.darwin
-        ];
-      };
-    };
+    home-manager.users.eric.imports = [ m.homeManager.darwin ];
+  };
 
   configurations.homeManager."eric@orca" = {
     system = "aarch64-darwin";

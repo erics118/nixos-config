@@ -2,8 +2,6 @@
   flake.modules.homeManager.desktop-hyprland =
     { config, pkgs, ... }:
     {
-      home.file.".config/wezterm".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.flake/modules/eric/desktop/wezterm";
       home.file.".config/hypr".source =
         config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.flake/modules/eric/desktop/hyprland";
 

@@ -1,5 +1,5 @@
 {
-  flake.modules.nixos.base-linux =
+  flake.modules.nixos.desktop-linux =
     { pkgs, ... }:
     {
       programs.firefox.enable = true;

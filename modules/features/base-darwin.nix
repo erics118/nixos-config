@@ -1,126 +1,82 @@
 { inputs, ... }:
 {
-  flake.modules.darwin.base = {
-    imports = [
-      inputs.home-manager.darwinModules.home-manager
-      inputs.nix-homebrew.darwinModules.nix-homebrew
-    ];
+  flake.modules.darwin.base =
+    { pkgs, ... }:
+    {
+      imports = [ inputs.home-manager.darwinModules.home-manager ];
 
-    nix.settings.trusted-users = [
-      "@admin"
-      "eric"
-    ];
-
-    home-manager.backupFileExtension = "bak";
-
-    nix-homebrew = {
-      user = "eric";
-      enable = true;
-      autoMigrate = true;
-    };
-
-    system = {
-      checks.verifyNixPath = false;
-      primaryUser = "eric";
-      stateVersion = 5;
-
-      defaults = {
-        NSGlobalDomain = {
-          AppleICUForce24HourTime = true;
-          AppleInterfaceStyle = "Dark";
-          # AppleMiniaturizeOnDoubleClick = false;
-          ApplePressAndHoldEnabled = false;
-          AppleScrollerPagingBehavior = true;
-          AppleShowAllExtensions = true;
-          AppleShowScrollBars = "WhenScrolling";
-          AppleTemperatureUnit = "Celsius";
-          InitialKeyRepeat = 15;
-          KeyRepeat = 1;
-          NSAutomaticCapitalizationEnabled = false;
-          NSAutomaticDashSubstitutionEnabled = false;
-          NSAutomaticInlinePredictionEnabled = false;
-          NSAutomaticPeriodSubstitutionEnabled = false;
-          NSAutomaticQuoteSubstitutionEnabled = false;
-          NSAutomaticSpellingCorrectionEnabled = false;
-          "com.apple.keyboard.fnState" = true;
-          "com.apple.mouse.tapBehavior" = 1;
-          "com.apple.sound.beep.feedback" = 0;
-          "com.apple.sound.beep.volume" = 0.0;
-          "com.apple.trackpad.forceClick" = true;
-        };
-
-        finder = {
-          _FXShowPosixPathInTitle = true;
-          FXDefaultSearchScope = "SCcf";
-          FXEnableExtensionChangeWarning = false;
-          FXPreferredViewStyle = "clmv";
-          ShowPathbar = true;
-          ShowStatusBar = true;
-        };
-
-        trackpad = {
-          Clicking = true;
-          TrackpadThreeFingerDrag = true;
-        };
-
-        menuExtraClock = {
-          IsAnalog = false;
-          Show24Hour = true;
-          ShowDayOfWeek = true;
-          ShowSeconds = true;
-        };
-
-        WindowManager = {
-          EnableStandardClickToShowDesktop = false;
-          EnableTiledWindowMargins = false;
-          GloballyEnabled = false;
-          HideDesktop = true;
-          StandardHideDesktopIcons = false;
-          StandardHideWidgets = false;
-        };
-      };
-    };
-
-    homebrew = {
-      enable = true;
-      onActivation = {
-        autoUpdate = false;
-        cleanup = "zap"; # or "none"
-        upgrade = false;
-      };
-      global = {
-        brewfile = true;
+      users.users.eric = {
+        name = "eric";
+        home = "/Users/eric";
+        shell = pkgs.zsh;
       };
 
-      taps = [
-        "felixkratz/formulae"
-        "koekeishiya/formulae"
-        "erics118/tap"
+      nix.settings.trusted-users = [
+        "@admin"
+        "eric"
       ];
 
-      brews = [
-        {
-          name = "macos-trash";
-          link = true;
-        }
-        "felixkratz/formulae/sketchybar"
-        "felixkratz/formulae/svim"
-        "koekeishiya/formulae/skhd"
-        {
-          name = "koekeishiya/formulae/yabai";
-          args = [ "HEAD" ];
-        }
-        "erics118/tap/goku"
-      ];
+      system = {
+        checks.verifyNixPath = false;
+        primaryUser = "eric";
+        stateVersion = 5;
 
-      casks = [
-        "1password"
-        "font-sf-pro"
-      ];
+        defaults = {
+          NSGlobalDomain = {
+            AppleICUForce24HourTime = true;
+            AppleInterfaceStyle = "Dark";
+            ApplePressAndHoldEnabled = false;
+            AppleScrollerPagingBehavior = true;
+            AppleShowAllExtensions = true;
+            AppleShowScrollBars = "WhenScrolling";
+            AppleTemperatureUnit = "Celsius";
+            InitialKeyRepeat = 15;
+            KeyRepeat = 1;
+            NSAutomaticCapitalizationEnabled = false;
+            NSAutomaticDashSubstitutionEnabled = false;
+            NSAutomaticInlinePredictionEnabled = false;
+            NSAutomaticPeriodSubstitutionEnabled = false;
+            NSAutomaticQuoteSubstitutionEnabled = false;
+            NSAutomaticSpellingCorrectionEnabled = false;
+            "com.apple.keyboard.fnState" = true;
+            "com.apple.mouse.tapBehavior" = 1;
+            "com.apple.sound.beep.feedback" = 0;
+            "com.apple.sound.beep.volume" = 0.0;
+            "com.apple.trackpad.forceClick" = true;
+          };
 
-      masApps = { };
+          finder = {
+            _FXShowPosixPathInTitle = true;
+            FXDefaultSearchScope = "SCcf";
+            FXEnableExtensionChangeWarning = false;
+            FXPreferredViewStyle = "clmv";
+            ShowPathbar = true;
+            ShowStatusBar = true;
+          };
+
+          trackpad = {
+            Clicking = true;
+            TrackpadThreeFingerDrag = true;
+          };
+
+          menuExtraClock = {
+            IsAnalog = false;
+            Show24Hour = true;
+            ShowDayOfWeek = true;
+            ShowSeconds = true;
+          };
+
+          WindowManager = {
+            EnableStandardClickToShowDesktop = false;
+            EnableTiledWindowMargins = false;
+            GloballyEnabled = false;
+            HideDesktop = true;
+            StandardHideDesktopIcons = false;
+            StandardHideWidgets = false;
+          };
+        };
+      };
+
+      security.pam.services.sudo_local.touchIdAuth = true;
     };
-
-    security.pam.services.sudo_local.touchIdAuth = true;
-  };
 }

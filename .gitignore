@@ -7,3 +7,6 @@ result
 # swap files
 *.swp
 *~
+
+# direnv
+.direnv/

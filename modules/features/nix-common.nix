@@ -55,7 +55,16 @@ in
 {
   flake.modules.nixos.base = {
     imports = [ shared ];
-    nix.gc.dates = "weekly";
+    # systemd OnCalendar, sunday 04:00
+    nix.gc.dates = "Sun 04:00";
   };
-  flake.modules.darwin.base = shared;
+  flake.modules.darwin.base = {
+    imports = [ shared ];
+    # launchd StartCalendarInterval, sunday 04:00
+    nix.gc.interval = {
+      Weekday = 0;
+      Hour = 4;
+      Minute = 0;
+    };
+  };
 }
