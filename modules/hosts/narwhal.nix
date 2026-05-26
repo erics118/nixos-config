@@ -15,6 +15,7 @@ in
         m.nixos.cachix-push
         m.nixos.base-linux
         m.nixos.desktop-hyprland
+        m.nixos.nvidia
         ./_hardware/x86_64-narwhal.nix
       ];
 
@@ -27,21 +28,6 @@ in
       boot.loader.systemd-boot.enable = true;
       boot.loader.efi.canTouchEfiVariables = true;
       boot.loader.systemd-boot.configurationLimit = 5;
-
-      services.xserver.videoDrivers = [ "nvidia" ];
-
-      hardware.graphics = {
-        enable = true;
-        extraPackages = [ pkgs.nvidia-vaapi-driver ];
-      };
-
-      hardware.nvidia = {
-        modesetting.enable = true;
-        powerManagement.enable = true;
-        open = true;
-        nvidiaSettings = true;
-      };
-
     };
 
   configurations.homeManager."eric@narwhal" = {
