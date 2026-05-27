@@ -1,15 +1,13 @@
 '$schema' = 'https://starship.rs/config-schema.json'
 
 ### MAIN SHELL
-# directory | username | hostname | cmd duration | sudo | shlvl | VCS | language versions | docker
-# os > input after line break
+# directory | username@hostname | git | cmd duration | direnv ---- time
+# os ▶
 
 format = """
 ${custom.top}\
 $directory\
 ${custom.user_host}\
-$sudo\
-$shlvl\
 $git_branch\
 $git_commit\
 $git_state\
@@ -68,7 +66,7 @@ vimcmd_symbol = '[▷](bold cyan)'
 
 [os]
 disabled = false
-format = '[$symbol]($style)'
+format = '[┤](fg:black)[$symbol]($style)'
 style = 'fg:green'
 
 [os.symbols]
@@ -97,7 +95,7 @@ when = true
 command = 'if [ -n "$SSH_CONNECTION$SSH_TTY" ]; then printf "%s@%s" "$USER" "$(hostname -s)"; else printf "%s" "$USER"; fi'
 
 [sudo]
-disabled = false
+disabled = true
 format = '[┤](fg:black)[$symbol]($style)[├](fg:black)'
 style = 'fg:red'
 symbol = ' '
@@ -142,9 +140,6 @@ renamed = "»"
 untracked = "+"
 style = 'fg:bright-purple'
 
-[hg_branch]
-format = '[┤](fg:black)[$symbol$branch]($style)[├](fg:black)'
-
 [cmd_duration]
 format = '[┤](fg:black)[󰚭 $duration]($style)[├](fg:black)'
 min_time = 0
@@ -156,7 +151,6 @@ style = 'fg:black'
 
 [time]
 disabled = false
-# todo: get clock icon
 format = '[┤](fg:black)[ $time]($style)[├](fg:black)'
 
 ### LANGUAGE VERSION INDICATORS
