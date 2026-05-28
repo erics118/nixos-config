@@ -10,6 +10,9 @@ local weather = sbar.add_item("weather", {
     update_freq = 600,
 })
 
+local curl_bin = "/run/current-system/sw/bin/curl"
+local weather_key_path = os.getenv("HOME") .. "/.config/sops-nix/secrets/api/weather"
+
 local function add_weather_item(name, icon)
     return sbar.add_item("weather_" .. name, {
         position = "popup.weather",
@@ -258,35 +261,89 @@ local function set_air_quality_color(air_quality_index)
     end
 end
 
-local key_file = io.open(os.getenv("HOME") .. "/.config/sops-nix/secrets/api/weather", "r")
-local api_key = key_file:read("*l")
-key_file:close()
+local function set_weather_unavailable(message)
+    weather:set({
+        icon = { string = "􀇔" },
+        label = { string = message or "N/A" },
+    })
+    weather_condition:set({ icon = { string = "􀇔" }, label = { string = message or "Unavailable" } })
+    weather_feels_like:set({ label = { string = "Feels Like: --" } })
+    weather_low:set({ label = { string = "Low: --" } })
+    weather_high:set({ label = { string = "High: --" } })
+    weather_humidity:set({ label = { string = "Humidity: --" } })
+    weather_precipitation:set({ label = { string = "--" } })
+    weather_wind:set({ label = { string = "Wind: --" } })
+    weather_aqi:set({ label = { string = "AQI: --" }, icon = { color = colors.grey } })
+    weather_sunrise:set({ label = { string = "Sunrise: --" } })
+    weather_sunset:set({ label = { string = "Sunset: --" } })
+end
+
+local function read_weather_api_key()
+    local key_file = io.open(weather_key_path, "r")
+    if not key_file then
+        return nil
+    end
+
+    local api_key = key_file:read("*l")
+    key_file:close()
+
+    if api_key == nil or api_key == "" then
+        return nil
+    end
+
+    return api_key
+end
+
+local function format_number(value, suffix)
+    if value == nil then
+        return "--"
+    end
+
+    return tostring(value) .. (suffix or "")
+end
 
 weather:subscribe({ "forced", "routine" }, function()
+    local api_key = read_weather_api_key()
+    if not api_key then
+        set_weather_unavailable("No API Key")
+        return
+    end
+
     sbar.exec(
-        'curl -fsSL "https://api.weatherapi.com/v1/forecast.json?key=' ..
+        curl_bin .. ' -fsSL "https://api.weatherapi.com/v1/forecast.json?key=' ..
         api_key .. '&q=auto:ip&days=1&aqi=yes&alerts=no"',
         function(data)
+            if type(data) ~= "table" or type(data.current) ~= "table" or
+                type(data.forecast) ~= "table" or
+                type(data.forecast.forecastday) ~= "table" or
+                type(data.forecast.forecastday[1]) ~= "table" then
+                set_weather_unavailable("Unavailable")
+                return
+            end
+
+            local day = data.forecast.forecastday[1].day or {}
+            local astro = data.forecast.forecastday[1].astro or {}
+            local current = data.current
+            local condition_data = current.condition or {}
             local temp = round_temperature(data.current["temp_" .. temperature_unit])
-            local feels_like = round_temperature(data.current["feelslike_" .. temperature_unit])
-            local low = round_temperature(data.forecast.forecastday[1].day["mintemp_" .. temperature_unit])
-            local high = round_temperature(data.forecast.forecastday[1].day["maxtemp_" .. temperature_unit])
-            local condition = data.current.condition.text:lower()
-            local is_day = data.current.is_day == 1
-            local icon = get_condition_icon(condition, is_day)
-            local precipitation_amount = data.current["precip_" .. precipitation_amount_unit] .. " in"
-            local wind_direction = degrees_to_direction(data.current.wind_degree)
-            local wind_speed = data.current["wind_" .. wind_speed_unit] .. " " .. wind_speed_unit
-            local pressure = data.current["pressure_" .. pressure_unit] .. " " .. pressure_unit
-            local uv_index = math.floor(data.current.uv)
+            local feels_like = round_temperature(current["feelslike_" .. temperature_unit])
+            local low = round_temperature(day["mintemp_" .. temperature_unit])
+            local high = round_temperature(day["maxtemp_" .. temperature_unit])
+            local condition = (condition_data.text or "Unavailable"):lower()
+            local is_day = current.is_day == 1
+            local icon = get_condition_icon(condition, is_day) or "􀇔"
+            local precipitation_amount = format_number(current["precip_" .. precipitation_amount_unit], " " .. precipitation_amount_unit)
+            local wind_direction = current.wind_degree and degrees_to_direction(current.wind_degree) or "?"
+            local wind_speed = format_number(current["wind_" .. wind_speed_unit], " " .. wind_speed_unit)
+            local uv_index = math.floor(current.uv or 0)
             local uv_index_color, uv_index_category = set_uv_index_color(uv_index)
-            local humidity = data.current.humidity
-            local humidity_percentage = string.format("%.f%%", humidity)
-            local sunrise = data.forecast.forecastday[1].astro.sunrise
-            local sunset = data.forecast.forecastday[1].astro.sunset
-            local air_quality_index = data.current.air_quality["us-epa-index"]
+            local humidity = current.humidity
+            local humidity_percentage = humidity and string.format("%.f%%", humidity) or "--"
+            local sunrise = astro.sunrise or "--"
+            local sunset = astro.sunset or "--"
+            local air_quality = current.air_quality or {}
+            local air_quality_index = air_quality["us-epa-index"] or 0
             local air_quality_color, air_quality_category = set_air_quality_color(air_quality_index)
-            local visibility = data.current["vis_" .. visibility_unit] .. " " .. visibility_unit
 
             weather:set({
                 icon = {

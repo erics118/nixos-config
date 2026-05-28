@@ -39,6 +39,7 @@
           args = [ "HEAD" ];
         }
         "erics118/tap/goku"
+        "llvm"
       ];
 
       casks = [

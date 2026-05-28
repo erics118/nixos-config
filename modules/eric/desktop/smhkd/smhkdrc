@@ -1,178 +1,178 @@
-# ctrl + 1 ; t :
-#     echo aaaaaaaaaaa
-
-# ctrl + 2 ; t:
-#     echo bbbbbbbbbbb
-
-# alt + {q,w}: echo {q,w}
-
-# cmd a : echo aaaaaaaaaaa
-
-# [a, b] : echo ab
-
-# ctrl + a ; alt + {1,2,3} :
-#     echo {1,2,3}
-
-# (t) + r :
-#     echo TTTTTRRRRRRRR
-
-cmd + alt + z & : cliclick c:.
-
-# max_chord_interval = 5000
-
-# main stuff
 blacklist = [
     "Parallels Desktop"
 ]
 
+define_modifier mod = alt
+define_modifier hyper = cmd + alt + ctrl + shift
 define_modifier hammer = cmd + alt + shift
-define_modifier rhyper = rcmd + ralt + rshift + rctrl
-define_modifier rhyperc = rhyper + lcmd
-define_modifier rhypera = rhyper + lalt
-define_modifier rhypers = rhyper + lshift
-define_modifier rhypert = rhyper + lctrl
 
-# fn + shift + a :
-#     sudo frida -q -l ~/Documents/OverNotch.js -e "toggleFullScreen()" $(osascript -e 'tell application "System Events" to get unix id of first application process whose frontmost is true')
+# modifier conventions:
+# mod         -> core wm actions
+# mod + shift -> wm move/send/state changes
+# hyper       -> launcher, layout, and namespaces
 
 hammer + b :
-    /opt/homebrew/bin/sketchybar --bar hidden=toggle
+    sketchybar --bar hidden=toggle
 
-# use caps lock for escape
+mod + l |
+    cmd + ctrl + q
 
-# hammer + m :∞
-#    /opt/homebrew/bin/sketchybar --trigger swap_menus_and_spaces
+# apps
+mod + return :
+    front -p "/Applications/Nix Apps/WezTerm.app"
 
-hammer + z :
-    /opt/homebrew/bin/cliclick c:.
+mod + shift + return :
+    front -n "Visual Studio Code"
 
-# alt + z :
-    # skhd -k "ctl + alt - 0x2F"
+# mod + d :
+#     open -b com.raycast-x.macos
 
-# ralt + l :
-#     skhd -k "cmd + ctl - q"
+mod + e :
+    front -p "/System/Library/CoreServices/Finder.app"
 
-# activate
+mod + b :
+    front -n "Orion RC"
 
-# rhyper + a ; e :
-#     open 'raycast://extensions/mooxl/deepcast/englishUS?arguments=%7B%22text%22%3A%22%22%7D'
+mod + shift + b :
+    front -n "Google Chrome"
 
-# rhyper + a ; s :
-#     open 'raycast://extensions/mooxl/deepcast/spanish?arguments=%7B%22text%22%3A%22%22%7D'
+mod + 1 :
+    front -n "1Password"
 
-rhyper + a ; c :
-    open 'raycast://extensions/thomas/color-picker/pick-color'
+mod + c :
+    front -n "Fantastical"
 
-rhyper + a ; 1 :
-    open 'raycast://extensions/abielzulio/chatgpt/ask'
+mod + f :
+    front -p "/System/Library/CoreServices/Finder.app"
 
-rhyper + a ; h :
-    open 'raycast://extensions/abielzulio/chatgpt/conversation'
+mod + g :
+    front -n "Goodnotes"
 
-rhyper + a ; v :
+mod + q :
+    front -n "Todoist"
+
+mod + s :
+    front -n "Slack"
+
+mod + shift + s :
+    front -n "Messages"
+
+mod + w :
+    front -n "Preview"
+
+mod + z :
+    front -n "zoom.us"
+
+# window state
+mod + q :
+    yabai -m window --close
+
+mod + f :
+    yabai -m window --toggle zoom-fullscreen && sketchybar --trigger yabai
+
+mod + shift + f :
+    yabai -m window --toggle native-fullscreen && sketchybar --trigger yabai
+
+mod + shift + space :
+    yabai -m window --toggle float && sketchybar --trigger yabai
+
+# mod + m :
+#     yabai -m window --minimize
+
+# focus
+# mod + {left,down,up,right} :
+#     yabai -m window --focus {west,south,north,east}
+
+mod + {h,j,k,l} :
+    yabai -m window --focus {west,south,north,east}
+
+# ctrl + up :
+#     yabai -m window --focus stack.prev
+
+# ctrl + down :
+#     yabai -m window --focus stack.next
+
+# move / swap
+# mod + shift + {left,down,up,right} :
+#     yabai -m window --swap {west,south,north,east}
+
+mod + shift + {h,j,k,l} :
+    yabai -m window --swap {west,south,north,east}
+
+# spaces
+mod + {1,2,3,4,5,6,7,8,9} :
+    yabai -m space --focus {1,2,3,4,5,6,7,8,9}
+
+mod + shift + {1,2,3,4,5,6,7,8,9} :
+    yabai -m window --space {1,2,3,4,5,6,7,8,9}
+
+mod + ctrl + {1,2,3,4,5,6,7,8,9} :
+    yabai -m window --space {1,2,3,4,5,6,7,8,9} --focus
+
+# mod + ctrl + left :
+#     yabai -m space --focus prev
+
+# mod + ctrl + right :
+#     yabai -m space --focus next
+
+# launcher namespace
+hyper + a ; 1 :
+    open 'raycast-x://extensions/abielzulio/chatgpt/ask'
+
+hyper + a ; c :
+    open 'raycast-x://extensions/thomas/color-picker/pick-color'
+
+hyper + a ; f :
+    open 'raycast-x://extensions/raycast/file-search/search-files'
+
+hyper + a ; h :
+    open 'raycast-x://extensions/abielzulio/chatgpt/conversation'
+
+hyper + a ; k :
+    open 'raycast-x://extensions/rolandleth/kill-process/index'
+
+hyper + a ; p :
+    open 'raycast-x://script-commands/generate-password'
+
+hyper + a ; t :
+    open 'raycast-x://extensions/doist/todoist/home'
+
+hyper + a ; v :
     open 'cleanshot://scrolling-capture'
 
-rhyper + a ; k :
-    open 'raycast://extensions/rolandleth/kill-process/index'
+# wm namespace
+hyper + y ; e :
+    yabai -m space --balance
 
-rhyper + a ; f :
-    open 'raycast://extensions/raycast/file-search/search-files'
+hyper + y ; f :
+    yabai -m window --toggle zoom-fullscreen && sketchybar --trigger yabai
 
-rhyper + a ; t :
-    open 'raycast://extensions/doist/todoist/home'
+hyper + y ; m :
+    yabai -m window --minimize
 
-rhyper + a ; p :
-    open 'raycast://script-commands/generate-password'
+hyper + y ; r :
+    yabai -m space --rotate 90
 
-# rhyper + a @ :
-#     /opt/homebrew/bin/sketchybar --trigger skhd_mode_changed INFO=activate
+hyper + y ; s :
+    yabai -m window --toggle sticky && sketchybar --trigger yabai
 
-# rhyper + a ; escape :
-#     /opt/homebrew/bin/sketchybar --trigger skhd_mode_changed INFO=default
+hyper + y ; t :
+    yabai -m window --toggle float && sketchybar --trigger yabai
 
-# alt + space : front -n "Todoist"
-# open apps
+hyper + y ; w :
+    yabai -m window --close
 
-rhyper + 1 : front -n "1Password"
+hyper + y ; x :
+    yabai -m space --mirror x-axis
 
-rhyper + q : front -n "Todoist"
-rhyperc + q : front -n "Notion"
+hyper + y ; y :
+    yabai -m space --mirror y-axis
 
-rhyper + w : front -n "Preview"
+hyper + y ; z :
+    yabai -m window --toggle zoom-parent && sketchybar --trigger yabai
 
-rhyper + e : front -n "CotEditor"
+hyper + y ; {j,k,l} :
+    yabai -m config --space mouse layout {bsp,stack,float} && sketchybar --trigger yabai
 
-rhyper + r : front -n "Orion RC"
-# rhyper + r : exec arch -arm64 "/Applications/Orion RC.app/Contents/MacOS/Orion RC" -P Defaults
-# rhyperc + r : exec arch -arm64 "/Applications/Orion RC.app/Contents/MacOS/Orion RC" -P 8901693C-413B-4408-9E26-182564E527EB
-
-rhyper + t : front -p "/Applications/Nix Apps/WezTerm.app"
-rhyperc + t : front -n "Photos"
-rhypera + t : front -n "Notes"
-
-rhyper + s : front -n "System Settings"
-rhyperc + s : front -n "Spotify"
-rhypera + s : front -n "Slack"
-
-rhyper + d : front -n "Discord"
-
-rhyper + f : front -p "/System/Library/CoreServices/Finder.app"
-rhyperc + f : front -n "Messages"
-
-rhyper + g : front -n "Goodnotes"
-
-rhyper + z : front -n "zoom.us"
-
-rhyper + c : front -n "Fantastical"
-rhyperc + c : front -n "Google Chrome"
-rhypera + c : front -n "ChatGPT"
-rhypert + c : front -n "Claude"
-
-
-rhyper + v : front -n "Visual Studio Code"
-rhyperc + v : front -n "Zed"
-rhypera + v : front -n "Cursor"
-
-alt + {1,2,3,4,5,6,7,8,9} : /opt/homebrew/bin/yabai -m space --focus {1,2,3,4,5,6,7,8,9}
-# alt + {1,2,3,4,5,6,7,8,9} : /opt/homebrew/bin/yabai -m query --spaces --display last | jq --argjson {1,2,3,4,5,6,7,8,9} 'sort_by(.index)[$i].index'
-alt + shift + {1,2,3,4,5,6,7,8,9} : /opt/homebrew/bin/yabai -m window --space {1,2,3,4,5,6,7,8,9}
-ctrl + shift + alt + {1,2,3,4,5,6,7,8,9} : /opt/homebrew/bin/yabai -m window --space {1,2,3,4,5,6,7,8,9} --focus
-
-ctrl + up : /opt/homebrew/bin/yabai -m window --focus stack.prev
-ctrl + down : /opt/homebrew/bin/yabai -m window --focus stack.next
-
-rhyper + y ;       f: /opt/homebrew/bin/yabai -m window --toggle zoom-fullscreen && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-rhyper + y ; shift + f  : /opt/homebrew/bin/yabai -m window --toggle native-fullscreen && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-rhyper + y ; alt + f  : /opt/homebrew/bin/yabai -m window --toggle zoom-parent && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-
-rhyper + y ;       w : /opt/homebrew/bin/yabai -m window --close && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-rhyper + y ;       m : /opt/homebrew/bin/yabai -m window --minimize && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-rhyper + y ;       s : /opt/homebrew/bin/yabai -m window --toggle sticky && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-# rhyper + y ;       o : /opt/homebrew/bin/yabai -m window --toggle topmost && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-# rhyper + y ;       p : /opt/homebrew/bin/yabai -m window --toggle pip; [ "$(/opt/homebrew/bin/yabai -m query --windows --window | jq '.topmost')" = "1" ] && /opt/homebrew/bin/yabai -m window --toggle topmost
-rhyper + y ;       t : /opt/homebrew/bin/yabai -m window --toggle float && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-# rhyper + y ; shift - t : /opt/homebrew/bin/yabai -m window --toggle float; /opt/homebrew/bin/yabai -m window --grid 16:16:1:1:14:14
-
-rhyper + y ; e : /opt/homebrew/bin/yabai -m space --balance
-
-rhyper + y ;       r : /opt/homebrew/bin/yabai -m space --rotate 90 && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-rhyper + y ; shift + r : /opt/homebrew/bin/yabai -m space --rotate 270 && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-rhyper + y ;       y : /opt/homebrew/bin/yabai -m space --mirror y-axis && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-rhyper + y ;       x : /opt/homebrew/bin/yabai -m space --mirror x-axis && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-
-# rhyper + y ; {a,b} : /opt/homebrew/bin/yabai -m window --opacity {0.3,1.0}
-rhyper + y ; {1,2,3,4,5,6,7,8,9,0} : /opt/homebrew/bin/yabai -m window --opacity {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0}
-
-rhyper + y ; left  : /opt/homebrew/bin/yabai -m window --focus west /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-rhyper + y ; down  : /opt/homebrew/bin/yabai -m window --focus south && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-rhyper + y ; up    : /opt/homebrew/bin/yabai -m window --focus north && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-rhyper + y ; right : /opt/homebrew/bin/yabai -m window --focus east && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-
-rhyper + y ; j : /opt/homebrew/bin/yabai -m config --space mouse layout bsp && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-rhyper + y ; k : /opt/homebrew/bin/yabai -m config --space mouse layout stack && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-rhyper + y ; l : /opt/homebrew/bin/yabai -m config --space mouse layout float && /opt/homebrew/bin/sketchybar --trigger yabai_window_state
-
-ctrl + 1 ; ctrl + 2 ; ctrl + 3 ; ctrl + 4 ; ctrl + 5 : env
-
-# (0x2A) + {1,2,3,4,5,6,7,8,9,0} : /opt/homebrew/bin/yabai -m space --focus {1,2,3,4,5,6,7,8,9,0}
-
+hyper + y ; {1,2,3,4,5,6,7,8,9,0} :
+    yabai -m window --opacity {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0}

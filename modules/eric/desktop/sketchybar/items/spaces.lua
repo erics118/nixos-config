@@ -1,4 +1,6 @@
 local app_icons = require("helpers.app_icons")
+local yabai_bin = "/opt/homebrew/bin/yabai"
+local jq_bin = "/etc/profiles/per-user/eric/bin/jq"
 
 sbar.add_event("yabai_window_focused")
 sbar.add_event("yabai_space_changed")
@@ -62,7 +64,7 @@ for i = 1, 10, 1 do
 
     space:subscribe("mouse.clicked", function(env)
         if env.BUTTON == "left" then
-            sbar.exec("yabai -m space --focus " .. env.SID)
+            sbar.exec(yabai_bin .. " -m space --focus " .. env.SID .. " 2>/dev/null")
         else
             space_popup:set({ background = { image = "space." .. env.SID } })
             space:set({ popup = { drawing = "toggle" } })
@@ -110,11 +112,8 @@ local function has_value(tab, val)
     return false
 end
 
-local window_query =
-"yabai -m query --windows space,app,is-sticky,title,stack-index 2>/dev/null || echo err"
-
 local window_query2 = [[
-yabai -m query --windows space,title,app,is-sticky,stack-index,is-hidden | jq '
+]] .. yabai_bin .. [[ -m query --windows space,title,app,is-sticky,stack-index,is-hidden 2>/dev/null | ]] .. jq_bin .. [[ '
   map(select( (."is-sticky" or ."is-hidden" or (.title == "")) | not ))
   | sort_by(.space, ."stack-index")
   | group_by(.space)
@@ -124,7 +123,7 @@ yabai -m query --windows space,title,app,is-sticky,stack-index,is-hidden | jq '
     })
   | add
 '
-]]
+]] .. [[ || echo '{}']]
 
 function printTable(t, indent)
     indent = indent or 0
@@ -140,8 +139,12 @@ function printTable(t, indent)
     end
 end
 
-space_window_observer:subscribe({ "yabai_window_state", "space_windows_change" }, function(env)
+space_window_observer:subscribe({ "space_windows_change" }, function(env)
     sbar.exec(window_query2, function(window_data)
+        if type(window_data) ~= "table" then
+            window_data = {}
+        end
+
         for i = 1, 10, 1 do
             local apps = window_data[tostring(i)] or {}
             -- printTable(apps)

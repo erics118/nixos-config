@@ -32,6 +32,7 @@
             rsync
             wget
             killall
+            ccache
 
             # converting
             imagemagick

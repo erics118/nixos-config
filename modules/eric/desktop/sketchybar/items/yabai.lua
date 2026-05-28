@@ -3,9 +3,10 @@ local yabai = sbar.add_icon_item("yabai", {
     background = { drawing = false, },
 })
 
+local yabai_bin = "/opt/homebrew/bin/yabai"
 local window_query =
-"yabai -m query --windows is-sticky,is-floating,sub-layer,has-fullscreen-zoom,stack-index --window 2>/dev/null || echo err"
-local space_query = "yabai -m query --spaces type --space"
+    yabai_bin .. " -m query --windows is-sticky,is-floating,sub-layer,has-fullscreen-zoom,stack-index --window 2>/dev/null || echo err"
+local space_query = yabai_bin .. " -m query --spaces type --space 2>/dev/null || echo err"
 
 yabai:subscribe({ "front_app_switched", "yabai_window_state", "window_focused", "forced" }, function(env)
     sbar.exec(window_query, function(window_data)
@@ -13,14 +14,14 @@ yabai:subscribe({ "front_app_switched", "yabai_window_state", "window_focused", 
             local c = colors.text
             -- local label = nil
 
-            local space_type = space_data.type
+            local space_type = type(space_data) == "table" and space_data.type or nil
 
-            if window_data ~= "err\n" then
+            if type(window_data) == "table" then
                 -- color represents window state
                 if window_data["is-sticky"] then
                     -- sticky also means it acts like floating
                     c = colors.green
-                elseif window_data["is-floating"] or (space_type == "floating") then
+                elseif window_data["is-floating"] or (space_type == "float") then
                     -- either is a floating window or the entire space is floating
                     c = colors.purple
                 -- elseif window_data["sub-layer"] ~= "below" then
@@ -60,6 +61,7 @@ yabai:subscribe({ "front_app_switched", "yabai_window_state", "window_focused", 
             -- sbar.animate("sin", 10, function()
             -- print(label, icon, c)
             yabai:set({
+                drawing = icon ~= nil,
                 icon = { color = c, string = icon, width = icon and 25 or 0 },
                 -- label = { string = label, width = label and "dynamic" or 0 },
             })
