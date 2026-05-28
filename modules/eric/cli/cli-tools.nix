@@ -5,6 +5,11 @@
       enableZshIntegration = false; # pre-computed in shell.nix
     };
 
+    programs.nix-your-shell = {
+      enable = true;
+      enableZshIntegration = false; # pre-computed in shell.nix
+    };
+
     programs.fzf = {
       enable = true;
       defaultOptions = [

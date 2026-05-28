@@ -17,8 +17,10 @@
       starshipInit = mkInit "starship" "${pkgs.starship}/bin/starship init zsh --print-full-init";
       zoxideInit = mkInit "zoxide" "${pkgs.zoxide}/bin/zoxide init zsh";
       direnvInit = mkInit "direnv" "${pkgs.direnv}/bin/direnv hook zsh";
+      nixYourShellInit = mkInit "nix-your-shell" "${pkgs.nix-your-shell}/bin/nix-your-shell zsh";
     in
     {
+
       programs.zsh = {
         enable = true;
         enableCompletion = true;
@@ -56,16 +58,11 @@
         history.path = "$HOME/.cache/zsh/history";
 
         plugins = [
-          # allows using nix-shell with zsh
+          # completions for nix, nix-env, nix-shell, nixos-rebuild, etc.
           {
-            name = "zsh-nix-shell";
-            file = "nix-shell.plugin.zsh";
-            src = pkgs.fetchFromGitHub {
-              owner = "chisui";
-              repo = "zsh-nix-shell";
-              rev = "v0.8.0";
-              sha256 = "1lzrn0n4fxfcgg65v0qhnj7wnybybqzs4adz7xsrkgmcsr0ii8b7";
-            };
+            name = "nix-zsh-completions";
+            file = "share/zsh/plugins/nix/nix-zsh-completions.plugin.zsh";
+            src = pkgs.nix-zsh-completions;
           }
         ];
 
@@ -76,6 +73,7 @@
           source ${zoxideInit}
           source ${direnvInit}
           source ${starshipInit}
+          source ${nixYourShellInit}
         '';
 
         localVariables = {
@@ -90,6 +88,10 @@
           rm = "rm -i";
 
           sshn = "ssh -F /dev/null -o PubkeyAuthentication=no";
+
+          # # is an extended-glob operator in zsh; disable globbing so flake
+          # refs like nixpkgs#foo work without quoting
+          nix = "noglob nix";
 
         };
       };

@@ -9,29 +9,33 @@
       programs.git = {
         enable = true;
         ignores = [
+          # general
           "*~"
-          "*.swp"
+          "*.sw?"
+          # macos
           ".DS_Store"
+          ".localized"
+          "__MACOSX/"
           ".AppleDouble"
+          "._*"
           ".LSOverride"
-          ".DocumentRevisions-V100"
-          ".fseventsd"
-          ".Spotlight-V100"
-          ".TemporaryItems"
-          ".Trashes"
-          ".VolumeIcon.icns"
+          "Icon\r"
           "*.icloud"
-          ".AppleDB"
-          ".AppleDesktop"
-          "Network Trash Folder"
-          "Temporary Items"
-          ".apdisk"
-          "*.dSYM"
-          "**/.cache/**"
-          "**/cache/**"
+          # windows
+          "Thumbs.db"
+          "ehthumbs.db"
+          "Desktop.ini"
+          # claude
           "**/.claude/*.local.*"
-          "**/.direnv/"
-          "**/.devenv/"
+          # nix
+          ".direnv/"
+          ".devenv/"
+          # misc
+          ".cache/"
+          # env
+          ".env"
+          ".env.*"
+          "!.env.example"
         ];
         settings = {
           user = {
