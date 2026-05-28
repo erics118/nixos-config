@@ -25,8 +25,8 @@ ${custom.bottom}\
 $os\
 $character"""
 
-scan_timeout = 50
-command_timeout = 500
+scan_timeout = 30
+command_timeout = 200
 add_newline = true
 
 follow_symlinks = false
