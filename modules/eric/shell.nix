@@ -1,6 +1,6 @@
 {
   flake.modules.homeManager.base =
-    { config, pkgs, ... }:
+    { config, pkgs, repoFile, ... }:
     {
       programs.zsh = {
         enable = true;
@@ -31,40 +31,7 @@
         ];
 
         initContent = ''
-          # disable command path hashing so nix profile switches
-          # don't leave stale /nix/store paths cached
-          unsetopt hash_cmds
-          unsetopt hash_dirs
-
-          # don't highlight path separators
-          ZSH_HIGHLIGHT_STYLES[path_pathseparator]="none"
-          ZSH_HIGHLIGHT_STYLES[path_prefix_pathseparator]="none"
-
-          # opt-left
-          bindkey "^[[1;3D" backward-word
-          # opt-right
-          bindkey "^[[1;3C" forward-word
-          # ctrl-left
-          bindkey "^[[1;5D" beginning-of-line
-          # ctrl-right
-          bindkey "^[[1;5C" end-of-line
-
-          # shell title hooks
-          preexec_title() {
-            print -Pn "\e]0;%n@%m: %~ - $1\a"
-          }
-
-          precmd_title() {
-            print -Pn "\e]0;%n@%m: %~\a"
-          }
-
-          add-zsh-hook preexec preexec_title
-          add-zsh-hook precmd precmd_title
-
-          # api keys from sops-nix decrypted secrets
-          # _nia_key_file="$HOME/.config/sops-nix/secrets/api/nia"
-          # [[ -r "$_nia_key_file" ]] && export NIA_API_KEY="$(<"$_nia_key_file")"
-          # unset _nia_key_file
+          source "${config.xdg.configHome}/zsh/init.zsh"
         '';
 
         localVariables = {
@@ -84,9 +51,6 @@
         shellAliases = {
           ls = "eza";
 
-          n = "nvim";
-          c = "bat";
-
           mv = "mv -i";
           cp = "cp -i";
           rm = "rm -i";
@@ -99,6 +63,8 @@
         zsh-abbr = {
           enable = true;
           abbreviations = {
+            # editors
+            n = "nvim";
             # git
             g = "git";
             ga = "git add";
@@ -177,9 +143,18 @@
           globalAbbreviations = {
             "..." = "../..";
             "...." = "../../..";
+            "....." = "../../../..";
+            "......" = "../../../../..";
+            DO = "1>/dev/null";
+            DE = "2>/dev/null";
+            DA = ">/dev/null 2>&1";
+            JQ = "| jq";
+            C = "| pbcopy";
           };
         };
       };
+
+      xdg.configFile."zsh/init.zsh".source = repoFile "modules/eric/files/zsh/init.zsh";
 
       # Force overwrite zsh-abbr user-abbreviations file
       xdg.configFile."zsh-abbr/user-abbreviations".force = true;
