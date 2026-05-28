@@ -2,6 +2,7 @@
   flake.modules.homeManager.base = {
     programs.direnv = {
       enable = true;
+      enableZshIntegration = false; # pre-computed in shell.nix
       nix-direnv.enable = true;
       config = {
         global = {

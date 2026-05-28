@@ -13,15 +13,6 @@
         enable = true;
 
         # settings is unset so we can use a symlink
-
-        # mcpServers.nia = {
-        #   type = "http";
-        #   url = "https://apigcp.trynia.ai/mcp";
-        #   headers.Authorization = "Bearer \${NIA_API_KEY}";
-        # };
-
-        # agents.nia = builtins.readFile (inputs.nia-rules + "/.claude/agents/nia.md");
-        # skills.nia = "${inputs.nia-rules}/.claude/skills/nia";
       };
     };
 }

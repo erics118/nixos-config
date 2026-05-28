@@ -1,8 +1,3 @@
-# disable command path hashing so nix profile switches
-# don't leave stale /nix/store paths cached
-unsetopt hash_cmds
-unsetopt hash_dirs
-typeset -U path PATH
 setopt auto_menu
 setopt complete_in_word
 setopt always_to_end
@@ -16,6 +11,14 @@ setopt no_beep
 
 autoload -Uz edit-command-line
 autoload -Uz zmv
+
+# prevent glob expansion of URLs and other special chars
+autoload -Uz bracketed-paste-magic url-quote-magic
+zle -N bracketed-paste bracketed-paste-magic
+zle -N self-insert url-quote-magic
+
+stty -ixon 2>/dev/null
+bindkey '^Q' push-line-or-edit
 
 hash -d n="$HOME/nixos-config"
 hash -d v="$HOME/nixvim"

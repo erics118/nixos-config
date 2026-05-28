@@ -1,6 +1,9 @@
 {
   flake.modules.homeManager.base = {
-    programs.zoxide.enable = true;
+    programs.zoxide = {
+      enable = true;
+      enableZshIntegration = false; # pre-computed in shell.nix
+    };
 
     programs.fzf = {
       enable = true;

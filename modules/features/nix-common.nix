@@ -35,7 +35,12 @@ let
         };
       };
 
-      programs.zsh.enable = true;
+      programs.zsh = {
+        enable = true;
+        # home-manager already runs compinit in ~/.config/zsh/.zshrc
+        # running it again at the system level doubles startup cost
+        enableGlobalCompInit = false;
+      };
 
       nixpkgs = {
         config.allowUnfree = true;
