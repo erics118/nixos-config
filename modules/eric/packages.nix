@@ -11,8 +11,12 @@
             nil # some things require nil for some reason
             statix
             cachix
-            comma
+            deadnix
             home-manager
+            nvd
+            nix-tree
+            nix-du
+            manix
 
             # interactive fuzzy search over nixpkgs / NixOS / home-manager
             nix-search-tv
@@ -28,16 +32,12 @@
             # system-wide formatters
             nixfmt
             shfmt
-            taplo
-            typos
-            vale
 
             # apps
             _1password-cli
             nodejs-slim_24 # for agent context protocol
 
             # system utilities
-            coreutils-prefixed
             nmap
             dust
             rsync
@@ -68,6 +68,9 @@
           ]
           ++ lib.optionals stdenv.hostPlatform.isDarwin [
 
+            # gnu coreutils with g-prefix (gls, gdate, ...) since macOS ships BSD coreutils
+            coreutils-prefixed
+
             # build tools
             cmake
             ninja
@@ -76,7 +79,6 @@
             # cli tools
             mosh
             glow
-            ltex-ls
             prek
             nextdns
             supabase-cli

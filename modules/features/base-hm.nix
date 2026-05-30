@@ -16,6 +16,13 @@ in
     imports = [
       inputs.catppuccin.homeModules.catppuccin
       inputs.sops-nix.homeManagerModules.sops
+
+      # configure nix-index with comma
+      inputs.nix-index-database.homeModules.default
+      {
+        programs.nix-index-database.comma.enable = true;
+        programs.nix-index.enable = true;
+      }
     ];
   };
 

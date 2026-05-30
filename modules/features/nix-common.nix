@@ -13,6 +13,10 @@ let
           max-jobs = "auto";
           cores = 0;
           warn-dirty = false;
+          builders-use-substitutes = true;
+          http-connections = 50;
+          connect-timeout = 5;
+          download-attempts = 3;
           extra-substituters = [
             "https://nix-community.cachix.org"
             "https://numtide.cachix.org"
