@@ -21,9 +21,42 @@
     programs.atuin = {
       enable = true;
       forceOverwriteSettings = true;
-      flags = [ "--disable-up-arrow" ];
       settings = {
-        enter_accept = false;
+        enter_accept = true;
+        filter_mode_shell_up_key_binding = "session";
+        prefers_reduced_motion = true;
+        records = true;
+        stats = {
+          common_subcommands = [
+            "apt"
+            "cargo"
+            "docker"
+            "git"
+            "go"
+            "kubectl"
+            "nix"
+            "npm"
+            "pnpm"
+            "podman"
+            "port"
+            "systemctl"
+            "tmux"
+            "yarn"
+            "dune"
+            "just"
+            "npx"
+          ];
+          common_prefix = [ "sudo" ];
+          command_aliases = {
+            "dune te" = "dune runtest";
+            "dune test" = "dune runtest";
+            "dune b" = "dune build";
+            "k" = "killall";
+            "sshn" = "ssh";
+            "npm i" = "npm install";
+            "cargo b" = "cargo build";
+          };
+        };
       };
     };
 

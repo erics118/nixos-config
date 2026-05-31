@@ -13,8 +13,6 @@ require("keys").apply_to_config(c)
 c.check_for_updates = true
 c.check_for_updates_interval_seconds = 86400
 
-c.enable_kitty_keyboard = true
-
 c.skip_close_confirmation_for_processes_named = {
     "bash",
     "sh",

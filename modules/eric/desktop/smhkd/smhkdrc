@@ -1,5 +1,6 @@
 blacklist = [
-    "Parallels Desktop"
+    "Parallels Desktop",
+    "Windows App"
 ]
 
 define_modifier mod = alt

@@ -9,6 +9,7 @@
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
 
+    # pure nix helper, doesn't depend on nixpkgs
     import-tree.url = "github:vic/import-tree";
 
     home-manager = {
@@ -26,6 +27,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # doesn't depend on nixpkgs
     nix-homebrew = {
       url = "github:zhaofengli-wip/nix-homebrew";
     };
@@ -41,10 +43,8 @@
       inputs.flake-parts.follows = "flake-parts";
     };
 
-    catppuccin = {
-      url = "github:catppuccin/nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # explicitly don't follow nixpkgs
+    catppuccin.url = "github:catppuccin/nix";
 
     compose2nix = {
       url = "github:aksiksi/compose2nix";

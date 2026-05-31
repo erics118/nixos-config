@@ -22,6 +22,7 @@ let
             "https://numtide.cachix.org"
             "https://devenv.cachix.org"
             "https://cache.numtide.com"
+            "https://catppuccin.cachix.org"
             "https://erics118.cachix.org"
           ];
           extra-trusted-public-keys = [
@@ -29,6 +30,7 @@ let
             "numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE="
             "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
             "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+            "catppuccin.cachix.org-1:noG/4HkbhJb+lUAdKrph6LaozJvAeEEZj4N732IysmU="
             "erics118.cachix.org-1:wJdKw5a7XgwcIJjxKcDHqgTrU6q99hOkOII0Zk+xC1c="
           ];
         };

@@ -81,6 +81,8 @@
         };
 
         shellAliases = {
+          ":q" = "exit";
+
           ls = "eza";
 
           mv = "mv -i";

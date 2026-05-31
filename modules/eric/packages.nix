@@ -45,19 +45,11 @@
             killall
             ccache
 
-            # converting
-            imagemagick
-            pandoc
-            ffmpeg
-            yt-dlp
-
             # development
             hyperfine
             onefetch
-            python3
-            httpie
+            python3Minimal
             yq-go
-            watchexec
             delta
             yazi
             scc
@@ -79,10 +71,7 @@
             # cli tools
             mosh
             glow
-            prek
             nextdns
-            supabase-cli
-            spicetify-cli
             serve
 
             # fonts
