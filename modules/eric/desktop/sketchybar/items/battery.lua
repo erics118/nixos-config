@@ -11,13 +11,13 @@ local remaining_time = sbar.add_item("remaining_time", {
     position = "popup." .. battery.name,
     icon = {
         string = "Time remaining:",
-        align = "left"
+        align = "left",
     },
     label = {
         string = "??:??h",
-        align = "right"
+        align = "right",
     },
-    background = { drawing = false, },
+    background = { drawing = false },
 })
 
 battery:subscribe({ "routine", "power_source_change", "system_woke" }, function()

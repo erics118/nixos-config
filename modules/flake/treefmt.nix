@@ -15,6 +15,12 @@
           "*.age"
         ];
         on-unmatched = "info";
+        formatter.stylua.options = [
+          "--indent-type"
+          "Spaces"
+          "--indent-width"
+          "4"
+        ];
       };
 
       programs = {
@@ -35,6 +41,9 @@
           settings.formatter.retain_line_breaks_single = true;
         };
         jsonfmt.enable = true;
+
+        stylua.enable = true;
+        clang-format.enable = true;
       };
     };
   };

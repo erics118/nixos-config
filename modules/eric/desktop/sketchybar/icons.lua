@@ -27,7 +27,7 @@ local icons = {
         _50 = "􀺶",
         _25 = "􀛩",
         _0 = "􀛪",
-        charging = "􀢋"
+        charging = "􀢋",
     },
     wifi = {
         upload = "􀄨",
@@ -68,14 +68,14 @@ local icons = {
             _50 = "",
             _25 = "",
             _0 = "",
-            charging = ""
+            charging = "",
         },
         wifi = {
             upload = "",
             download = "",
             connected = "󰖩",
             disconnected = "󰖪",
-            router = "Missing Icon"
+            router = "Missing Icon",
         },
         media = {
             back = "",

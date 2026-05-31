@@ -14,7 +14,7 @@ local cpu = sbar.add_graph("cpu", 60, {
         drawing = true,
     },
     y_offset = -2,
-    icon = { drawing = false, },
+    icon = { drawing = false },
     label = {
         string = "??%",
         font = {
@@ -24,9 +24,9 @@ local cpu = sbar.add_graph("cpu", 60, {
         align = "right",
         padding_right = 0,
         width = 0,
-        y_offset = 4
+        y_offset = 4,
     },
-    padding_right = 9
+    padding_right = 9,
 })
 
 cpu:subscribe("cpu_update", function(env)

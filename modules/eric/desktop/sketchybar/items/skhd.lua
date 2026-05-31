@@ -38,7 +38,7 @@ skhd:subscribe("skhd_mode_changed", function(env)
             },
             background = {
                 border_color = color == colors.text and colors.item.border or color,
-            }
+            },
         })
     end)
 end)

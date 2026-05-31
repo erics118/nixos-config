@@ -33,9 +33,9 @@ for i = 1, 10, 1 do
         popup = {
             background = {
                 border_width = 5,
-                border_color = colors.black
-            }
-        }
+                border_color = colors.black,
+            },
+        },
     })
 
     spaces[i] = space
@@ -48,17 +48,17 @@ for i = 1, 10, 1 do
             drawing = true,
             image = {
                 corner_radius = 9,
-                scale = 0.14
-            }
-        }
+                scale = 0.14,
+            },
+        },
     })
 
     space:subscribe("space_change", function(env)
         local selected = env.SELECTED == "true"
         space:set({
-            icon = { highlight = selected, },
+            icon = { highlight = selected },
             label = { highlight = selected },
-            background = { border_color = selected and colors.item.highlighted_border or colors.item.border }
+            background = { border_color = selected and colors.item.highlighted_border or colors.item.border },
         })
     end)
 
@@ -221,7 +221,6 @@ end)
 --         spaces[env.INFO.space]:set({ label = label })
 --     end)
 -- end)
-
 
 -- spaces_indicator:subscribe("mouse.entered", function(env)
 --     sbar.animate("tanh", 20, function()

@@ -4,8 +4,8 @@ local utils = require("utils")
 local act = wezterm.action
 
 local is_mac = wezterm.target_triple:find("darwin") ~= nil
-local MOD    = is_mac and "CMD"       or "CTRL|SHIFT"
-local SMOD   = is_mac and "SHIFT|CMD" or "CTRL|ALT"
+local MOD = is_mac and "CMD" or "CTRL|SHIFT"
+local SMOD = is_mac and "SHIFT|CMD" or "CTRL|ALT"
 
 local shortcuts = {}
 
@@ -37,12 +37,9 @@ local openUrl = act.QuickSelectArgs({
     end),
 })
 
-
-
-map("a", "LEADER", act.AttachDomain 'unix')
-map("d", "LEADER", act.DetachDomain { DomainName = 'unix' })
+map("a", "LEADER", act.AttachDomain("unix"))
+map("d", "LEADER", act.DetachDomain({ DomainName = "unix" }))
 -- map("w", "LEADER", act.ShowLauncherArgs { flags = 'WORKSPACES' })
-
 
 -- use 'Backslash' to split horizontally
 map("\\", "LEADER", act.SplitHorizontal({ domain = "CurrentPaneDomain" }))
@@ -89,7 +86,6 @@ map("r", { "LEADER|" .. MOD }, act.ReloadConfiguration)
 map("u", SMOD, act.CharSelect)
 map("p", { SMOD }, act.ActivateCommandPalette)
 -- view
-map("Enter", "ALT", act.ToggleFullScreen)
 map("-", { MOD }, act.DecreaseFontSize)
 map("=", { MOD }, act.IncreaseFontSize)
 map("0", { MOD }, act.ResetFontSize)
@@ -99,14 +95,6 @@ map("l", SMOD, act.ShowDebugOverlay)
 map("q", MOD, act.QuitApplication)
 map("h", MOD, act.HideApplication)
 map("r", "ALT|SHIFT", act.ReloadConfiguration)
--- map(
--- 	"k",
--- 	"CTRL",
--- 	act.Multiple({
--- 		act.ClearScrollback("ScrollbackAndViewport"),
--- 		act.SendKey({ key = "L", mods = "CTRL" }),
--- 	})
--- )
 
 -- scroll
 map("UpArrow", "SHIFT", act.ScrollByLine(-1))
@@ -114,7 +102,6 @@ map("DownArrow", "SHIFT", act.ScrollByLine(1))
 
 map("LeftArrow", MOD, act.SendKey({ key = "LeftArrow", mods = "CTRL" }))
 map("RightArrow", MOD, act.SendKey({ key = "RightArrow", mods = "CTRL" }))
-
 
 -- map("E", "CTRL|SHIFT", act.PromptInputLine({
 --     description = "Enter new name for tab",
@@ -140,13 +127,13 @@ map("Enter", "SHIFT", act.SendString("\x1b\r"))
 
 local key_tables = {
     resize_mode = {
-        { key = "h",          action = act.AdjustPaneSize({ "Left", 1 }) },
-        { key = "j",          action = act.AdjustPaneSize({ "Down", 1 }) },
-        { key = "k",          action = act.AdjustPaneSize({ "Up", 1 }) },
-        { key = "l",          action = act.AdjustPaneSize({ "Right", 1 }) },
-        { key = "LeftArrow",  action = act.AdjustPaneSize({ "Left", 1 }) },
-        { key = "DownArrow",  action = act.AdjustPaneSize({ "Down", 1 }) },
-        { key = "UpArrow",    action = act.AdjustPaneSize({ "Up", 1 }) },
+        { key = "h", action = act.AdjustPaneSize({ "Left", 1 }) },
+        { key = "j", action = act.AdjustPaneSize({ "Down", 1 }) },
+        { key = "k", action = act.AdjustPaneSize({ "Up", 1 }) },
+        { key = "l", action = act.AdjustPaneSize({ "Right", 1 }) },
+        { key = "LeftArrow", action = act.AdjustPaneSize({ "Left", 1 }) },
+        { key = "DownArrow", action = act.AdjustPaneSize({ "Down", 1 }) },
+        { key = "UpArrow", action = act.AdjustPaneSize({ "Up", 1 }) },
         { key = "RightArrow", action = act.AdjustPaneSize({ "Right", 1 }) },
     },
 }
@@ -162,7 +149,7 @@ local M = {}
 
 M.apply_to_config = function(c)
     c.leader = {
-        key  = is_mac and "s"   or "a",
+        key = is_mac and "s" or "a",
         mods = is_mac and "CMD" or "CTRL",
         timeout_milliseconds = math.maxinteger,
     }

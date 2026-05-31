@@ -1,11 +1,11 @@
 local yabai = sbar.add_icon_item("yabai", {
     updates = true,
-    background = { drawing = false, },
+    background = { drawing = false },
 })
 
 local yabai_bin = "/opt/homebrew/bin/yabai"
-local window_query =
-    yabai_bin .. " -m query --windows is-sticky,is-floating,sub-layer,has-fullscreen-zoom,stack-index --window 2>/dev/null || echo err"
+local window_query = yabai_bin
+    .. " -m query --windows is-sticky,is-floating,sub-layer,has-fullscreen-zoom,stack-index --window 2>/dev/null || echo err"
 local space_query = yabai_bin .. " -m query --spaces type --space 2>/dev/null || echo err"
 
 yabai:subscribe({ "front_app_switched", "yabai_window_state", "window_focused", "forced" }, function(env)
@@ -55,7 +55,9 @@ yabai:subscribe({ "front_app_switched", "yabai_window_state", "window_focused", 
                 icon = icons.yabai_stack
             elseif space_type == "float" then
                 icon = icons.yabai_float
-                if c ~= colors.text then c = colors.purple end
+                if c ~= colors.text then
+                    c = colors.purple
+                end
             end
 
             -- sbar.animate("sin", 10, function()

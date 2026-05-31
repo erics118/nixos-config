@@ -21,12 +21,12 @@ local function add_weather_item(name, icon)
             font = {
                 family = "Hack Nerd Font Mono",
                 style = "Regular",
-                size = 20.0
+                size = 20.0,
             },
             align = "center",
             width = 32,
         },
-        background = { drawing = false, },
+        background = { drawing = false },
     })
 end
 
@@ -100,7 +100,6 @@ local function round_temperature(temperature)
         return rounded .. "°C"
     end
 end
-
 
 local weather_icons_day = {
     sunny = "",
@@ -212,7 +211,6 @@ local function get_condition_icon(condition, is_day)
     end
 end
 
-
 -- # utils #######################################################################
 
 -- #  cloud
@@ -228,8 +226,6 @@ end
 
 -- #  sunrise
 -- #  sunset
-
-
 
 local function set_uv_index_color(uv_index)
     if uv_index < 3 then
@@ -310,13 +306,18 @@ weather:subscribe({ "forced", "routine" }, function()
     end
 
     sbar.exec(
-        curl_bin .. ' -fsSL "https://api.weatherapi.com/v1/forecast.json?key=' ..
-        api_key .. '&q=auto:ip&days=1&aqi=yes&alerts=no"',
+        curl_bin
+            .. ' -fsSL "https://api.weatherapi.com/v1/forecast.json?key='
+            .. api_key
+            .. '&q=auto:ip&days=1&aqi=yes&alerts=no"',
         function(data)
-            if type(data) ~= "table" or type(data.current) ~= "table" or
-                type(data.forecast) ~= "table" or
-                type(data.forecast.forecastday) ~= "table" or
-                type(data.forecast.forecastday[1]) ~= "table" then
+            if
+                type(data) ~= "table"
+                or type(data.current) ~= "table"
+                or type(data.forecast) ~= "table"
+                or type(data.forecast.forecastday) ~= "table"
+                or type(data.forecast.forecastday[1]) ~= "table"
+            then
                 set_weather_unavailable("Unavailable")
                 return
             end
@@ -332,7 +333,8 @@ weather:subscribe({ "forced", "routine" }, function()
             local condition = (condition_data.text or "Unavailable"):lower()
             local is_day = current.is_day == 1
             local icon = get_condition_icon(condition, is_day) or "􀇔"
-            local precipitation_amount = format_number(current["precip_" .. precipitation_amount_unit], " " .. precipitation_amount_unit)
+            local precipitation_amount =
+                format_number(current["precip_" .. precipitation_amount_unit], " " .. precipitation_amount_unit)
             local wind_direction = current.wind_degree and degrees_to_direction(current.wind_degree) or "?"
             local wind_speed = format_number(current["wind_" .. wind_speed_unit], " " .. wind_speed_unit)
             local uv_index = math.floor(current.uv or 0)
@@ -351,7 +353,7 @@ weather:subscribe({ "forced", "routine" }, function()
                 },
                 label = {
                     string = temp,
-                }
+                },
             })
             weather_condition:set({ icon = { string = icon }, label = { string = condition } })
 
@@ -361,8 +363,12 @@ weather:subscribe({ "forced", "routine" }, function()
             weather_humidity:set({ label = { string = "Humidity: " .. humidity_percentage } })
             weather_precipitation:set({ label = { string = precipitation_amount } })
             weather_wind:set({ label = { string = "Wind: " .. wind_direction .. " " .. wind_speed } })
-            weather_aqi:set({ label = { string = "AQI: " .. air_quality_index .. " " .. air_quality_category }, icon = { color = air_quality_color } })
+            weather_aqi:set({
+                label = { string = "AQI: " .. air_quality_index .. " " .. air_quality_category },
+                icon = { color = air_quality_color },
+            })
             weather_sunrise:set({ label = { string = "Sunrise: " .. sunrise } })
             weather_sunset:set({ label = { string = "Sunset: " .. sunset } })
-        end)
+        end
+    )
 end)

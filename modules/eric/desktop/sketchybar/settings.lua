@@ -7,5 +7,5 @@ return {
         default = colors.green,
         zen = colors.blue,
         menu = colors.text,
-    }
+    },
 }

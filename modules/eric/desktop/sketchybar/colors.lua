@@ -58,7 +58,9 @@ local colors = {
     },
 
     with_alpha = function(color, alpha)
-        if alpha > 1.0 or alpha < 0.0 then return color end
+        if alpha > 1.0 or alpha < 0.0 then
+            return color
+        end
         return (color & 0x00ffffff) | (math.floor(alpha * 255.0) << 24)
     end,
 }
@@ -66,11 +68,10 @@ local colors = {
 setmetatable(colors, {
     __index = function(_table, _key)
         return 0xffff0000
-    end
+    end,
 })
 
 return colors
-
 
 --[[
 local old_ctp = {

@@ -18,7 +18,7 @@ local calendar = sbar.add_item("calendar", {
         padding_right = 10,
     },
     update_freq = 1,
-    background = { drawing = false, },
+    background = { drawing = false },
 })
 
 calendar:subscribe({ "forced", "routine", "system_woke" }, function(env)
@@ -28,4 +28,3 @@ end)
 calendar:subscribe("mouse.clicked", function(env)
     printTable(env)
 end)
-

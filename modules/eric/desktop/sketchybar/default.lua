@@ -5,7 +5,7 @@ sbar.default({
         font = {
             family = "SF Pro",
             style = "Bold",
-            size = 13.0
+            size = 13.0,
         },
         color = colors.text,
         padding_left = 7,
@@ -16,7 +16,7 @@ sbar.default({
         font = {
             family = "SF Pro",
             style = "Bold",
-            size = 13.0
+            size = 13.0,
         },
         color = colors.text,
         padding_left = 3,
@@ -33,8 +33,8 @@ sbar.default({
         image = {
             corner_radius = 9,
             border_color = colors.transparent,
-            border_width = 1
-        }
+            border_width = 1,
+        },
     },
     popup = {
         height = 22,

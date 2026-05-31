@@ -20,21 +20,21 @@ for i = 1, max_items, 1 do
         drawing = false,
         label = {
             font = {
-                style = i == 1 and "Heavy" or "Semibold"
+                style = i == 1 and "Heavy" or "Semibold",
             },
             padding_left = 7,
-            padding_right = i % 2 == 0 and 7 or 6
+            padding_right = i % 2 == 0 and 7 or 6,
         },
         click_script = "$CONFIG_DIR/helpers/menus/bin/menus -s " .. i,
-        background = { drawing = false, },
+        background = { drawing = false },
     })
 end
 
 local function update_menus(env)
     sbar.exec("$CONFIG_DIR/helpers/menus/bin/menus -l", function(menus)
-        sbar.set('/menu\\..*/', { drawing = false })
+        sbar.set("/menu\\..*/", { drawing = false })
         local id = 1
-        for menu in string.gmatch(menus, '[^\r\n]+') do
+        for menu in string.gmatch(menus, "[^\r\n]+") do
             if id < max_items then
                 menu_items[id]:set({ label = menu, drawing = true })
             else
@@ -71,7 +71,6 @@ space_menu_swap:subscribe("swap_menus_and_spaces", function(env)
 
             sbar.set("/menu\\..*/", { y_offset = 30 * env.direction })
         end)
-
 
         sbar.delay(0.1, function()
             sbar.set("/menu\\..*/", { drawing = false })

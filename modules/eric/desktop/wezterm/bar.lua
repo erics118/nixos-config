@@ -123,15 +123,14 @@ M.apply_to_config = function(c, opts)
     c.tab_bar_at_bottom = config.position == "bottom"
     c.tab_max_width = config.max_width
 
-
-    local new_tab_style = wezterm.format {
-        { Background = { Color = '#313244' } },
-        { Foreground = { Color = '#cdd6f4' } },
+    local new_tab_style = wezterm.format({
+        { Background = { Color = "#313244" } },
+        { Foreground = { Color = "#cdd6f4" } },
         { Text = " + " },
         { Background = { Color = "#1E1E2E" } },
         { Foreground = { Color = "#313244" } },
         { Text = C.div.r },
-    }
+    })
 
     -- TODO: plus sign config
     c.tab_bar_style = {

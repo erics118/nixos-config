@@ -33,7 +33,7 @@ c.skip_close_confirmation_for_processes_named = {
 }
 
 c.unix_domains = {
-    { name = 'unix' },
+    { name = "unix" },
 }
 c.send_composed_key_when_left_alt_is_pressed = false
 c.font = wezterm.font("Hack Nerd Font")
@@ -68,7 +68,6 @@ c.inactive_pane_hsb = {
     brightness = 0.6,
 }
 
-
 -- cursor trail
 -- c.cursor_trail = {
 --   enabled = true,
@@ -95,11 +94,9 @@ c.default_cursor_style = "SteadyBar"
 c.underline_thickness = 2.5
 c.command_palette_font_size = 13.0
 
-
 c.window_frame = {
     font_size = 14.0,
 }
-
 
 local theme = wezterm.color.get_builtin_schemes()["Catppuccin Mocha"]
 
@@ -110,7 +107,6 @@ c.color_schemes = {
 }
 
 c.color_scheme = "Catppuccin Mocha"
-
 
 -- c.use_fancy_tab_bar = false
 -- c.tab_max_width = 50
@@ -141,7 +137,7 @@ require("bar").apply_to_config(c, {
     },
 })
 
-wezterm.on('format-window-title', function(tab, pane, tabs, panes, config)
+wezterm.on("format-window-title", function(tab, pane, tabs, panes, config)
     local workspace = wezterm.mux.get_active_workspace()
     local prefix = workspace ~= "default" and "[" .. workspace .. "] " or ""
     return prefix .. tab.active_pane.title

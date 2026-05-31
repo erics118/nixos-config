@@ -38,10 +38,10 @@ local function toggle_zen()
         sbar.set("cpu", { drawing = switch })
         sbar.set("battery", { drawing = switch })
         sbar.set("calendar", { icon = { drawing = switch } })
-        sbar.set('/media.*/', { drawing = switch })
+        sbar.set("/media.*/", { drawing = switch })
         sbar.set("weather", { drawing = switch })
 
-        sbar.set('/space\\..*/', { background = { drawing = switch }, label = { drawing = switch } })
+        sbar.set("/space\\..*/", { background = { drawing = switch }, label = { drawing = switch } })
     else
         sbar.exec("$CONFIG_DIR/helpers/menus/bin/menus -s 0")
     end
@@ -74,7 +74,6 @@ apple:subscribe("mouse.clicked", function(env)
     --     sbar.trigger("swap_menus_and_spaces", { direction = 1 })
     -- end
 end)
-
 
 -- apple:subscribe("mouse.scrolled", function(env)
 --     if sbar.get_mode() == "zen" then

@@ -93,6 +93,7 @@ zle -N copy-command-line
 zle -N copy-working-directory
 
 # don't highlight path separators
+typeset -gA ZSH_HIGHLIGHT_STYLES
 ZSH_HIGHLIGHT_STYLES[path]="fg=none"
 ZSH_HIGHLIGHT_STYLES[path_prefix]="fg=none"
 ZSH_HIGHLIGHT_STYLES[path_pathseparator]="none"
