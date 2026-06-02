@@ -1,5 +1,6 @@
 {
   flake.modules.homeManager.base.catppuccin = {
+    enable = true;
     accent = "mauve";
     flavor = "mocha";
 
@@ -13,7 +14,6 @@
     gh-dash.enable = true;
     lazygit.enable = true;
     starship.enable = true;
-    wezterm.enable = true;
     zsh-syntax-highlighting.enable = true;
   };
 }

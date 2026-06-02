@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  mkHome,
+  ...
+}:
 let
   m = config.flake.modules;
 in
@@ -81,12 +86,8 @@ in
     services.udev.extraRules = ''ATTR{address}=="96:00:04:5a:c3:8b", NAME="eth0"'';
   };
 
-  configurations.homeManager."eric@squid" = {
+  configurations.homeManager."eric@squid" = mkHome {
     system = "x86_64-linux";
-    module = {
-      imports = [ m.homeManager.base ];
-      home.username = "eric";
-      home.homeDirectory = "/home/eric";
-    };
+    homeDirectory = "/home/eric";
   };
 }

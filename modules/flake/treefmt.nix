@@ -31,7 +31,6 @@
         statix.enable = true;
 
         shfmt.enable = true;
-        shellcheck.enable = true;
 
         prettier.enable = true;
         just.enable = true;

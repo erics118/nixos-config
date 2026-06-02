@@ -83,8 +83,7 @@
       }
     }
   },
+  "effortLevel": "medium",
   "skipDangerousModePermissionPrompt": true,
-  "verbose": true,
-  "model": "opus",
-  "effortLevel": "medium"
+  "verbose": true
 }

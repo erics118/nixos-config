@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, mkHome, ... }:
 let
   m = config.flake.modules;
 in
@@ -12,15 +12,9 @@ in
     home-manager.users.eric.imports = [ m.homeManager.darwin ];
   };
 
-  configurations.homeManager."eric@orca" = {
+  configurations.homeManager."eric@orca" = mkHome {
     system = "aarch64-darwin";
-    module = {
-      imports = [
-        m.homeManager.base
-        m.homeManager.darwin
-      ];
-      home.username = "eric";
-      home.homeDirectory = "/Users/eric";
-    };
+    homeDirectory = "/Users/eric";
+    imports = [ m.homeManager.darwin ];
   };
 }

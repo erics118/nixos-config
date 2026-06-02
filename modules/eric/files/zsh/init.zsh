@@ -27,7 +27,7 @@ hash -d d="$HOME/dev"
 clipboard-copy() {
   if (($+commands[pbcopy])) && [[ $(command -v pbcopy) != *shell_functions* ]]; then
     command pbcopy
-  elif (($+commands[wl - copy])); then
+  elif (($+commands[wl-copy])); then
     wl-copy
   elif (($+commands[xclip])); then
     xclip -selection clipboard
@@ -42,7 +42,7 @@ clipboard-copy() {
 clipboard-paste() {
   if (($+commands[pbpaste])) && [[ $(command -v pbpaste) != *shell_functions* ]]; then
     command pbpaste
-  elif (($+commands[wl - paste])); then
+  elif (($+commands[wl-paste])); then
     wl-paste --no-newline
   elif (($+commands[xclip])); then
     xclip -selection clipboard -o

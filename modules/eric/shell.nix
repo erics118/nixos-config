@@ -1,11 +1,6 @@
 {
   flake.modules.homeManager.base =
-    {
-      config,
-      pkgs,
-      repoFile,
-      ...
-    }:
+    { config, pkgs, ... }:
     let
       # pre-compute the zsh init scripts for these tools at nix build time to
       # reduce shell startup time
@@ -94,7 +89,6 @@
           # # is an extended-glob operator in zsh; disable globbing so flake
           # refs like nixpkgs#foo work without quoting
           nix = "noglob nix";
-
         };
       };
 
@@ -129,6 +123,7 @@
           gp = "git push";
           gpf = "git push -f";
           gs = "git status";
+          gsh = "git show";
           gsw = "git switch";
           gst = "git stash";
           gstl = "git stash list";
@@ -195,6 +190,6 @@
         };
       };
 
-      xdg.configFile."zsh/init.zsh".source = repoFile "modules/eric/files/zsh/init.zsh";
+      xdg.configFile."zsh/init.zsh".source = ./files/zsh/init.zsh;
     };
 }

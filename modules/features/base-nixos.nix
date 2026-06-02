@@ -9,6 +9,12 @@
         inputs.sops-nix.nixosModules.sops
       ];
 
+      catppuccin = {
+        enable = true;
+        autoEnable = false;
+        tty.enable = true;
+      };
+
       nix = {
         settings = {
           log-lines = 50;

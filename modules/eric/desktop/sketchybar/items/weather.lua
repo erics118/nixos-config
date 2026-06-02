@@ -10,7 +10,7 @@ local weather = sbar.add_item("weather", {
     update_freq = 600,
 })
 
-local curl_bin = "/run/current-system/sw/bin/curl"
+local curl_bin = "/usr/bin/curl"
 local weather_key_path = os.getenv("HOME") .. "/.config/sops-nix/secrets/api/weather"
 
 local function add_weather_item(name, icon)
@@ -302,6 +302,8 @@ weather:subscribe({ "forced", "routine" }, function()
     local api_key = read_weather_api_key()
     if not api_key then
         set_weather_unavailable("No API Key")
+        -- sops may not have decrypted yet, retry soon
+        sbar.exec("sleep 5 && sketchybar --trigger forced")
         return
     end
 

@@ -55,9 +55,4 @@ home:
 # garbage collect unused nix store entries
 [group('system')]
 gc:
-    nh clean all --keep-since 7d --keep 3
-
-# optimize the nix store
-[group('system')]
-optimise:
-    sudo -H nix store optimise
+    nh clean all --no-gcroots --optimise --keep-since 7d --keep 3

@@ -46,11 +46,6 @@
     # explicitly don't follow nixpkgs
     catppuccin.url = "github:catppuccin/nix";
 
-    compose2nix = {
-      url = "github:aksiksi/compose2nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";

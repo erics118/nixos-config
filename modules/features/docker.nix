@@ -1,9 +1,6 @@
 {
   flake.modules.nixos.docker =
-    { pkgs, inputs, ... }:
-    let
-      compose2nix-pkg = inputs.compose2nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
-    in
+    { pkgs, ... }:
     {
       virtualisation.docker = {
         enable = true;
@@ -28,9 +25,6 @@
 
       users.users.eric.extraGroups = [ "docker" ];
 
-      environment.systemPackages = with pkgs; [
-        docker-compose
-        compose2nix-pkg
-      ];
+      environment.systemPackages = with pkgs; [ docker-compose ];
     };
 }

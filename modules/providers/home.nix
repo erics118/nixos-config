@@ -5,6 +5,22 @@
   withSystem,
   ...
 }:
+let
+  mkHome =
+    {
+      system,
+      homeDirectory,
+      imports ? [ ],
+    }:
+    {
+      inherit system;
+      module = {
+        imports = [ config.flake.modules.homeManager.base ] ++ imports;
+        home.username = "eric";
+        home.homeDirectory = homeDirectory;
+      };
+    };
+in
 {
   options.configurations.homeManager = lib.mkOption {
     type = lib.types.lazyAttrsOf (
@@ -18,18 +34,22 @@
     default = { };
   };
 
-  config.flake.homeConfigurations = lib.mkIf (config.configurations.homeManager != { }) (
-    lib.flip lib.mapAttrs config.configurations.homeManager (
-      _name:
-      { system, module }:
-      withSystem system (
-        { pkgs, ... }:
-        inputs.home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-          extraSpecialArgs = { inherit inputs; };
-          modules = [ module ];
-        }
+  config = {
+    _module.args = { inherit mkHome; };
+
+    flake.homeConfigurations = lib.mkIf (config.configurations.homeManager != { }) (
+      lib.flip lib.mapAttrs config.configurations.homeManager (
+        _name:
+        { system, module }:
+        withSystem system (
+          { pkgs, ... }:
+          inputs.home-manager.lib.homeManagerConfiguration {
+            inherit pkgs;
+            extraSpecialArgs = { inherit inputs; };
+            modules = [ module ];
+          }
+        )
       )
-    )
-  );
+    );
+  };
 }

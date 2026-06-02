@@ -146,7 +146,6 @@ let
       {
         type = "host";
         keyIcon = "󰌢";
-        format = "MacBook Pro (14-inch, Nov 2024)";
       }
       {
         type = "kernel";

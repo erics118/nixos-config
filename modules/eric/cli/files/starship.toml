@@ -7,7 +7,10 @@
 format = """
 ${custom.top}\
 $directory\
-${custom.user_host}\
+[┤](fg:surface1)\
+$username\
+$hostname\
+[├](fg:surface1)\
 $git_branch\
 $git_commit\
 $git_state\
@@ -51,22 +54,24 @@ cmd_indicator = "cmd"
 
 [custom.top]
 symbol = "┌┤"
-style = "bold black"
+format = '[$symbol]($style)'
+style = "surface1"
 when = true
 
 [custom.bottom]
 symbol = "└"
-style = "bold black"
+format = '[$symbol]($style)'
+style = "surface1"
 when = true
 
 [character]
-success_symbol = '[▶](bold cyan)'
+success_symbol = '[▶](bold teal)'
 error_symbol = '[▶](bold red)'
-vimcmd_symbol = '[▷](bold cyan)'
+vimcmd_symbol = '[▷](bold teal)'
 
 [os]
 disabled = false
-format = '[┤](fg:black)[$symbol]($style)'
+format = '[┤](fg:surface1)[$symbol]($style)'
 style = 'fg:green'
 
 [os.symbols]
@@ -80,23 +85,29 @@ Debian = ' '
 Fedora = ' '
 
 [directory]
-format = "[$path]($style)[$read_only]($read_only_style)[├](fg:black)"
-style = 'fg:bright-cyan'
+format = "[$path]($style)[$read_only]($read_only_style)[├](fg:surface1)"
+style = 'fg:teal'
 read_only = ''
 use_os_path_sep = false
 truncation_length = 5
 truncate_to_repo = false
 truncation_symbol = "…/"
 
-[custom.user_host]
-format = '[┤](fg:black)[$output]($style)[├](fg:black)'
-style = 'fg:bright-yellow'
-when = true
-command = 'if [ -n "$SSH_CONNECTION$SSH_TTY" ]; then printf "%s@%s" "$USER" "$(hostname -s)"; else printf "%s" "$USER"; fi'
+[username]
+show_always = true
+format = '[$user]($style)'
+style_user = 'fg:yellow'
+style_root = 'fg:red'
+
+[hostname]
+ssh_only = true
+format = '[@$hostname]($style)'
+style = 'fg:yellow'
+trim_at = '.'
 
 [sudo]
 disabled = true
-format = '[┤](fg:black)[$symbol]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol]($style)[├](fg:surface1)'
 style = 'fg:red'
 symbol = ' '
 
@@ -109,27 +120,27 @@ repeat = true
 
 [direnv]
 disabled = false
-format = '[┤](fg:black)[$symbol$allowed$loaded]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol$allowed$loaded]($style)[├](fg:surface1)'
 symbol = ' '
 allowed_msg = ''
-not_allowed_msg = ''
+not_allowed_msg = '?'
 denied_msg = '×'
 loaded_msg = '✓'
 unloaded_msg = '-'
 
 [git_metrics]
 disabled = true
-format = '[┤](fg:black)[+$added](fg:green)/[-$deleted](fg:red)[├](fg:black)'
+format = '[┤](fg:surface1)[+$added](fg:green)/[-$deleted](fg:red)[├](fg:surface1)'
 added_style = 'fg:green'
 deleted_style = 'fg:red'
 
 [git_branch]
 symbol = ' '
-format = '[┤](fg:black)[$symbol$branch]($style)[├](fg:black)'
-style = 'fg:bright-purple'
+format = '[┤](fg:surface1)[$symbol$branch]($style)[├](fg:surface1)'
+style = 'fg:pink'
 
 [git_status]
-format = '([┤](fg:black)[$all_status$ahead_behind]($style)[├](fg:black))'
+format = '([┤](fg:surface1)[$all_status$ahead_behind]($style)[├](fg:surface1))'
 ahead = "↑"
 behind = "↓"
 conflicted = "!"
@@ -138,169 +149,169 @@ diverged = "↕"
 modified = "~"
 renamed = "»"
 untracked = "+"
-style = 'fg:bright-purple'
+style = 'fg:pink'
 
 [cmd_duration]
-format = '[┤](fg:black)[󰚭 $duration]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[󰚭 $duration]($style)[├](fg:surface1)'
 min_time = 0
 show_milliseconds = true
 
 [fill]
 symbol = '─'
-style = 'fg:black'
+style = 'fg:surface1'
 
 [time]
 disabled = false
-format = '[┤](fg:black)[ $time]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[ $time]($style)[├](fg:surface1)'
 
 ### LANGUAGE VERSION INDICATORS
 [c]
-format = '[┤](fg:black)[$symbol($version(-$name))]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version(-$name))]($style)[├](fg:surface1)'
 
 [cmake]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [cobol]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [conda]
-format = '[┤](fg:black)[$symbol$environment]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol$environment]($style)[├](fg:surface1)'
 
 [crystal]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [dart]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [deno]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [dotnet]
-format = '[┤](fg:black)[$symbol($version)(🎯 $tfm)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)(🎯 $tfm)]($style)[├](fg:surface1)'
 
 [elixir]
-format = '[┤](fg:black)[$symbol($version \(OTP $otp_version\))]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version \(OTP $otp_version\))]($style)[├](fg:surface1)'
 
 [elm]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [erlang]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [golang]
 symbol = ' '
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [haskell]
 symbol = ' '
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [helm]
 symbol = 'ﴱ '
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [java]
 symbol = ' '
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [julia]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [kotlin]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [lua]
 symbol = ' '
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [nim]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [nix_shell]
-format = '[┤](fg:black)[$symbol$state( \($name\))]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol$state( \($name\))]($style)[├](fg:surface1)'
 
 [nodejs]
 symbol = ' '
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 detect_extensions = []
 style = 'green'
 
 [ocaml]
-format = '[┤](fg:black)[$symbol($version)(\($switch_indicator$switch_name\))]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)(\($switch_indicator$switch_name\))]($style)[├](fg:surface1)'
 
 [package]
 symbol = ' '
-format = '[┤](fg:black)[$symbol$version]($style)[├](fg:black)'
-style = 'white'
+format = '[┤](fg:surface1)[$symbol$version]($style)[├](fg:surface1)'
+style = 'subtext1'
 
 [perl]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [php]
 symbol = ' '
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [pulumi]
-format = '[┤](fg:black)[$symbol$stack]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol$stack]($style)[├](fg:surface1)'
 
 [purescript]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [python]
 symbol = ' '
-format = '[┤](fg:black)[${symbol}${pyenv_prefix}(${version})(\($virtualenv\))]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[${symbol}${pyenv_prefix}(${version})(\($virtualenv\))]($style)[├](fg:surface1)'
 
 [red]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [ruby]
 symbol = ' '
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [rust]
 symbol = ' '
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [scala]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [spack]
-format = '[┤](fg:black)[$symbol$environment]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol$environment]($style)[├](fg:surface1)'
 
 [swift]
 symbol = ' '
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [vagrant]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [vlang]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 [zig]
-format = '[┤](fg:black)[$symbol($version)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
 
 ### CONTEXT INDICATORS
 [aws]
 symbol = ' '
-format = '[┤](fg:black)[$symbol($profile)(\($region\))(\[$duration\])]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($profile)(\($region\))(\[$duration\])]($style)[├](fg:surface1)'
 
 [docker_context]
 symbol = ' '
-format = '[┤](fg:black)[$symbol$context]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol$context]($style)[├](fg:surface1)'
 
 [gcloud]
 symbol = ' '
-format = '[┤](fg:black)[$symbol$account(@$domain)(\($region\))]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol$account(@$domain)(\($region\))]($style)[├](fg:surface1)'
 
 [kubernetes]
 symbol = ' '
-format = '[┤](fg:black)[$symbol($cluster/$namespace)]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol($cluster/$namespace)]($style)[├](fg:surface1)'
 disabled = false
 
 [openstack]
 symbol = ' '
-format = '[┤](fg:black)[$symbol$cloud(\($project\))]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol$cloud(\($project\))]($style)[├](fg:surface1)'
 
 [terraform]
-format = '[┤](fg:black)[$symbol$workspace]($style)[├](fg:black)'
+format = '[┤](fg:surface1)[$symbol$workspace]($style)[├](fg:surface1)'
