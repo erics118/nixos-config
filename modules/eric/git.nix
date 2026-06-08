@@ -36,6 +36,7 @@
           ".env"
           ".env.*"
           "!.env.example"
+          ".antigravitycli"
         ];
         settings = {
           user = {

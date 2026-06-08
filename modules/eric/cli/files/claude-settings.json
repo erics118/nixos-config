@@ -84,6 +84,11 @@
     }
   },
   "effortLevel": "medium",
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
-  "verbose": true
+  "editorMode": "normal",
+  "verbose": true,
+  "remoteControlAtStartup": false,
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": false
 }
