@@ -33,6 +33,10 @@ c.skip_close_confirmation_for_processes_named = {
 c.unix_domains = {
     { name = "unix" },
 }
+c.ssh_domains = {
+    { name = "squid", remote_address = "squid", multiplexing = "None" },
+    { name = "narwhal", remote_address = "narwhal", multiplexing = "None" },
+}
 c.send_composed_key_when_left_alt_is_pressed = false
 c.font = wezterm.font("Hack Nerd Font")
 c.font_size = 14.0

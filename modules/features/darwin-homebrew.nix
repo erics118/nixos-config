@@ -32,7 +32,7 @@
           link = true;
         }
         "felixkratz/formulae/sketchybar"
-        "felixkratz/formulae/svim"
+        # "felixkratz/formulae/svim"
         "koekeishiya/formulae/skhd"
         {
           name = "koekeishiya/formulae/yabai";

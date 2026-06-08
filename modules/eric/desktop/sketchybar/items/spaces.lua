@@ -1,6 +1,4 @@
 local app_icons = require("helpers.app_icons")
-local yabai_bin = "/opt/homebrew/bin/yabai"
-local jq_bin = "/etc/profiles/per-user/eric/bin/jq"
 
 sbar.add_event("yabai_window_focused")
 sbar.add_event("yabai_space_changed")
@@ -64,7 +62,7 @@ for i = 1, 10, 1 do
 
     space:subscribe("mouse.clicked", function(env)
         if env.BUTTON == "left" then
-            sbar.exec(yabai_bin .. " -m space --focus " .. env.SID .. " 2>/dev/null")
+            sbar.exec("yabai -m space --focus " .. env.SID .. " 2>/dev/null")
         else
             space_popup:set({ background = { image = "space." .. env.SID } })
             space:set({ popup = { drawing = "toggle" } })
@@ -113,7 +111,7 @@ local function has_value(tab, val)
 end
 
 local window_query2 = [[
-]] .. yabai_bin .. [[ -m query --windows space,title,app,is-sticky,stack-index,is-hidden 2>/dev/null | ]] .. jq_bin .. [[ '
+yabai -m query --windows space,title,app,is-sticky,stack-index,is-hidden 2>/dev/null | jq'
   map(select( (."is-sticky" or ."is-hidden" or (.title == "")) | not ))
   | sort_by(.space, ."stack-index")
   | group_by(.space)

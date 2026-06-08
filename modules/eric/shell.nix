@@ -73,6 +73,7 @@
 
         localVariables = {
           WORDCHARS = "*?_-.~";
+          NIXPKGS_ALLOW_UNFREE = "1";
         };
 
         shellAliases = {
@@ -85,6 +86,8 @@
           rm = "rm -i";
 
           sshn = "ssh -F /dev/null -o PubkeyAuthentication=no";
+
+          ws = "wezterm cli spawn -- ";
 
           # # is an extended-glob operator in zsh; disable globbing so flake
           # refs like nixpkgs#foo work without quoting

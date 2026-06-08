@@ -10,7 +10,6 @@ local weather = sbar.add_item("weather", {
     update_freq = 600,
 })
 
-local curl_bin = "/usr/bin/curl"
 local weather_key_path = os.getenv("HOME") .. "/.config/sops-nix/secrets/api/weather"
 
 local function add_weather_item(name, icon)
@@ -269,7 +268,7 @@ local function set_weather_unavailable(message)
     weather_humidity:set({ label = { string = "Humidity: --" } })
     weather_precipitation:set({ label = { string = "--" } })
     weather_wind:set({ label = { string = "Wind: --" } })
-    weather_aqi:set({ label = { string = "AQI: --" }, icon = { color = colors.grey } })
+    weather_aqi:set({ label = { string = "AQI: --" } })
     weather_sunrise:set({ label = { string = "Sunrise: --" } })
     weather_sunset:set({ label = { string = "Sunset: --" } })
 end
@@ -308,8 +307,7 @@ weather:subscribe({ "forced", "routine" }, function()
     end
 
     sbar.exec(
-        curl_bin
-            .. ' -fsSL "https://api.weatherapi.com/v1/forecast.json?key='
+        'curl -fsSL "https://api.weatherapi.com/v1/forecast.json?key='
             .. api_key
             .. '&q=auto:ip&days=1&aqi=yes&alerts=no"',
         function(data)

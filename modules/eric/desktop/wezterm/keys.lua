@@ -39,12 +39,32 @@ local openUrl = act.QuickSelectArgs({
 
 map("a", "LEADER", act.AttachDomain("unix"))
 map("d", "LEADER", act.DetachDomain({ DomainName = "unix" }))
+map("s", "LEADER", act.SpawnTab({ DomainName = "squid" }))
+map("n", "LEADER", act.SpawnTab({ DomainName = "narwhal" }))
 -- map("w", "LEADER", act.ShowLauncherArgs { flags = 'WORKSPACES' })
 
 -- use 'Backslash' to split horizontally
 map("\\", "LEADER", act.SplitHorizontal({ domain = "CurrentPaneDomain" }))
 -- and 'Minus' to split vertically
 map("=", "LEADER", act.SplitVertical({ domain = "CurrentPaneDomain" }))
+map(
+    "+",
+    "LEADER",
+    act.PromptInputLine({
+        description = "command to run in new pane",
+        action = wezterm.action_callback(function(window, pane, line)
+            if line then
+                window:perform_action(
+                    act.SplitPane({
+                        direction = "Down",
+                        command = { args = { "zsh", "-c", line } },
+                    }),
+                    pane
+                )
+            end
+        end),
+    })
+)
 -- map 1-9 to switch to tab 1-9, 0 for the last tab
 for i = 1, 9 do
     map(tostring(i), { "LEADER", MOD }, act.ActivateTab(i - 1))

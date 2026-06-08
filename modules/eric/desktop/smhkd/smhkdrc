@@ -37,14 +37,14 @@ mod + b :
 mod + shift + b :
     front -n "Google Chrome"
 
-mod + 1 :
-    front -n "1Password"
+# mod + 1 :
+#     front -n "1Password"
 
 mod + c :
     front -n "Fantastical"
 
-mod + f :
-    front -p "/System/Library/CoreServices/Finder.app"
+# mod + f :
+#     front -p "/System/Library/CoreServices/Finder.app"
 
 mod + g :
     front -n "Goodnotes"
@@ -65,8 +65,8 @@ mod + z :
     front -n "zoom.us"
 
 # window state
-mod + q :
-    yabai -m window --close
+# mod + q :
+#     yabai -m window --close
 
 mod + f :
     yabai -m window --toggle zoom-fullscreen && sketchybar --trigger yabai

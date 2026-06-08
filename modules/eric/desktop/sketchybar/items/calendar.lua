@@ -24,7 +24,3 @@ local calendar = sbar.add_item("calendar", {
 calendar:subscribe({ "forced", "routine", "system_woke" }, function(env)
     calendar:set({ icon = os.date("%a %b %d"), label = os.date("%H:%M") })
 end)
-
-calendar:subscribe("mouse.clicked", function(env)
-    printTable(env)
-end)
