@@ -29,9 +29,21 @@ in
         systemd-boot = {
           enable = true;
           configurationLimit = 5;
+          consoleMode = "max";
         };
         efi.canTouchEfiVariables = true;
+
       };
+
+      boot.initrd.systemd.enable = true;
+      # exclude xhci_pci/usb_storage/usbhid from initrd. HP printer on usb3-port2 is slow to enumerate and blocks udevd for ~90s
+      boot.initrd.availableKernelModules = [
+        "nvme"
+        "ahci"
+        "sd_mod"
+      ];
+
+      systemd.services.NetworkManager-wait-online.enable = false;
     };
 
   configurations.homeManager."eric@narwhal" = mkHome {

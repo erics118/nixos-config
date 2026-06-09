@@ -512,7 +512,7 @@
       "locked": {
         "dir": "nix",
         "lastModified": 1780877386,
-        "narHash": "sha256-ONH1BV0uoT3cIQDlLN9ch4MYQpuV/VE22+rrMy6KfB0=",
+        "narHash": "sha256-K+hc19t45JUJ9ZydShsFh9PkVXvaOmRpmP37B2wXpwU=",
         "owner": "erics118",
         "repo": "wezterm",
         "rev": "9d0cd8f26761411d5c6ad639bc6774b916f93cf5",

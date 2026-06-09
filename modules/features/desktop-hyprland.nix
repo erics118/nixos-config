@@ -28,7 +28,7 @@
     };
 
   flake.modules.nixos.desktop-hyprland =
-    { pkgs, ... }:
+    { config, pkgs, ... }:
     {
       programs.hyprland.enable = true;
       programs.hyprland.withUWSM = true; # systemd-managed session
@@ -46,7 +46,8 @@
       services.greetd = {
         enable = true;
         settings.default_session = {
-          command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd 'uwsm start hyprland-uwsm.desktop'";
+          # manually specify sessions to prevent duplication
+          command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --asterisks --sessions ${config.services.displayManager.sessionData.desktops}/share/xsessions:${config.services.displayManager.sessionData.desktops}/share/wayland-sessions --cmd 'uwsm start hyprland-uwsm.desktop'";
           user = "greeter";
         };
       };

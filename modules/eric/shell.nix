@@ -89,6 +89,8 @@
 
           ws = "wezterm cli spawn -- ";
 
+          reboot-windows = "sudo systemctl reboot --boot-loader-entry=auto-windows";
+
           # # is an extended-glob operator in zsh; disable globbing so flake
           # refs like nixpkgs#foo work without quoting
           nix = "noglob nix";
