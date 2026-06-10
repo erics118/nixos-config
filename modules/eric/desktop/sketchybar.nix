@@ -1,12 +1,10 @@
 {
-  flake.modules.homeManager.darwin =
-    { config, ... }:
-    {
-      # single live-symlink: edits to lua/scripts take effect without a rebuild
-      # C helpers continue to build in place via helpers/*/makefile
-      home.file.".config/sketchybar".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.flake/modules/eric/desktop/sketchybar";
-    };
+  flake.modules.homeManager.darwin = { config, ... }: {
+    # single live-symlink: edits to lua/scripts take effect without a rebuild
+    # C helpers continue to build in place via helpers/*/makefile
+    home.file.".config/sketchybar".source =
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.flake/modules/eric/desktop/sketchybar";
+  };
 
   flake.modules.darwin.base = {
     launchd.user.agents.sketchybar = {
@@ -20,8 +18,8 @@
         RunAtLoad = true;
         KeepAlive = true;
         ProcessType = "Interactive";
-        StandardOutPath = "/opt/homebrew/var/log/sketchybar/sketchybar.out.log";
-        StandardErrorPath = "/opt/homebrew/var/log/sketchybar/sketchybar.err.log";
+        StandardOutPath = "/tmp/sketchybar_eric.out.log";
+        StandardErrorPath = "/tmp/sketchybar_eric.err.log";
       };
     };
   };

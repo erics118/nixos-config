@@ -1,5 +1,4 @@
-{ inputs, ... }:
-{
+{ inputs, ... }: {
   # aliases 'pkgs.inputs.${flake}' to the flake's packages
   # eg: pkgs.inputs.nixvim.default
   flake.overlays.flake-inputs = final: _: {

@@ -1,9 +1,7 @@
 {
-  flake.modules.homeManager.darwin =
-    { repoFile, ... }:
-    {
-      home.file.".config/karabiner.edn".source = repoFile "modules/eric/desktop/karabiner/karabiner.edn";
-    };
+  flake.modules.homeManager.darwin = { repoFile, ... }: {
+    home.file.".config/karabiner.edn".source = repoFile "modules/eric/desktop/karabiner/karabiner.edn";
+  };
 
   # flake.modules.darwin.base = {
   #   # re-run goku when karabiner.edn changes

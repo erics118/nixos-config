@@ -1,5 +1,4 @@
-{ inputs, ... }:
-{
+{ inputs, ... }: {
   # custom wezterm fork, overriding the one from nixpkgs globally
   flake.overlays.wezterm =
     final: _:

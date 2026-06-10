@@ -111,17 +111,13 @@ local function has_value(tab, val)
 end
 
 local window_query2 = [[
-yabai -m query --windows space,title,app,is-sticky,stack-index,is-hidden 2>/dev/null | jq'
-  map(select( (."is-sticky" or ."is-hidden" or (.title == "")) | not ))
+yabai -m query --windows space,title,app,is-sticky,stack-index,is-hidden 2>/dev/null | jq '
+  map(select((."is-sticky" or ."is-hidden" or (.title == "")) | not))
   | sort_by(.space, ."stack-index")
   | group_by(.space)
-  | map({
-      (.[0].space|tostring):
-        map(.app)
-    })
+  | map({ (.[0].space|tostring): map(.app) })
   | add
-'
-]] .. [[ || echo '{}']]
+' || echo '{}']]
 
 function printTable(t, indent)
     indent = indent or 0

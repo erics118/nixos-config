@@ -1,5 +1,4 @@
-{ inputs, ... }:
-{
+{ inputs, ... }: {
   # adversarial-review wrapper
   # the upstream script writes artifacts/logs/tracking.json next to itself,
   # so we stage symlinks in $XDG_STATE_HOME at runtime and exec from there.

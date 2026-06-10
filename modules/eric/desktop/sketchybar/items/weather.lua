@@ -307,7 +307,7 @@ weather:subscribe({ "forced", "routine" }, function()
     end
 
     sbar.exec(
-        'curl -fsSL "https://api.weatherapi.com/v1/forecast.json?key='
+        '/usr/bin/curl -fsSL "https://api.weatherapi.com/v1/forecast.json?key='
             .. api_key
             .. '&q=auto:ip&days=1&aqi=yes&alerts=no"',
         function(data)

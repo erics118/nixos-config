@@ -1,30 +1,28 @@
 {
-  flake.modules.nixos.docker =
-    { pkgs, ... }:
-    {
-      virtualisation.docker = {
+  flake.modules.nixos.docker = { pkgs, ... }: {
+    virtualisation.docker = {
+      enable = true;
+
+      autoPrune = {
         enable = true;
-
-        autoPrune = {
-          enable = true;
-          dates = "weekly";
-          flags = [
-            "--all"
-            "--volumes"
-          ];
-        };
-
-        daemon.settings = {
-          live-restore = true;
-
-          features = {
-            buildkit = true;
-          };
-        };
+        dates = "weekly";
+        flags = [
+          "--all"
+          "--volumes"
+        ];
       };
 
-      users.users.eric.extraGroups = [ "docker" ];
+      daemon.settings = {
+        live-restore = true;
 
-      environment.systemPackages = with pkgs; [ docker-compose ];
+        features = {
+          buildkit = true;
+        };
+      };
     };
+
+    users.users.eric.extraGroups = [ "docker" ];
+
+    environment.systemPackages = with pkgs; [ docker-compose ];
+  };
 }

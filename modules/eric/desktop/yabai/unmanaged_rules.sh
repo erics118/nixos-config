@@ -11,16 +11,16 @@ apps=(
   "AdGuard for Safari" "AdGuard VPN" "AltTab" "Authy Desktop"
   "Background Music" "Bartender.*" "BetterDiscord" "Box"
   "CleanShot.*" "Desk View" "Dropbox Dash" "Dropover" "Dropshare.*"
-  "Espanso" "Find Any File" "Finder" "FiveNotes" "Flow" "Google Drive"
+  "Espanso" "Find Any File" "ainder" "FiveNotes" "Flow" "Google Drive"
   "GPG Keychain" "Grammarly Desktop" "Hammerspoon" "HazeOver" "Hidden Bar"
   "Hyperduck" "Installer" "JetBrains Toolbox" "Karabiner-MultitouchExtension"
   "MacGPT" "Main" "MediaMate" "Menuwhere" "Microsoft Remote Desktop"
   "NepTunes" "NoteApp" "OmniDiskSweeper" "OnyX" "Photo Booth"
   "Plain Text Editor" "Print Center" "Python" "Rectangle.*" "SideNotes"
   "Silicio" "Siri" "Smooze.*" "Stickies" "System .*" "Tailscale" "Tot"
-  "Velja" "Raycast" "Mac Mouse Fix" "Linear Mouse" "Archive Utility"
+  "Velja" "Raycast( Beta)?" "Mac Mouse Fix" "Linear Mouse" "Archive Utility"
   "Actions" "Koofr" "Antinote" "FaceTime" "Alcove" "java" "CLion"
-  "Parallels Desktop" "particle" "ocaml-voxel"
+  "Parallels Desktop" "particle" "ocaml-voxel" "Windows App" "Amazon Workspaces"
 )
 app_regex=$(printf '%s|' "${apps[@]}" | sed 's/|$//')
 
