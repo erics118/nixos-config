@@ -13,6 +13,9 @@ for i = 1, 10, 1 do
             string = i,
             color = colors.text,
             highlight_color = colors.red,
+            font = {
+                style = "Bold",
+            },
         },
         label = {
             padding_left = 6,
@@ -98,7 +101,7 @@ local space_window_observer = sbar.add_item("space_window_observer", {
 --     background = {
 --         color = colors.with_alpha(colors.grey, 0.0),
 --         border_color = colors.with_alpha(colors.item.bg, 0.0),
---     }
+--     },
 -- })
 
 local function has_value(tab, val)
@@ -228,7 +231,7 @@ end)
 --         })
 --     end)
 -- end)
-
+--
 -- spaces_indicator:subscribe("mouse.exited", function(env)
 --     sbar.animate("tanh", 20, function()
 --         spaces_indicator:set({
@@ -241,7 +244,7 @@ end)
 --         })
 --     end)
 -- end)
-
+--
 -- spaces_indicator:subscribe("mouse.clicked", function(env)
 --     sbar.trigger("swap_menus_and_spaces")
 -- end)

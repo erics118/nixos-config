@@ -62,7 +62,7 @@ yabai:subscribe({ "front_app_switched", "yabai", "window_focused", "forced" }, f
             -- sbar.animate("sin", 10, function()
             -- print(label, icon, c)
             yabai:set({
-                drawing = icon ~= nil,
+                drawing = sbar.get_mode() == "default" and icon ~= nil,
                 icon = { color = c, string = icon, width = icon and 25 or 0 },
                 -- label = { string = label, width = label and "dynamic" or 0 },
             })

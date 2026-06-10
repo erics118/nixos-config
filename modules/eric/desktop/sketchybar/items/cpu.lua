@@ -2,10 +2,30 @@
 -- the cpu load data, which is fired every 2.0 seconds.
 sbar.exec("killall cpu_load &> /dev/null; $CONFIG_DIR/helpers/event_providers/cpu_load/bin/cpu_load cpu_update 2.0")
 
-local cpu = sbar.add_graph("cpu", 60, {
+local cpu_user = sbar.add_graph("cpu.user", 30, {
     position = "right",
     graph = {
         color = colors.blue,
+        fill_color = colors.with_alpha(colors.blue, 0.2),
+    },
+    background = {
+        height = 22,
+        color = { alpha = 0 },
+        border_color = { alpha = 0 },
+        drawing = true,
+    },
+    y_offset = -2,
+    icon = { drawing = false },
+    label = { drawing = false },
+    padding_left = -39,
+    padding_right = 0,
+})
+
+local cpu_sys = sbar.add_graph("cpu.sys", 30, {
+    position = "right",
+    graph = {
+        color = colors.red,
+        fill_color = colors.with_alpha(colors.red, 0.2),
     },
     background = {
         height = 22,
@@ -29,28 +49,23 @@ local cpu = sbar.add_graph("cpu", 60, {
     padding_right = 9,
 })
 
-cpu:subscribe("cpu_update", function(env)
-    -- Also available: env.user_load, env.sys_load
-    local load = tonumber(env.total_load)
+cpu_user:subscribe("cpu_update", function(env)
+    local load = tonumber(env.user_load) + tonumber(env.sys_load)
     if 0 > load or load > 100 then
         return
     end
 
-    cpu:push({ load / 100. })
+    cpu_user:push({ load / 100. })
+end)
 
-    local color = colors.blue
-    if load > 30 then
-        if load < 60 then
-            color = colors.yellow
-        elseif load < 80 then
-            color = colors.orange
-        else
-            color = colors.red
-        end
+cpu_sys:subscribe("cpu_update", function(env)
+    local load = tonumber(env.sys_load)
+    if 0 > load or load > 100 then
+        return
     end
 
-    cpu:set({
-        graph = { color = color },
-        label = load .. "%",
-    })
+    cpu_sys:push({ load / 100. })
+
+    local total = tonumber(env.total_load)
+    cpu_sys:set({ label = total .. "%" })
 end)

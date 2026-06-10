@@ -12,5 +12,5 @@ sbar.bar({
     position = "top",
     padding_left = 10,
     padding_right = 10,
-    y_offset = -1,
+    y_offset = -2,
 })

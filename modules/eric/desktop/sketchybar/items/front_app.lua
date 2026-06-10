@@ -2,7 +2,7 @@ local front_app = sbar.add_label_item("front_app", {
     display = "active",
     label = {
         font = {
-            style = "Black",
+            style = "Heavy",
         },
         padding_left = 0,
     },

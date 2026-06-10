@@ -9,9 +9,9 @@ local calendar = sbar.add_item("calendar", {
     },
     label = {
         font = {
-            -- features = "tnum",
+            features = "tnum",
             -- family = "JetBrains Mono",
-            -- style = "Heavy",
+            style = "Semibold",
             -- size = 20.0,
         },
         padding_left = 0,
@@ -22,5 +22,5 @@ local calendar = sbar.add_item("calendar", {
 })
 
 calendar:subscribe({ "forced", "routine", "system_woke" }, function(env)
-    calendar:set({ icon = os.date("%a %b %d"), label = os.date("%H:%M") })
+    calendar:set({ icon = os.date("%a %b %d"), label = os.date("%H:%M:%S") })
 end)

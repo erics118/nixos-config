@@ -8,7 +8,8 @@ local apple = sbar.add_icon_item("apple", {
         string = icons.apple,
         color = settings.mode_colors.default,
     },
-    padding_left = 5,
+    padding_left = 3,
+    padding_right = 3,
     background = { drawing = false },
     updates = false,
     update_freq = 1,
@@ -32,13 +33,13 @@ local function toggle_zen()
             sbar.set("battery", { popup = { drawing = false } })
         end
 
-        sbar.set("skhd", { drawing = switch })
+        -- sbar.set("skhd", { drawing = switch })
         sbar.set("yabai", { drawing = switch })
         sbar.set("front_app", { drawing = switch })
-        sbar.set("cpu", { drawing = switch })
+        sbar.set("/cpu\\..*/", { drawing = switch })
         sbar.set("battery", { drawing = switch })
         sbar.set("calendar", { icon = { drawing = switch } })
-        sbar.set("/media.*/", { drawing = switch })
+        -- sbar.set("/media.*/", { drawing = switch })
         sbar.set("weather", { drawing = switch })
 
         sbar.set("/space\\..*/", { background = { drawing = switch }, label = { drawing = switch } })
@@ -70,9 +71,9 @@ apple:subscribe("mouse.clicked", function(env)
     if env.BUTTON == "left" then
         toggle_zen()
     end
-    -- if env.BUTTON == "right" then
-    --     sbar.trigger("swap_menus_and_spaces", { direction = 1 })
-    -- end
+    if env.BUTTON == "right" then
+        sbar.trigger("swap_menus_and_spaces", { direction = 1 })
+    end
 end)
 
 -- apple:subscribe("mouse.scrolled", function(env)

@@ -15,47 +15,66 @@ local menu_items = {}
 
 for i = 1, max_items, 1 do
     menu_items[i] = sbar.add_label_item("menu." .. i, {
-        padding_left = 3,
-        padding_right = 3,
+        padding_left = 0,
+        padding_right = 0,
         drawing = false,
         label = {
             font = {
-                style = i == 1 and "Heavy" or "Semibold",
+                style = i == 1 and "Bold" or "Regular",
             },
-            padding_left = 7,
-            padding_right = i % 2 == 0 and 7 or 6,
+            padding_left = 10,
+            padding_right = 11 + (i == 2 and 1 or 0),
         },
         click_script = "$CONFIG_DIR/helpers/menus/bin/menus -s " .. i,
         background = { drawing = false },
     })
 end
 
-local function update_menus(env)
+local function update_menus(env, on_done)
     sbar.exec("$CONFIG_DIR/helpers/menus/bin/menus -l", function(menus)
         sbar.set("/menu\\..*/", { drawing = false })
         local id = 1
         for menu in string.gmatch(menus, "[^\r\n]+") do
-            if id < max_items then
+            if id <= max_items then
                 menu_items[id]:set({ label = menu, drawing = true })
             else
                 break
             end
             id = id + 1
         end
+
+        -- extra 1px padding on second item if there are more than 1+5 menus to match macos system
+        -- if id > 7 then
+        --     menu_items[2]:set({ label = { padding_right = 12 } })
+        -- else
+        --     menu_items[2]:set({ label = { padding_right = 11 } })
+        -- end
+
+        if on_done then
+            on_done()
+        end
     end)
 end
 
 menu_watcher:subscribe("front_app_switched", update_menus)
 
+local function apply_to_space_items(conf)
+    -- sbar.set("skhd", conf)
+    sbar.set("/space\\..*/", conf)
+    sbar.set("yabai", conf)
+    sbar.set("front_app", conf)
+    -- sbar.set("/media.*/", conf)
+end
+
+local function apply_to_menu_items(conf)
+    sbar.set("/menu\\..*/", conf)
+end
+
 space_menu_swap:subscribe("swap_menus_and_spaces", function(env)
     env.direction = env.direction or 1
-    -- sbar.animate("sin", 20, function()
-    --     sbar.set("skhd", { y_offset = -30 })
-    --     sbar.set("yabai", { y_offset = -30 })
-    --     sbar.set('/space\\..*/', { y_offset = -30 })
-    --     sbar.set("front_app", { y_offset = -30 })
-    -- end)
-    -- local drawing = menu_items[1]:query().geometry.drawing == "on"
+
+    local offset = 20 * env.direction
+
     local mode = sbar.get_mode()
 
     if mode == "zen" then
@@ -69,24 +88,16 @@ space_menu_swap:subscribe("swap_menus_and_spaces", function(env)
         sbar.animate("sin", 10, function()
             sbar.set("apple", { icon = { color = settings.mode_colors.default } })
 
-            sbar.set("/menu\\..*/", { y_offset = 30 * env.direction })
+            apply_to_menu_items({ y_offset = offset })
         end)
 
-        sbar.delay(0.1, function()
-            sbar.set("/menu\\..*/", { drawing = false })
+        sbar.delay(0.18, function()
+            apply_to_menu_items({ drawing = false })
 
-            sbar.set("skhd", { drawing = true, y_offset = -30 * env.direction })
-            sbar.set("/space\\..*/", { drawing = true, y_offset = -30 * env.direction })
-            sbar.set("yabai", { drawing = true, y_offset = -30 * env.direction })
-            sbar.set("front_app", { drawing = true, y_offset = -30 * env.direction })
-            sbar.set("/media.*/", { drawing = true, y_offset = -30 * env.direction })
+            apply_to_space_items({ drawing = true, y_offset = -offset })
 
             sbar.animate("sin", 10, function()
-                sbar.set("skhd", { y_offset = 0 })
-                sbar.set("/space\\..*/", { y_offset = 0 })
-                sbar.set("yabai", { y_offset = 0 })
-                sbar.set("front_app", { y_offset = 0 })
-                sbar.set("/media.*/", { y_offset = 0 })
+                apply_to_space_items({ y_offset = 0 })
             end)
         end)
     else
@@ -95,27 +106,19 @@ space_menu_swap:subscribe("swap_menus_and_spaces", function(env)
         sbar.animate("sin", 10, function()
             sbar.set("apple", { icon = { color = settings.mode_colors.menu } })
 
-            sbar.set("skhd", { y_offset = 30 * env.direction })
-            sbar.set("/space\\..*/", { y_offset = 30 * env.direction })
-            sbar.set("yabai", { y_offset = 30 * env.direction })
-            sbar.set("front_app", { y_offset = 30 * env.direction })
-            sbar.set("/media.*/", { y_offset = 30 * env.direction })
+            apply_to_space_items({ y_offset = offset })
         end)
 
-        sbar.delay(0.1, function()
-            sbar.set("skhd", { drawing = false, y_offset = 0 })
-            sbar.set("/space\\..*/", { drawing = false, y_offset = 0 })
-            sbar.set("yabai", { drawing = false, y_offset = 0 })
-            sbar.set("front_app", { drawing = false, y_offset = 0 })
-            sbar.set("/media.*/", { drawing = false, y_offset = 0 })
+        sbar.delay(0.18, function()
+            apply_to_space_items({ drawing = false, y_offset = 0 })
 
-            sbar.set("/menu\\..*/", { y_offset = -30 * env.direction })
-            update_menus()
+            apply_to_menu_items({ y_offset = -offset })
 
-            sbar.animate("sin", 10, function()
-                sbar.set("/menu\\..*/", { y_offset = 0 })
+            update_menus(nil, function()
+                sbar.animate("sin", 10, function()
+                    apply_to_menu_items({ y_offset = 0 })
+                end)
             end)
         end)
-        -- update_menus()
     end
 end)

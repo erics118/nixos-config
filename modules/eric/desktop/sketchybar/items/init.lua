@@ -1,6 +1,6 @@
 -- left
 require("items.apple")
-require("items.skhd")
+-- require("items.skhd")
 require("items.menus")
 require("items.spaces")
 require("items.yabai")
