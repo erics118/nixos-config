@@ -3,45 +3,61 @@ let
   m = config.flake.modules;
 in
 {
-  configurations.nixos.narwhal.module = { pkgs, ... }: {
+  configurations.nixos.narwhal.module = {
     imports = [
       m.nixos.base
       m.nixos.ssh-server
       m.nixos.sops
       m.nixos.docker
       m.nixos.tailscale
+      m.nixos.adguardhome
       m.nixos.cachix-push
       m.nixos.desktop-linux
       m.nixos.desktop-hyprland
       m.nixos.hp-printer
       m.nixos.nvidia
+      m.nixos.server
+      m.nixos.nas
       ./_hardware/x86_64-narwhal.nix
     ];
 
     home-manager.users.eric.imports = [ m.homeManager.desktop-hyprland ];
 
     nixpkgs.hostPlatform = "x86_64-linux";
+
     networking.hostName = "narwhal";
 
-    environment.systemPackages = [ pkgs.wezterm ];
-
-    boot.loader = {
-      systemd-boot = {
-        enable = true;
-        configurationLimit = 5;
-        consoleMode = "max";
-      };
-      efi.canTouchEfiVariables = true;
-
+    fileSystems."/mnt/external" = {
+      device = "/dev/disk/by-uuid/a4e08c36-c690-4d1d-a8dc-7b207e1d3418";
+      fsType = "ext4";
+      options = [
+        "nofail"
+        "noatime"
+        "x-systemd.device-timeout=10s"
+      ];
     };
 
-    boot.initrd.systemd.enable = true;
-    # exclude xhci_pci/usb_storage/usbhid from initrd. HP printer on usb3-port2 is slow to enumerate and blocks udevd for ~90s
-    boot.initrd.availableKernelModules = [
-      "nvme"
-      "ahci"
-      "sd_mod"
-    ];
+    boot = {
+      loader = {
+        systemd-boot = {
+          enable = true;
+          configurationLimit = 5;
+          consoleMode = "max";
+        };
+        efi.canTouchEfiVariables = true;
+      };
+
+      initrd = {
+        systemd.enable = true;
+
+        # exclude xhci_pci/usb_storage/usbhid from initrd. HP printer on usb3-port2 is slow to enumerate and blocks udevd for ~90s
+        availableKernelModules = [
+          "nvme"
+          "ahci"
+          "sd_mod"
+        ];
+      };
+    };
 
     systemd.services.NetworkManager-wait-online.enable = false;
   };
