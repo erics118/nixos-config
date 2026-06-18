@@ -38,6 +38,9 @@
           "!.env.example"
           ".antigravitycli"
         ];
+        lfs = {
+          enable = true;
+        };
         settings = {
           user = {
             name = "erics118";
@@ -46,6 +49,9 @@
           };
           init.defaultBranch = "main";
           color.ui = "auto";
+          # explicit CA bundle so git's OpenSSL works even when the
+          # NIX_SSL_CERT_FILE env var is stripped (e.g. by homebrew)
+          http.sslCAInfo = lib.mkIf isDarwin "/etc/ssl/certs/ca-certificates.crt";
           core = {
             pager = "delta";
             editor = "nvim";
@@ -72,12 +78,6 @@
             conflictStyle = "zdiff3";
           };
           mergetool.prompt = false;
-          filter.lfs = {
-            smudge = "git-lfs smudge -- %f";
-            process = "git-lfs filter-process";
-            required = true;
-            clean = "git-lfs clean -- %f";
-          };
           alias = {
             tokei = "!tokei --vcs=git";
             lg = "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit";

@@ -14,7 +14,6 @@ in
 
   configurations.homeManager."eric@orca" = mkHome {
     system = "aarch64-darwin";
-    homeDirectory = "/Users/eric";
     imports = [ m.homeManager.darwin ];
   };
 }

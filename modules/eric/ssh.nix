@@ -4,6 +4,17 @@
 
     let
       inherit (pkgs.stdenv.hostPlatform) isDarwin;
+      mkGit =
+        hostname: filename:
+        {
+          inherit hostname;
+          user = "git";
+          identitiesOnly = true;
+        }
+        // lib.optionalAttrs (!isDarwin) {
+          identityFile = "~/.ssh/${filename}";
+        };
+
     in
     {
       programs.ssh = {
@@ -19,19 +30,9 @@
         ];
 
         settings = {
-          "github.com" = {
-            hostname = "github.com";
-            user = "git";
-            identityFile = "~/.ssh/id_ed25519_github_erics118";
-            identitiesOnly = true;
-          };
+          "github.com" = mkGit "github.com" "id_ed25519_github_erics118";
 
-          "github.coecis.cornell.edu" = {
-            hostname = "github.coecis.cornell.edu";
-            user = "git";
-            identityFile = "~/.ssh/id_ed25519_cornell";
-            identitiesOnly = true;
-          };
+          "github.coecis.cornell.edu" = mkGit "github.coecis.cornell.edu" "id_ed25519_cornell";
 
           "*" = {
             forwardAgent = false;
@@ -42,7 +43,7 @@
             hashKnownHosts = false;
             userKnownHostsFile = "~/.ssh/known_hosts";
             controlMaster = "no";
-            controlPath = "~/.ssh/master-%r@%n:%p";
+            controlPath = "~/.ssh/master-%n-%C";
             controlPersist = "no";
             identityAgent = lib.mkIf isDarwin "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
           };

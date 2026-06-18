@@ -23,7 +23,7 @@ for i = 1, max_items, 1 do
                 style = i == 1 and "Bold" or "Regular",
             },
             padding_left = 10,
-            padding_right = 11 + (i == 2 and 1 or 0),
+            padding_right = 11, -- + (i == 2 and 1 or 0),
         },
         click_script = "$CONFIG_DIR/helpers/menus/bin/menus -s " .. i,
         background = { drawing = false },

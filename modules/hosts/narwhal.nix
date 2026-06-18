@@ -3,7 +3,7 @@ let
   m = config.flake.modules;
 in
 {
-  configurations.nixos.narwhal.module = { ... }: {
+  configurations.nixos.narwhal.module = { pkgs, ... }: {
     imports = [
       m.nixos.base
       m.nixos.ssh-server
@@ -22,6 +22,8 @@ in
 
     nixpkgs.hostPlatform = "x86_64-linux";
     networking.hostName = "narwhal";
+
+    environment.systemPackages = [ pkgs.wezterm ];
 
     boot.loader = {
       systemd-boot = {
@@ -46,7 +48,6 @@ in
 
   configurations.homeManager."eric@narwhal" = mkHome {
     system = "x86_64-linux";
-    homeDirectory = "/home/eric";
     imports = [ m.homeManager.desktop-hyprland ];
   };
 }

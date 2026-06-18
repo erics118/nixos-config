@@ -1,19 +1,43 @@
-{ inputs, ... }: {
+{ inputs, ... }:
+let
+  head = name: {
+    inherit name;
+    args = [ "HEAD" ];
+  };
+in
+{
   flake.modules.darwin.base = {
     imports = [ inputs.nix-homebrew.darwinModules.nix-homebrew ];
 
     nix-homebrew = {
       user = "eric";
       enable = true;
+      enableRosetta = false;
       autoMigrate = true;
+      mutableTaps = true;
+
+      # we need to trust taps before we can use them
+      trust = {
+        formulae = [
+          # "asmvik/formulae/yabai"
+        ];
+        casks = [ ];
+        commands = [ ];
+        taps = [
+          "felixkratz/formulae"
+          "asmvik/formulae"
+          "erics118/tap"
+          "docker/tap"
+        ];
+      };
     };
 
     homebrew = {
       enable = true;
       onActivation = {
-        autoUpdate = false;
+        autoUpdate = true;
         cleanup = "zap"; # or "none"
-        upgrade = false;
+        upgrade = true;
       };
       global = {
         brewfile = true;
@@ -21,8 +45,9 @@
 
       taps = [
         "felixkratz/formulae"
-        "koekeishiya/formulae"
+        "asmvik/formulae"
         "erics118/tap"
+        "docker/tap"
       ];
 
       brews = [
@@ -30,20 +55,21 @@
           name = "macos-trash";
           link = true;
         }
-        "felixkratz/formulae/sketchybar"
-        # "felixkratz/formulae/svim"
-        "koekeishiya/formulae/skhd"
-        {
-          name = "koekeishiya/formulae/yabai";
-          args = [ "HEAD" ];
-        }
+        (head "erics118/tap/sketchybar")
+        (head "asmvik/formulae/yabai")
+
         "erics118/tap/goku"
         "llvm"
+
+        "railway"
+        "vercel-cli"
+        "supabase"
       ];
 
       casks = [
         "1password"
         "font-sf-pro"
+        "docker/tap/sbx"
       ];
 
       masApps = { };

@@ -1,7 +1,6 @@
 {
-  flake.modules.homeManager.desktop-hyprland = { config, pkgs, ... }: {
-    home.file.".config/hypr".source =
-      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.flake/modules/eric/desktop/hyprland";
+  flake.modules.homeManager.desktop-hyprland = { pkgs, repoFile, ... }: {
+    home.file.".config/hypr".source = repoFile "modules/eric/desktop/hyprland";
 
     # Fixes the "Hyprland logo" default cursor. catppuccin-cursors is XCursor-only;
     # Hyprland falls back to XCursor when no hyprcursor theme is found.

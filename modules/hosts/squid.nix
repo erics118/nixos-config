@@ -20,6 +20,10 @@ in
     ];
     nixpkgs.hostPlatform = "x86_64-linux";
 
+    # public-facing host: override the trusted-LAN defaults from base-nixos.
+    # only ssh (22) is reachable; reach everything else over tailscale.
+    services.openssh.settings.PasswordAuthentication = lib.mkForce false;
+
     # extra modules just in case
     boot = {
       loader.grub.device = "/dev/sda";
@@ -39,6 +43,10 @@ in
       hostName = "squid";
       domain = "";
       nameservers = [ "8.8.8.8" ];
+      firewall = {
+        enable = lib.mkForce true;
+        allowedTCPPorts = [ 22 ];
+      };
       defaultGateway = {
         address = "172.31.1.1";
         interface = "eth0";
@@ -86,8 +94,5 @@ in
     services.udev.extraRules = ''ATTR{address}=="96:00:04:5a:c3:8b", NAME="eth0"'';
   };
 
-  configurations.homeManager."eric@squid" = mkHome {
-    system = "x86_64-linux";
-    homeDirectory = "/home/eric";
-  };
+  configurations.homeManager."eric@squid" = mkHome { system = "x86_64-linux"; };
 }

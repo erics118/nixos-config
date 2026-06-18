@@ -26,6 +26,7 @@
             /opt/homebrew/share/zsh/site-functions
             /usr/local/share/zsh/site-functions
             /usr/share/zsh/site-functions
+            ${pkgs.nix-zsh-completions}/share/zsh/vendor-completions
           )
 
           autoload -U compinit
@@ -51,15 +52,6 @@
         defaultKeymap = "emacs";
 
         history.path = "$HOME/.cache/zsh/history";
-
-        plugins = [
-          # completions for nix, nix-env, nix-shell, nixos-rebuild, etc.
-          {
-            name = "nix-zsh-completions";
-            file = "share/zsh/plugins/nix/nix-zsh-completions.plugin.zsh";
-            src = pkgs.nix-zsh-completions;
-          }
-        ];
 
         initContent = ''
           source "$ZDOTDIR/init.zsh"

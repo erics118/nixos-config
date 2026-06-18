@@ -55,6 +55,7 @@
 
           # fonts
           nerd-fonts.hack
+          nerd-fonts.fira-code
         ]
         ++ lib.optionals stdenv.hostPlatform.isDarwin [
 
@@ -71,12 +72,14 @@
           glow
           nextdns
           serve
+          terminal-notifier
 
           # fonts
           sketchybar-app-font
 
           # development
           lua5_5 # for sketchybar
+
           # apps
           espanso
         ];

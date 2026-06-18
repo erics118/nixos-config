@@ -39,7 +39,7 @@ c.ssh_domains = {
 }
 c.send_composed_key_when_left_alt_is_pressed = false
 c.font = wezterm.font("Hack Nerd Font")
-c.font_size = 14.0
+c.font_size = 13.0
 
 -- window
 if wezterm.target_triple:find("linux") then

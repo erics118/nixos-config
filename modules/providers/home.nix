@@ -9,15 +9,14 @@ let
   mkHome =
     {
       system,
-      homeDirectory,
       imports ? [ ],
     }:
     {
       inherit system;
-      module = {
+      module = { pkgs, ... }: {
         imports = [ config.flake.modules.homeManager.base ] ++ imports;
         home.username = "eric";
-        home.homeDirectory = homeDirectory;
+        home.homeDirectory = if pkgs.stdenv.hostPlatform.isDarwin then "/Users/eric" else "/home/eric";
       };
     };
 in

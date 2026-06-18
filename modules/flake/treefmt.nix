@@ -14,12 +14,7 @@
           "*.age"
         ];
         on-unmatched = "info";
-        formatter.stylua.options = [
-          "--indent-type"
-          "Spaces"
-          "--indent-width"
-          "4"
-        ];
+        # stylua config (indent type/width) lives in stylua.toml
       };
 
       programs = {
