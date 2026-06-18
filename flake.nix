@@ -10,6 +10,13 @@
     # pure nix helper, doesn't depend on nixpkgs
     import-tree.url = "github:vic/import-tree";
 
+    # private bundle: sops secrets, recipients, host-specific config.
+    # exports flakeModules.default (import-tree of its ./modules).
+    nixos-config-private = {
+      url = "git+ssh://git@github.com/erics118/nixos-config-private.git";
+      inputs.import-tree.follows = "import-tree";
+    };
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -50,7 +57,8 @@
     };
 
     wezterm-src = {
-      url = "github:erics118/wezterm?ref=eric&dir=nix";
+      # we aren't using github: because dir= will result in unstable hashes
+      url = "git+https://github.com/erics118/wezterm?ref=eric&dir=nix&shallow=1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -70,7 +78,10 @@
 
   outputs =
     inputs:
-    inputs.flake-parts.lib.mkFlake {
-      inherit inputs;
-    } (inputs.import-tree ./modules);
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [
+        (inputs.import-tree ./modules)
+        inputs.nixos-config-private.flakeModules.default
+      ];
+    };
 }

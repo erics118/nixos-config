@@ -327,11 +327,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1781812405,
-        "narHash": "sha256-IFatXk1u8Iu3WZn4NK2eQ4jF0Nt/sctnHgQCuNuTGO0=",
+        "lastModified": 1781821555,
+        "narHash": "sha256-1KL4ILw/yByoIktX17gQBHr5Kzp341fKy8fRD7bUnVo=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "e3e5b24494c07001bfb850128d67228947915116",
+        "rev": "3909a50ab46da8a3220e119c05808ac8aed020a7",
         "type": "github"
       },
       "original": {
@@ -376,6 +376,26 @@
         "owner": "nix-community",
         "repo": "nix-index-database",
         "type": "github"
+      }
+    },
+    "nixos-config-private": {
+      "inputs": {
+        "import-tree": [
+          "import-tree"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781823199,
+        "narHash": "sha256-/kGWwUuz9JY2OdAGQj2n69R36QA5RldhA9x3BvFuL5Q=",
+        "ref": "refs/heads/main",
+        "rev": "1c5323477c0f59385481476e7c5e6920ec374b69",
+        "revCount": 1,
+        "type": "git",
+        "url": "ssh://git@github.com/erics118/nixos-config-private.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/erics118/nixos-config-private.git"
       }
     },
     "nixpkgs": {
@@ -496,6 +516,7 @@
         "llm-agents": "llm-agents",
         "nix-homebrew": "nix-homebrew",
         "nix-index-database": "nix-index-database",
+        "nixos-config-private": "nixos-config-private",
         "nixpkgs": "nixpkgs_3",
         "nixvim": "nixvim",
         "sops-nix": "sops-nix",
@@ -667,18 +688,19 @@
       "locked": {
         "dir": "nix",
         "lastModified": 1780877386,
-        "narHash": "sha256-ONH1BV0uoT3cIQDlLN9ch4MYQpuV/VE22+rrMy6KfB0=",
-        "owner": "erics118",
-        "repo": "wezterm",
+        "narHash": "sha256-K+hc19t45JUJ9ZydShsFh9PkVXvaOmRpmP37B2wXpwU=",
+        "ref": "eric",
         "rev": "9d0cd8f26761411d5c6ad639bc6774b916f93cf5",
-        "type": "github"
+        "shallow": true,
+        "type": "git",
+        "url": "https://github.com/erics118/wezterm"
       },
       "original": {
         "dir": "nix",
-        "owner": "erics118",
         "ref": "eric",
-        "repo": "wezterm",
-        "type": "github"
+        "shallow": true,
+        "type": "git",
+        "url": "https://github.com/erics118/wezterm"
       }
     },
     "zlib": {
