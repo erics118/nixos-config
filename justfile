@@ -6,10 +6,10 @@ system_target := if os() == "macos" { "darwin" } else { "os" }
 default:
     @just --list --unsorted
 
-# update all flake inputs except wezterm-src
+# update all flake inputs
 [group('flake')]
 update-all:
-    nix flake update $(nix flake metadata --json | jq -r '.locks.nodes.root.inputs | keys[] | select(. != "wezterm-src")')
+    nix flake update
 
 # update a single flake input
 [group('flake')]

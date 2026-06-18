@@ -1,6 +1,4 @@
 {
-  description = "NixOS configuration for nixos";
-
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -23,7 +21,7 @@
     };
 
     darwin = {
-      url = "github:LnL7/nix-darwin/master";
+      url = "github:nix-darwin/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -65,7 +63,14 @@
       url = "github:alecnielsen/adversarial-review";
       flake = false;
     };
+
+    # explicitly don't follow nixpkgs for binary cache hits
+    llm-agents.url = "github:numtide/llm-agents.nix";
   };
 
-  outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
+  outputs =
+    inputs:
+    inputs.flake-parts.lib.mkFlake {
+      inherit inputs;
+    } (inputs.import-tree ./modules);
 }
