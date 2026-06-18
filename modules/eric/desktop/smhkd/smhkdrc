@@ -3,6 +3,8 @@ blacklist = [
     "Windows App"
 ]
 
+sequence_command = "sketchybar --trigger smhkd_sequence SEQUENCE='{}'"
+
 define_modifier mod = alt
 define_modifier hyper = cmd + alt + ctrl + shift
 define_modifier hammer = cmd + alt + shift
@@ -37,14 +39,8 @@ mod + b :
 mod + shift + b :
     front -n "Google Chrome"
 
-# mod + 1 :
-#     front -n "1Password"
-
 mod + c :
     front -n "Fantastical"
-
-# mod + f :
-#     front -p "/System/Library/CoreServices/Finder.app"
 
 mod + g :
     front -n "Goodnotes"
@@ -118,16 +114,34 @@ mod + ctrl + {1,2,3,4,5,6,7,8,9} :
 
 # launcher namespace
 hyper + a ; 1 :
-    open 'raycast-x://extensions/abielzulio/chatgpt/ask'
+    front -n "1Password"
 
 hyper + a ; c :
     open 'raycast-x://extensions/thomas/color-picker/pick-color'
 
+hyper + a ; a :
+    front -p '/System/Applications/Utilities/Activity Monitor.app'
+
+hyper + a ; d :
+    front -n "Discord"
+
+hyper + a ; z :
+    front -n "zoom.us"
+
+hyper + a ; q :
+    front -n "Claude"
+
+hyper + a ; w :
+    front -n "ChatGPT"
+
+hyper + a ; r :
+    front -n "Preview"
+
 hyper + a ; f :
     open 'raycast-x://extensions/raycast/file-search/search-files'
 
-hyper + a ; h :
-    open 'raycast-x://extensions/abielzulio/chatgpt/conversation'
+# hyper + a ; h :
+#     open 'raycast-x://extensions/abielzulio/chatgpt/conversation'
 
 hyper + a ; k :
     open 'raycast-x://extensions/rolandleth/kill-process/index'
@@ -159,6 +173,9 @@ hyper + y ; s :
 
 hyper + y ; t :
     yabai -m window --toggle float && sketchybar --trigger yabai
+
+hyper + y ; p :
+    yabai -m window --toggle pip && sketchybar --trigger yabai
 
 hyper + y ; w :
     yabai -m window --close

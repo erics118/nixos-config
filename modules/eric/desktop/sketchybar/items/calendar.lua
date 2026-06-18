@@ -3,16 +3,13 @@ local calendar = sbar.add_item("calendar", {
     icon = {
         font = {
             style = "Heavy",
-            size = 12.0,
         },
         padding_left = 0,
     },
     label = {
         font = {
-            features = "tnum",
-            -- family = "JetBrains Mono",
+            features = "+tnum",
             style = "Semibold",
-            -- size = 20.0,
         },
         padding_left = 0,
         padding_right = 10,

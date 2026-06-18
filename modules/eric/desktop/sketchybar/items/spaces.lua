@@ -10,16 +10,15 @@ for i = 1, 10, 1 do
     local space = sbar.add_space("space." .. i, {
         space = i,
         icon = {
+            padding_left = 7,
+            padding_right = 3,
             string = i,
             color = colors.text,
             highlight_color = colors.red,
-            font = {
-                style = "Bold",
-            },
         },
         label = {
-            padding_left = 6,
-            padding_right = 8,
+            padding_left = 3,
+            padding_right = 3,
             color = colors.text,
             highlight_color = colors.text,
             font = "sketchybar-app-font:Regular:13.0",
