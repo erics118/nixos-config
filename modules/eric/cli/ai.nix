@@ -5,6 +5,7 @@
 
     # live-symlink so edits to claude-settings.json take effect without a rebuild
     home.file.".claude/settings.json".source = repoFile "modules/eric/cli/files/claude-settings.json";
+    home.file.".claude/CLAUDE.md".source = repoFile "modules/eric/cli/files/CLAUDE.md";
 
     programs.claude-code = {
       enable = true;
