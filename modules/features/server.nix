@@ -1,4 +1,3 @@
-{ ... }:
 {
   flake.modules.nixos.server = {
     systemd.sleep.settings.Sleep = {

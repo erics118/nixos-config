@@ -15,6 +15,7 @@
       nixYourShellInit = mkInit "nix-your-shell" "${pkgs.nix-your-shell}/bin/nix-your-shell zsh";
     in
     {
+      home.sessionVariables.COLORTERM = "truecolor";
 
       programs.zsh = {
         enable = true;

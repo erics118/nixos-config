@@ -14,8 +14,8 @@
           final.jq
           final.coreutils
           final.bash
-          final.claude-code
-          final.codex
+          final.inputs.llm-agents.claude-code
+          final.inputs.llm-agents.codex
         ];
         text = ''
           state_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/adversarial-review"

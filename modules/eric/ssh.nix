@@ -11,9 +11,7 @@
           user = "git";
           identitiesOnly = true;
         }
-        // lib.optionalAttrs (!isDarwin) {
-          identityFile = "~/.ssh/${filename}";
-        };
+        // lib.optionalAttrs (!isDarwin) { identityFile = "~/.ssh/${filename}"; };
 
     in
     {
