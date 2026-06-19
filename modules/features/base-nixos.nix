@@ -15,7 +15,6 @@
     nix = {
       settings = {
         log-lines = 50;
-        auto-optimise-store = true;
         trusted-users = [ "eric" ];
       };
 

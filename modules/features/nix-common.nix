@@ -32,11 +32,6 @@ let
           "erics118.cachix.org-1:wJdKw5a7XgwcIJjxKcDHqgTrU6q99hOkOII0Zk+xC1c="
         ];
       };
-
-      gc = {
-        automatic = true;
-        options = "--delete-older-than 14d";
-      };
     };
 
     programs.zsh = {
@@ -64,16 +59,8 @@ in
 {
   flake.modules.nixos.base = {
     imports = [ shared ];
-    # systemd OnCalendar, sunday 04:00
-    nix.gc.dates = "Sun 04:00";
   };
   flake.modules.darwin.base = {
     imports = [ shared ];
-    # launchd StartCalendarInterval, sunday 04:00
-    nix.gc.interval = {
-      Weekday = 0;
-      Hour = 4;
-      Minute = 0;
-    };
   };
 }
