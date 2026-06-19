@@ -11,6 +11,7 @@ in
       m.nixos.docker
       m.nixos.tailscale
       m.nixos.adguardhome
+      m.nixos.homepage
       m.nixos.cachix-push
       m.nixos.desktop-linux
       m.nixos.desktop-hyprland
@@ -49,17 +50,16 @@ in
 
       initrd = {
         systemd.enable = true;
-
-        # exclude xhci_pci/usb_storage/usbhid from initrd. HP printer on usb3-port2 is slow to enumerate and blocks udevd for ~90s
-        availableKernelModules = [
-          "nvme"
-          "ahci"
-          "sd_mod"
-        ];
       };
     };
 
     systemd.services.NetworkManager-wait-online.enable = false;
+
+    # narwhal no working public IPv6, so we prefer IPv6, and ignore the router advertisement on LAN
+    environment.etc."gai.conf".text = ''
+      precedence ::ffff:0:0/96  100
+    '';
+    boot.kernel.sysctl."net.ipv6.conf.wlo1.accept_ra" = 0;
   };
 
   configurations.homeManager."eric@narwhal" = mkHome {
