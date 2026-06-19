@@ -14,7 +14,11 @@
     # exports flakeModules.default (import-tree of its ./modules).
     nixos-config-private = {
       url = "git+ssh://git@github.com/erics118/nixos-config-private.git";
-      inputs.import-tree.follows = "import-tree";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-parts.follows = "flake-parts";
+        treefmt-nix.follows = "treefmt-nix";
+      };
     };
 
     home-manager = {
@@ -78,10 +82,90 @@
 
   outputs =
     inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [
-        (inputs.import-tree ./modules)
-        inputs.nixos-config-private.flakeModules.default
-      ];
-    };
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } (
+      { config, ... }:
+      let
+        overlays = builtins.attrValues config.flake.overlays;
+      in
+      {
+        imports = [
+          inputs.flake-parts.flakeModules.modules
+          inputs.treefmt-nix.flakeModule
+          (inputs.import-tree ./modules)
+          inputs.nixos-config-private.flakeModules.default
+        ];
+
+        systems = [
+          "x86_64-linux"
+          "aarch64-linux"
+          "aarch64-darwin"
+        ];
+
+        perSystem =
+          {
+            config,
+            pkgs,
+            system,
+            ...
+          }:
+          {
+            # always allow unfree
+            _module.args.pkgs = import inputs.nixpkgs {
+              inherit system overlays;
+              config.allowUnfree = true;
+            };
+
+            devShells = {
+              default = pkgs.mkShell { packages = [ config.treefmt.build.wrapper ]; };
+
+              sketchybar = pkgs.mkShell {
+                packages = with pkgs; [
+                  lua-language-server
+                  stylua
+                  lua5_5
+                  clang-tools
+                  gnumake
+                ];
+              };
+            };
+
+            treefmt = {
+              projectRootFile = "flake.nix";
+
+              settings = {
+                excludes = [
+                  "secrets/**"
+                  "result"
+                  "result-*"
+                  "flake.lock"
+                  "*.age"
+                ];
+                on-unmatched = "info";
+                # stylua config (indent type/width) lives in stylua.toml
+              };
+
+              programs = {
+                nixfmt.enable = true;
+                nixfmt.strict = true;
+                deadnix.enable = true;
+                statix.enable = true;
+
+                shfmt.enable = true;
+
+                prettier.enable = true;
+                just.enable = true;
+                taplo.enable = true;
+                yamlfmt = {
+                  enable = true;
+                  settings.formatter.retain_line_breaks_single = true;
+                };
+                jsonfmt.enable = true;
+
+                stylua.enable = true;
+                clang-format.enable = true;
+              };
+            };
+          };
+      }
+    );
 }
