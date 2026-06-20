@@ -69,11 +69,16 @@
       allowedUDPPorts = [ 53 ];
     };
 
+    services.caddy.virtualHosts."adguard.h.eriz.cc".extraConfig = ''
+      reverse_proxy localhost:3000
+    '';
+
     homepageTiles = lib.mkIf config.services.homepage-dashboard.enable [
       {
         name = "AdGuard Home";
         group = "Infrastructure";
         port = 3000;
+        subdomain = "adguard";
         description = "DNS & ad blocking";
         icon = "adguard-home.svg";
       }

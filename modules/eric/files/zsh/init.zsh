@@ -21,7 +21,7 @@ stty -ixon 2>/dev/null
 bindkey '^Q' push-line-or-edit
 
 hash -d n="$HOME/nixos-config"
-hash -d v="$HOME/nixvim"
+hash -d p="$HOME/nixos-config-private"
 hash -d d="$HOME/dev"
 
 clipboard-copy() {

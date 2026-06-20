@@ -17,6 +17,7 @@ in
       m.nixos.desktop-hyprland
       m.nixos.hp-printer
       m.nixos.nvidia
+      m.nixos.caddy
       m.nixos.server
       m.nixos.nas
       ./_hardware/x86_64-narwhal.nix
