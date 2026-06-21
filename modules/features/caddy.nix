@@ -25,6 +25,12 @@
       globalConfig = ''
         acme_dns cloudflare {env.CF_API_TOKEN}
       '';
+
+      # catch all for unmatched subdomains instead of a TLS error
+      # explicit vhosts still take precedence
+      virtualHosts."*.h.eriz.cc".extraConfig = ''
+        respond "no such service" 404
+      '';
     };
 
     systemd.services.caddy.serviceConfig.EnvironmentFile = config.sops.templates."caddy-env".path;

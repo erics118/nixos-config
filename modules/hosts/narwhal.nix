@@ -12,6 +12,8 @@ in
       m.nixos.tailscale
       m.nixos.adguardhome
       m.nixos.homepage
+      m.nixos.scrutiny
+      m.nixos.immich
       m.nixos.cachix-push
       m.nixos.desktop-linux
       m.nixos.desktop-hyprland
