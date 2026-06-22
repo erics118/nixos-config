@@ -12,6 +12,18 @@ setopt no_beep
 autoload -Uz edit-command-line
 autoload -Uz zmv
 
+# fzf-tab
+# disable zsh's own menu so fzf-tab can capture the completion
+zstyle ':completion:*' menu no
+# group headers and colorized listings
+zstyle ':completion:*:descriptions' format '[%d]'
+zstyle ':completion:*' list-colors ''
+# preview files/dirs in the fzf popup, matching the default fzf preview
+zstyle ':fzf-tab:complete:*' fzf-preview \
+  'if [ -f $realpath ]; then bat --color=always --style=numbers --line-range=:500 -- $realpath; elif [ -d $realpath ]; then eza --tree --color=always --icons=always -- $realpath; fi'
+# switch completion groups with < and >
+zstyle ':fzf-tab:*' switch-group '<' '>'
+
 # prevent glob expansion of URLs and other special chars
 autoload -Uz bracketed-paste-magic url-quote-magic
 zle -N bracketed-paste bracketed-paste-magic

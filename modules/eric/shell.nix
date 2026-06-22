@@ -50,6 +50,19 @@
         autosuggestion.enable = true;
         syntaxHighlighting.enable = true;
 
+        plugins = [
+          {
+            name = "fzf-tab";
+            src = pkgs.zsh-fzf-tab;
+            file = "share/fzf-tab/fzf-tab.plugin.zsh";
+          }
+          {
+            name = "autopair";
+            src = pkgs.zsh-autopair;
+            file = "share/zsh/zsh-autopair/autopair.zsh";
+          }
+        ];
+
         defaultKeymap = "emacs";
 
         history.path = "$HOME/.cache/zsh/history";
@@ -97,42 +110,66 @@
           # misc
           n = "nvim";
           j = "just";
+          lg = "lazygit";
+
+          # ls
+          la = "ls -la";
+          lah = "ls -lah";
+          lt = "ls --tree";
+          tree = "ls --tree";
 
           # git
           g = "git";
           ga = "git add";
           gb = "git branch";
+          # cl = clone
+          gcl = "git clone";
+          # c = commit
           gc = "git commit";
           gca = "git commit -v --amend";
-          gcb = "git checkout -b";
-          gcl = "git clone";
+          gcan = "git commit -v --amend --no-edit";
           gcm = "git commit -m";
-          gco = "git checkout";
           gchp = "git cherry-pick";
           gd = "git diff";
           gds = "git diff --staged";
           gl = "git log";
           glg = "git lg";
+          # m = merge
           gm = "git merge";
           gmc = "git merge --continue";
           gma = "git merge --abort";
           gms = "git merge --squash";
+          # P = pull
           gP = "git pull";
+          # p = push
           gp = "git push";
           gpf = "git push -f";
+          # f = fetch
+          gf = "git fetch";
+          # s = status
           gs = "git status";
+          # sh = show
           gsh = "git show";
+          # sw = switch
           gsw = "git switch";
+          gswc = "git switch -c";
+          # st = stash
           gst = "git stash";
+          # st = stash
           gstl = "git stash list";
           gstd = "git stash drop";
           gsta = "git stash apply";
           gstp = "git stash pop";
+          # r = rebase
           gr = "git rebase -i";
           grc = "git rebase --continue";
           gra = "git rebase --abort";
+          # rh = reset head
           grh = "git reset HEAD";
           grhh = "git reset --hard HEAD";
+          # rt = restore
+          grt = "git restore --staged";
+          grtt = "git restore";
 
           # docker
           d = "docker";
@@ -165,14 +202,6 @@
           dcps = "docker compose ps";
           dcpsa = "docker compose ps -a";
           dcim = "docker compose images";
-
-          # ls
-          la = "ls -la";
-          lah = "ls -lah";
-          lt = "ls --tree";
-          tree = "ls --tree";
-
-          lg = "lazygit";
         };
 
         globalAbbreviations = {
