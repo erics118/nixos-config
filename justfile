@@ -52,10 +52,10 @@ switch:
 build:
     nh {{ system_target }} build; just ntfy build $?
 
-# build the system configuration with private override
+# switch with a local checkout of the private input
 [group('system')]
 dev:
-    nh os switch . -- --override-input nixos-config-private path:../nixos-config-private; just ntfy dev $?
+    nh {{ system_target }} switch . -- --override-input nixos-config-private path:../nixos-config-private; just ntfy dev $?
 
 # test the NixOS configuration (Linux only)
 [group('system')]

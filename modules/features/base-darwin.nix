@@ -1,6 +1,9 @@
 { inputs, ... }: {
   flake.modules.darwin.base = { pkgs, ... }: {
-    imports = [ inputs.home-manager.darwinModules.home-manager ];
+    imports = [
+      inputs.home-manager.darwinModules.home-manager
+      inputs.sops-nix.darwinModules.sops
+    ];
 
     # spotlight, fseventsd, finder hardening for the /nix volume
     system.activationScripts.postActivation.text = ''

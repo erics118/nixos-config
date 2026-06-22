@@ -15,7 +15,6 @@ in
   flake.modules.homeManager.base = {
     imports = [
       inputs.catppuccin.homeModules.catppuccin
-      inputs.sops-nix.homeManagerModules.sops
 
       # configure nix-index with comma
       inputs.nix-index-database.homeModules.default
@@ -24,6 +23,9 @@ in
         programs.nix-index.enable = true;
       }
     ];
+
+    # let sops cli automatically use default ssh id_ed25519 key for age-ssh decryption
+    home.sessionVariables.SOPS_AGE_SSH_PRIVATE_KEY_FILE = "$HOME/.ssh/id_ed25519";
   };
 
   flake.modules.nixos.base = hmWiring;

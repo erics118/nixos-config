@@ -51,6 +51,7 @@
       url = "github:erics118/nixvim";
       inputs.flake-parts.follows = "flake-parts";
       inputs.treefmt-nix.follows = "treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # explicitly don't follow nixpkgs

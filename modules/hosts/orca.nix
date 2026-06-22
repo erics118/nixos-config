@@ -4,7 +4,10 @@ let
 in
 {
   configurations.darwin.orca.module = {
-    imports = [ m.darwin.base ];
+    imports = [
+      m.darwin.base
+      m.darwin.sops
+    ];
     nixpkgs.hostPlatform = "aarch64-darwin";
 
     networking.hostName = "orca";
