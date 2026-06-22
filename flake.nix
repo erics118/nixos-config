@@ -14,11 +14,10 @@
     # exports flakeModules.default (import-tree of its ./modules).
     nixos-config-private = {
       url = "git+ssh://git@github.com/erics118/nixos-config-private.git";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-parts.follows = "flake-parts";
-        treefmt-nix.follows = "treefmt-nix";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.treefmt-nix.follows = "treefmt-nix";
+      inputs.import-tree.follows = "import-tree";
     };
 
     home-manager = {
@@ -46,10 +45,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # don't follow nixpkgs: nixvim is built/tested against its own pin, so
+    # following ours rebuilds neovim+plugins off-cache and warns (nixpkgs.source)
     nixvim = {
       url = "github:erics118/nixvim";
-      inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
+      inputs.treefmt-nix.follows = "treefmt-nix";
     };
 
     # explicitly don't follow nixpkgs
@@ -77,7 +78,11 @@
     };
 
     # explicitly don't follow nixpkgs for binary cache hits
-    llm-agents.url = "github:numtide/llm-agents.nix";
+    llm-agents = {
+      url = "github:numtide/llm-agents.nix";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.treefmt-nix.follows = "treefmt-nix";
+    };
   };
 
   outputs =
@@ -142,6 +147,23 @@
                 ];
                 on-unmatched = "info";
                 # stylua config (indent type/width) lives in stylua.toml
+
+                # keep top-level inputs' direct follows tidy (`inputs.X.follows`).
+                # --depth 1 stays at direct children: deeper follows here only
+                # pull pinned/cache inputs (nixvim.nixvim, llm-agents.*) off
+                # their own nixpkgs, which we don't want. --no-lock because the
+                # treefmt check runs in the nix sandbox with no network
+                formatter.flake-edit = {
+                  command = pkgs.flake-edit;
+                  options = [
+                    "--non-interactive"
+                    "--no-lock"
+                    "follow"
+                    "--depth"
+                    "1"
+                  ];
+                  includes = [ "flake.nix" ];
+                };
               };
 
               programs = {
