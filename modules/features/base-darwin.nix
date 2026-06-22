@@ -2,6 +2,19 @@
   flake.modules.darwin.base = { pkgs, ... }: {
     imports = [ inputs.home-manager.darwinModules.home-manager ];
 
+    # spotlight, fseventsd, finder hardening for the /nix volume
+    system.activationScripts.postActivation.text = ''
+      # disable spotlight
+      launchctl unload -w /System/Library/LaunchDaemons/com.apple.metadata.mds.plist >/dev/null 2>&1 || true
+      # disable fseventsd on /nix volume
+      mkdir -p /nix/.fseventsd
+      test -e /nix/.fseventsd/no_log || touch /nix/.fseventsd/no_log
+      # tell spotlight never to index /nix
+      test -e /nix/.metadata_never_index || touch /nix/.metadata_never_index
+      # hide /nix from Finder
+      chflags hidden /nix
+    '';
+
     users.users.eric = {
       name = "eric";
       home = "/Users/eric";
