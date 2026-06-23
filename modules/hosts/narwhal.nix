@@ -1,4 +1,9 @@
-{ config, mkHome, ... }:
+{
+  config,
+  lib,
+  mkHome,
+  ...
+}:
 let
   m = config.flake.modules;
 in
@@ -30,6 +35,12 @@ in
     nixpkgs.hostPlatform = "x86_64-linux";
 
     networking.hostName = "narwhal";
+
+    # enable firewall. everything is exposed through tailscale
+    networking.firewall = {
+      enable = lib.mkForce true;
+      trustedInterfaces = [ "tailscale0" ];
+    };
 
     fileSystems."/mnt/external" = {
       device = "/dev/disk/by-uuid/a4e08c36-c690-4d1d-a8dc-7b207e1d3418";
