@@ -2,11 +2,13 @@
   flake.modules =
     let
       # shared nh clean policy
-      keepSince = "14d";
-      keepCount = "10";
+      keepSince = "7d";
+      keepCount = "5";
     in
     {
       nixos.base = {
+        nix.settings.auto-optimise-store = true;
+
         programs.nh = {
           enable = true;
           clean = {
@@ -19,6 +21,8 @@
 
       # darwin has no programs.nh.clean, so run the same policy via launchd
       darwin.base = { pkgs, ... }: {
+        nix.settings.auto-optimise-store = true;
+
         launchd.daemons = {
           nh-clean.serviceConfig = {
             ProgramArguments = [
