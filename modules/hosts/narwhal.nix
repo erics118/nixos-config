@@ -18,6 +18,7 @@ in
       m.nixos.adguardhome
       m.nixos.homepage
       m.nixos.scrutiny
+      m.nixos.gatus
       m.nixos.immich
       m.nixos.cachix-push
       m.nixos.desktop-linux
