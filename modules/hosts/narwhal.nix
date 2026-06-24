@@ -22,8 +22,8 @@ in
       m.nixos.immich
       m.nixos.glances
       m.nixos.cachix-push
-      m.nixos.desktop-linux
-      m.nixos.desktop-hyprland
+      m.nixos.linux
+      m.nixos.hyprland
       m.nixos.hp-printer
       m.nixos.nvidia
       m.nixos.caddy
@@ -32,7 +32,7 @@ in
       ./_hardware/x86_64-narwhal.nix
     ];
 
-    home-manager.users.eric.imports = [ m.homeManager.desktop-hyprland ];
+    home-manager.users.eric.imports = [ m.homeManager.hyprland ];
 
     nixpkgs.hostPlatform = "x86_64-linux";
 
@@ -83,6 +83,6 @@ in
 
   configurations.homeManager."eric@narwhal" = mkHome {
     system = "x86_64-linux";
-    imports = [ m.homeManager.desktop-hyprland ];
+    imports = [ m.homeManager.hyprland ];
   };
 }

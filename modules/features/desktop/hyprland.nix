@@ -1,5 +1,5 @@
 {
-  flake.modules.homeManager.desktop-hyprland = { pkgs, repoFile, ... }: {
+  flake.modules.homeManager.hyprland = { pkgs, repoFile, ... }: {
     home.file.".config/hypr".source = repoFile "modules/eric/desktop/hyprland";
 
     # Fixes the "Hyprland logo" default cursor. catppuccin-cursors is XCursor-only;
@@ -24,7 +24,7 @@
     dconf.settings."org/gnome/desktop/interface".color-scheme = "prefer-dark";
   };
 
-  flake.modules.nixos.desktop-hyprland = { config, pkgs, ... }: {
+  flake.modules.nixos.hyprland = { config, pkgs, ... }: {
     programs.hyprland.enable = true;
     programs.hyprland.withUWSM = true; # systemd-managed session
     programs.dconf.enable = true; # required for HM dconf.settings to persist

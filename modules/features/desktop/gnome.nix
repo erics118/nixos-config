@@ -1,5 +1,5 @@
 {
-  flake.modules.homeManager.desktop-gnome = {
+  flake.modules.homeManager.gnome = {
     programs.gnome-terminal = {
       enable = true;
       profile."b1dcc9dd-5262-4d8d-a863-c897e6d979b9" = {
@@ -10,7 +10,7 @@
     };
   };
 
-  flake.modules.nixos.desktop-gnome = {
+  flake.modules.nixos.gnome = {
     programs.firefox.enable = true;
 
     security.rtkit.enable = true;

@@ -1,5 +1,5 @@
 {
-  flake.modules.nixos.desktop-linux = {
+  flake.modules.nixos.linux = {
     programs.firefox.enable = true;
 
     security.rtkit.enable = true;

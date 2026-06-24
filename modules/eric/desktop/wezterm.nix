@@ -8,5 +8,5 @@ in
   flake.modules.darwin.base = { pkgs, ... }: { environment.systemPackages = [ pkgs.wezterm ]; };
 
   flake.modules.homeManager.darwin = homeConfig;
-  flake.modules.homeManager.desktop-hyprland = homeConfig;
+  flake.modules.homeManager.hyprland = homeConfig;
 }
