@@ -1,6 +1,6 @@
 {
   flake.modules.nixos.nas = {
-    # NOTE: hdparm head-parking control (-B/-S) is intentionally omitted — this
+    # NOTE: hdparm head-parking control (-B/-S) is intentionally omitted. this
     # drive's USB-SATA bridge rejects those commands (SG_IO bad/missing sense data),
     # so the setting has no effect. If Load_Cycle_Count climbs, use hd-idle instead.
 
@@ -13,6 +13,8 @@
     #     script = "pw=$(cat <secret.path>); printf '%s\n%s\n' \"$pw\" \"$pw\" | smbpasswd -s -a eric";
     #   };
     # Trade-off: sops becomes source of truth and resets the password on every switch.
+
+    systemd.tmpfiles.rules = [ "d /mnt/external/timemachine 0750 eric users -" ];
 
     services.samba = {
       enable = true;
@@ -39,17 +41,13 @@
           "fruit:time machine" = "yes";
           "fruit:time machine max size" = "1400G";
         };
-        media = {
-          "path" = "/mnt/external/media";
-          "valid users" = "eric";
-          "browseable" = "yes";
-          "writable" = "yes";
-        };
       };
     };
 
     # Advertise Time Machine share over mDNS so Macs find it automatically
     services.avahi = {
+      enable = true;
+      openFirewall = true;
       publish = {
         enable = true;
         userServices = true;

@@ -98,19 +98,24 @@
 
           widgets = [
             {
-              resources = {
+              glances = {
+                url = "http://localhost:61208";
                 cpu = true;
-                memory = true;
+                mem = true;
                 cputemp = true;
                 uptime = true;
-                network = true;
-                expanded = true;
-                refresh = 3000;
-                units = "imperial";
-                disk = [
-                  "/"
-                  "/mnt/external"
-                ];
+                version = 4;
+                label = "narwhal";
+              };
+            }
+            {
+              glances = {
+                url = "http://turtle.dolphin-sailfin.ts.net:61208";
+                cpu = true;
+                mem = true;
+                uptime = true;
+                version = 4;
+                label = "turtle";
               };
             }
           ];

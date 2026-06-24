@@ -15,9 +15,11 @@
       settings.web.listen.port = 8083;
     };
 
-    services.caddy.virtualHosts."scrutiny.h.eriz.cc".extraConfig = ''
-      reverse_proxy localhost:8083
-    '';
+    services.caddy.virtualHosts."scrutiny.h.eriz.cc" = lib.mkIf config.services.caddy.enable {
+      extraConfig = ''
+        reverse_proxy localhost:8083
+      '';
+    };
 
     homepageTiles = lib.mkIf config.services.homepage-dashboard.enable [
       {

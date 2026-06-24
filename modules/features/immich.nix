@@ -13,9 +13,11 @@
 
     systemd.tmpfiles.rules = [ "d /mnt/external/immich 0700 immich immich -" ];
 
-    services.caddy.virtualHosts."immich.h.eriz.cc".extraConfig = ''
-      reverse_proxy localhost:2283
-    '';
+    services.caddy.virtualHosts."immich.h.eriz.cc" = lib.mkIf config.services.caddy.enable {
+      extraConfig = ''
+        reverse_proxy localhost:2283
+      '';
+    };
 
     homepageTiles = lib.mkIf config.services.homepage-dashboard.enable [
       {

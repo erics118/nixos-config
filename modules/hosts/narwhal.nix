@@ -20,6 +20,7 @@ in
       m.nixos.scrutiny
       m.nixos.gatus
       m.nixos.immich
+      m.nixos.glances
       m.nixos.cachix-push
       m.nixos.desktop-linux
       m.nixos.desktop-hyprland
@@ -36,6 +37,9 @@ in
     nixpkgs.hostPlatform = "x86_64-linux";
 
     networking.hostName = "narwhal";
+
+    # wake-on-lan on the wired NIC
+    networking.interfaces.enp5s0.wakeOnLan.enable = true;
 
     # enable firewall. everything is exposed through tailscale
     networking.firewall = {

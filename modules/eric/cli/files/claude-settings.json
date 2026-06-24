@@ -77,7 +77,9 @@
     "skill-creator@claude-plugins-official": false,
     "hookify@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": false,
-    "lua-lsp@claude-plugins-official": false
+    "lua-lsp@claude-plugins-official": false,
+    "code-simplifier@claude-plugins-official": true,
+    "remember@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "impeccable": {
@@ -100,5 +102,6 @@
   "verbose": true,
   "remoteControlAtStartup": false,
   "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": false
+  "agentPushNotifEnabled": false,
+  "model": "opus"
 }

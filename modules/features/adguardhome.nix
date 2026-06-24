@@ -2,7 +2,6 @@
   flake.modules.nixos.adguardhome = { config, lib, ... }: {
     services.adguardhome = {
       enable = true;
-      openFirewall = true;
 
       # mutable so the UI can manage blocklists/clients/stats
       # we should do all config in here, not in the GUI
@@ -69,9 +68,11 @@
       allowedUDPPorts = [ 53 ];
     };
 
-    services.caddy.virtualHosts."adguard.h.eriz.cc".extraConfig = ''
-      reverse_proxy localhost:3000
-    '';
+    services.caddy.virtualHosts."adguard.h.eriz.cc" = lib.mkIf config.services.caddy.enable {
+      extraConfig = ''
+        reverse_proxy localhost:3000
+      '';
+    };
 
     homepageTiles = lib.mkIf config.services.homepage-dashboard.enable [
       {

@@ -36,9 +36,11 @@
       };
     };
 
-    services.caddy.virtualHosts."gatus.h.eriz.cc".extraConfig = ''
-      reverse_proxy localhost:8084
-    '';
+    services.caddy.virtualHosts."gatus.h.eriz.cc" = lib.mkIf config.services.caddy.enable {
+      extraConfig = ''
+        reverse_proxy localhost:8084
+      '';
+    };
 
     homepageTiles = lib.mkIf config.services.homepage-dashboard.enable [
       {
