@@ -16,8 +16,9 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
-          - macos-latest
+          - ubuntu-26.04
+          - ubuntu-26.04-arm
+          - macos-26
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
