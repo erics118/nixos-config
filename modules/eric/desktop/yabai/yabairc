@@ -26,7 +26,7 @@ yabai -m signal --add event=application_front_switched action="/opt/homebrew/bin
 yabai -m rule --add label="Finder" app=Finder sticky=on manage=off
 
 # unmanaged rules
-source $CONFIG_DIR/unmanaged_rules.sh
+source "$CONFIG_DIR/unmanaged_rules.sh"
 
 # dedicated spaces for certain apps
 yabai -m rule --add label="util apps" app="^Fantastical|Todoist|Fantastical$" space=^1
@@ -170,10 +170,10 @@ printf "configured layout..\n"
 # events
 
 yabai -m signal --add event=display_added \
-	action="/Users/eric/.local/bin/on_display_update"
+  action="/Users/eric/.local/bin/on_display_update"
 
 yabai -m signal --add event=display_removed \
-	action="/Users/eric/.local/bin/on_display_update"
+  action="/Users/eric/.local/bin/on_display_update"
 
 # yabai -m signal --add event=window_focused \
 # action="/opt/homebrew/bin/sketchybar --trigger yabai_window_focused INFO=$YABAI_WINDOW_ID"

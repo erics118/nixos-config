@@ -49,10 +49,10 @@ else
 end
 
 c.window_padding = {
-    left = 6,
-    right = 16,
-    top = 12,
-    bottom = 6,
+    -- left = 6,
+    right = 8,
+    -- top = 12,
+    -- bottom = 6,
 }
 -- c.macos_window_corner_radius = 50
 -- c.window_background_opacity = 0.9

@@ -20,7 +20,7 @@ apps=(
   "Silicio" "Siri" "Smooze.*" "Stickies" "System .*" "Tailscale" "Tot"
   "Velja" "Raycast( Beta)?" "Mac Mouse Fix" "Linear Mouse" "Archive Utility"
   "Actions" "Koofr" "Antinote" "FaceTime" "Alcove" "java" "CLion"
-  "Parallels Desktop" "particle" "ocaml-voxel" "Windows App" "WorkSpaces"
+  "Parallels Desktop" "particle" "ocaml-voxel"
 )
 app_regex=$(printf '%s|' "${apps[@]}" | sed 's/|$//')
 
