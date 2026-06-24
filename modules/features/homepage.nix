@@ -99,7 +99,7 @@
           widgets = [
             {
               glances = {
-                url = "http://localhost:61208";
+                url = "http://narwhal.dolphin-sailfin.ts.net:61208";
                 cpu = true;
                 mem = true;
                 cputemp = true;
