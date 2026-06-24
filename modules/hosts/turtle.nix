@@ -15,8 +15,8 @@ in
       m.nixos.ssh-server
       m.nixos.tailscale
       inputs.disko.nixosModules.disko
-      ./_hardware/aarch64-oracle.nix
-      ./_hardware/aarch64-oracle-disko.nix
+      ./_hardware/aarch64-turtle.nix
+      ./_hardware/aarch64-turtle-disko.nix
     ];
     nixpkgs.hostPlatform = "aarch64-linux";
 
