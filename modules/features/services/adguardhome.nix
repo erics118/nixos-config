@@ -68,12 +68,6 @@
       allowedUDPPorts = [ 53 ];
     };
 
-    services.caddy.virtualHosts."adguard.h.eriz.cc" = lib.mkIf config.services.caddy.enable {
-      extraConfig = ''
-        reverse_proxy localhost:3000
-      '';
-    };
-
     homepageTiles = lib.mkIf config.services.homepage-dashboard.enable [
       {
         name = "AdGuard Home";

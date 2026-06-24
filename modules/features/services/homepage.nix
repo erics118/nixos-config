@@ -25,10 +25,15 @@
                 type = lib.types.port;
                 description = "Service port, used for the uptime monitor and widget";
               };
-              internalHost = lib.mkOption {
+              host = lib.mkOption {
                 type = lib.types.str;
                 default = "127.0.0.1";
                 description = "IP used for the uptime monitor and widget; defaults to localhost";
+              };
+              proxy = lib.mkOption {
+                type = lib.types.bool;
+                default = true;
+                description = "Generate a Caddy reverse-proxy vhost <subdomain>.h.eriz.cc";
               };
               description = lib.mkOption {
                 type = lib.types.nullOr lib.types.str;
@@ -57,10 +62,10 @@
         tileToService = t: {
           ${t.name} = lib.filterAttrs (_: v: v != null) {
             href = "https://${t.subdomain}.h.eriz.cc";
-            siteMonitor = mkUrl t.internalHost t.port;
+            siteMonitor = mkUrl t.host t.port;
             inherit (t) description;
             inherit (t) icon;
-            widget = if t.widget != null then ({ url = mkUrl t.internalHost t.port; } // t.widget) else null;
+            widget = if t.widget != null then ({ url = mkUrl t.host t.port; } // t.widget) else null;
           };
         };
         grouped = lib.groupBy (t: t.group) config.homepageTiles;
@@ -123,9 +128,17 @@
 
         # the dashboard is the home root
         # services live at <service>.h.eriz.cc
-        services.caddy.virtualHosts."h.eriz.cc".extraConfig = ''
-          reverse_proxy localhost:8082
-        '';
+        # proxied to host:port from the registry
+        services.caddy.virtualHosts = lib.mkMerge (
+          [
+            {
+              "h.eriz.cc".extraConfig = "reverse_proxy localhost:8082";
+            }
+          ]
+          ++ map (t: {
+            "${t.subdomain}.h.eriz.cc".extraConfig = "reverse_proxy ${t.host}:${toString t.port}";
+          }) (lib.filter (t: t.proxy) config.homepageTiles)
+        );
       };
   };
 }

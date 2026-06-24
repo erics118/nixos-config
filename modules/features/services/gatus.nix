@@ -28,18 +28,12 @@
         endpoints = map (t: {
           inherit (t) name;
           inherit (t) group;
-          url = "tcp://${t.internalHost}:${toString t.port}";
+          url = "tcp://${t.host}:${toString t.port}";
           interval = "1m";
           conditions = [ "[CONNECTED] == true" ];
           alerts = [ { type = "ntfy"; } ];
         }) config.homepageTiles;
       };
-    };
-
-    services.caddy.virtualHosts."gatus.h.eriz.cc" = lib.mkIf config.services.caddy.enable {
-      extraConfig = ''
-        reverse_proxy localhost:8084
-      '';
     };
 
     homepageTiles = lib.mkIf config.services.homepage-dashboard.enable [
