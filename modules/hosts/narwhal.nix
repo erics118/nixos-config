@@ -22,12 +22,10 @@ in
       m.nixos.immich
       m.nixos.glances
       m.nixos.cachix-push
-      m.nixos.linux
       m.nixos.hyprland
       m.nixos.hp-printer
       m.nixos.nvidia
       m.nixos.caddy
-      m.nixos.server
       m.nixos.nas
       ./_hardware/x86_64-narwhal.nix
     ];
@@ -45,6 +43,11 @@ in
     networking.firewall = {
       enable = lib.mkForce true;
       trustedInterfaces = [ "tailscale0" ];
+    };
+
+    # dont sleep
+    systemd.sleep.settings.Sleep = {
+      AllowSuspend = "no";
     };
 
     fileSystems."/mnt/external" = {

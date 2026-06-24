@@ -1,5 +1,10 @@
 {
   flake.modules.nixos.scrutiny = { config, lib, ... }: {
+    # build the notif url from the topic at runtime
+    sops.templates."scrutiny-notify-url".content = "ntfy://ntfy.sh/${
+      config.sops.placeholder."ntfy/general"
+    }";
+
     services.scrutiny = {
       enable = true;
 
@@ -12,7 +17,7 @@
         schedule = "00/6:00";
       };
 
-      settings.web.listen.port = 8083;
+      settings.notify.urls = [ { _secret = config.sops.templates."scrutiny-notify-url".path; } ];
     };
 
     homepageTiles = lib.mkIf config.services.homepage-dashboard.enable [

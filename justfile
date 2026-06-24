@@ -1,6 +1,6 @@
 set shell := ["zsh", "-uc"]
 system_target := if os() == "macos" { "darwin" } else { "os" }
-ntfy_topic := `cat /run/secrets/ntfy/topic 2>/dev/null || echo ""`
+ntfy_topic := `cat /run/secrets/ntfy/nix 2>/dev/null || echo ""`
 
 [private]
 ntfy msg status:

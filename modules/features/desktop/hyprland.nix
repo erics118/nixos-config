@@ -25,10 +25,19 @@
   };
 
   flake.modules.nixos.hyprland = { config, pkgs, ... }: {
-    programs.hyprland.enable = true;
-    programs.hyprland.withUWSM = true; # systemd-managed session
-    programs.dconf.enable = true; # required for HM dconf.settings to persist
-    services.gvfs.enable = true; # trash, USB mount, sftp:// for nautilus
+    hardware.bluetooth = {
+      enable = true;
+      powerOnBoot = true;
+    };
+
+    security.rtkit.enable = true;
+
+    programs = {
+      hyprland.enable = true;
+      hyprland.withUWSM = true; # systemd-managed session
+      dconf.enable = true; # required for HM dconf.settings to persist
+      firefox.enable = true;
+    };
 
     # xdg-desktop-portal-hyprland is pulled in by programs.hyprland;
     # add the GTK portal for file pickers / settings.
@@ -37,14 +46,27 @@
       extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
     };
 
-    # greetd + tuigreet: minimal TTY greeter that launches Hyprland.
-    services.greetd = {
-      enable = true;
-      settings.default_session = {
-        # manually specify sessions to prevent duplication
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --asterisks --sessions ${config.services.displayManager.sessionData.desktops}/share/xsessions:${config.services.displayManager.sessionData.desktops}/share/wayland-sessions --cmd 'uwsm start hyprland-uwsm.desktop'";
-        user = "greeter";
+    services = {
+      gvfs.enable = true; # trash, USB mount, sftp:// for nautilus
+
+      # greetd + tuigreet: minimal TTY greeter that launches Hyprland.
+      greetd = {
+        enable = true;
+        settings.default_session = {
+          # manually specify sessions to prevent duplication
+          command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --asterisks --sessions ${config.services.displayManager.sessionData.desktops}/share/xsessions:${config.services.displayManager.sessionData.desktops}/share/wayland-sessions --cmd 'uwsm start hyprland-uwsm.desktop'";
+          user = "greeter";
+        };
       };
+
+      pulseaudio.enable = false;
+      pipewire = {
+        enable = true;
+        alsa.enable = true;
+        alsa.support32Bit = true;
+        pulse.enable = true;
+      };
+      blueman.enable = true; # tray applet + pairing UI
     };
 
     fonts.packages = with pkgs; [

@@ -2,7 +2,7 @@
   flake.modules.nixos.gatus = { config, lib, ... }: {
     # inject ntfy topic at runtime
     sops.templates."gatus-env".content = ''
-      NTFY_TOPIC=${config.sops.placeholder."ntfy/topic"}
+      NTFY_TOPIC=${config.sops.placeholder."ntfy/gatus"}
     '';
 
     services.gatus = {

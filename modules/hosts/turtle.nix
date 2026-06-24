@@ -13,6 +13,8 @@ in
     imports = [
       m.nixos.base
       m.nixos.ssh-server
+      m.nixos.sops
+      m.nixos.docker
       m.nixos.tailscale
       m.nixos.glances
       inputs.disko.nixosModules.disko
