@@ -2,63 +2,57 @@
 
 Dendritic NixOS/nix-darwin configuration
 
-# Installation
+## Architecture
 
-## Prerequisites
+Most of the config is located in this repo, but sensitive information, like secrets, host-specific ssh configs, etc, are stored in [nixos-config-private](https://github.com/erics118/nixos-config-private) (pulled over ssh). The private repo just merges into the public config.
 
-- Nix
-- [`nh`](https://github.com/viperML/nh) and [`just`](https://github.com/casey/just) (provided via the flake devshell, or install ahead of time)
+# Setup
 
-### Clone
+## Install Nix
 
-```sh
-git clone https://github.com/erics118/nixos-config DIRECTORY
-cd DIRECTORY
-# link flake to a globally stable location
-ln -sfn ~/nixos-config ~/.flake
-```
+- desktop: use the standard graphical installer
+- cloud vm: see later
+- macOS: use the determinate systems installer?
 
-### Build and switch
+Enable flakes and nix-command if not already enabled:
 
-```sh
-just switch   # nh {darwin | os} switch (auto-detected)
-```
-
-## Adding a new device
-
-### Bootstrap Nix
-
-- **NixOS**: install with the standard installer, or for a cloud VM use [nixos-infect](https://github.com/elitak/nixos-infect)
-- **macOS**: install Nix with ?? (Determinate Nix may not be best anymore)
-
-Enable flakes and nix-command (`experimental-features = nix-command flakes`) if not already enabled:
-
-- Add this to `/etc/nix/nix.conf`:
+Add this to `/etc/nix/nix.conf`:
 
 ```nix
 experimental-features = flakes nix-command
 ```
 
-- Then, restart the daemon:
-  - Linux: `sudo systemctl nix-daemon`
-  - macOS: `sudo launchctl kickstart -k system/org.nixos.nix-daemon`
+Then, restart the daemon:
 
-### Clone the repository
+- Linux: `sudo systemctl restart nix-daemon`
+- macOS: `sudo launchctl kickstart -k system/org.nixos.nix-daemon`
+
+## GitHub SSH Access
 
 ```sh
-git clone https://github.com/erics118/nixos-config DIRECTORY
-cd DIRECTORY
-# link flake to a globally stable location
-ln -sfn ~/nixos-config ~/.flake
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -C "eric@HOSTNAME"
+ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_github_erics118 -C "eric@HOSTNAME"
 ```
 
-### Define the host
+Add `id_ed25519_github_erics118` to GitHub at <https://github.com/settings/keys>.
 
-Create `modules/hosts/HOSTNAME.nix`. For examples, see:
+Explicitly set the git cloning command with:
 
-- `modules/hosts/orca.nix` - Darwin
-- `modules/hosts/squid.nix` - NixOS cloud VM
-- `modules/hosts/narwhal.nix` - NixOS dual-booted with Windows with Nvidia GPU
+```sh
+export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_github_erics118 -o IdentitiesOnly=yes"
+```
+
+## Clone the repository
+
+```sh
+git clone git@github.com:erics118/nixos-config DIRECTORY
+# link flake to a globally stable location
+ln -sfn DIRECTORY ~/.flake
+```
+
+## Define the host
+
+Create `modules/hosts/HOSTNAME.nix`. Make sure to `git add`.
 
 For NixOS, also generate hardware config:
 
@@ -68,79 +62,148 @@ nixos-generate-config --show-hardware-config > modules/hosts/_hardware/HOSTNAME.
 
 Then, reference it from the host module's `imports`.
 
-### Set up sops
+## Set up sops
 
-For NixOS, derive age key from SSH host key. This way, no manual key file is needed.
+`.sops.yaml` has two kinds of recipients:
+
+- `host_HOSTNAME`: age key derived using `ssh-to-age` on the host's public ed25519 ssh key. Used by sops-nix to decrypt on activation.
+- `eric_HOSTNAME`: - raw ssh-ed25519 key used to interactively edit from that machine. Can remove?
+
+On the new device, get the existing age key:
 
 ```sh
 nix run nixpkgs#ssh-to-age -- < /etc/ssh/ssh_host_ed25519_key.pub
 ```
 
-For macOS, or a manual configuration, we store the key in a text file.
+On an existing machine, in the private repo:
+
+- Add `&host_HOSTNAME age1...` with the age key that you just generated
+- Add `&eric_HOSTNAME ssh-ed25519 ...` with the contents of `~/.ssh/id_ed25519.pub`
+- Reference the anchors in `key_groups`
+- Run `sops updatekeys secrets/secrets.yaml`
+- Commit and push: `git add .sops.yaml secrets/secrets.yaml && git commit -m "add keys for HOSTNAME" && git push`
+
+On the new device, bump the private pinned input and build:
 
 ```sh
-mkdir -p "$HOME/Library/Application Support/sops/age"   # Darwin
-# or: mkdir -p ~/.config/sops/age                        # Linux
-nix run nixpkgs#age -- keygen -o "AGE_CONFIG_PATH/keys.txt"
+nix flake update nixos-config-private
+# build
+sudo nixos-rebuild switch --flake .#HOSTNAME # first build. `just switch` works after that
 ```
 
-Then, on an existing machine that can already decrypt the keys:
+---
 
-1. Add the new public key to `.sops.yaml` under `keys:`
-   - for host keys, name it `host_HOSTNAME`
-   - for manual configuration, name it `eric_HOSTNAME`
-2. Then, add it to `key_groups.age`
-3. Re-encrypt: `sops updatekeys secrets/secrets.yaml`
-4. Commit and push: `git add .sops.yaml secrets/secrets.yaml && git commit -m "add keys for HOSTNAME"`
+## Cloud VMs
 
-On the new device, pull and rebuild
+We use [nixos-anywhere](https://github.com/nix-community/nixos-anywhere) to install NixOS on an existing cloud VM.
 
-### Authenticate cachix (optional)
+<details>
+<summary>
 
-Go to https://app.cachix.org/personal-auth-tokens and create a new authtoken for this host.
-Then, configure cachix to use it
+Add the disko layout to `modules/hosts/_hardware/ARCH-HOSTNAME-disko.nix`. Use `lsblk` to confirm.
+
+</summary>
+
+```nix
+{
+  disko.devices.disk.main = {
+    device = "/dev/sda";
+    type = "disk";
+    content = {
+      type = "gpt";
+      partitions = {
+        ESP = {
+          type = "EF00";
+          size = "512M";
+          content = {
+            type = "filesystem";
+            format = "vfat";
+            mountpoint = "/boot";
+            mountOptions = [ "umask=0077" ];
+          };
+        };
+        root = {
+          size = "100%";
+          content = {
+            type = "filesystem";
+            format = "ext4";
+            mountpoint = "/";
+          };
+        };
+      };
+    };
+  };
+}
+```
+
+</details>
+
+<details>
+<summary>
+
+Add the host module to `modules/hosts/ARCH-HOSTNAME.nix`.
+
+</summary>
+
+```nix
+{
+  inputs,
+  config,
+  lib,
+  mkHome,
+  ...
+}:
+let
+  m = config.flake.modules;
+in
+{
+  configurations.nixos.HOSTNAME.module = {
+    imports = [
+      m.nixos.base
+      m.nixos.ssh-server
+      m.nixos.tailscale
+      inputs.disko.nixosModules.disko
+      ./_hardware/ARCH-HOSTNAME.nix
+      ./_hardware/ARCH-HOSTNAME-disko.nix
+    ];
+    nixpkgs.hostPlatform = "ARCH";
+
+    networking.hostName = "HOSTNAME";
+
+    boot.loader.systemd-boot.enable = true;
+    boot.loader.efi.canTouchEfiVariables = true;
+  };
+
+  configurations.homeManager."eric@HOSTNAME" = mkHome { system = "ARCH"; };
+}
+```
+
+</details>
+
+And, a stub containing `{ }` at `modules/hosts/_hardware/ARCH-HOSTNAME.nix`.
+
+Run nixos-anywhere from an existing nix machine: (`KEY` = the existing ssh key for the target machine)
 
 ```sh
-sudo nix run nixpkgs#cachix authtoken TOKEN
+nix run github:nix-community/nixos-anywhere -- \
+  --generate-hardware-config nixos-generate-config ./modules/hosts/_hardware/HOSTNAME.nix \
+  --flake .#HOSTNAME \
+  --build-on-remote \
+  --target-host USERNAME@HOSTNAME \
+  -i ~/.ssh/KEY --ssh-option IdentitiesOnly=yes
 ```
 
-Or, remove the `cachix-push` module to skip this step.
+Run `ssh-keygen -R HOSTNAME` to refresh the host key, as it has changed.
 
-### Build and switch
+Make sure to `git add` and `git commit` the generated hardware file.
 
-```sh
-just switch
-```
+Now, ssh into the new machine and follow [Set up sops](#set-up-sops) to set up sops.
 
-On NixOS, the first switch may need `sudo nixos-rebuild switch --flake .#HOSTNAME`. After that, `just switch` should work by itself.
+---
 
-### Configuring ssh keys and git
+## Post setup
 
-1. On the new device, generate two keys: a default key, and a key for github.com
-
-```sh
-ssh-keygen -t ed25519 -C "eric@HOSTNAME" # ~/.ssh/id_ed25519
-ssh-keygen -t ed25519 -C "eric@HOSTNAME" # ~/.ssh/id_ed25519_github_erics118
-```
-
-2. Add the key to GitHub
-
-```sh
-cat ~/.ssh/id_ed25519_github_erics118.pub
-```
-
-Go to https://github.com/settings/keys -> New SSH key, and label it HOSTNAME, paste, and save.
-
-Test with `ssh -T git@github.com`
-
-3. Switch the repo remote from HTTPS to SSH
-
-```sh
-cd ~/nixos-config
-git remote set-url origin git@github.com:erics118/nixos-config.git
-```
-
-### Configure various tools
-
-- claude, codex, gemini: configure on first usage
-- tailscale: `sudo tailscale login`
+- AdGuard Home: set up `eric` admin account via the wizard at `http://narwhal:3000`. blocklists are declarative, but login isn't
+- Tailscale: run `sudo tailscale up --advertise-exit-node` the first time manually, and authenticate. Also, from admin console, you have to manually approve the exit node
+- `gh` cli: `gh auth login`
+- AI tools: `claude`, `codex`, `agy`
