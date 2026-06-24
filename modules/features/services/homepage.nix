@@ -130,11 +130,7 @@
         # services live at <service>.h.eriz.cc
         # proxied to host:port from the registry
         services.caddy.virtualHosts = lib.mkMerge (
-          [
-            {
-              "h.eriz.cc".extraConfig = "reverse_proxy localhost:8082";
-            }
-          ]
+          [ { "h.eriz.cc".extraConfig = "reverse_proxy localhost:8082"; } ]
           ++ map (t: {
             "${t.subdomain}.h.eriz.cc".extraConfig = "reverse_proxy ${t.host}:${toString t.port}";
           }) (lib.filter (t: t.proxy) config.homepageTiles)
