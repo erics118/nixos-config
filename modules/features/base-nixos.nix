@@ -63,8 +63,10 @@
         "wheel"
       ];
       shell = pkgs.zsh;
+
+      # shared base key
       openssh.authorizedKeys.keys = [
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEZe2bb+e+CkJyE9johAfKiIcIaf20EtKPmS+bK/I+ZJ eric@eric.local"
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKYegGpRKtmZCW3UNYOym55wAyRqi2JiVLgUUmbiWCf1 eric@orca"
       ];
     };
 

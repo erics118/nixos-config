@@ -45,6 +45,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # don't follow nixpkgs: nixvim is built/tested against its own pin, so
     # following ours rebuilds neovim+plugins off-cache and warns (nixpkgs.source)
     nixvim = {

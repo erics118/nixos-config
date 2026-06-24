@@ -71,4 +71,4 @@ home:
 # garbage collect unused nix store entries
 [group('system')]
 gc:
-    nh clean all --no-gcroots --optimise --keep-since 7d --keep 3
+    nh clean all --keep-since 7d --keep 5 --optimise    
