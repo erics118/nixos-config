@@ -13,6 +13,7 @@ in
     imports = [
       m.nixos.base
       m.nixos.ssh-server
+      m.nixos.tailscale
       inputs.disko.nixosModules.disko
       ./_hardware/aarch64-oracle.nix
       ./_hardware/aarch64-oracle-disko.nix
