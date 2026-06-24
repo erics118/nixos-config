@@ -13,6 +13,8 @@
       # database for time series history
       influxdb.enable = true;
 
+      settings.web.listen.port = 8083;
+
       collector = {
         enable = true;
         # sample every 6 hours
