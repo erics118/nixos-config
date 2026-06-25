@@ -139,11 +139,11 @@
           gmc = "git merge --continue";
           gma = "git merge --abort";
           gms = "git merge --squash";
-          # P = pull
-          gP = "git pull";
-          # p = push
-          gp = "git push";
-          gpf = "git push -f";
+          # p = pull
+          gp = "git pull";
+          # P = push
+          gP = "git push";
+          gPf = "git push -f";
           # f = fetch
           gf = "git fetch";
           # s = status
