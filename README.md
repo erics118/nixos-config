@@ -24,4 +24,3 @@ eval).
 - `just switch`: builds the system and activates it
 - `just build`: builds the system without activating
 - `just gc`: manually trigger garbage collector
-- `just home`: activate the standalone home-manager config

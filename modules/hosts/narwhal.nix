@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  mkHome,
-  ...
-}:
+{ config, lib, ... }:
 let
   m = config.flake.modules;
 in
@@ -82,10 +77,5 @@ in
       precedence ::ffff:0:0/96  100
     '';
     boot.kernel.sysctl."net.ipv6.conf.wlo1.accept_ra" = 0;
-  };
-
-  configurations.homeManager."eric@narwhal" = mkHome {
-    system = "x86_64-linux";
-    imports = [ m.homeManager.hyprland ];
   };
 }

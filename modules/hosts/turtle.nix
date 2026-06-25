@@ -2,7 +2,6 @@
   inputs,
   config,
   lib,
-  mkHome,
   ...
 }:
 let
@@ -44,6 +43,4 @@ in
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
   };
-
-  configurations.homeManager."eric@turtle" = mkHome { system = "aarch64-linux"; };
 }

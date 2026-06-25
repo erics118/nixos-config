@@ -1,4 +1,4 @@
-# expose every host toplevel and home activation as a flake check
+# expose every host toplevel as a flake check
 # so `nix flake check` builds everything
 { lib, config, ... }: {
   perSystem = { system, ... }: {
@@ -15,7 +15,6 @@
       lib.mkMerge [
         (forSystem "nixos" config.flake.nixosConfigurations (c: c.config.system.build.toplevel))
         (forSystem "darwin" config.flake.darwinConfigurations (c: c.config.system.build.toplevel))
-        (forSystem "home" config.flake.homeConfigurations (c: c.activationPackage))
       ];
   };
 }

@@ -1,3 +1,5 @@
+# standalone home-manager provider
+# to use, add `configurations.homeManager.<name> = mkHome {...}`
 {
   lib,
   config,

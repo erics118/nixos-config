@@ -63,11 +63,6 @@ dev:
 test:
     nh os test; just ntfy test $?
 
-# switch home-manager configuration
-[group('system')]
-home:
-    nh home switch; just ntfy home $?
-
 # garbage collect unused nix store entries
 [group('system')]
 gc:

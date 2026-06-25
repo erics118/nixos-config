@@ -1,4 +1,4 @@
-{ config, mkHome, ... }:
+{ config, ... }:
 let
   m = config.flake.modules;
 in
@@ -13,10 +13,5 @@ in
     networking.hostName = "orca";
 
     home-manager.users.eric.imports = [ m.homeManager.darwin ];
-  };
-
-  configurations.homeManager."eric@orca" = mkHome {
-    system = "aarch64-darwin";
-    imports = [ m.homeManager.darwin ];
   };
 }
