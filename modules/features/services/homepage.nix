@@ -109,6 +109,11 @@
                 mem = true;
                 cputemp = true;
                 uptime = true;
+                disk = [
+                  "/"
+                  "/mnt/external"
+                ];
+                expanded = true;
                 version = 4;
                 label = "narwhal";
               };
@@ -119,6 +124,8 @@
                 cpu = true;
                 mem = true;
                 uptime = true;
+                disk = "/";
+                expanded = true;
                 version = 4;
                 label = "turtle";
               };
