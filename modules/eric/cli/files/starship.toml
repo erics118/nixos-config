@@ -1,30 +1,21 @@
 '$schema' = 'https://starship.rs/config-schema.json'
 
 ### MAIN SHELL
-# directory | username@hostname | git | cmd duration | direnv ---- time
+# directory username[@hostname] git direnv duration
 # os ▶
 
 format = """
-${custom.top}\
+[┌](surface1)\
 $directory\
-[┤](fg:surface1)\
-$username\
-$hostname\
-[├](fg:surface1)\
+[┤](surface1)$username$hostname\
 $git_branch\
 $git_commit\
 $git_state\
-$git_metrics\
 $git_status\
-$cmd_duration\
 $direnv\
-$fill\
-\
-$time\
-\
+$cmd_duration\
 $line_break\
-$shell\
-${custom.bottom}\
+[└┤](surface1)\
 $os\
 $character"""
 
@@ -40,7 +31,7 @@ follow_symlinks = false
 'dev' = ' '
 'Desktop' = ' '
 'Documents' = ' '
-'Downloads' = ' '
+'Downloads' = ' '
 'Music' = ' '
 'Pictures' = ' '
 
@@ -52,18 +43,6 @@ zsh_indicator = "zsh"
 powershell_indicator = "pwsh"
 cmd_indicator = "cmd"
 
-[custom.top]
-symbol = "┌┤"
-format = '[$symbol]($style)'
-style = "surface1"
-when = true
-
-[custom.bottom]
-symbol = "└"
-format = '[$symbol]($style)'
-style = "surface1"
-when = true
-
 [character]
 success_symbol = '[▶](bold teal)'
 error_symbol = '[▶](bold red)'
@@ -71,8 +50,8 @@ vimcmd_symbol = '[▷](bold teal)'
 
 [os]
 disabled = false
-format = '[┤](fg:surface1)[$symbol]($style)'
-style = 'fg:green'
+format = '[$symbol]($style)'
+style = 'green'
 
 [os.symbols]
 Macos = ' '
@@ -85,8 +64,8 @@ Debian = ' '
 Fedora = ' '
 
 [directory]
-format = "[$path]($style)[$read_only]($read_only_style)[├](fg:surface1)"
-style = 'fg:teal'
+format = "[┤](surface1)[$path]($style)[$read_only]($read_only_style)[├](surface1)"
+style = 'teal'
 read_only = ''
 use_os_path_sep = false
 truncation_length = 5
@@ -96,31 +75,31 @@ truncation_symbol = "…/"
 [username]
 show_always = true
 format = '[$user]($style)'
-style_user = 'fg:yellow'
-style_root = 'fg:red'
+style_user = 'yellow'
+style_root = 'red'
 
 [hostname]
 ssh_only = true
 format = '[@$hostname]($style)'
-style = 'fg:yellow'
+style = 'yellow'
 trim_at = '.'
 
 [sudo]
 disabled = true
-format = '[┤](fg:surface1)[$symbol]($style)[├](fg:surface1)'
-style = 'fg:red'
+format = '[$symbol]($style)'
+style = 'red'
 symbol = ' '
 
 [shlvl]
 disabled = true
-format = "[$symbol]($style) "
+format = "[├┤](surface1)[$symbol]($style)"
 threshold = 2
 symbol = "*"
 repeat = true
 
 [direnv]
 disabled = false
-format = '[┤](fg:surface1)[$symbol$allowed$loaded]($style)[├](fg:surface1)'
+format = '[├┤](surface1)[$symbol$allowed$loaded]($style)'
 symbol = ' '
 allowed_msg = ''
 not_allowed_msg = '?'
@@ -130,17 +109,27 @@ unloaded_msg = '-'
 
 [git_metrics]
 disabled = true
-format = '[┤](fg:surface1)[+$added](fg:green)/[-$deleted](fg:red)[├](fg:surface1)'
-added_style = 'fg:green'
-deleted_style = 'fg:red'
+format = '[├┤](surface1)[+$added](green)/[-$deleted](red)'
+added_style = 'green'
+deleted_style = 'red'
 
 [git_branch]
 symbol = ' '
-format = '[┤](fg:surface1)[$symbol$branch]($style)[├](fg:surface1)'
-style = 'fg:pink'
+format = '[├┤](surface1)[$symbol$branch]($style)'
+style = 'pink'
+
+[git_commit]
+only_detached = true
+tag_disabled = false
+format = '[├┤](surface1)[$hash$tag]($style)'
+style = 'pink'
+
+[git_state]
+format = '[├┤](surface1)[$state( $progress_current/$progress_total)]($style)'
+style = 'pink'
 
 [git_status]
-format = '([┤](fg:surface1)[$all_status$ahead_behind]($style)[├](fg:surface1))'
+format = '([├┤](surface1)[$all_status$ahead_behind]($style))'
 ahead = "↑"
 behind = "↓"
 conflicted = "!"
@@ -149,169 +138,18 @@ diverged = "↕"
 modified = "~"
 renamed = "»"
 untracked = "+"
-style = 'fg:pink'
-
-[cmd_duration]
-format = '[┤](fg:surface1)[󰚭 $duration]($style)[├](fg:surface1)'
-min_time = 0
-show_milliseconds = true
+style = 'pink'
 
 [fill]
 symbol = '─'
-style = 'fg:surface1'
+style = 'surface1'
 
 [time]
-disabled = false
-format = '[┤](fg:surface1)[ $time]($style)[├](fg:surface1)'
+disabled = true
+format = '[├┤](surface1)[ $time]($style)'
 
-### LANGUAGE VERSION INDICATORS
-[c]
-format = '[┤](fg:surface1)[$symbol($version(-$name))]($style)[├](fg:surface1)'
-
-[cmake]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[cobol]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[conda]
-format = '[┤](fg:surface1)[$symbol$environment]($style)[├](fg:surface1)'
-
-[crystal]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[dart]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[deno]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[dotnet]
-format = '[┤](fg:surface1)[$symbol($version)(🎯 $tfm)]($style)[├](fg:surface1)'
-
-[elixir]
-format = '[┤](fg:surface1)[$symbol($version \(OTP $otp_version\))]($style)[├](fg:surface1)'
-
-[elm]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[erlang]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[golang]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[haskell]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[helm]
-symbol = 'ﴱ '
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[java]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[julia]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[kotlin]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[lua]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[nim]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[nix_shell]
-format = '[┤](fg:surface1)[$symbol$state( \($name\))]($style)[├](fg:surface1)'
-
-[nodejs]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-detect_extensions = []
-style = 'green'
-
-[ocaml]
-format = '[┤](fg:surface1)[$symbol($version)(\($switch_indicator$switch_name\))]($style)[├](fg:surface1)'
-
-[package]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol$version]($style)[├](fg:surface1)'
-style = 'subtext1'
-
-[perl]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[php]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[pulumi]
-format = '[┤](fg:surface1)[$symbol$stack]($style)[├](fg:surface1)'
-
-[purescript]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[python]
-symbol = ' '
-format = '[┤](fg:surface1)[${symbol}${pyenv_prefix}(${version})(\($virtualenv\))]($style)[├](fg:surface1)'
-
-[red]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[ruby]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[rust]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[scala]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[spack]
-format = '[┤](fg:surface1)[$symbol$environment]($style)[├](fg:surface1)'
-
-[swift]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[vagrant]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[vlang]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-[zig]
-format = '[┤](fg:surface1)[$symbol($version)]($style)[├](fg:surface1)'
-
-### CONTEXT INDICATORS
-[aws]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol($profile)(\($region\))(\[$duration\])]($style)[├](fg:surface1)'
-
-[docker_context]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol$context]($style)[├](fg:surface1)'
-
-[gcloud]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol$account(@$domain)(\($region\))]($style)[├](fg:surface1)'
-
-[kubernetes]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol($cluster/$namespace)]($style)[├](fg:surface1)'
-disabled = false
-
-[openstack]
-symbol = ' '
-format = '[┤](fg:surface1)[$symbol$cloud(\($project\))]($style)[├](fg:surface1)'
-
-[terraform]
-format = '[┤](fg:surface1)[$symbol$workspace]($style)[├](fg:surface1)'
+[cmd_duration]
+format = '[├┤](surface1)[󰚭 $duration]($style)'
+min_time = 0
+show_milliseconds = true
+style = 'yellow'
