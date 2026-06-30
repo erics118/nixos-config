@@ -1,7 +1,7 @@
 {
   flake.modules.homeManager.base = { repoFile, pkgs, ... }: {
     home.file.".claude/statusline-command.sh".source =
-      repoFile "modules/eric/cli/files/statusline-command.sh";
+      repoFile "modules/eric/cli/files/claude-statusline-command.sh";
 
     # live-symlink so edits to claude-settings.json take effect without a rebuild
     home.file.".claude/settings.json".source = repoFile "modules/eric/cli/files/claude-settings.json";

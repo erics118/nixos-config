@@ -217,6 +217,6 @@
         };
       };
 
-      xdg.configFile."zsh/init.zsh".source = ./files/zsh/init.zsh;
+      xdg.configFile."zsh/init.zsh".source = ./cli/files/zsh-init.zsh;
     };
 }
