@@ -12,6 +12,11 @@
       settings = {
         web.port = 8084;
 
+        storage = {
+          type = "sqlite";
+          path = "/var/lib/gatus/gatus.db";
+        };
+
         alerting.ntfy = {
           url = "https://ntfy.sh";
           topic = "\${NTFY_TOPIC}";
