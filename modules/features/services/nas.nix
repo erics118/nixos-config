@@ -39,7 +39,7 @@
           "browseable" = "no";
           "writable" = "yes";
           "fruit:time machine" = "yes";
-          "fruit:time machine max size" = "1400G";
+          "fruit:time machine max size" = "2T";
         };
       };
     };
