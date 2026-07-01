@@ -1,6 +1,11 @@
 {
   flake.modules.homeManager.base =
-    { config, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       # pre-compute the zsh init scripts for these tools at nix build time to
       # reduce shell startup time
@@ -56,11 +61,6 @@
             src = pkgs.zsh-fzf-tab;
             file = "share/fzf-tab/fzf-tab.plugin.zsh";
           }
-          {
-            name = "autopair";
-            src = pkgs.zsh-autopair;
-            file = "share/zsh/zsh-autopair/autopair.zsh";
-          }
         ];
 
         defaultKeymap = "emacs";
@@ -95,11 +95,12 @@
 
           ws = "wezterm cli spawn -- ";
 
-          reboot-windows = "sudo systemctl reboot --boot-loader-entry=auto-windows";
-
           # # is an extended-glob operator in zsh; disable globbing so flake
           # refs like nixpkgs#foo work without quoting
           nix = "noglob nix";
+        }
+        // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+          reboot-windows = "sudo systemctl reboot --boot-loader-entry=auto-windows";
         };
       };
 

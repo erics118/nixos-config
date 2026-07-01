@@ -1,13 +1,13 @@
-'$schema' = 'https://starship.rs/config-schema.json'
+"$schema" = "https://starship.rs/config-schema.json"
 
 ### MAIN SHELL
 # directory username[@hostname] git direnv duration
 # os ▶
 
 format = """
-[┌](surface1)\
+[┌┤](surface1)\
 $directory\
-[┤](surface1)$username$hostname\
+[├┤](surface1)$username$hostname\
 $git_branch\
 $git_commit\
 $git_state\
@@ -26,14 +26,14 @@ add_newline = true
 follow_symlinks = false
 
 [directory.substitutions]
-'.config' = ' '
-'nixos-config' = ' '
-'dev' = ' '
-'Desktop' = ' '
-'Documents' = ' '
-'Downloads' = ' '
-'Music' = ' '
-'Pictures' = ' '
+".config" = " "
+"nixos-config" = " "
+"dev" = " "
+"Desktop" = " "
+"Documents" = " "
+"Downloads" = " "
+"Music" = " "
+"Pictures" = " "
 
 [shell]
 disabled = true
@@ -44,29 +44,29 @@ powershell_indicator = "pwsh"
 cmd_indicator = "cmd"
 
 [character]
-success_symbol = '[▶](bold teal)'
-error_symbol = '[▶](bold red)'
-vimcmd_symbol = '[▷](bold teal)'
+success_symbol = "[▶](bold teal)"
+error_symbol = "[▶](bold red)"
+vimcmd_symbol = "[▷](bold teal)"
 
 [os]
 disabled = false
-format = '[$symbol]($style)'
-style = 'green'
+format = "[$symbol]($style)"
+style = "green"
 
 [os.symbols]
-Macos = ' '
-Linux = ' '
-Windows = ' '
-NixOS = ' '
-Ubuntu = ' '
-Arch = ' '
-Debian = ' '
-Fedora = ' '
+Macos = " "
+Linux = " "
+Windows = " "
+NixOS = " "
+Ubuntu = " "
+Arch = " "
+Debian = " "
+Fedora = " "
 
 [directory]
-format = "[┤](surface1)[$path]($style)[$read_only]($read_only_style)[├](surface1)"
-style = 'teal'
-read_only = ''
+format = "[$path]($style)[$read_only]($read_only_style)"
+style = "teal"
+read_only = " "
 use_os_path_sep = false
 truncation_length = 5
 truncate_to_repo = false
@@ -74,21 +74,21 @@ truncation_symbol = "…/"
 
 [username]
 show_always = true
-format = '[$user]($style)'
-style_user = 'yellow'
-style_root = 'red'
+format = "[$user]($style)"
+style_user = "yellow"
+style_root = "red"
 
 [hostname]
 ssh_only = true
-format = '[@$hostname]($style)'
-style = 'yellow'
-trim_at = '.'
+format = "[@$hostname]($style)"
+style = "yellow"
+trim_at = "."
 
 [sudo]
 disabled = true
-format = '[$symbol]($style)'
-style = 'red'
-symbol = ' '
+format = "[$symbol]($style)"
+style = "red"
+symbol = " "
 
 [shlvl]
 disabled = true
@@ -99,37 +99,37 @@ repeat = true
 
 [direnv]
 disabled = false
-format = '[├┤](surface1)[$symbol$allowed$loaded]($style)'
-symbol = ' '
-allowed_msg = ''
-not_allowed_msg = '?'
-denied_msg = '×'
-loaded_msg = '✓'
-unloaded_msg = '-'
+format = "[├┤](surface1)[$symbol$allowed$loaded]($style)"
+symbol = " "
+allowed_msg = ""
+not_allowed_msg = "?"
+denied_msg = "×"
+loaded_msg = "✓"
+unloaded_msg = "-"
 
 [git_metrics]
 disabled = true
-format = '[├┤](surface1)[+$added](green)/[-$deleted](red)'
-added_style = 'green'
-deleted_style = 'red'
+format = "[├┤](surface1)[+$added](green)/[-$deleted](red)"
+added_style = "green"
+deleted_style = "red"
 
 [git_branch]
-symbol = ' '
-format = '[├┤](surface1)[$symbol$branch]($style)'
-style = 'pink'
+symbol = " "
+format = "[├┤](surface1)[$symbol$branch]($style)"
+style = "pink"
 
 [git_commit]
 only_detached = true
 tag_disabled = false
-format = '[├┤](surface1)[$hash$tag]($style)'
-style = 'pink'
+format = " [$hash$tag]($style)"
+style = "pink"
 
 [git_state]
-format = '[├┤](surface1)[$state( $progress_current/$progress_total)]($style)'
-style = 'pink'
+format = " [$state( $progress_current/$progress_total)]($style)"
+style = "pink"
 
 [git_status]
-format = '([├┤](surface1)[$all_status$ahead_behind]($style))'
+format = "( [$all_status$ahead_behind]($style))"
 ahead = "↑"
 behind = "↓"
 conflicted = "!"
@@ -138,18 +138,18 @@ diverged = "↕"
 modified = "~"
 renamed = "»"
 untracked = "+"
-style = 'pink'
+style = "pink"
 
 [fill]
-symbol = '─'
-style = 'surface1'
+symbol = "─"
+style = "surface1"
 
 [time]
 disabled = true
-format = '[├┤](surface1)[ $time]($style)'
+format = "[├┤](surface1)[ $time]($style)"
 
 [cmd_duration]
-format = '[├┤](surface1)[󰚭 $duration]($style)'
+format = "[├┤](surface1)[󰚭 $duration]($style)"
 min_time = 0
 show_milliseconds = true
-style = 'yellow'
+style = "yellow"

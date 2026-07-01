@@ -68,6 +68,9 @@
       enableZshIntegration = false;
     };
 
+    # build/project files only bold and yellow
+    home.sessionVariables.EZA_COLORS = "bu=1;33";
+
     programs.tealdeer = {
       enable = true;
       settings = {

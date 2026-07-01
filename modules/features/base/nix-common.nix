@@ -39,6 +39,9 @@ let
       # home-manager already runs compinit in ~/.config/zsh/.zshrc
       # running it again at the system level doubles startup cost
       enableGlobalCompInit = false;
+
+      # skip default prompt theme b/c starship already sets the prompt
+      promptInit = "";
     };
 
     nixpkgs = {
