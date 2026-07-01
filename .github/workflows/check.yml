@@ -28,16 +28,17 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.PRIVATE_FLAKE_DEPLOY_KEY }}
 
-      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: cachix/install-nix-action@v31
         with:
-          extra-conf: |
-            extra-substituters = https://erics118.cachix.org https://nix-community.cachix.org https://numtide.cachix.org https://devenv.cachix.org https://cache.numtide.com https://catppuccin.cachix.org
-            extra-trusted-public-keys = erics118.cachix.org-1:wJdKw5a7XgwcIJjxKcDHqgTrU6q99hOkOII0Zk+xC1c= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE= devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g= catppuccin.cachix.org-1:noG/4HkbhJb+lUAdKrph6LaozJvAeEEZj4N732IysmU=
+          extra_nix_config: |
+            extra-substituters = https://cache.numtide.com
+            extra-trusted-public-keys = niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=
 
-      # push to erics118.cachix.org
+      # push to erics118.cachix.org, pull from the other cachix caches
       - uses: cachix/cachix-action@v17
         with:
           name: erics118
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          extraPullNames: nix-community,numtide,devenv,catppuccin
 
       - run: nix flake check --print-build-logs
