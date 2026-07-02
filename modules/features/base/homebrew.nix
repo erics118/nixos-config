@@ -51,20 +51,12 @@ in
       ];
 
       brews = [
-        {
-          name = "macos-trash";
-          link = true;
-        }
         (head "erics118/tap/sketchybar")
         (head "erics118/tap/smhkd")
         (head "asmvik/formulae/yabai")
 
         "erics118/tap/goku"
         "llvm"
-
-        "railway"
-        "vercel-cli"
-        "supabase"
       ];
 
       casks = [

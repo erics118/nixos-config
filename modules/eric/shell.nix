@@ -85,7 +85,7 @@
         shellAliases = {
           ":q" = "exit";
 
-          ls = "eza";
+          ls = "eza --icons auto --color auto -F always";
 
           mv = "mv -i";
           cp = "cp -i";

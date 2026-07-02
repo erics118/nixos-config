@@ -49,7 +49,8 @@ yabai -m rule --add label="intellij idea1" app="^($intellij_app_regex)$" title="
 yabai -m rule --add label="intellij idea" app="^($intellij_app_regex)$" title=".* –.*" manage=on
 
 # orion popups
-yabai -m rule --add label="orion popup 1" app="^Orion.*$" role="^(AXPopover|Orion Preview.*|Bitwarden)$" manage=off
+yabai -m rule --add label="orion popup 1" app="^Orion.*$" role="^AXPopover$" manage=off
+yabai -m rule --add label="orion popup 2" app="^Orion.*$" title="^Orion Preview.*" manage=off
 
 # zoom
 yabai -m rule --add label="unmanage zoom" app="^zoom\\.us$" manage=off
