@@ -1,8 +1,18 @@
 { config, ... }:
 let
   overlays = builtins.attrValues config.flake.overlays;
-  shared = { pkgs, ... }: {
+  shared = { pkgs, config, ... }: {
+    sops.templates."nix-access-tokens" = {
+      content = ''
+        access-tokens = ${config.sops.placeholder."nix/access_tokens"}
+      '';
+      owner = "eric";
+    };
+
     nix = {
+      extraOptions = ''
+        !include ${config.sops.templates."nix-access-tokens".path}
+      '';
       settings = {
         experimental-features = [
           "nix-command"
