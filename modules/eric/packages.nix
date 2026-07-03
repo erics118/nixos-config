@@ -16,20 +16,10 @@
           nix-du
           manix
 
-          # interactive fuzzy search over nixpkgs / NixOS / home-manager
-          nix-search-tv
-          (pkgs.writeShellApplication {
-            name = "ns";
-            runtimeInputs = with pkgs; [
-              fzf
-              nix-search-tv
-            ];
-            text = builtins.readFile "${pkgs.nix-search-tv.src}/nixpkgs.sh";
-          })
-
           # system-wide formatters
           nixfmt
           shfmt
+          llvmPackages_22.clang-tools # clang-format, clang-tidy, clangd
 
           # apps
           _1password-cli

@@ -1,11 +1,4 @@
-{ inputs, ... }:
-let
-  head = name: {
-    inherit name;
-    args = [ "HEAD" ];
-  };
-in
-{
+{ inputs, ... }: {
   flake.modules.darwin.base = {
     imports = [ inputs.nix-homebrew.darwinModules.nix-homebrew ];
 
@@ -23,12 +16,7 @@ in
         ];
         casks = [ ];
         commands = [ ];
-        taps = [
-          "felixkratz/formulae"
-          "asmvik/formulae"
-          "erics118/tap"
-          "docker/tap"
-        ];
+        taps = [ "docker/tap" ];
       };
     };
 
@@ -43,27 +31,11 @@ in
         brewfile = true;
       };
 
-      taps = [
-        "felixkratz/formulae"
-        "asmvik/formulae"
-        "erics118/tap"
-        "docker/tap"
-      ];
+      taps = [ "docker/tap" ];
 
-      brews = [
-        (head "erics118/tap/sketchybar")
-        (head "erics118/tap/smhkd")
-        (head "asmvik/formulae/yabai")
+      brews = [ "llvm" ];
 
-        "erics118/tap/goku"
-        "llvm"
-      ];
-
-      casks = [
-        "1password"
-        "font-sf-pro"
-        "docker/tap/sbx"
-      ];
+      casks = [ "docker/tap/sbx" ];
 
       masApps = { };
     };

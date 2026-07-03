@@ -1,4 +1,4 @@
-_: {
+{
   flake.overlays.glances = _: prev: {
     glances = prev.glances.overrideAttrs (old: {
       # test_phys_core_returns_int is broken
