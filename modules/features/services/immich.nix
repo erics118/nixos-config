@@ -21,6 +21,17 @@
         subdomain = "immich";
         description = "Photo backup";
         icon = "immich.svg";
+        widget = {
+          type = "immich";
+          key = "{{HOMEPAGE_VAR_IMMICH_KEY}}";
+          version = 2;
+          fields = [
+            "photos"
+            "videos"
+            "storage"
+            "users"
+          ];
+        };
       }
     ];
   };

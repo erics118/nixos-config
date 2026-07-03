@@ -49,6 +49,9 @@
         subdomain = "gatus";
         description = "Service uptime";
         icon = "gatus.svg";
+        widget = {
+          type = "gatus";
+        };
       }
     ];
   };

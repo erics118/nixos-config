@@ -76,6 +76,11 @@
         subdomain = "adguard";
         description = "DNS & ad blocking";
         icon = "adguard-home.svg";
+        widget = {
+          type = "adguard";
+          username = "{{HOMEPAGE_VAR_ADGUARD_USERNAME}}";
+          password = "{{HOMEPAGE_VAR_ADGUARD_PASSWORD}}";
+        };
       }
     ];
   };

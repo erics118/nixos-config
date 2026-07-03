@@ -32,6 +32,9 @@
         subdomain = "scrutiny";
         description = "Disk SMART health";
         icon = "scrutiny.svg";
+        widget = {
+          type = "scrutiny";
+        };
       }
     ];
   };
