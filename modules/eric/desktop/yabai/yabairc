@@ -16,12 +16,12 @@ printf 'loaded sa..\n'
 padding=6
 
 # events
-yabai -m signal --add event=window_focused action="/opt/homebrew/bin/sketchybar --trigger window_focused"
-yabai -m signal --add event=window_created action="/opt/homebrew/bin/sketchybar --trigger windows_on_spaces"
-yabai -m signal --add event=window_destroyed action="/opt/homebrew/bin/sketchybar --trigger windows_on_spaces"
-yabai -m signal --add event=application_front_switched action="/opt/homebrew/bin/sketchybar --trigger window_focused"
-# yabai -m signal --add event=window_title_changed action="/opt/homebrew/bin/sketchybar --trigger window_title_changed"
-# yabai -m signal --add event=window_moved action="/opt/homebrew/bin/sketchybar --trigger window_moved"
+yabai -m signal --add event=window_focused action="sketchybar --trigger window_focused"
+yabai -m signal --add event=window_created action="sketchybar --trigger windows_on_spaces"
+yabai -m signal --add event=window_destroyed action="sketchybar --trigger windows_on_spaces"
+yabai -m signal --add event=application_front_switched action="sketchybar --trigger window_focused"
+# yabai -m signal --add event=window_title_changed action="sketchybar --trigger window_title_changed"
+# yabai -m signal --add event=window_moved action="sketchybar --trigger window_moved"
 
 yabai -m rule --add label="Finder" app=Finder sticky=on manage=off
 
@@ -176,9 +176,9 @@ yabai -m signal --add event=display_removed \
   action="/Users/eric/.local/bin/on_display_update"
 
 # yabai -m signal --add event=window_focused \
-# action="/opt/homebrew/bin/sketchybar --trigger yabai_window_focused INFO=$YABAI_WINDOW_ID"
+# action="sketchybar --trigger yabai_window_focused INFO=$YABAI_WINDOW_ID"
 
 # yabai -m signal --add event=space_changed \
-# action="/opt/homebrew/bin/sketchybar --trigger yabai_space_changed INFO=$YABAI_SPACE_ID"
+# action="sketchybar --trigger yabai_space_changed INFO=$YABAI_SPACE_ID"
 
 printf "yabai configuration file loaded..\n"

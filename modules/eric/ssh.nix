@@ -33,6 +33,9 @@
           "github.coecis.cornell.edu" = mkGit "github.coecis.cornell.edu" "id_ed25519_cornell";
 
           "*" = {
+            # rebind ssh escape prefix off ~ so ~n/~p zsh aliases echo instantly
+            EscapeChar = "^]";
+
             forwardAgent = false;
             addKeysToAgent = "no";
             compression = false;
