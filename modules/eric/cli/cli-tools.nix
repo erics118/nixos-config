@@ -15,6 +15,7 @@
       defaultOptions = [
         "--preview='if [ -f {} ]; then bat --color=always --style=numbers --line-range=:500 -- {}; elif [ -d {} ]; then eza --tree --color=always --icons=always -- {}; else printf \"%s\\n\" {}; fi'"
       ];
+      historyWidget.command = "";
     };
 
     programs.atuin = {
