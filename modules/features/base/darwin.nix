@@ -29,6 +29,8 @@
       "eric"
     ];
 
+    documentation.enable = false;
+
     system = {
       checks.verifyNixPath = false;
       primaryUser = "eric";
