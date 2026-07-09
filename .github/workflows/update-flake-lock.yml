@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: "0 6 * * 1" # mondays 06:00 utc
   workflow_dispatch:
+  repository_dispatch:
+    types: [private-updated]
 
 jobs:
   update-lock:
@@ -24,8 +26,9 @@ jobs:
         with:
           # special PAT so the opened PR triggers check.yml
           token: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
-          pr-title: "update flake inputs"
+          pr-title: ${{ github.event_name == 'repository_dispatch' && 'update nixos-config-private input' || 'update all flake inputs' }}
           pr-labels: dependencies
+          inputs: ${{ github.event_name == 'repository_dispatch' && 'nixos-config-private' || '' }}
           git-author-name: github-actions[bot]
           git-author-email: github-actions[bot]@users.noreply.github.com
           git-committer-name: github-actions[bot]
