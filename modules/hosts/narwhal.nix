@@ -40,6 +40,9 @@ in
       trustedInterfaces = [ "tailscale0" ];
     };
 
+    # persistent machine-check, memory, pcie error log
+    hardware.rasdaemon.enable = true;
+
     # dont sleep
     systemd.sleep.settings.Sleep = {
       AllowSuspend = "no";
