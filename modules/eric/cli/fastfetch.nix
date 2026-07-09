@@ -27,10 +27,6 @@ let
       preserveAspectRatio = false;
       recache = false;
       position = "left";
-      chafa = {
-        fgOnly = false;
-        symbols = "block+border+space-wide-inverted";
-      };
     };
 
     display = {
