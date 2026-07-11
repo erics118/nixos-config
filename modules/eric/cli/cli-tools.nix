@@ -12,6 +12,7 @@
 
     programs.fzf = {
       enable = true;
+      enableZshIntegration = false; # pre-computed in shell.nix
       defaultOptions = [
         "--preview='if [ -f {} ]; then bat --color=always --style=numbers --line-range=:500 -- {}; elif [ -d {} ]; then eza --tree --color=always --icons=always -- {}; else printf \"%s\\n\" {}; fi'"
       ];
@@ -20,6 +21,7 @@
 
     programs.atuin = {
       enable = true;
+      enableZshIntegration = false; # pre-computed in shell.nix
       forceOverwriteSettings = true;
       settings = {
         enter_accept = true;

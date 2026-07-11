@@ -12,12 +12,18 @@
       mkInit =
         name: cmd:
         pkgs.runCommand "${name}-init.zsh" { } ''
+          export HOME="$TMPDIR/home"
+          export XDG_CONFIG_HOME="$HOME/.config"
+          export XDG_CACHE_HOME="$HOME/.cache"
+          mkdir -p "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
           ${cmd} > $out
         '';
       starshipInit = mkInit "starship" "${pkgs.starship}/bin/starship init zsh --print-full-init";
       zoxideInit = mkInit "zoxide" "${pkgs.zoxide}/bin/zoxide init zsh";
       direnvInit = mkInit "direnv" "${pkgs.direnv}/bin/direnv hook zsh";
       nixYourShellInit = mkInit "nix-your-shell" "${pkgs.nix-your-shell}/bin/nix-your-shell zsh";
+      fzfInit = mkInit "fzf" "${pkgs.fzf}/bin/fzf --zsh";
+      atuinInit = mkInit "atuin" "${pkgs.atuin}/bin/atuin init zsh";
     in
     {
       home.sessionVariables.COLORTERM = "truecolor";
@@ -75,6 +81,11 @@
           source ${direnvInit}
           source ${starshipInit}
           source ${nixYourShellInit}
+
+          if [[ $options[zle] = on ]]; then
+            source ${fzfInit}
+            source ${atuinInit}
+          fi
         '';
 
         localVariables = {
