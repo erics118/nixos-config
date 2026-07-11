@@ -22,6 +22,7 @@
  :applications {:chrome ["^com\\.google\\.Chrome$"]
                 :safari ["^com\\.apple\\.Safari$"]
                 :vscode ["^com\\.microsoft\\.VSCode$"]
+                :firefox ["^org\\.mozilla\\.firefox$"]
                 :wezterm ["^com\\.github\\.wez\\.wezterm$"]
                 :orion ["^com\\.kagi\\.kagimacOS\\.RC$"]
                 :coding ["^com\\.microsoft\\.VSCode$" "^com\\.jetbrains\\..*$" "^com\\.todesktop\\..*$"]
@@ -120,6 +121,10 @@
            [:#Pf11 :volume_decrement ["multitouch_extension_finger_count_total" 1]]
            [:!!#Pf12 :volume_increment]
            [:#Pf12 :volume_increment ["multitouch_extension_finger_count_total" 1]]]}
+
+  {:des "firefox: ctrl-tab -> alt-pagedown, ctrl-shift-tab -> alt-pageup"
+   :rules [[:!Ttab :!Opage_down :firefox]
+           [:!STtab :!Opage_up :firefox]]}
 
   {:des "latex: in vscode: rcmd -> $, ralt -> _, lshift -> (, rshift -> )"
    :rules [[:right_command :right_command :vscode {:alone :!S4 :delayed {:invoked :vk_none}}]

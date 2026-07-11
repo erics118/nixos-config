@@ -48,7 +48,7 @@
           };
 
           # deprioritize the nix build daemon
-          nix-daemon.serviceConfig.Nice = -10;
+          nix-daemon.serviceConfig.Nice = 10;
         };
       };
 

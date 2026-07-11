@@ -25,6 +25,8 @@ zstyle ':fzf-tab:complete:*' fzf-preview \
 zstyle ':fzf-tab:*' switch-group '<' '>'
 # drop the leading dot marker on each entry
 zstyle ':fzf-tab:*' prefix ''
+# tab confirms the selection
+zstyle ':fzf-tab:*' fzf-bindings 'tab:accept'
 
 # prevent glob expansion of URLs and other special chars
 autoload -Uz bracketed-paste-magic url-quote-magic

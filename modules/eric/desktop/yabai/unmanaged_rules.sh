@@ -8,19 +8,20 @@ yabai -m rule --add label="misc unmanaged windows" title="^($title_regex)$" mana
 
 # apps only
 apps=(
-  "AdGuard for Safari" "AdGuard VPN" "AltTab" "Authy Desktop"
+  "AdGuard Mini" "AdGuard VPN" "AltTab"
   "Background Music" "Bartender.*" "BetterDiscord" "Box"
   "CleanShot.*" "Desk View" "Dropbox Dash" "Dropover" "Dropshare.*"
-  "Espanso" "Find Any File" "ainder" "FiveNotes" "Flow" "Google Drive"
+  "Espanso" "Find Any File" "Flow" "Google Drive"
   "GPG Keychain" "Grammarly Desktop" "Hammerspoon" "HazeOver" "Hidden Bar"
   "Hyperduck" "Installer" "JetBrains Toolbox" "Karabiner-MultitouchExtension"
-  "MacGPT" "Main" "MediaMate" "Menuwhere" "Microsoft Remote Desktop"
+  "MacGPT" "MediaMate" "Menuwhere" "Microsoft Remote Desktop"
   "NepTunes" "NoteApp" "OmniDiskSweeper" "OnyX" "Photo Booth"
   "Plain Text Editor" "Print Center" "Python" "Rectangle.*" "SideNotes"
   "Silicio" "Siri" "Smooze.*" "Stickies" "System .*" "Tailscale" "Tot"
   "Velja" "Raycast( Beta)?" "Mac Mouse Fix" "Linear Mouse" "Archive Utility"
-  "Actions" "Koofr" "Antinote" "FaceTime" "Alcove" "java" "CLion"
-  "Parallels Desktop" "particle" "ocaml-voxel"
+  "Actions" "Koofr" "Antinote" "FaceTime" "Alcove"
+  "Parallels Desktop" "WorkSpaces"
+  "Main" "java" "particle" "ocaml-voxel" "knot"
 )
 app_regex=$(printf '%s|' "${apps[@]}" | sed 's/|$//')
 
@@ -29,7 +30,6 @@ yabai -m rule --add label="unmanaged apps" app="^($app_regex)$" manage=off
 # specific app windows
 yabai -m rule --add label="safari prefs" app="^Safari( Technology Preview)?$" title="^(General|Tabs|AutoFill|Passwords|Search|Security|Privacy|Websites|Extensions|Advanced|Developer|Feature Flags|Privacy Report)$" manage=off
 yabai -m rule --add label="orion prefs" app="^Orion.*$" title="^(General|Appearance|Tabs|Browsing|Sync|Passwords|Privacy|Search|Websites|Advanced|Edit Bookmark|Plus)$" manage=off
-yabai -m rule --add label="arc prefs" app="^Arc$" title="^(Eric|General|Profiles|Max|Shortcuts|Links|Icon|Advanced)$" manage=off
 yabai -m rule --add label="calendar prefs" app="^Calendar$" title="^(General|Accounts|Alerts|Advanced)$" manage=off
 yabai -m rule --add label="craft prefs" app="^Craft$" title="^Settings$" manage=off
 yabai -m rule --add label="orbstack prefs" app="^OrbStack$" title="^(General|System|Docker|Kubernetes|Network|Storage)$" manage=off
@@ -62,8 +62,8 @@ yabai -m rule --add label="apple music" app="^Music$" title="^MiniPlayer$" manag
 # firefox pip
 yabai -m rule --add label="firefox pip" app="^Firefox$" title="^Picture-in-Picture$" manage=off
 
-# dev apps
-yabai -m rule --add label="dev apps" app="^knot$" manage=off
+# amazon workspaces login window
+yabai -m rule --add label="amazon workspaces" app="^Amazon WorkSpaces$" title="^$" manage=off
 
 # wezterm scratchpad
 # yabai -m rule --add label="terminal scratchpad" app="WezTerm" manage=off
