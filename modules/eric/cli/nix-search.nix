@@ -9,7 +9,7 @@
           fzf
           nix-search-tv
         ];
-        text = builtins.readFile ./ns.sh;
+        text = builtins.readFile ./files/ns.sh;
       })
     ];
   };
