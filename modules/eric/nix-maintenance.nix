@@ -25,6 +25,8 @@
 
         launchd.daemons = {
           nh-clean.serviceConfig = {
+            # launchd daemons need to have PATH set
+            EnvironmentVariables.PATH = "/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
             ProgramArguments = [
               "${pkgs.nh}/bin/nh"
               "clean"
