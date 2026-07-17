@@ -1,5 +1,11 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "cleanupPeriodDays": 90,
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
   "permissions": {
     "allow": [
       "Bash(cat *)",
@@ -49,7 +55,52 @@
       "Bash(nix search *)",
       "Bash(git -C * log *)",
       "Bash(git -C * show *)",
-      "Bash(git -C * rev-parse *)"
+      "Bash(git -C * rev-parse *)",
+      "Bash(direnv exec *)",
+      "Bash(direnv allow *)",
+      "Bash(git add *)",
+      "Bash(just build*)",
+      "Bash(just check*)",
+      "Bash(just fmt*)",
+      "Bash(readlink *)",
+      "Bash(realpath *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.claude/hooks/resolve-symlink-path.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.claude/hooks/git-add-before-nix.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.claude/hooks/strip-claude-attribution.sh\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.claude/hooks/treefmt-on-edit.sh\""
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
@@ -67,10 +118,9 @@
     "rust-analyzer-lsp@claude-plugins-official": false,
     "clangd-lsp@claude-plugins-official": false,
     "pyright-lsp@claude-plugins-official": false,
-    "agent-orchestration@claude-code-workflows": true,
+    "agent-orchestration@claude-code-workflows": false,
     "cicd-automation@claude-code-workflows": false,
     "ralph-loop@claude-plugins-official": false,
-    "context7@claude-plugins-official": true,
     "swift-lsp@claude-plugins-official": false,
     "claude-md-management@claude-plugins-official": false,
     "impeccable@impeccable": false,
@@ -79,7 +129,9 @@
     "security-guidance@claude-plugins-official": false,
     "lua-lsp@claude-plugins-official": false,
     "code-simplifier@claude-plugins-official": true,
-    "remember@claude-plugins-official": true
+    "remember@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "railway@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "impeccable": {
@@ -102,6 +154,5 @@
   "verbose": true,
   "remoteControlAtStartup": false,
   "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": false,
-  "model": "opus"
+  "agentPushNotifEnabled": false
 }

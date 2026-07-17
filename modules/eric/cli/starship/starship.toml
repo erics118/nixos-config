@@ -28,12 +28,12 @@ follow_symlinks = false
 [directory.substitutions]
 ".config" = " "
 "nixos-config" = " "
-"dev" = " "
 "Desktop" = " "
 "Documents" = " "
 "Downloads" = " "
 "Music" = " "
 "Pictures" = " "
+"/dev/" = "/ /"
 
 [shell]
 disabled = true

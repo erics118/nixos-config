@@ -41,6 +41,7 @@
 - Turn each task into a verifiable goal (e.g. a failing test to make pass), then loop until it is met
 - For multi-step tasks, state a brief plan with a verify check per step
 - Verify before claiming done; don't assert success you haven't checked
+- Run commands yourself with the Bash tool; never paste commands for the user to run (exception: interactive TTY commands, suggest `! <cmd>`)
 
 ## Git
 

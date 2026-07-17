@@ -102,6 +102,8 @@
           cp = "cp -i";
           rm = "rm -i";
 
+          t = "tmux";
+
           sshn = "ssh -F /dev/null -o PubkeyAuthentication=no";
 
           ws = "wezterm cli spawn -- ";
@@ -229,6 +231,6 @@
         };
       };
 
-      xdg.configFile."zsh/init.zsh".source = ./cli/files/zsh-init.zsh;
+      xdg.configFile."zsh/init.zsh".source = ./cli/zsh/init.zsh;
     };
 }
