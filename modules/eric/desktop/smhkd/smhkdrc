@@ -34,6 +34,9 @@ mod + e :
     front -p "/System/Library/CoreServices/Finder.app"
 
 mod + b :
+    front -n "Firefox Developer Edition"
+
+mod + ctrl + b :
     front -n "Orion RC"
 
 mod + shift + b :

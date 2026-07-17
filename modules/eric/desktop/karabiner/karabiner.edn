@@ -22,7 +22,7 @@
  :applications {:chrome ["^com\\.google\\.Chrome$"]
                 :safari ["^com\\.apple\\.Safari$"]
                 :vscode ["^com\\.microsoft\\.VSCode$"]
-                :firefox ["^org\\.mozilla\\.firefox$"]
+                :firefox ["^org\\.mozilla\\.firefox(developeredition)?$"]
                 :wezterm ["^com\\.github\\.wez\\.wezterm$"]
                 :orion ["^com\\.kagi\\.kagimacOS\\.RC$"]
                 :coding ["^com\\.microsoft\\.VSCode$" "^com\\.jetbrains\\..*$" "^com\\.todesktop\\..*$"]
@@ -122,9 +122,13 @@
            [:!!#Pf12 :volume_increment]
            [:#Pf12 :volume_increment ["multitouch_extension_finger_count_total" 1]]]}
 
-  {:des "firefox: ctrl-tab -> alt-pagedown, ctrl-shift-tab -> alt-pageup"
-   :rules [[:!Ttab :!Opage_down :firefox]
-           [:!STtab :!Opage_up :firefox]]}
+  {:des "firefox: ctrl-tab -> alt-pagedown, ctrl-shift-tab -> alt-pageup, swap cmd-shift-enter and cmd-enter"
+   :rules [[:!Ttab :!TOpage_down :firefox]
+           [:!STtab :!TOpage_up :firefox]
+           ; [:!Creturn_or_enter :!CSreturn_or_enter :firefox]
+           ; [:!CSreturn_or_enter :!Creturn_or_enter :firefox]
+]
+}
 
   {:des "latex: in vscode: rcmd -> $, ralt -> _, lshift -> (, rshift -> )"
    :rules [[:right_command :right_command :vscode {:alone :!S4 :delayed {:invoked :vk_none}}]
@@ -161,7 +165,7 @@
   ;;   {:des "activate mode"
   ;;    :rules [[:!!a ["sketchybar --trigger skhd_mode_changed default" ["activate-mode" 1]]]
   ;;            :activate-mode
-  ;;            [:escape ["sketchybar --trigger skhd_mode_changed INFO=default" ["activate-mode" 0]]] 
+  ;;            [:escape ["sketchybar --trigger skhd_mode_changed INFO=default" ["activate-mode" 0]]]
   ;;            [:e ["open 'raycast://extensions/mooxl/deepcast/englishUS?arguments=%7B%22text%22%3A%22%22%7D' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
   ;;            [:s ["open 'raycast://extensions/mooxl/deepcast/spanish?arguments=%7B%22text%22%3A%22%22%7D' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
   ;;            [:c ["open 'raycast://extensions/thomas/color-picker/pick-color' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
