@@ -10,6 +10,12 @@
     # pure nix helper, doesn't depend on nixpkgs
     import-tree.url = "github:vic/import-tree";
 
+    # Firefox user-script loader; pinned by flake.lock.
+    fx-autoconfig = {
+      url = "github:MrOtherGuy/fx-autoconfig";
+      flake = false;
+    };
+
     # private bundle: sops secrets, recipients, host-specific config.
     # exports flakeModules.default (import-tree of its ./modules).
     nixos-config-private = {

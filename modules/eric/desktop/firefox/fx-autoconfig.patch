@@ -1,0 +1,15 @@
+diff --git a/profile/chrome/utils/boot.sys.mjs b/profile/chrome/utils/boot.sys.mjs
+--- a/profile/chrome/utils/boot.sys.mjs
++++ b/profile/chrome/utils/boot.sys.mjs
+@@ -246,8 +246,9 @@ export class WindowActorData{
+         }
+       },
+       matches: matches,
+-      remoteTypes: ["privilegedabout",null],
+-      includeChrome: true
++      remoteTypes: ["privilegedabout", null, ""],
++      includeChrome: true,
++      allFrames: true
+     }
+   }
+   static fromScriptFile(aFile){

@@ -1,0 +1,352 @@
+/* userChrome.css - Sidebery + Arc-like chrome for Firefox Dev Edition.
+   Targets FF153 with sidebar.revamp: true. Companion author sheet (needs
+   shadow-DOM ::part selectors this file can't reach): resources/userChrome.au.css */
+
+/* Hide the panel header above webextension sidebars. The id lives in
+   webext-panels.xhtml (the doc that wraps Sidebery), not browser.xhtml. */
+#sidebar-panel-header {
+  display: none;
+}
+
+/* ===== Design tokens ===== */
+:root {
+  /* ATBC owns --lwt-accent-color, but it's set by the extension's content
+     script after first paint, so it's briefly unset on startup - which makes
+     this whole var invalid and border/background fall back to white. Give it
+     a dark fallback matching ATBC's steady-state value to kill that flash. */
+  --atbc-raised-surface: color-mix(
+    in srgb,
+    var(--lwt-accent-color, #2b2a33) 92%,
+    white
+  );
+  --chrome-pill-radius: 9999px;
+  --urlbar-control-size: 26px;
+  --urlbar-icon-size: 16px;
+  /* Arc-like page frame around the rendered content */
+  --page-frame-width: 6px;
+  --page-frame-radius: 16px;
+}
+
+/* ===== Sidebery-driven layout =====
+   #main-window always matches; it only scopes the launcher tokens and the
+   layout overrides below. */
+#main-window {
+  --sidebery-launcher-height: 50px;
+  --sidebery-launcher-inset: 2px;
+  --sidebery-launcher-pill-margin: 12%;
+  --sidebery-launcher-pill-gap: 4px;
+  --sidebery-launcher-pill-padding: 3px;
+  --sidebery-launcher-button-size: 28px;
+  --sidebery-launcher-icon-size: 16px;
+
+  /* --- Native chrome that Sidebery replaces --- */
+
+  /* Hide the horizontal native tabs toolbar */
+  #TabsToolbar {
+    display: none !important;
+  }
+
+  /* --- Shared ATBC-derived surface around web content and Sidebery --- */
+  #navigator-toolbox,
+  #nav-bar,
+  #PersonalToolbar,
+  #sidebar-container,
+  #sidebar-box,
+  #browser {
+    background-color: var(--atbc-raised-surface) !important;
+    background-image: none !important;
+  }
+
+  #nav-bar {
+    border-color: transparent !important;
+    /* push toolbar down and right */
+    padding-top: 2px !important;
+    padding-left: 3px !important;
+  }
+
+  /* #navigator-toolbox is a .chrome-block whose 1px bottom border sits right
+     under the bookmarks bar. The 6px page frame already supplies that
+     separation, so drop the extra line. */
+  #navigator-toolbox.chrome-block {
+    border-bottom-width: 0 !important;
+  }
+
+  /* Center bookmarks toolbar items */
+  #PlacesToolbarItems {
+    display: flex !important;
+    flex: 1 !important;
+    justify-content: center !important;
+  }
+
+  /* Show the window controls in the nav-bar */
+  #nav-bar > .titlebar-buttonbox-container,
+  #nav-bar > .titlebar-buttonbox-container > .titlebar-buttonbox {
+    display: flex !important;
+  }
+
+  /* #browser is the positioning context for the bottom launcher, and must not
+     clip Sidebery when it is raised into the bookmarks row. */
+  #browser {
+    position: relative !important;
+    overflow: visible !important;
+  }
+
+  /* --- Sidebery pane (#sidebar-box) --- */
+  #sidebar-box {
+    padding: 0 !important;
+    position: relative !important;
+    z-index: 5 !important;
+    /* sidebar-launcher-footer.uc.js keeps this synced to PersonalToolbar's live
+       (animated) height, so Sidebery's top edge holds through the whole
+       bookmarks-bar show/hide transition. */
+    margin-top: calc(
+      -1 * var(--sidebery-bookmarks-toolbar-height, 0px)
+    ) !important;
+    transition: none !important;
+  }
+
+  #sidebar-box #sidebar {
+    box-shadow: none !important;
+    border: none !important;
+    outline: none !important;
+    border-radius: 0 !important;
+    /* The sidebar <browser> paints an opaque default background over the
+       #sidebar-box surface; with browser.tabs.allow_transparent_browser the
+       content is transparent, so painting the element itself lets the native
+       panels (history/bookmarks/synced) show the +8% surface. */
+    background-color: var(--atbc-raised-surface) !important;
+  }
+
+  #sidebar-splitter {
+    --splitter-width: 3px !important;
+    min-width: var(--splitter-width) !important;
+    width: var(--splitter-width) !important;
+    padding: 0 !important;
+    margin: 0 calc(-1 * var(--splitter-width) + 1px) 0 0 !important;
+    border: 0 !important;
+    opacity: 0 !important;
+  }
+
+  /* --- Native sidebar launcher reworked into a Sidebery footer ---
+     The launcher (Synced Tabs et al.) is normally a narrow sibling of the
+     sidebar pane. sidebar-launcher-footer.uc.js tags it [data-sidebery-bottom-launcher]
+     and keeps its position synced; here we lay it out as a full-width footer
+     across Sidebery. */
+  #sidebar-container[data-sidebery-bottom-launcher] {
+    position: absolute !important;
+    inset: auto var(--sidebery-launcher-right) var(--sidebery-launcher-inset)
+      var(--sidebery-launcher-left) !important;
+    width: auto !important;
+    height: var(--sidebery-launcher-height) !important;
+    z-index: 6 !important;
+  }
+  #sidebar-container[data-sidebery-bottom-launcher]
+    + #sidebar-launcher-splitter {
+    display: none !important;
+  }
+  #sidebar-container[data-sidebery-bottom-launcher] sidebar-main {
+    width: 100% !important;
+    height: 100% !important;
+  }
+  #sidebar-container[data-sidebery-bottom-launcher] ~ #sidebar-box {
+    padding-bottom: calc(
+      var(--sidebery-launcher-height) + var(--sidebery-launcher-inset)
+    ) !important;
+    box-sizing: border-box !important;
+  }
+
+  /* --- Page frame (Arc-like rounded border around the rendered page) ---
+     Sidebery owns the top-left join, so leave that corner and the left edge
+     open. */
+  #tabbrowser-tabbox {
+    border-style: solid;
+    border-color: var(--atbc-raised-surface);
+    /* don't add border to left side b/c sidebery/sidebar is already there */
+    border-width: var(--page-frame-width) var(--page-frame-width)
+      var(--page-frame-width) 0px;
+    border-left-color: transparent !important;
+    border-radius: var(--page-frame-radius) !important;
+    /* with no left border to subtract, the left corners' visible (padding-box)
+       curve runs the full radius horizontally but radius - frame vertically,
+       reading as a stretched ellipse. Pre-shrink the horizontal radius by the
+       frame width so both axes land on radius - frame, matching the right. */
+    border-top-left-radius: calc(
+        var(--page-frame-radius) - var(--page-frame-width)
+      )
+      var(--page-frame-radius) !important;
+    border-bottom-left-radius: calc(
+        var(--page-frame-radius) - var(--page-frame-width)
+      )
+      var(--page-frame-radius) !important;
+    background-clip: padding-box !important;
+    overflow: hidden !important;
+  }
+
+  /* When the sidebar is closed, #sidebar-box gets a native `hidden` attribute
+     (Firefox's own, not Sidebery). Nothing occupies the left edge then, so
+     restore the frame + top-left rounding to keep the page inset even. */
+  #browser:has(#sidebar-box[hidden]) #tabbrowser-tabbox {
+    border-left-width: var(--page-frame-width) !important;
+    border-left-color: var(--atbc-raised-surface) !important;
+    /* left border is back, so both left corners are symmetric again: undo the
+       horizontal compensation above or they stretch the other way */
+    border-top-left-radius: var(--page-frame-radius) !important;
+    border-bottom-left-radius: var(--page-frame-radius) !important;
+  }
+}
+
+/* ===== Address bar =====
+   Fully rounded (semicircle ends) + extra right inner padding.
+   Note: in FF153 the painted box is div.urlbar-background (class, not id). */
+
+/* Half the idle urlbar height = a perfect pill when closed. When the results
+   panel expands the box the radius stays ~16px, so no giant ellipse. */
+#urlbar,
+#urlbar .urlbar-background {
+  border-radius: calc(var(--urlbar-height, 32px) / 2) !important;
+}
+
+#urlbar-input {
+  padding-inline-end: 5px !important;
+}
+
+/* Inner padding of the whole bar: space between the pill edges and the
+   first/last elements (search switcher on the left, page actions on the
+   right). urlbar-input-container is a class in FF153, not an id. */
+#urlbar .urlbar-input-container {
+  padding-inline: 3px 3px !important;
+}
+
+/* Firefox's legacy breakout rule pulls the focused urlbar left by its outer
+   toolbar margin. Its normal compensating inner padding is intentionally
+   replaced above, making that tiny move visible in the cursor, text, and
+   site-info icons. Keep the focused bar horizontally anchored instead. */
+#urlbar[breakout][breakout-extend] {
+  margin-inline-start: 0 !important;
+  width: var(--urlbar-width) !important;
+}
+
+/* Block-axis twin of the rule above: focus also grows the input container from
+   --urlbar-height to --urlbar-container-height (taller by the container's
+   padding-block) and re-centers the text with a compensating padding-block, so
+   only the pill moves and its top edge visibly lifts. Hold the closed bar at its
+   idle height; the results panel is a sibling, so it still expands normally. */
+#urlbar[breakout][breakout-extend] > .urlbar-input-container {
+  height: var(--urlbar-height) !important;
+  padding-block: var(--urlbar-input-container-padding) !important;
+}
+
+/* Round every pill/button inside the url bar: search engine switcher,
+   trust/identity pill, tracking protection, page actions (star, reader view,
+   PiP, extensions), zoom, go/revert buttons. */
+#urlbar-search-mode-indicator,
+#urlbar .searchmode-switcher,
+#urlbar #trust-icon-container,
+#urlbar #tracking-protection-icon-container,
+#urlbar #identity-box,
+#urlbar .identity-box-button,
+#urlbar .urlbar-page-action,
+#urlbar .urlbar-icon,
+#urlbar #urlbar-zoom-button,
+#urlbar #urlbar-revert-button-container {
+  border-radius: var(--chrome-pill-radius) !important;
+}
+
+/* the switcher's outer <button> wrapper renders 2px taller than its inner
+   .button-background pill; a 1px block margin insets it to line up with the
+   other 26px urlbar controls */
+#urlbar .searchmode-switcher {
+  margin-block: 1px !important;
+}
+
+/* Compact circular hover targets for url bar icon buttons: fixed 26px height,
+   square for icon-only buttons (=> circle); labeled ones (zoom, "Not Secure")
+   stay small pills since width is auto. */
+#urlbar .urlbar-page-action,
+#urlbar .identity-box-button,
+#urlbar #trust-icon-container,
+#urlbar #tracking-protection-icon-container,
+#urlbar #urlbar-zoom-button,
+#urlbar .urlbar-go-button,
+#urlbar .urlbar-revert-button {
+  height: var(--urlbar-control-size) !important;
+  min-width: var(--urlbar-control-size) !important;
+  min-height: 0 !important;
+  padding: 3px !important;
+  box-sizing: border-box !important;
+  margin-block: auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* go/revert are <image>s, not flex boxes, so pin width == height to force a
+   square (=> circle) instead of a pill */
+#urlbar .urlbar-go-button,
+#urlbar .urlbar-revert-button {
+  width: var(--urlbar-control-size) !important;
+}
+
+/* Chips that show a text label (e.g. "Extension (Sidebery)", "Not Secure",
+   zoom "90%") get more inner left/right padding; icon-only states keep the
+   tight padding above so they stay circular. */
+#urlbar .identity-box-button:has(label:not([collapsed])),
+#urlbar #trust-icon-container:not(.secure),
+#urlbar #urlbar-label-box,
+#urlbar #urlbar-zoom-button {
+  padding-inline: 7px !important;
+}
+
+/* Space between adjacent site-info chips (trust pill, tracking shield,
+   identity/extension chip, ...) */
+#urlbar [urlbar-slot="site-info"] + [urlbar-slot="site-info"] {
+  margin-inline-start: 1px !important;
+}
+
+/* Inner icons stay 16px with no padding of their own, so the button padding
+   above is the only spacing and the shape stays square. */
+#urlbar .urlbar-page-action .urlbar-icon,
+#urlbar #tracking-protection-icon-box,
+#urlbar #trust-icon,
+#urlbar #identity-icon,
+#urlbar #permissions-granted-icon {
+  width: var(--urlbar-icon-size) !important;
+  height: var(--urlbar-icon-size) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Navigation toolbar icons use the same circular hover target as urlbar
+   actions. Covers built-in buttons and pinned extension buttons, while
+   leaving the macOS window controls alone. */
+#nav-bar toolbarbutton.toolbarbutton-1:not(.titlebar-button) {
+  --toolbarbutton-border-radius: var(--chrome-pill-radius) !important;
+}
+
+/* Pinned unified-extension buttons (uBlock, 1Password, ...) normally clip
+   their icon stack. Let the circular hover background paint in full. */
+#nav-bar .unified-extensions-item-action-button {
+  overflow: visible !important;
+}
+
+/* ===== Instant adaptive-theme changes (no fade) ===== */
+:root {
+  --ext-theme-background-transition: none !important;
+  --inactive-window-transition: none !important;
+}
+
+#navigator-toolbox,
+#TabsToolbar,
+#nav-bar,
+#PersonalToolbar,
+#sidebar-box,
+.tab-background,
+.urlbar-background,
+findbar {
+  transition: none !important;
+}
+
+/* remove shadow from web content */
+#tabbrowser-tabbox,
+.browserContainer {
+  box-shadow: none !important;
+}

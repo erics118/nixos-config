@@ -1,0 +1,15 @@
+/* Author-sheet rules that need shadow-DOM selectors unavailable to userChrome.css. */
+
+/* Default to xul namespace */
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+
+/* Allow selecting html elements with named namespace selector */
+@namespace html url("http://www.w3.org/1999/xhtml");
+
+/* Search-engine pill: round the inner button too - it's in moz-button's
+   shadow DOM, only reachable via ::part(), which userChrome.css can't do.
+   *|* on every compound: moz-button is html-namespaced, and the default
+   xul @namespace above would otherwise silently unmatch it */
+*|*#urlbar *|*.searchmode-switcher::part(button) {
+  border-radius: var(--chrome-pill-radius) !important;
+}
