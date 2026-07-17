@@ -39,7 +39,8 @@
             forwardAgent = false;
             addKeysToAgent = "no";
             compression = false;
-            serverAliveInterval = 0;
+            # exit after ~90s of silence so autossh can notice and reconnect
+            serverAliveInterval = 30;
             serverAliveCountMax = 3;
             hashKnownHosts = false;
             userKnownHostsFile = "~/.ssh/known_hosts";
