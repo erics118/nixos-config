@@ -53,16 +53,8 @@
           # NIX_SSL_CERT_FILE env var is stripped (e.g. by homebrew)
           http.sslCAInfo = lib.mkIf isDarwin "/etc/ssl/certs/ca-certificates.crt";
           core = {
-            pager = "delta";
             editor = "nvim";
             ignorecase = false;
-          };
-          interactive = {
-            diffFilter = "delta --color-only";
-          };
-          delta = {
-            navigate = true;
-            dark = true;
           };
           pull.ff = "only";
           push = {
@@ -83,6 +75,15 @@
             lg = "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit";
             change-commits = ''!f() { VAR=$1; OLD=$2; NEW=$3; shift 3; git filter-branch --env-filter "if [[ \"$`echo $VAR`\" = '$OLD' ]]; then export $VAR='$NEW'; fi" $@; }; f'';
           };
+        };
+      };
+
+      programs.delta = {
+        enable = true;
+        enableGitIntegration = true;
+        options = {
+          navigate = true;
+          dark = true;
         };
       };
 
