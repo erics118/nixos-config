@@ -110,10 +110,6 @@
     border: none !important;
     outline: none !important;
     border-radius: 0 !important;
-    /* The sidebar <browser> paints an opaque default background over the
-       #sidebar-box surface; with browser.tabs.allow_transparent_browser the
-       content is transparent, so painting the element itself lets the native
-       panels (history/bookmarks/synced) show the +8% surface. */
     background-color: var(--atbc-raised-surface) !important;
   }
 
@@ -217,20 +213,25 @@
   padding-inline: 3px 3px !important;
 }
 
-/* Firefox's legacy breakout rule pulls the focused urlbar left by its outer
-   toolbar margin. Its normal compensating inner padding is intentionally
-   replaced above, making that tiny move visible in the cursor, text, and
-   site-info icons. Keep the focused bar horizontally anchored instead. */
+/* When the results view opens, Firefox's proton breakout rules
+   (urlbar-searchbar.css, not-nova branch) grow the popover in every axis:
+   negative margin-left plus widened width, UrlbarInput.mjs pins its top to
+   the container's border-box top (one --urlbar-padding-block above the idle
+   pill's static position), and the input container grows to
+   --urlbar-container-height with compensating padding. Hold the bar at its
+   exact idle geometry instead: anchor it horizontally, push it back down by
+   the padding delta the JS top-pin skipped (nova's own
+   --urlbar-margin-block-start-breakout trick), and pin the input container
+   at idle height. The results view is a sibling of the input container, so
+   it still expands normally below the pill. */
 #urlbar[breakout][breakout-extend] {
   margin-inline-start: 0 !important;
   width: var(--urlbar-width) !important;
+  margin-block-start: calc(
+    (var(--urlbar-container-height) - var(--urlbar-height)) / 2
+  ) !important;
 }
 
-/* Block-axis twin of the rule above: focus also grows the input container from
-   --urlbar-height to --urlbar-container-height (taller by the container's
-   padding-block) and re-centers the text with a compensating padding-block, so
-   only the pill moves and its top edge visibly lifts. Hold the closed bar at its
-   idle height; the results panel is a sibling, so it still expands normally. */
 #urlbar[breakout][breakout-extend] > .urlbar-input-container {
   height: var(--urlbar-height) !important;
   padding-block: var(--urlbar-input-container-padding) !important;

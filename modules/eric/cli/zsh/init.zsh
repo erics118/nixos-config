@@ -52,8 +52,6 @@ rtmux() {
   AUTOSSH_GATETIME=0 autossh -M 0 "$host" -t "tmux new -A -s ${(q)session}"
 }
 
-alias r='rtmux'
-
 clipboard-copy() {
   if (($+commands[pbcopy])) && [[ $(command -v pbcopy) != *shell_functions* ]]; then
     command pbcopy

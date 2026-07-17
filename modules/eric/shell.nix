@@ -103,6 +103,10 @@
           rm = "rm -i";
 
           t = "tmux";
+          r = "rtmux";
+
+          mmv = "noglob zmv -W";
+          zmv = "noglob zmv";
 
           sshn = "ssh -F /dev/null -o PubkeyAuthentication=no";
 
