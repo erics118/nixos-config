@@ -14,6 +14,11 @@ while [ "$d" != "/" ] && [ ! -f "$d/.envrc" ]; do
   d=$(dirname "$d")
 done
 [ -f "$d/.envrc" ] || exit 0
+# roots whose .envrc should not trigger formatting
+ignored_roots=("$HOME" "$HOME/dev" "$HOME/dev/other")
+for r in "${ignored_roots[@]}"; do
+  [ "$d" != "$r" ] || exit 0
+done
 
 cd "$d" || exit 0
 direnv exec "$d" treefmt "$f" >/dev/null 2>&1 || true
