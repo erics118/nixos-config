@@ -575,11 +575,11 @@
     "smhkd-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1784667768,
-        "narHash": "sha256-34FTrJbZU65dT1530j+lYsKLduLhYV7gPy7TJWKdU9Y=",
+        "lastModified": 1784669275,
+        "narHash": "sha256-nT4PDcU+nl9OfDRpGjvGdE+p4vUHPltamvltpNgk0Uk=",
         "owner": "erics118",
         "repo": "smhkd",
-        "rev": "ccb67ceb51236c3b06c08b2c8ad0b354cba8e524",
+        "rev": "5d0730611a60660f9bfc91ad26ee20f44cb94e0d",
         "type": "github"
       },
       "original": {
