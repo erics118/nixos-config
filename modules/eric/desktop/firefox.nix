@@ -12,7 +12,7 @@
       profile = "Library/Application Support/Firefox/Profiles/gcl3mics.dev-edition-default";
       fxAutoconfig = pkgs.applyPatches {
         name = "fx-autoconfig-patched";
-        src = inputs.fx-autoconfig;
+        src = inputs.fx-autoconfig-src;
         patches = [ ./firefox/fx-autoconfig.patch ];
       };
     in

@@ -202,7 +202,7 @@
         "type": "github"
       }
     },
-    "fx-autoconfig": {
+    "fx-autoconfig-src": {
       "flake": false,
       "locked": {
         "lastModified": 1777913309,
@@ -516,7 +516,7 @@
         "darwin": "darwin",
         "disko": "disko",
         "flake-parts": "flake-parts",
-        "fx-autoconfig": "fx-autoconfig",
+        "fx-autoconfig-src": "fx-autoconfig-src",
         "home-manager": "home-manager",
         "hyprland-contrib": "hyprland-contrib",
         "import-tree": "import-tree",
@@ -526,9 +526,12 @@
         "nixos-config-private": "nixos-config-private",
         "nixpkgs": "nixpkgs_3",
         "nixvim": "nixvim",
+        "sketchybar-src": "sketchybar-src",
+        "smhkd-src": "smhkd-src",
         "sops-nix": "sops-nix",
         "treefmt-nix": "treefmt-nix",
-        "wezterm-src": "wezterm-src"
+        "wezterm-src": "wezterm-src",
+        "yabai-src": "yabai-src"
       }
     },
     "rust-overlay": {
@@ -549,6 +552,39 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "sketchybar-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1781118243,
+        "narHash": "sha256-YiUOomnuPfE4UHw+f6j/K3MKTnWfjXN23l14N4zbuD4=",
+        "owner": "erics118",
+        "repo": "SketchyBar",
+        "rev": "f44b57d20c4207353b92f3cf046b0e1804f3acb3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "erics118",
+        "ref": "eric",
+        "repo": "SketchyBar",
+        "type": "github"
+      }
+    },
+    "smhkd-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784667768,
+        "narHash": "sha256-34FTrJbZU65dT1530j+lYsKLduLhYV7gPy7TJWKdU9Y=",
+        "owner": "erics118",
+        "repo": "smhkd",
+        "rev": "ccb67ceb51236c3b06c08b2c8ad0b354cba8e524",
+        "type": "github"
+      },
+      "original": {
+        "owner": "erics118",
+        "repo": "smhkd",
         "type": "github"
       }
     },
@@ -681,6 +717,22 @@
         "shallow": true,
         "type": "git",
         "url": "https://github.com/erics118/wezterm"
+      }
+    },
+    "yabai-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1781440804,
+        "narHash": "sha256-RPiGAuJS+tGsexekIzwgKYf/v+kA3lVn0+qMVIMC2Vk=",
+        "owner": "asmvik",
+        "repo": "yabai",
+        "rev": "dd845723416f5fe92af49fad5ebab00369e07edd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "asmvik",
+        "repo": "yabai",
+        "type": "github"
       }
     },
     "zlib": {

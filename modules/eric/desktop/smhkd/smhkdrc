@@ -1,6 +1,7 @@
 blacklist = [
-    "Parallels Desktop",
+    "Parallels Desktop"
     "Windows App"
+    "WorkSpaces"
 ]
 
 sequence_command = "sketchybar --trigger smhkd_sequence SEQUENCE='{}'"

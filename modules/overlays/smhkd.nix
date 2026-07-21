@@ -1,15 +1,10 @@
-{
+{ inputs, ... }: {
   flake.overlays.smhkd = final: _: {
     smhkd = final.stdenv.mkDerivation {
       pname = "smhkd";
       version = "HEAD";
 
-      src = final.fetchFromGitHub {
-        owner = "erics118";
-        repo = "smhkd";
-        rev = "01c41b8961616aa68f088873ba82ee4002bf50eb";
-        hash = "sha256-xjvGsYqiKGrLbhqGLvky3GlLBW91vsp5aJmVokpV/TA=";
-      };
+      src = inputs.smhkd-src;
 
       nativeBuildInputs = with final; [
         cmake

@@ -10,12 +10,6 @@
     # pure nix helper, doesn't depend on nixpkgs
     import-tree.url = "github:vic/import-tree";
 
-    # Firefox user-script loader; pinned by flake.lock.
-    fx-autoconfig = {
-      url = "github:MrOtherGuy/fx-autoconfig";
-      flake = false;
-    };
-
     # private bundle: sops secrets, recipients, host-specific config.
     # exports flakeModules.default (import-tree of its ./modules).
     nixos-config-private = {
@@ -73,6 +67,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # explicitly don't follow nixpkgs for binary cache hits
+    llm-agents = {
+      url = "github:numtide/llm-agents.nix";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.treefmt-nix.follows = "treefmt-nix";
+    };
+
     wezterm-src = {
       # we aren't using github: because dir= will result in unstable hashes
       url = "git+https://github.com/erics118/wezterm?ref=eric&dir=nix&shallow=1";
@@ -84,16 +85,29 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    adversarial-review = {
-      url = "github:alecnielsen/adversarial-review";
+    fx-autoconfig-src = {
+      url = "github:MrOtherGuy/fx-autoconfig";
       flake = false;
     };
 
-    # explicitly don't follow nixpkgs for binary cache hits
-    llm-agents = {
-      url = "github:numtide/llm-agents.nix";
-      inputs.flake-parts.follows = "flake-parts";
-      inputs.treefmt-nix.follows = "treefmt-nix";
+    smhkd-src = {
+      url = "github:erics118/smhkd";
+      flake = false;
+    };
+
+    sketchybar-src = {
+      url = "github:erics118/SketchyBar/eric";
+      flake = false;
+    };
+
+    yabai-src = {
+      url = "github:asmvik/yabai";
+      flake = false;
+    };
+
+    adversarial-review = {
+      url = "github:alecnielsen/adversarial-review";
+      flake = false;
     };
   };
 
