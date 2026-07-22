@@ -91,7 +91,7 @@ c.inactive_pane_hsb = {
 c.window_close_confirmation = "NeverPrompt"
 
 c.adjust_window_size_when_changing_font_size = false
-c.clean_exit_codes = { 130 }
+c.exit_behavior = "Close"
 c.default_cursor_style = "SteadyBar"
 c.underline_thickness = 2.5
 c.command_palette_font_size = 13.0
