@@ -31,11 +31,11 @@
         brewfile = true;
       };
 
-      taps = [ "docker/tap" ];
+      taps = [ ];
 
-      brews = [ "llvm" ];
+      brews = [ ];
 
-      casks = [ "docker/tap/sbx" ];
+      casks = [ ];
 
       masApps = { };
     };

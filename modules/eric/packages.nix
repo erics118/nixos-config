@@ -11,23 +11,20 @@
           cachix
           deadnix
           home-manager
-          nvd
-          nix-tree
-          nix-du
 
           # system-wide formatters
           nixfmt
           shfmt
-          llvmPackages_22.clang-tools # clang-format, clang-tidy, clangd
+          # llvmPackages_22.clang-tools # clang-format, clang-tidy, clangd
 
           # global languages/toolchains
-          clang_22
-          typescript-language-server
+          # clang_22
+          # typescript-language-server
           nodejs_24
           python3Minimal
-          cmake
-          ninja
-          pkg-config
+          # cmake
+          # ninja
+          # pkg-config
 
           # apps
           _1password-cli
@@ -36,7 +33,6 @@
           nmap
           dust
           rsync
-          wget
           killall
           ccache
           autossh
@@ -53,7 +49,6 @@
 
           # fonts
           nerd-fonts.hack
-          nerd-fonts.fira-code
         ]
         ++ lib.optionals stdenv.hostPlatform.isDarwin [
           # gnu coreutils with g-prefix (gls, gdate, ...) since macOS ships BSD coreutils
