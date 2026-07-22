@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, inputs, ... }:
 let
   overlays = builtins.attrValues config.flake.overlays;
   shared = { pkgs, config, ... }: {
@@ -13,6 +13,8 @@ let
       extraOptions = ''
         !include ${config.sops.templates."nix-access-tokens".path}
       '';
+      registry.nixpkgs.flake = inputs.nixpkgs;
+      nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
       settings = {
         experimental-features = [
           "nix-command"

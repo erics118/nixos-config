@@ -17,9 +17,6 @@
         log-lines = 50;
         trusted-users = [ "eric" ];
       };
-
-      registry.nixpkgs.flake = inputs.nixpkgs;
-      nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
     };
 
     time.timeZone = "America/New_York";
