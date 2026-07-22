@@ -8,8 +8,16 @@ input=$(cat)
 f=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null) || exit 0
 [ -n "$f" ] || exit 0
 [ -L "$f" ] || exit 0
-real=$(readlink -f "$f" 2>/dev/null) || exit 0
+real=$(realpath "$f" 2>/dev/null) || exit 0
 [ -n "$real" ] && [ "$real" != "$f" ] || exit 0
+
+# only rewrite when the symlink resolves back into a config location
+case "$real" in
+"$HOME/nixos-config"/*) ;;
+"$HOME/.flake"/*) ;;
+"$HOME/.config"/*) ;;
+*) exit 0 ;;
+esac
 
 printf '%s' "$input" | jq -c --arg real "$real" \
   '{hookSpecificOutput:{hookEventName:"PreToolUse", updatedInput:(.tool_input | .file_path=$real)}}'
