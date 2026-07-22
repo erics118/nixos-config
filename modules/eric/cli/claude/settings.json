@@ -65,7 +65,7 @@
       "Bash(realpath *)"
     ]
   },
-  "model": "opus",
+  "model": "sonnet",
   "hooks": {
     "PreToolUse": [
       {
@@ -87,6 +87,14 @@
           {
             "type": "command",
             "command": "\"$HOME/.claude/hooks/strip-claude-attribution.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.claude/hooks/block-global-find.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.claude/hooks/block-symlink-clobber.sh\""
           }
         ]
       }

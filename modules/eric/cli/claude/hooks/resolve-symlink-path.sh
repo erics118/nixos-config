@@ -3,13 +3,13 @@
 # so the tool doesn't refuse to write through it. handles nix-managed ~/.claude
 # and dotfile symlinks that resolve back into a repo (out-of-store).
 set -u
+source "$HOME/.claude/hooks/lib.sh"
 
-input=$(cat)
-f=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null) || exit 0
-[ -n "$f" ] || exit 0
-[ -L "$f" ] || exit 0
-real=$(realpath "$f" 2>/dev/null) || exit 0
-[ -n "$real" ] && [ "$real" != "$f" ] || exit 0
+hook_read_file_path
+
+[ -L "$HOOK_FILE" ] || exit 0
+real=$(realpath "$HOOK_FILE" 2>/dev/null) || exit 0
+[ -n "$real" ] && [ "$real" != "$HOOK_FILE" ] || exit 0
 
 # only rewrite when the symlink resolves back into a config location
 case "$real" in
@@ -19,5 +19,4 @@ case "$real" in
 *) exit 0 ;;
 esac
 
-printf '%s' "$input" | jq -c --arg real "$real" \
-  '{hookSpecificOutput:{hookEventName:"PreToolUse", updatedInput:(.tool_input | .file_path=$real)}}'
+hook_update_file_path "$real"

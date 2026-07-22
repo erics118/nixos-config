@@ -3,18 +3,16 @@
 # they run. the system prompt hardcodes Co-Authored-By and settings do not
 # reliably remove it (anthropics/claude-code#4287, #7543), so enforce it here.
 set -u
+source "$HOME/.claude/hooks/lib.sh"
 
-input=$(cat)
-cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty' 2>/dev/null) || exit 0
-[ -n "$cmd" ] || exit 0
+hook_read_command
 
-printf '%s' "$cmd" | grep -Eq 'git commit|gh pr (create|edit)' || exit 0
-printf '%s' "$cmd" | grep -Eiq 'co-authored-by:.*(claude|anthropic)|generated with.*claude' || exit 0
+printf '%s' "$HOOK_COMMAND" | rg -q '\bgit commit|\bgh pr (create|edit)' || exit 0
+printf '%s' "$HOOK_COMMAND" | rg -qi '(co-authored-by|assisted-by):.*(claude|anthropic)|generated with.*claude' || exit 0
 
-printf '%s' "$input" | jq -c '
-  .tool_input as $ti
-  | ($ti.command
-     | gsub("[^\n\"]*[Cc]o-[Aa]uthored-[Bb]y:[^\n\"]*([Cc]laude|[Aa]nthropic)[^\n\"]*\n?"; "")
-     | gsub("[^\n\"]*[Gg]enerated with[^\n\"]*[Cc]laude[^\n\"]*\n?"; "")
-    ) as $c
-  | {hookSpecificOutput:{hookEventName:"PreToolUse", updatedInput:($ti | .command=$c)}}'
+stripped=$(printf '%s' "$HOOK_COMMAND" | jq -Rrs '
+  gsub("[^\n\"]*([Cc]o-[Aa]uthored-[Bb]y|[Aa]ssisted-[Bb]y):[^\n\"]*([Cc]laude|[Aa]nthropic)[^\n\"]*\n?"; "")
+  | gsub("[^\n\"]*[Gg]enerated with[^\n\"]*[Cc]laude[^\n\"]*\n?"; "")
+')
+
+hook_update_command "$stripped"

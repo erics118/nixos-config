@@ -11,7 +11,7 @@ Most of the user's projects (`~/dev/*`, `~/nixos-config`) get their dev environm
 
 ## Conventions
 
-- `.envrc` is almost always just `use flake`. Sometimes there are extra `export`s for certain environment variable. Also, there might be `user nix -p <pkg>` for adding a package without needing a `flake.nix`
+- `.envrc` is almost always just `use flake`. Sometimes there are extra `export`s for certain environment variable. Also, there might be `use nix -p <pkg>` for adding a package without needing a `flake.nix`
 - You are already in the devshell, you invoke commands directly, not with `direnv exec`
 - New nix files must be `git add`ed before any nix eval/build/check - flakes ignore untracked files. No commit needed. Never `git commit` unless asked.
 - On macOS, we do not use homebrew/brew, and we still use nix for managing dependencies.
