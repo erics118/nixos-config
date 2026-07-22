@@ -47,7 +47,6 @@
           yq-go
           yazi
           scc
-          adversarial-review
           railway
           docker-sbx
           screen
