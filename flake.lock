@@ -1,21 +1,5 @@
 {
   "nodes": {
-    "adversarial-review": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1769107600,
-        "narHash": "sha256-+JOvKPUIWhv2JANXL5xtmJBsS9cqit7qhh9eQKuLG48=",
-        "owner": "alecnielsen",
-        "repo": "adversarial-review",
-        "rev": "1fc1f7a7afa59aafa3a3268547ac48386295e1fe",
-        "type": "github"
-      },
-      "original": {
-        "owner": "alecnielsen",
-        "repo": "adversarial-review",
-        "type": "github"
-      }
-    },
     "brew-src": {
       "flake": false,
       "locked": {
@@ -511,7 +495,6 @@
     },
     "root": {
       "inputs": {
-        "adversarial-review": "adversarial-review",
         "catppuccin": "catppuccin",
         "darwin": "darwin",
         "disko": "disko",

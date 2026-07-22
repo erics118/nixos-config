@@ -104,11 +104,6 @@
       url = "github:asmvik/yabai";
       flake = false;
     };
-
-    adversarial-review = {
-      url = "github:alecnielsen/adversarial-review";
-      flake = false;
-    };
   };
 
   outputs =
