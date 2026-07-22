@@ -1,6 +1,6 @@
 ---
 description: Update flake inputs, rebuild, and summarize what changed or broke
-argument-hint: [input-name]
+argument-hint: [input]
 ---
 
 Update this project's flake dependencies and assess the damage. Steps:
