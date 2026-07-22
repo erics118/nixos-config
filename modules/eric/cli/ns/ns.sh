@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# vendored from nix-search-tv's nixpkgs.sh
+# based on nix-search-tv's nixpkgs.sh, customized (keybinds, copy, nix-shell display)
 
 case "$(basename "$SHELL")" in
 bash | zsh | sh)
@@ -24,16 +24,18 @@ declare -a INDEXES=(
   "all ctrl-a"
 )
 
-SEARCH_SNIPPET_KEY="ctrl-w"
 OPEN_SOURCE_KEY="ctrl-s"
 OPEN_HOMEPAGE_KEY="ctrl-o"
 NIX_SHELL_KEY="ctrl-i"
 PRINT_PREVIEW_KEY="ctrl-p"
+COPY_KEY="ctrl-y"
 
 OPENER="xdg-open"
+CLIP="xclip -selection clipboard"
 
 if [[ "$(uname)" == 'Darwin' ]]; then
   OPENER="open"
+  CLIP="pbcopy"
 fi
 
 # ========================================
@@ -77,37 +79,33 @@ save_state() {
 
 HEADER="$OPEN_HOMEPAGE_KEY - open homepage
 $OPEN_SOURCE_KEY - open source
-$SEARCH_SNIPPET_KEY - search github for snippets
+$COPY_KEY - copy package name
 $NIX_SHELL_KEY - nix-shell
 $PRINT_PREVIEW_KEY - print preview
 "
 
 FZF_BINDS=""
 for e in "${INDEXES[@]}"; do
-  index=$(echo "$e" | awk '{ print $1 }')
-  keybind=$(echo "$e" | awk '{ print $2 }')
+  read -r index keybind <<<"$e"
 
   fzf_bind=$(bind_index "$keybind" "$index")
   fzf_save_state=$(save_state "$index")
   FZF_BINDS="$FZF_BINDS --bind '$fzf_bind+$fzf_save_state'"
 
-  newline=$'\n'
-  HEADER="$HEADER$keybind - $index$newline"
+  HEADER="$HEADER$keybind - $index"$'\n'
 done
 
 # reset the state
-echo "" >/tmp/nix-search-tv-fzf
+echo "" >"$STATE_FILE"
 
-SEARCH_SNIPPET_CMD=$'echo "{}"'
-# fzf surrounds the matched package with ', trim them
-SEARCH_SNIPPET_CMD="$SEARCH_SNIPPET_CMD | tr -d \"\'\" "
-# if it's multi-index search, then we need to remote the prefix
-SEARCH_SNIPPET_CMD="$SEARCH_SNIPPET_CMD | awk \'{ if (\$2) { print \$2 } else print \$1 }\' "
-SEARCH_SNIPPET_CMD="$SEARCH_SNIPPET_CMD | xargs printf \"https://github.com/search?type=code&q=lang:nix+%s\" \$1 "
+# copy nixpkgs entries only, as flake ref "nixpkgs#fast"; ignore option indexes
+# shellcheck disable=SC2016
+COPY_CMD='p=$(printf "%s" {}); case "$p" in nixpkgs/*) printf "%s" "$p" | sed "s:/ :#:"'
+COPY_CMD="$COPY_CMD | $CLIP ;; esac"
 
 # shellcheck disable=SC2016
-NIX_SHELL_CMD='nix-shell --run $SHELL -p $(echo "{}" | sed "s:nixpkgs/::g"'
-NIX_SHELL_CMD="$NIX_SHELL_CMD | tr -d \"\'\")"
+NIX_SHELL_CMD='pkg=$(printf "%s" {} | sed "s:nixpkgs/ *::g")'
+NIX_SHELL_CMD="$NIX_SHELL_CMD; echo \"Running: nix shell nixpkgs#\$pkg\"; nix shell \"nixpkgs#\$pkg\" --command \$SHELL"
 
 # shellcheck disable=SC2016
 PREVIEW_WINDOW='
@@ -122,9 +120,9 @@ eval "$CMD print | fzf \
     --preview '$CMD preview \$(cat $STATE_FILE) {}' \
     --bind '$OPEN_SOURCE_KEY:execute($CMD source \$(cat $STATE_FILE) {} | xargs $OPENER)' \
     --bind '$OPEN_HOMEPAGE_KEY:execute($CMD homepage \$(cat $STATE_FILE) {} | xargs $OPENER)' \
-    --bind $'$SEARCH_SNIPPET_KEY:execute($SEARCH_SNIPPET_CMD | xargs $OPENER)' \
+    --bind '$COPY_KEY:execute-silent($COPY_CMD)' \
     --bind $'$NIX_SHELL_KEY:become($NIX_SHELL_CMD)' \
-    --bind $'$PRINT_PREVIEW_KEY:execute($CMD preview \$(cat $STATE_FILE) {} | less)' \
+    --bind $'$PRINT_PREVIEW_KEY:execute($CMD preview \$(cat $STATE_FILE) {} | less -R)' \
     --layout reverse \
     --scheme history \
     --bind 'resize,start:transform:$PREVIEW_WINDOW' \
