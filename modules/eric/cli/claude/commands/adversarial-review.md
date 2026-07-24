@@ -1,6 +1,6 @@
 ---
 description: Red-team code or a plan from hostile angles (necessity, correctness, unconsidered breakage, consequences)
-argument-hint: [empty for uncommitted changes | file | area | plan] [--adversary codex]
+argument-hint: [empty for uncommitted changes | file | area | plan] [--adversary codex|cursor]
 ---
 
 Attack the target in $ARGUMENTS. View it from the lens that it is wrong and try to break it. This is an
@@ -8,20 +8,25 @@ adversarial review, not a cooperative one: be blunt, do not soften, do not prais
 balance. Read the real source or plan before judging, never from names alone.
 
 Scope: default to the current working diff. If $ARGUMENTS names a file/dir/area or is a
-pasted plan or idea, review that instead. Strip any `--adversary codex` flag out of
+pasted plan or idea, review that instead. Strip any `--adversary` flag out of
 $ARGUMENTS before interpreting scope.
 
-If `--adversary codex` is present, add a second independent reviewer:
+If `--adversary <name>` is present (`codex` and/or `cursor`), add that independent
+reviewer. Pass the same instruction block and scope; it is a different model on purpose.
 
 - Do your own pass first, exactly as below.
-- Then run Codex on the same target as an independent adversary:
-  `codex exec --sandbox read-only -C <repo> "<this whole instruction block, same scope>"`.
-  Codex can run `git diff` itself for the default working-diff case.
-- Present Codex's output verbatim under its own `## Codex` heading. Do not summarize,
-  soften, or reconcile away its findings, especially its verdict. It is a different model
-  on purpose; smoothing it to match yours defeats the point.
-- After both, add a short `## Reconciliation`: where you agree (high confidence) and
-  where you disagree (dig into why, do not just average). Keep both verdicts intact.
+- `codex`: `-o` writes just the review (bare `codex exec` buries it in a huge trace); read
+  that file verbatim.
+  `codex exec --sandbox read-only -m gpt-5.6-sol -c model_reasoning_effort="high" -o <scratchpad>/codex-review.md -C <repo> "<block>"`
+- `cursor`: runs Grok 4.5 at high reasoning. `--mode plan` is read-only, `--trust` is
+  required for headless. Capture stdout verbatim (no `-o` flag exists).
+  `cursor-agent -p --mode plan --trust --model cursor-grok-4.5-high-fast -C <repo> "<block>"`
+- These take minutes: launch with `run_in_background: true` and wait for the completion
+  notification, not a `pgrep -f` loop (that pattern matches the loop itself and never exits).
+- Present each adversary's output verbatim under its own `## Codex` / `## Cursor` heading.
+  Do not summarize, soften, or reconcile away its findings, especially its verdict.
+- After all passes, add a short `## Reconciliation`: where you agree (high confidence) and
+  where you disagree (dig into why, do not just average). Keep every verdict intact.
 
 This is for code I just wrote and am unsure about. Hit the target from each of these
 angles and label every finding with its angle:
