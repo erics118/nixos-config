@@ -3,18 +3,13 @@
     {
       inputs,
       lib,
-      pkgs,
       repoFile,
       ...
     }:
     let
       base = "modules/eric/desktop/firefox";
       profile = "Library/Application Support/Firefox/Profiles/gcl3mics.dev-edition-default";
-      fxAutoconfig = pkgs.applyPatches {
-        name = "fx-autoconfig-patched";
-        src = inputs.fx-autoconfig-src;
-        patches = [ ./firefox/fx-autoconfig.patch ];
-      };
+      fxAutoconfig = inputs.fx-autoconfig-src;
     in
     {
       home.file = {
