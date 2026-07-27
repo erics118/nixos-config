@@ -9,4 +9,4 @@ hook_read_command
 # match `find` as a command word, followed by a root path of / (not ./ or a subpath)
 printf '%s' "$HOOK_COMMAND" | rg -q '\bfind\s+/(\s|$)' || exit 0
 
-hook_deny "find rooted at / scans the whole filesystem. Search from a specific directory (e.g. \`find . -name ...\` or \`find /path/to/dir ...\`) instead."
+hook_deny 'find rooted at / scans the whole filesystem. Search from a specific directory (e.g. `find . -name ...` or `find /path/to/dir ...`) instead.'
