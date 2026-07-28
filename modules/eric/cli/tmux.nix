@@ -47,11 +47,18 @@
         set -g set-clipboard on
         bind -T copy-mode-vi y send-keys -X copy-pipe-and-cancel
 
+        # keep the -r repeat window open long enough for comfortable tapping
+        set -g repeat-time 1000
+
         # repeatable window switching: hold ctrl, tap prefix then p/n/n/n...
         bind -r C-p previous-window
         bind -r C-n next-window
         # quick toggle to the last window
         bind a last-window
+
+        # splits on unshifted keys: \ splits side by side, = stacks
+        bind '\' split-window -h
+        bind '=' split-window -v
       '';
     };
   };

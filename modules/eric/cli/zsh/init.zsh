@@ -40,18 +40,6 @@ hash -d n="$HOME/nixos-config"
 hash -d p="$HOME/nixos-config-private"
 hash -d d="$HOME/dev"
 
-# ssh into a tmux session that survives network drops
-rtmux() {
-  local host=$1 session=${2:-main}
-  if [[ -z $host ]]; then
-    print -u2 "usage: rtmux <host> [session]"
-    return 1
-  fi
-  # -M 0 leaves failure detection to ServerAlive*; gatetime 0 retries even if
-  # the first connect fails, eg opening the lid before wifi associates
-  AUTOSSH_GATETIME=0 autossh -M 0 "$host" -t "tmux new -A -s ${(q)session}"
-}
-
 clipboard-copy() {
   if (($+commands[pbcopy])) && [[ $(command -v pbcopy) != *shell_functions* ]]; then
     command pbcopy

@@ -43,10 +43,16 @@
 
           autoload -U compinit
 
-          # rebuild the dump only when zshrc changes; otherwise reuse cache
+          # rebuild the dump when the system generation is newer, so completions
+          # from newly installed packages get registered; zshrc is nix-managed so
+          # a generation bump covers config changes too
+          # -L reads the link's own mtime, the store path it points at is epoch 0
           # keep a zcompiled .zwc bytecode copy for faster loads
           typeset -g ZSH_COMPDUMP="$ZDOTDIR/.zcompdump"
-          if [[ ! -s "$ZSH_COMPDUMP" || "$ZSH_COMPDUMP" -ot "$ZDOTDIR/.zshrc" ]]; then
+          zmodload -F zsh/stat b:zstat
+          zstat -L -A _gen +mtime /run/current-system 2>/dev/null
+          zstat -A _dump +mtime "$ZSH_COMPDUMP" 2>/dev/null
+          if (( ''${_dump[1]:-0} < ''${_gen[1]:-1} )); then
             compinit -d "$ZSH_COMPDUMP"
             zcompile -R -- "$ZSH_COMPDUMP.zwc" "$ZSH_COMPDUMP" 2>/dev/null
           else
@@ -54,6 +60,7 @@
             [[ -s "$ZSH_COMPDUMP.zwc" && "$ZSH_COMPDUMP" -ot "$ZSH_COMPDUMP.zwc" ]] \
               || zcompile -R -- "$ZSH_COMPDUMP.zwc" "$ZSH_COMPDUMP" 2>/dev/null
           fi
+          unset _gen _dump
         '';
 
         dotDir = "${config.home.homeDirectory}/.config/zsh";

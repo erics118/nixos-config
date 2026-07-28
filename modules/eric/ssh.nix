@@ -39,14 +39,16 @@
             forwardAgent = false;
             addKeysToAgent = "no";
             compression = false;
-            # exit after ~90s of silence so autossh can notice and reconnect
-            serverAliveInterval = 30;
+            # exit after ~45s of silence so autossh can notice and reconnect
+            serverAliveInterval = 15;
             serverAliveCountMax = 3;
             hashKnownHosts = false;
             userKnownHostsFile = "~/.ssh/known_hosts";
-            controlMaster = "no";
+            # reuse one connection per host so repeat commands skip the
+            # handshake and the 1password prompt; rtmux opts its autossh out
+            controlMaster = "auto";
             controlPath = "~/.ssh/master-%n-%C";
-            controlPersist = "no";
+            controlPersist = "10m";
             identitiesOnly = true;
             identityAgent = lib.mkIf isDarwin "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
           };

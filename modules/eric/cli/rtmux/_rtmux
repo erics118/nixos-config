@@ -1,0 +1,32 @@
+#compdef rtmux
+
+# hosts come from ssh config aliases, sessions from the remote tmux server
+# the remote lookup is cheap because ssh multiplexing reuses the open connection
+
+_rtmux_hosts() {
+  awk '$1 == "Host" { for (i = 2; i <= NF; i++) if ($i !~ /[*?!]/) print $i }' \
+    ~/.ssh/config ~/.ssh/config.local 2>/dev/null | sort -u
+}
+
+_rtmux_sessions() {
+  ssh -o BatchMode=yes -o ConnectTimeout=2 "$1" tmux ls 2>/dev/null | cut -d: -f1
+}
+
+_rtmux() {
+  local -a hosts sessions modes
+
+  case $CURRENT in
+    2)
+      hosts=(${(f)"$(_rtmux_hosts)"})
+      _describe -t hosts 'host' hosts
+      ;;
+    3)
+      sessions=(${(f)"$(_rtmux_sessions "$words[2]")"})
+      (( $#sessions )) && _describe -t sessions 'session' sessions
+      modes=('--ls:list sessions on the host')
+      _describe -t modes 'mode' modes
+      ;;
+  esac
+}
+
+_rtmux "$@"
