@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# if a Write/Edit target is a symlink, rewrite the tool input to its real path
-# so the tool doesn't refuse to write through it. handles nix-managed ~/.claude
-# and dotfile symlinks that resolve back into a repo (out-of-store).
+# if a Read/Write/Edit target is a symlink, rewrite the tool input to its real path.
+# Write/Edit: so the tool doesn't refuse to write through the symlink.
+# Read: so read-state is tracked against the same real path, else the first Write
+# after a Read fails with "file has not been read yet" (paths wouldn't match).
+# handles nix-managed ~/.claude and dotfile symlinks that resolve into a repo.
 set -u
 source "$HOME/.claude/hooks/lib.sh"
 
