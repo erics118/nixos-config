@@ -47,9 +47,9 @@
         set -g set-clipboard on
         bind -T copy-mode-vi y send-keys -X copy-pipe-and-cancel
 
-        # repeatable window switching: hold ctrl, tap prefix then p/n
-        bind C-p previous-window
-        bind C-n next-window
+        # repeatable window switching: hold ctrl, tap prefix then p/n/n/n...
+        bind -r C-p previous-window
+        bind -r C-n next-window
         # quick toggle to the last window
         bind a last-window
       '';
