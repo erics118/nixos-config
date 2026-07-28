@@ -6,6 +6,7 @@
     "pr": ""
   },
   "permissions": {
+    "defaultMode": "auto",
     "allow": [
       "Bash(cat *)",
       "Bash(cut *)",
@@ -73,7 +74,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/resolve-symlink-path.sh\""
+            "command": "\"$HOME/.claude/hooks/deny-symlink-path.sh\""
           }
         ]
       },
