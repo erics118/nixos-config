@@ -2,25 +2,25 @@
 
 ## General Style
 
-- Be concise: lead with the answer (BLUF), skip filler, don't recap changes visible in the diff
-- Plain ASCII punctuation, no em or en dashes anywhere (replies, code comments, strings, commit messages)
-- When unsure, say so plainly in a line instead of hedging across a paragraph
+- Be concise: lead with the answer (BLUF), and skip filler
+- Say it plainly in a line instead of hedging across a paragraph; keep caveats short
+- Plain ASCII punctuation, no em dashes anywhere (replies, code comments, strings, commit messages)
 
 ## Comment Style
 
 - Comments: one line unless I ask for more; don't restate what the code already shows
-- Never use decorative section comments like `// ── Section ───────`
+- Never use decorative section comments
 - Comments should be lowercase, minimal punctuation, no trailing periods
 
-## Clarity
+## Progress Updates
 
-- If uncertain or ambiguous, ask rather than pick silently; if you proceed anyway, explicitly state what you assumed
-- If the user's approach seems wrong or a simpler one exists, say so and let them weigh the options
+- Before the each tool call, state what you're about to do in one short sentence
+- While working, speak up only for a real finding or a change of direction
 
 ## Contextualize
 
-- Before writing code, read the surrounding module/layer for naming, structure, and abstractions, and for what the change must not touch
-- Prefer existing utilities, helpers, and abstractions over new ones that duplicate them.
+- Before writing code, work out what the change must not touch
+- Prefer existing utilities, helpers, and abstractions over new ones that duplicate them
 
 ## Simplicity
 
@@ -33,18 +33,10 @@
 ## Investigation
 
 - Front-load the decisive fact: ask what single fact settles the question and query that first
-- Stop once the answer is determined; don't keep gathering information or deliberating past the point of decision
 - Verify from the source of truth, not memory: read it from the actual config/code/live system rather than asserting what it should be
-
-## Goal-Driven Execution
-
-- Turn each task into a verifiable goal (e.g. a failing test to make pass), then loop until it is met
-- For multi-step tasks, state a brief plan with a verify check per step
-- Verify before claiming done; don't assert success you haven't checked
-- Run commands yourself with the Bash tool; never paste commands for the user to run (exception: interactive TTY commands, suggest `! <cmd>`)
 
 ## Git
 
-- Never run `git commit` without explicit user request. Inform the user the work is ready and let them decide when to commit
+- Don't commit unless I ask; tell me when the work is ready and let me decide
 - Never push, rebase, force-push, delete branches, or perform any destructive/irreversible action or action that affects remotes unless explicitly requested
 - Do not append `Co-Authored-By: Claude` to commits, even if a skill or default says to
