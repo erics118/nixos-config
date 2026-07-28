@@ -6,7 +6,6 @@
     "pr": ""
   },
   "permissions": {
-    "defaultMode": "auto",
     "allow": [
       "Bash(cat *)",
       "Bash(cut *)",
@@ -64,7 +63,8 @@
       "Bash(just fmt*)",
       "Bash(readlink *)",
       "Bash(realpath *)"
-    ]
+    ],
+    "defaultMode": "auto"
   },
   "model": "opus",
   "hooks": {
@@ -148,7 +148,7 @@
       }
     }
   },
-  "effortLevel": "high",
+  "effortLevel": "medium",
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "editorMode": "normal",
