@@ -8,11 +8,12 @@ source "$HOME/.claude/hooks/lib.sh"
 hook_read_command
 
 printf '%s' "$HOOK_COMMAND" | rg -q '\bgit commit|\bgh pr (create|edit)' || exit 0
-printf '%s' "$HOOK_COMMAND" | rg -qi '(co-authored-by|assisted-by):.*(claude|anthropic)|generated with.*claude' || exit 0
+printf '%s' "$HOOK_COMMAND" | rg -qi '(co-authored-by|assisted-by):.*(claude|anthropic)|generated with.*claude|claude-session:' || exit 0
 
 stripped=$(printf '%s' "$HOOK_COMMAND" | jq -Rrs '
   gsub("[^\n\"]*([Cc]o-[Aa]uthored-[Bb]y|[Aa]ssisted-[Bb]y):[^\n\"]*([Cc]laude|[Aa]nthropic)[^\n\"]*\n?"; "")
   | gsub("[^\n\"]*[Gg]enerated with[^\n\"]*[Cc]laude[^\n\"]*\n?"; "")
+  | gsub("[^\n\"]*[Cc]laude-[Ss]ession:[^\n\"]*\n?"; "")
 ')
 
 hook_update_command "$stripped"
