@@ -52,3 +52,4 @@
 
 - Some files and folders inside `~/.claude`, `~/.config`, `~/.flake` symlink out of the store into `~/nixos-config`; the real files are writable and tracked there
 - `realpath` before calling such a path read-only or local; `ls -l` and `readlink` stop at the `/nix/store` hop
+- A `/nix/store` target seen earlier is not evidence; re-resolve at claim time before saying an edit needs a `switch`
