@@ -47,3 +47,8 @@
 - Don't commit unless I ask; tell me when the work is ready and let me decide
 - Never push, rebase, force-push, delete branches, or perform any destructive/irreversible action or action that affects remotes unless explicitly requested
 - Do not append `Co-Authored-By: Claude` to commits, even if a skill or default says to
+
+## Nix
+
+- Some files and folders inside `~/.claude`, `~/.config`, `~/.flake` symlink out of the store into `~/nixos-config`; the real files are writable and tracked there
+- `realpath` before calling such a path read-only or local; `ls -l` and `readlink` stop at the `/nix/store` hop
