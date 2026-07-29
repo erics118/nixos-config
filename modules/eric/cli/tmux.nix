@@ -1,64 +1,17 @@
 {
-  flake.modules.homeManager.base = { pkgs, ... }: {
+  flake.modules.homeManager.base = { pkgs, repoFileAll, ... }: {
+    # every conf here is symlinked into ~/.config/tmux, so it can be reloaded
+    # with `tmux source-file` without a rebuild. named main.conf rather than
+    # tmux.conf, which home-manager generates itself
+    home.file = repoFileAll "modules/eric/cli/tmux" ".config/tmux";
+
     programs.tmux = {
       enable = true;
       # socket under /run instead of /tmp; darwin has no XDG_RUNTIME_DIR so
       # scope to linux, else tmux points at a nonexistent /run/user dir
       secureSocket = pkgs.stdenv.hostPlatform.isLinux;
       extraConfig = ''
-        # default is "screen", which only advertises 8 colors
-        set -g default-terminal "tmux-256color"
-        # pass truecolor and OSC 52 clipboard through to programs inside tmux;
-        # terminfo here lacks the Ms cap, so assert clipboard support explicitly
-        set -ag terminal-features ",xterm-256color:RGB:clipboard"
-
-        # prefix C-a
-        unbind C-b
-        set -g prefix C-a
-        bind C-a send-prefix
-
-        set -g mouse on
-        set -g history-limit 100000
-
-        # start window and pane numbering at 1
-        set -g base-index 1
-        setw -g pane-base-index 1
-
-        # vi keys
-        set -g status-keys vi
-        set -g mode-keys vi
-
-        # let nvim autoread files changed outside tmux
-        set -g focus-events on
-        # size windows to the largest client viewing them, not the smallest attached
-        setw -g aggressive-resize on
-
-        # keep window numbers gapless when one is closed
-        set -g renumber-windows on
-
-        # auto-name each window after its current directory
-        setw -g automatic-rename on
-        setw -g automatic-rename-format '#{b:pane_current_path}'
-
-        # show tmux messages long enough to read
-        set -g display-time 4000
-
-        # yank in copy-mode reaches the system clipboard via OSC 52
-        set -g set-clipboard on
-        bind -T copy-mode-vi y send-keys -X copy-pipe-and-cancel
-
-        # keep the -r repeat window open long enough for comfortable tapping
-        set -g repeat-time 1000
-
-        # repeatable window switching: hold ctrl, tap prefix then p/n/n/n...
-        bind -r C-p previous-window
-        bind -r C-n next-window
-        # quick toggle to the last window
-        bind a last-window
-
-        # splits on unshifted keys: \ splits side by side, = stacks
-        bind '\' split-window -h
-        bind '=' split-window -v
+        source-file -q ~/.config/tmux/main.conf
       '';
     };
   };
