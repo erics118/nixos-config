@@ -27,16 +27,23 @@ jobs:
 
       - uses: cachix/install-nix-action@v31
 
+      # use a bot to trigger the pr
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - uses: DeterminateSystems/update-flake-lock@v28
         with:
-          # special PAT so the opened PR triggers check.yml
-          token: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
+          token: ${{ steps.app-token.outputs.token }}
           pr-title: ${{ github.event.client_payload.input && format('update {0} input', github.event.client_payload.input) || 'update all flake inputs' }}
           pr-labels: dependencies
           # empty for schedule/workflow_dispatch, which updates every input
           inputs: ${{ github.event.client_payload.input }}
           branch: update_flake_lock_${{ github.event.client_payload.input || 'all' }}
-          git-author-name: github-actions[bot]
-          git-author-email: github-actions[bot]@users.noreply.github.com
-          git-committer-name: github-actions[bot]
-          git-committer-email: github-actions[bot]@users.noreply.github.com
+          # the id+slug form is what links the commit to the bot's profile
+          git-author-name: erics118-bot[bot]
+          git-author-email: 311185523+erics118-bot[bot]@users.noreply.github.com
+          git-committer-name: erics118-bot[bot]
+          git-committer-email: 311185523+erics118-bot[bot]@users.noreply.github.com
