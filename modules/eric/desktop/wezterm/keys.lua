@@ -187,10 +187,37 @@ M.apply_to_config = function(c)
             mods = "NONE",
             action = wezterm.action.ScrollByLine(3),
         },
+        -- disable normal click to open link
+        {
+            event = { Up = { streak = 1, button = "Left" } },
+            mods = "NONE",
+            action = act.CompleteSelection("ClipboardAndPrimarySelection"),
+        },
+        -- enable super+click to open link
+        {
+            event = { Up = { streak = 1, button = "Left" } },
+            mods = "SUPER",
+            action = act.CompleteSelectionOrOpenLinkAtMouseCursor("ClipboardAndPrimarySelection"),
+        },
+
+        -- enable normal click to open link (inside tmux)
+        {
+            event = { Up = { streak = 1, button = "Left" } },
+            mods = "SUPER",
+            action = act.OpenLinkAtMouseCursor,
+            mouse_reporting = true,
+        },
+        -- disable window drag
         {
             event = { Drag = { streak = 1, button = "Left" } },
             mods = "SUPER",
             action = act.Nop,
+        },
+        {
+            event = { Down = { streak = 1, button = "Left" } },
+            mods = "SUPER",
+            action = act.Nop,
+            mouse_reporting = true,
         },
         {
             event = { Drag = { streak = 1, button = "Left" } },
