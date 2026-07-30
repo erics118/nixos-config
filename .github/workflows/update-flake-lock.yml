@@ -28,7 +28,7 @@ jobs:
       - uses: cachix/install-nix-action@v31
 
       # use a bot to trigger the pr
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: app-token
         with:
           client-id: ${{ secrets.CLIENT_ID }}
