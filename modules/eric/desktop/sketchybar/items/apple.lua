@@ -13,6 +13,7 @@ local apple = sbar.add_icon_item("apple", {
     background = { drawing = false },
     updates = false,
     update_freq = 1,
+    -- y_offset = 2,
 })
 
 local function toggle_zen()
@@ -33,7 +34,7 @@ local function toggle_zen()
             sbar.set("battery", { popup = { drawing = false } })
         end
 
-        -- sbar.set("skhd", { drawing = switch })
+        sbar.set("smhkd", { drawing = switch })
         sbar.set("yabai", { drawing = switch })
         sbar.set("front_app", { drawing = switch })
         sbar.set("/cpu\\..*/", { drawing = switch })

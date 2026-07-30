@@ -13,6 +13,8 @@ sbar.add_event("swap_menus_and_spaces")
 local max_items = 15
 local menu_items = {}
 
+local base_y_offset = 0
+
 for i = 1, max_items, 1 do
     menu_items[i] = sbar.add_label_item("menu." .. i, {
         padding_left = 0,
@@ -23,7 +25,7 @@ for i = 1, max_items, 1 do
                 style = i == 1 and "Bold" or "Regular",
             },
             padding_left = 10,
-            padding_right = 11, -- + (i == 2 and 1 or 0),
+            padding_right = 10,
         },
         click_script = "$CONFIG_DIR/helpers/menus/bin/menus -s " .. i,
         background = { drawing = false },
@@ -59,7 +61,7 @@ end
 menu_watcher:subscribe("front_app_switched", update_menus)
 
 local function apply_to_space_items(conf)
-    -- sbar.set("skhd", conf)
+    sbar.set("smhkd", conf)
     sbar.set("/space\\..*/", conf)
     sbar.set("yabai", conf)
     sbar.set("front_app", conf)
@@ -73,7 +75,7 @@ end
 space_menu_swap:subscribe("swap_menus_and_spaces", function(env)
     env.direction = env.direction or 1
 
-    local offset = 20 * env.direction
+    local offset = 20 * env.direction + base_y_offset
 
     local mode = sbar.get_mode()
 
@@ -97,7 +99,7 @@ space_menu_swap:subscribe("swap_menus_and_spaces", function(env)
             apply_to_space_items({ drawing = true, y_offset = -offset })
 
             sbar.animate("sin", 10, function()
-                apply_to_space_items({ y_offset = 0 })
+                apply_to_space_items({ y_offset = base_y_offset })
             end)
         end)
     else
@@ -110,13 +112,13 @@ space_menu_swap:subscribe("swap_menus_and_spaces", function(env)
         end)
 
         sbar.delay(0.18, function()
-            apply_to_space_items({ drawing = false, y_offset = 0 })
+            apply_to_space_items({ drawing = false, y_offset = base_y_offset })
 
             apply_to_menu_items({ y_offset = -offset })
 
             update_menus(nil, function()
                 sbar.animate("sin", 10, function()
-                    apply_to_menu_items({ y_offset = 0 })
+                    apply_to_menu_items({ y_offset = base_y_offset })
                 end)
             end)
         end)

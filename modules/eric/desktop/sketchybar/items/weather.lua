@@ -3,7 +3,7 @@ local weather = sbar.add_item("weather", {
         font = {
             family = "Hack Nerd Font Mono",
             style = "Regular",
-            size = 25.0,
+            size = 13.0,
         },
     },
     position = "right",
@@ -20,7 +20,7 @@ local function add_weather_item(name, icon)
             font = {
                 family = "Hack Nerd Font Mono",
                 style = "Regular",
-                size = 20.0,
+                size = 13.0,
             },
             align = "center",
             width = 32,
