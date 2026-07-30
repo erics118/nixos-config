@@ -5,7 +5,12 @@ on:
     - cron: "0 6 * * 1" # mondays 06:00 utc
   workflow_dispatch:
   repository_dispatch:
-    types: [private-input-updated]
+    types: [input-updated] # client_payload.input names the single input to bump
+
+# one branch/pr per scoped input
+concurrency:
+  group: update-flake-lock-${{ github.event.client_payload.input || 'all' }}
+  cancel-in-progress: true
 
 jobs:
   update-lock:
@@ -26,9 +31,11 @@ jobs:
         with:
           # special PAT so the opened PR triggers check.yml
           token: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
-          pr-title: ${{ github.event_name == 'repository_dispatch' && 'update nixos-config-private input' || 'update all flake inputs' }}
+          pr-title: ${{ github.event.client_payload.input && format('update {0} input', github.event.client_payload.input) || 'update all flake inputs' }}
           pr-labels: dependencies
-          inputs: ${{ github.event_name == 'repository_dispatch' && 'nixos-config-private' || '' }}
+          # empty for schedule/workflow_dispatch, which updates every input
+          inputs: ${{ github.event.client_payload.input }}
+          branch: update_flake_lock_${{ github.event.client_payload.input || 'all' }}
           git-author-name: github-actions[bot]
           git-author-email: github-actions[bot]@users.noreply.github.com
           git-committer-name: github-actions[bot]
