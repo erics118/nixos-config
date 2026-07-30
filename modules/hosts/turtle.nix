@@ -16,6 +16,7 @@ in
       m.nixos.docker
       m.nixos.tailscale
       m.nixos.glances
+      m.nixos.auto-upgrade
       inputs.disko.nixosModules.disko
       ./_hardware/aarch64-turtle.nix
       ./_hardware/aarch64-turtle-disko.nix
@@ -40,7 +41,10 @@ in
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEueqORxrYmEGwiC+DerpbNP0BUC8Byeetkq4M0ZPEUZ eric@orca"
     ];
 
-    boot.loader.systemd-boot.enable = true;
+    boot.loader.systemd-boot = {
+      enable = true;
+      configurationLimit = 5;
+    };
     boot.loader.efi.canTouchEfiVariables = true;
   };
 }
