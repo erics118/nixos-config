@@ -35,6 +35,11 @@
       stateVersion = 5;
 
       defaults = {
+        CustomUserPreferences = {
+          # ignore apple remote desktop (interferes with touch id sudo)
+          "com.apple.security.authorization".ignoreArd = true;
+        };
+
         NSGlobalDomain = {
           AppleICUForce24HourTime = true;
           AppleInterfaceStyle = "Dark";
@@ -90,6 +95,11 @@
       };
     };
 
-    security.pam.services.sudo_local.touchIdAuth = true;
+    # pam_tid.so got renamed to pam_tid.so.2 in macOS 27 Golden Gate
+    # nix-darwin has not yet updated to support this, so we have to manually configure it here
+    # security.pam.services.sudo_local.touchIdAuth = true;
+    security.pam.services.sudo_local.text = ''
+      auth sufficient pam_tid.so.2
+    '';
   };
 }
