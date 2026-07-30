@@ -101,7 +101,7 @@
     };
 
     yabai-src = {
-      url = "github:asmvik/yabai";
+      url = "github:AhsanFazal/yabai";
       flake = false;
     };
   };
