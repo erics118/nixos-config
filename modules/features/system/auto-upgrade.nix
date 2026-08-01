@@ -27,6 +27,7 @@
       boot.loader.systemd-boot.bootCounting.enable = true;
 
       systemd.services.nixos-upgrade = {
+        environment.SUDO_UID = "1000";
         # sync checkout
         preStart = ''
           branch=$(runuser -u eric -- git -C ${checkout} symbolic-ref --short HEAD)
