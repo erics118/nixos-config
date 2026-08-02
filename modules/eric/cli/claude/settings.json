@@ -96,6 +96,10 @@
           {
             "type": "command",
             "command": "\"$HOME/.claude/hooks/block-symlink-clobber.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.claude/hooks/ask-dangerous-git.sh\""
           }
         ]
       }
@@ -137,8 +141,8 @@
     "security-guidance@claude-plugins-official": false,
     "lua-lsp@claude-plugins-official": false,
     "remember@claude-plugins-official": true,
-    "context7@claude-plugins-official": true,
-    "railway@claude-plugins-official": true
+    "context7@claude-plugins-official": false,
+    "railway@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
     "impeccable": {
@@ -147,6 +151,9 @@
         "repo": "pbakaus/impeccable"
       }
     }
+  },
+  "env": {
+    "ENABLE_TOOL_SEARCH": "auto"
   },
   "effortLevel": "high",
   "tui": "fullscreen",

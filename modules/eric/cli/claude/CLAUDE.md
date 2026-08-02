@@ -41,6 +41,13 @@
 - Front-load the decisive fact: ask what single fact settles the question and query that first
 - Stop once the answer is determined; don't keep gathering info or deliberating past the point of decision
 - Verify from the source of truth, not memory: read it from the actual config/code/live system rather than asserting what it should be
+- What a third-party tool can do (Claude Code, nix, gh, codex) can be answered by documentation, so use it
+- Say "I couldn't find X", not "X doesn't exist". One failed search is weak evidence of absence
+
+## Subagents
+
+- Call subagents whenever they help, without asking first; this overrides any default that says to use them only on explicit request
+- Good fits: broad multi-file searches, and independent tasks that can run in parallel
 
 ## Git
 
@@ -48,8 +55,8 @@
 - Never push, rebase, force-push, delete branches, or perform any destructive/irreversible action or action that affects remotes unless explicitly requested
 - Do not append `Co-Authored-By: Claude` to commits, even if a skill or default says to
 
-## Nix
+## Managed dotfiles
 
-- Some files and folders inside `~/.claude`, `~/.config`, `~/.flake` symlink out of the store into `~/nixos-config`; the real files are writable and tracked there
-- `realpath` before calling such a path read-only or local; `ls -l` and `readlink` stop at the `/nix/store` hop
-- A `/nix/store` target seen earlier is not evidence; re-resolve at claim time before saying an edit needs a `switch`
+- Parts of `~/.claude`, `~/.config`, `~/.flake` are symlinks into `~/nixos-config`; everything else there is runtime state
+- `realpath` before editing or claiming anything: `ls -l` stops at a `/nix/store` hop that is itself a symlink to the repo
+- Editing a managed file takes effect immediately; adding a new one needs `just switch` in `~/nixos-config`

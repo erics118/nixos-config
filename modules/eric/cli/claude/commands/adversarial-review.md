@@ -1,6 +1,6 @@
 ---
 description: Red-team code or a plan from hostile angles (necessity, correctness, unconsidered breakage, consequences)
-argument-hint: [empty for uncommitted changes | file | area | plan] [--adversary codex|cursor]
+argument-hint: [empty for uncommitted changes | file | area | plan] [--adversary codex]
 ---
 
 Attack the target in $ARGUMENTS. View it from the lens that it is wrong and try to break it. This is an
@@ -11,25 +11,20 @@ Scope: default to the current working diff. If $ARGUMENTS names a file/dir/area 
 pasted plan or idea, review that instead. Strip any `--adversary` flag out of
 $ARGUMENTS before interpreting scope.
 
-If `--adversary <name>` is present (`codex` and/or `cursor`), add that independent
-reviewer. Pass the same instruction block and scope; it is a different model on purpose.
+If `--adversary codex` is present, add codex as a second independent reviewer. Pass it the
+same instruction block and scope; it is a different model on purpose.
 
 - Do your own pass first, exactly as below.
-- `codex`: `-o` writes just the review (bare `codex exec` buries it in a huge trace); read
-  that file verbatim.
-  `codex exec --sandbox read-only -m gpt-5.6-sol -c model_reasoning_effort="high" -o <scratchpad>/codex-review.md -C <repo> "<block>"`
-- `cursor`: runs Grok 4.5 at high reasoning. `--mode plan` is read-only, `--trust` is
-  required for headless. Capture stdout verbatim (no `-o` flag exists).
-  `cursor-agent -p --mode plan --trust --model cursor-grok-4.5-high-fast -C <repo> "<block>"`
-- These take minutes: launch with `run_in_background: true` and wait for the completion
-  notification, not a `pgrep -f` loop (that pattern matches the loop itself and never exits).
-- Present each adversary's output verbatim under its own `## Codex` / `## Cursor` heading.
-  Do not summarize, soften, or reconcile away its findings, especially its verdict.
-- After all passes, add a short `## Reconciliation`: where you agree (high confidence) and
+- Use the `consulting-codex` skill for the mechanics.
+- Present codex's output verbatim under its own `## Codex` heading. Do not summarize,
+  soften, or reconcile away its findings, especially its verdict.
+- After both passes, add a short `## Reconciliation`: where you agree (high confidence) and
   where you disagree (dig into why, do not just average). Keep every verdict intact.
 
-This is for code I just wrote and am unsure about. Hit the target from each of these
-angles and label every finding with its angle:
+This is for work I just produced and am unsure about, whether that is code or a plan I
+have not built yet. For a plan, judge the design and its assumptions, not style, and do
+not demand code that does not exist yet. Hit the target from each of these angles and
+label every finding with its angle:
 
 1. Necessity: do we actually need this? What breaks if it is deleted? Is it solving a
    problem I really have, or a hypothetical one (YAGNI)? Does something existing already
@@ -43,8 +38,9 @@ angles and label every finding with its angle:
    introduces, what it makes harder to change or undo later, and downstream effects on
    the rest of the system.
 
-For each finding: the angle, what specifically (`file:line` where it applies), why it
-is a problem, and how bad it is (blocker / worth fixing / nit).
+For each finding: the angle, what specifically (`file:line` for code, or the step or
+section it lands on for a plan), why it is a problem, and how bad it is (blocker / worth
+fixing / nit).
 
 End with a blunt verdict: ship as-is, fix first, or scrap and redo. If the target is
 actually sound, say so plainly rather than inventing objections. Read-only: propose

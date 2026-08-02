@@ -24,6 +24,14 @@ hook_deny() {
   exit 0
 }
 
+# print a PreToolUse ask decision with the given reason, then exit. forces the normal
+# permission prompt instead of refusing outright.
+hook_ask() {
+  jq -cn --arg reason "$1" \
+    '{hookSpecificOutput:{hookEventName:"PreToolUse", permissionDecision:"ask", permissionDecisionReason:$reason}}'
+  exit 0
+}
+
 # print an updated tool_input.command (requires hook_read_command to have run first), then exit.
 hook_update_command() {
   printf '%s' "$HOOK_INPUT" | jq -c --arg cmd "$1" \

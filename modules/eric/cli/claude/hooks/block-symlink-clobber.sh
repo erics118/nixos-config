@@ -10,6 +10,8 @@ hook_read_command
 # figure out which path this command would overwrite, based on its shape
 # mv/cp src dst, or tee file: destination is the last word
 target=$(printf '%s' "$HOOK_COMMAND" | rg -o -r '$1' '\b(?:mv|cp|tee)\b.*\s(\S+)$')
+# in-place editors write a temp file and rename over the link: sed -i, perl -i, truncate
+[ -n "$target" ] || target=$(printf '%s' "$HOOK_COMMAND" | rg -o -r '$1' '\b(?:(?:sed|perl)\b[^;|]*\s-i|truncate)\b.*\s(\S+)$')
 # ... > file or ... >> file (last redirect target wins)
 [ -n "$target" ] || target=$(printf '%s' "$HOOK_COMMAND" | rg -o -r '$1' '>{1,2}\s*(\S+)' | tail -1)
 
