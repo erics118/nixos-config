@@ -2,6 +2,17 @@
 # shared helpers for PreToolUse/PostToolUse hooks. source, don't run directly:
 #   source "$HOME/.claude/hooks/lib.sh"
 
+# fail closed when a dependency is missing. these guards are the only gate under
+# defaultMode auto, so a hook that cannot run must block rather than silently allow.
+# exit 2 blocks the call and feeds stderr back, which works without jq.
+hook_require() {
+  for b in "$@"; do
+    command -v "$b" >/dev/null 2>&1 && continue
+    printf 'guard hook cannot run: %s is not on PATH, so the command was not checked.\n' "$b" >&2
+    exit 2
+  done
+}
+
 # reads stdin once. sets $HOOK_INPUT (raw json) and $HOOK_COMMAND (tool_input.command).
 # exits 0 (no-op) if there's no command to inspect.
 hook_read_command() {

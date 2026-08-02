@@ -1,6 +1,7 @@
 ---
 description: Explain what a feature does, how it fits the codebase, why it exists, and its idioms
 argument-hint: [empty for uncommitted changes | file | dir | feature name]
+disable-model-invocation: true
 ---
 
 Explain a component by reading the actual source, not from memory. Steps:

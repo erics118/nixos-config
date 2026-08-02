@@ -5,6 +5,7 @@
 set -u
 source "$HOME/.claude/hooks/lib.sh"
 
+hook_require rg jq
 hook_read_command
 
 printf '%s' "$HOOK_COMMAND" | rg -q '\bgit commit|\bgh pr (create|edit)' || exit 0

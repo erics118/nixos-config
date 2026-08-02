@@ -7,6 +7,7 @@
 set -u
 source "$HOME/.claude/hooks/lib.sh"
 
+hook_require jq realpath
 hook_read_file_path
 
 [ -L "$HOOK_FILE" ] || exit 0

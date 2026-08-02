@@ -4,6 +4,7 @@
 set -u
 source "$HOME/.claude/hooks/lib.sh"
 
+hook_require rg jq
 hook_read_command
 
 patterns=(

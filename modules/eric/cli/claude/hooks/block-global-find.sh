@@ -4,6 +4,7 @@
 set -u
 source "$HOME/.claude/hooks/lib.sh"
 
+hook_require rg jq
 hook_read_command
 
 # match `find` as a command word, followed by a root path of / (not ./ or a subpath)

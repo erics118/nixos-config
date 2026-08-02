@@ -14,7 +14,7 @@
 
 ## Progress Updates
 
-- Before the each tool call, state what you're about to do in one short sentence
+- Before each tool call, state what you're about to do in one short sentence
 - While working, speak up only for a real finding or a change of direction
 
 ## Ambiguity

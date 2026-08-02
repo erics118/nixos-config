@@ -1,12 +1,13 @@
 ---
 description: Scaffold a new dev project from ~/dev/templates (flake + direnv + language init)
 argument-hint: <name> [language]
+disable-model-invocation: true
 ---
 
-Create a new project at ~/dev/$1 (language: $2, infer from the name/context if omitted). Templates-first workflow:
+Create a new project at ~/dev/$0 (language: $1, infer from the name/context if omitted). Templates-first workflow:
 
 1. Check ~/dev/templates/ for a matching language template (it is a flake-templates repo: cpp, go, latex, node, ocaml, python, rust, ...). Read the chosen template's flake.nix before using it.
-2. If a template exists: mkdir ~/dev/$1, cd there, `git init`, then `nix flake init -t ~/dev/templates#$2`.
+2. If a template exists: mkdir ~/dev/$0, cd there, `git init`, then `nix flake init -t ~/dev/templates#$1`.
 3. If NO template exists for the language: create one in ~/dev/templates/<lang>/ FIRST, using flake-parts for multi-arch scaffolding (register it in the templates repo's flake.nix `flake.templates`, matching the style of the existing ones), git add it there, then use it via step 2. The template gets the nix layer only - see next point.
 4. Templates carry the NIX layer only (flake.nix, maybe justfile). Source scaffolding comes from the language's own init tool, run inside the devShell:
    - go: `go mod init` - ocaml: `dune init` - node: the suitable framework init (`npm create vite`, `npm init`, etc.)

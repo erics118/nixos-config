@@ -140,7 +140,7 @@
     "hookify@claude-plugins-official": false,
     "security-guidance@claude-plugins-official": false,
     "lua-lsp@claude-plugins-official": false,
-    "remember@claude-plugins-official": true,
+    "remember@claude-plugins-official": false,
     "context7@claude-plugins-official": false,
     "railway@claude-plugins-official": false
   },

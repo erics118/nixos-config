@@ -5,6 +5,7 @@
 set -u
 source "$HOME/.claude/hooks/lib.sh"
 
+hook_require rg jq realpath
 hook_read_command
 
 # figure out which path this command would overwrite, based on its shape

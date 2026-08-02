@@ -5,6 +5,7 @@
 set -u
 source "$HOME/.claude/hooks/lib.sh"
 
+hook_require rg jq git
 hook_read_command
 
 # only flake-evaluating commands

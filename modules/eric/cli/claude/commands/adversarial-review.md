@@ -1,6 +1,7 @@
 ---
 description: Red-team code or a plan from hostile angles (necessity, correctness, unconsidered breakage, consequences)
 argument-hint: [empty for uncommitted changes | file | area | plan] [--adversary codex]
+disable-model-invocation: true
 ---
 
 Attack the target in $ARGUMENTS. View it from the lens that it is wrong and try to break it. This is an
