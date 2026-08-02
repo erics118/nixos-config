@@ -23,7 +23,7 @@
       direnvInit = mkInit "direnv" "${pkgs.direnv}/bin/direnv hook zsh";
       nixYourShellInit = mkInit "nix-your-shell" "${pkgs.nix-your-shell}/bin/nix-your-shell zsh";
       fzfInit = mkInit "fzf" "${pkgs.fzf}/bin/fzf --zsh";
-      atuinInit = mkInit "atuin" "${pkgs.atuin}/bin/atuin init zsh";
+      atuinInit = mkInit "atuin" "${pkgs.atuin}/bin/atuin init zsh --disable-ai";
     in
     {
       home.sessionVariables.COLORTERM = "truecolor";
