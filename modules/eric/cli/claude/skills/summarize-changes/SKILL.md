@@ -1,4 +1,5 @@
 ---
+name: summarize-changes
 description: Summarize the working-tree, staged, or branch diff in concise BLUF style
 argument-hint: [git range]
 disable-model-invocation: true

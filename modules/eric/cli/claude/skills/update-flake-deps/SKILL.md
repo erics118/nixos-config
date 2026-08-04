@@ -1,5 +1,6 @@
 ---
-description: Update flake inputs, rebuild, and summarize what changed or broke
+name: update-flake-deps
+description: Update flake inputs, rebuild, and summarize what changed or broke. Use when asked to update or bump dependencies or flake inputs.
 argument-hint: [input]
 disable-model-invocation: true
 ---

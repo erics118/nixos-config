@@ -1,4 +1,5 @@
 ---
+name: adversarial-review
 description: Red-team code or a plan from hostile angles (necessity, correctness, unconsidered breakage, consequences)
 argument-hint: [empty for uncommitted changes | file | area | plan] [--adversary codex]
 disable-model-invocation: true

@@ -1,7 +1,7 @@
 ---
-description: Scaffold a new dev project from ~/dev/templates (flake + direnv + language init)
+name: new-project
+description: Scaffold a new dev project from ~/dev/templates (flake + direnv + language init). Use when Eric wants to start or create a new project.
 argument-hint: <name> [language]
-disable-model-invocation: true
 ---
 
 Create a new project at ~/dev/$0 (language: $1, infer from the name/context if omitted). Templates-first workflow:
