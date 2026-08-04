@@ -39,7 +39,7 @@ c.ssh_domains = {
 }
 c.send_composed_key_when_left_alt_is_pressed = false
 c.font = wezterm.font("Hack Nerd Font")
-c.font_size = 13.0
+c.font_size = 12.0
 
 -- window
 if wezterm.target_triple:find("linux") then
@@ -94,10 +94,10 @@ c.adjust_window_size_when_changing_font_size = false
 c.exit_behavior = "Close"
 c.default_cursor_style = "SteadyBar"
 c.underline_thickness = 2.5
-c.command_palette_font_size = 13.0
+c.command_palette_font_size = 12.0
 
 c.window_frame = {
-    font_size = 14.0,
+    font_size = 12.0,
 }
 
 local theme = wezterm.color.get_builtin_schemes()["Catppuccin Mocha"]
