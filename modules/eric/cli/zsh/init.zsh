@@ -139,13 +139,28 @@ bindkey "^[[1;5D" beginning-of-line
 bindkey "^[[1;5C" end-of-line
 
 # shell title hooks
+# host prefix only when sshed and outside tmux; inside tmux this string is just
+# the window name, and tmux adds the host to the outer title on its own
+if [[ -n $SSH_CONNECTION && -z $TMUX ]]; then
+  _title_host="%m: "
+else
+  _title_host=""
+fi
+
 preexec_title() {
-  print -Pn "\e]0;%n@%m: %~ - $1\a"
+  print -Pn "\e]0;${_title_host}%~ - $1\a"
 }
 
 precmd_title() {
-  print -Pn "\e]0;%n@%m: %~\a"
+  print -Pn "\e]0;${_title_host}%~\a"
+}
+
+# nvim emits \e[2 q on teardown regardless of guicursor; wezterm undoes it when
+# the alt screen exits but tmux does not, so restore the bar at each prompt
+precmd_cursor() {
+  print -n '\e[6 q'
 }
 
 add-zsh-hook preexec preexec_title
 add-zsh-hook precmd precmd_title
+add-zsh-hook precmd precmd_cursor
