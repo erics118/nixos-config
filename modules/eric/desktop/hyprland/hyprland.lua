@@ -69,9 +69,7 @@ hl.on("hyprland.start", function()
     hl.dispatch(hl.dsp.exec_cmd("uwsm app -- hyprpaper"))
 
     -- create the headless output before sunshine reads output_name
-    hl.dispatch(
-        hl.dsp.exec_cmd("sh -c 'hyprctl output create headless; systemctl --user start sunshine'")
-    )
+    hl.dispatch(hl.dsp.exec_cmd("sh -c 'hyprctl output create headless; systemctl --user start sunshine'"))
 end)
 
 local mod = "SUPER"

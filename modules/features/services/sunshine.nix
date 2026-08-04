@@ -1,5 +1,5 @@
 {
-  flake.modules.nixos.sunshine = { pkgs, lib, config, ... }: {
+  flake.modules.nixos.sunshine = { pkgs, lib, ... }: {
     # sunshine synthesizes mouse/keyboard through /dev/uinput, and reads back the
     # virtual devices it creates under /dev/input
     users.users.eric.extraGroups = [
