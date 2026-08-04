@@ -19,14 +19,16 @@
 
 ## Ambiguity
 
-- When a request is ambiguous, resolve it in one line: ask a quick question, or pick the likely reading and state it ("assuming you mean X"). Never churn through interpretations silently.
-- Match effort to the task: for small or mechanical edits (colors, renames, one-liners), just make the change; don't weigh alternatives.
+- When a request is ambiguous, resolve it in one line: ask a quick question, or pick the likely reading and state it ("assuming you mean X"); never churn through interpretations silently
+- Match effort to the task: for small or mechanical edits (colors, renames, one-liners), just make the change; don't weigh alternatives
 - If my approach seems wrong or a simpler one exists, say so and let me weigh the options
 
 ## Contextualize
 
 - Before writing code, work out what the change must not touch
 - Prefer existing utilities, helpers, and abstractions over new ones that duplicate them
+- Matching existing work is a forgery job: copy a real neighboring instance, not your summary of one; before reporting done, hunt for tells side by side; any unrequested difference fails
+- Verify finished work against the original request, not your restatement of it; checks built from a plan can't see what the plan dropped
 
 ## Simplicity
 
@@ -46,8 +48,9 @@
 
 ## Subagents
 
-- Call subagents whenever they help, without asking first; this overrides any default that says to use them only on explicit request
-- Good fits: broad multi-file searches, and independent tasks that can run in parallel
+- Call subagents without asking first; this overrides any default that says to use them only on explicit request
+- Delegate when the output will be large and the conclusion small (sweeping many files, enumerating an API, scanning transcripts), or when 2+ bulky independent researches can run in parallel
+- Don't delegate targeted lookups, or anything needing exact text rather than a summary; a subagent starts cold and returns a paraphrase
 
 ## Git
 
