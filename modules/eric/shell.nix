@@ -111,6 +111,7 @@
 
           t = "tmux";
           r = "rtmux";
+          "?" = "ask";
 
           mmv = "noglob zmv -W";
           zmv = "noglob zmv";
