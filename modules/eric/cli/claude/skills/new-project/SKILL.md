@@ -1,6 +1,6 @@
 ---
 name: new-project
-description: Scaffold a new dev project from ~/dev/templates (flake + direnv + language init). Use when Eric wants to start or create a new project.
+description: Scaffold a new dev project from ~/dev/templates (flake + direnv + language init). Use when the user wants to start or create a new project.
 argument-hint: <name> [language]
 ---
 

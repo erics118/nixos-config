@@ -28,28 +28,28 @@
 - Before writing code, work out what the change must not touch
 - Prefer existing utilities, helpers, and abstractions over new ones that duplicate them
 - Matching existing work is a forgery job: copy a real neighboring instance, not your summary of one; before reporting done, hunt for tells side by side; any unrequested difference fails
-- Verify finished work against the original request, not your restatement of it; checks built from a plan can't see what the plan dropped
+- Check finished work against the request, not your restatement of it; checks built from a plan can't see what the plan dropped
 
 ## Simplicity
 
 - KISS: write the shortest, simplest code that solves the issue; if it could be half the size, cut it
-- YAGNI: do not provide features beyond what was asked
+- YAGNI: do not provide features beyond the request
 - No abstractions/configurability that weren't requested
 - Touch only what the request needs: don't rewrite, reformat, or refactor working code you weren't asked to change
-- Every changed line should trace directly to the user's request
+- Every changed line should trace directly to the request
 
 ## Investigation
 
 - Front-load the decisive fact: ask what single fact settles the question and query that first
 - Stop once the answer is determined; don't keep gathering info or deliberating past the point of decision
 - Verify from the source of truth, not memory: read it from the actual config/code/live system rather than asserting what it should be
-- What a third-party tool can do (Claude Code, nix, gh, codex) can be answered by documentation, so use it
+- To learn what a third-party tool can do (Claude Code, nix, gh, codex), read its documentation
 - Say "I couldn't find X", not "X doesn't exist". One failed search is weak evidence of absence
 
 ## Subagents
 
 - Call subagents without asking first; this overrides any default that says to use them only on explicit request
-- Delegate when the output will be large and the conclusion small (sweeping many files, enumerating an API, scanning transcripts), or when 2+ bulky independent researches can run in parallel
+- Delegate when the output is large but the conclusion small (sweeping many files, enumerating an API, scanning transcripts), or when 2+ bulky independent researches can run in parallel
 - Don't delegate targeted lookups, or anything needing exact text rather than a summary; a subagent starts cold and returns a paraphrase
 
 ## Git
