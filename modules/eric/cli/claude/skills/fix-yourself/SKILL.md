@@ -21,7 +21,7 @@ I hit a failure worth fixing durably, not just correcting in-session. Work the s
    - judgment behavior spanning projects: global CLAUDE.md
    - project-specific fact or constraint: project memory
    - repeatable multi-step process: new or amended skill, via writing-great-skills
-   Done when: one layer is chosen and you can say why not the others.
+     Done when: one layer is chosen and you can say why not the others.
 
 5. **Propose, then install and prune.** Show me the exact wording, the layer, and everything the new rule supersedes; wait for my approval. Then install (realpath managed files first; edit lands in ~/nixos-config) and delete or merge every superseded duplicate so the meaning lives in exactly one place.
    Done when: I approved, the edit is verified on disk, and no duplicate remains.
