@@ -139,7 +139,7 @@ yabai -m config mouse_drop_action stack # [swap|stack]
 # Set the layout of the selected space.
 yabai -m config layout stack # [bsp|stack|float]
 
-source "$CONFIG_DIR/on_display_update"
+"$CONFIG_DIR/on_display_update"
 
 # Specify how a window should be split.
 # vertical: The window is split along the y-axis.

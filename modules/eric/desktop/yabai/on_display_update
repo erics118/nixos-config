@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 
 function switch_to_layout() {
     current_mode=$(yabai -m config --space $1 layout)
@@ -16,8 +16,7 @@ displays=$(yabai -m query --displays)
 # for each display, check the display type and then switch to the appropriate mode of its spaces
 echo "$displays" | jq -c '.[]' | while read -r display; do
     uuid=$(echo "$display" | jq -r '.uuid')
-    spaces_data=$(echo "$display" | jq -r '.spaces[]')
-    spaces=("${(@f)spaces_data}")
+    spaces=$(echo "$display" | jq -r '.spaces[]')
     for space in $spaces; do
         echo -n "space $space: "
         if [[ $uuid == 37D8832A-2D66-02CA-B9F7-8F30A301B230 ]]; then
