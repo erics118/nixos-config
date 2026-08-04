@@ -38,6 +38,16 @@ hl.config({
     },
 })
 
+-- moonlight/sunshine target: a virtual monitor parked far off to the side so
+-- the physical display never shows the streamed session
+hl.monitor({
+    output = "HEADLESS-1",
+    mode = "1920x1080@60",
+    position = "9999x0",
+    scale = 1,
+})
+hl.workspace_rule({ workspace = "11", monitor = "HEADLESS-1", persistent = true })
+
 -- Autostart daemons inside the UWSM systemd scope
 hl.on("hyprland.start", function()
     -- Re-import Hyprland-set env (HYPRLAND_INSTANCE_SIGNATURE, etc.) into the
@@ -57,6 +67,11 @@ hl.on("hyprland.start", function()
     hl.dispatch(hl.dsp.exec_cmd("systemctl --user start hyprpolkitagent"))
     hl.dispatch(hl.dsp.exec_cmd("uwsm app -- hypridle"))
     hl.dispatch(hl.dsp.exec_cmd("uwsm app -- hyprpaper"))
+
+    -- create the headless output before sunshine reads output_name
+    hl.dispatch(
+        hl.dsp.exec_cmd("sh -c 'hyprctl output create headless; systemctl --user start sunshine'")
+    )
 end)
 
 local mod = "SUPER"

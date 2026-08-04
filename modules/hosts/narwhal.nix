@@ -18,6 +18,7 @@ in
       m.nixos.glances
       m.nixos.auto-upgrade
       m.nixos.hyprland
+      m.nixos.sunshine
       m.nixos.hp-printer
       m.nixos.nvidia
       m.nixos.caddy
@@ -46,6 +47,13 @@ in
     # dont sleep
     systemd.sleep.settings.Sleep = {
       AllowSuspend = "no";
+    };
+
+    # autologin into hyprland at boot: sunshine is a user service on
+    # graphical-session.target, so streaming needs a live session
+    services.greetd.settings.initial_session = {
+      command = "uwsm start hyprland-uwsm.desktop";
+      user = "eric";
     };
 
     fileSystems."/mnt/external" = {
