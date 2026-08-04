@@ -16,7 +16,6 @@ in
       m.nixos.gatus
       m.nixos.immich
       m.nixos.glances
-      m.nixos.cachix-push
       m.nixos.auto-upgrade
       m.nixos.hyprland
       m.nixos.hp-printer
