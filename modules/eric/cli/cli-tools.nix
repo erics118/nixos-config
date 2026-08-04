@@ -1,5 +1,5 @@
 {
-  flake.modules.homeManager.base = {
+  flake.modules.homeManager.base = { pkgs, ... }: {
     programs.zoxide = {
       enable = true;
       enableZshIntegration = false; # pre-computed in shell.nix
@@ -103,6 +103,8 @@
 
     programs.btop = {
       enable = true;
+      # no actual cuda dependency
+      package = pkgs.btop.override { cudaSupport = true; };
       settings = {
         vim_keys = true;
         rounded_corners = true;
