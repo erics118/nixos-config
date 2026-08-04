@@ -29,13 +29,13 @@ yabai -m rule --add label="Finder" app=Finder sticky=on manage=off
 source "$CONFIG_DIR/unmanaged_rules.sh"
 
 # dedicated spaces for certain apps
-yabai -m rule --add label="util apps" app="^Fantastical|Todoist|Fantastical$" space=^1
+yabai -m rule --add label="util apps" app="^Fantastical|Todoist|Notion$" space=^1
 
-yabai -m rule --add label="chat apps" app="^Discord.*|Slack$" space=^4
+yabai -m rule --add label="chat apps" app="^Discord.*|Slack|Messages$" space=^3
 
-yabai -m rule --add label="dev" app="^Code|Parallels Desktop$" space=^5
+yabai -m rule --add label="dev" app="^Code$" space=^4
 
-yabai -m rule --add label="music" app="^Spotify|Podcasts$" space=^6
+yabai -m rule --add label="music" app="^Spotify$" space=^6
 
 # Global Settings
 
@@ -139,7 +139,7 @@ yabai -m config mouse_drop_action stack # [swap|stack]
 # Set the layout of the selected space.
 yabai -m config layout stack # [bsp|stack|float]
 
-/Users/eric/.local/bin/on_display_update
+source "$CONFIG_DIR/on_display_update"
 
 # Specify how a window should be split.
 # vertical: The window is split along the y-axis.
@@ -170,10 +170,10 @@ printf "configured layout..\n"
 # events
 
 yabai -m signal --add event=display_added \
-  action="/Users/eric/.local/bin/on_display_update"
+  action="$CONFIG_DIR/on_display_update"
 
 yabai -m signal --add event=display_removed \
-  action="/Users/eric/.local/bin/on_display_update"
+  action="$CONFIG_DIR/on_display_update"
 
 # yabai -m signal --add event=window_focused \
 # action="sketchybar --trigger yabai_window_focused INFO=$YABAI_WINDOW_ID"

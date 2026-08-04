@@ -1,0 +1,34 @@
+#!/usr/bin/env zsh
+
+function switch_to_layout() {
+    current_mode=$(yabai -m config --space $1 layout)
+    if [[ $current_mode == $2 ]]; then
+        echo "mode already $2"
+        return
+    fi
+
+    yabai -m config --space $1 layout $2
+    echo "switched mode to $2"
+}
+
+displays=$(yabai -m query --displays)
+
+# for each display, check the display type and then switch to the appropriate mode of its spaces
+echo "$displays" | jq -c '.[]' | while read -r display; do
+    uuid=$(echo "$display" | jq -r '.uuid')
+    spaces_data=$(echo "$display" | jq -r '.spaces[]')
+    spaces=("${(@f)spaces_data}")
+    for space in $spaces; do
+        echo -n "space $space: "
+        if [[ $uuid == 37D8832A-2D66-02CA-B9F7-8F30A301B230 ]]; then
+            echo -n "built-in display: "
+            switch_to_layout $space stack
+        elif [[ $uuid == 4F66D0C3-C8B2-3E59-0857-D6964E3302DB ]]; then
+            echo -n "external monitor: "
+            switch_to_layout $space bsp
+        else
+            echo -n "other monitor: "
+            switch_to_layout $space bsp
+        fi
+    done
+done
