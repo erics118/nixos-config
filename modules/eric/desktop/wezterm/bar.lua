@@ -302,7 +302,6 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
     if (#tab_title + filler_width) > max_width then
         -- 1 for ellipsis
         local new_title_width = max_width - filler_width - 1
-        wezterm.log_info(new_title_width)
         tab_title = wezterm.truncate_right(tab_title, new_title_width) .. "…"
     end
 
