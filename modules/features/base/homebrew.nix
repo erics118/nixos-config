@@ -33,7 +33,7 @@
 
       taps = [ ];
 
-      brews = [ ];
+      brews = [ "openssl" ];
 
       casks = [ ];
 
