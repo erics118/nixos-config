@@ -1,6 +1,10 @@
 set shell := ["zsh", "-uc"]
+set script-interpreter := ["zsh", "-eu"]
+
 system_target := if os() == "macos" { "darwin" } else { "os" }
 ntfy_topic := `cat /run/secrets/ntfy/nix 2>/dev/null || echo ""`
+
+set default-list
 
 [private]
 ntfy msg status:
@@ -11,11 +15,6 @@ ntfy msg status:
       -H "Tags: nix,{{ if status == "0" { "white_check_mark" } else { "x" } }}" \
       -d "just {{ msg }}: {{ if status == "0" { "ok" } else { "failed" } }}" \
       "https://ntfy.sh/{{ ntfy_topic }}"
-
-# list all commands
-[private]
-default:
-    @just --list --unsorted
 
 # update all flake inputs
 [group('flake')]
@@ -44,24 +43,32 @@ repl:
 
 # switch the system configuration
 [group('system')]
+[script]
 switch:
-    nh {{ system_target }} switch; just ntfy switch $?
+    trap 'just ntfy switch $?' EXIT
+    nh {{ system_target }} switch
 
 # build the system configuration
 [group('system')]
+[script]
 build:
-    nh {{ system_target }} build; just ntfy build $?
+    trap 'just ntfy build $?' EXIT
+    nh {{ system_target }} build
 
 # switch with a local checkout of the private input
 [group('system')]
+[script]
 dev:
-    nh {{ system_target }} switch . -- --override-input nixos-config-private path:../nixos-config-private; just ntfy dev $?
+    trap 'just ntfy dev $?' EXIT
+    nh {{ system_target }} switch . -- --override-input nixos-config-private path:../nixos-config-private
 
 # test the NixOS configuration (Linux only)
 [group('system')]
 [linux]
+[script]
 test:
-    nh os test; just ntfy test $?
+    trap 'just ntfy test $?' EXIT
+    nh os test
 
 # garbage collect unused nix store entries
 [group('system')]
