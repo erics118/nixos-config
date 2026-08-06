@@ -83,7 +83,7 @@ in
 
     systemd.services.NetworkManager-wait-online.enable = false;
 
-    # narwhal no working public IPv6, so we prefer IPv6, and ignore the router advertisement on LAN
+    # narwhal no working public IPv6, so we prefer IPv4, and ignore the router advertisement on LAN
     environment.etc."gai.conf".text = ''
       precedence ::ffff:0:0/96  100
     '';

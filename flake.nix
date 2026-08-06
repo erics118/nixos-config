@@ -50,8 +50,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # don't follow nixpkgs: nixvim is built/tested against its own pin, so
-    # following ours rebuilds neovim+plugins off-cache and warns (nixpkgs.source)
+    # upstream nixvim.nixvim keeps its own pin to use cached builds
     nixvim = {
       url = "github:erics118/nixvim";
       inputs.flake-parts.follows = "flake-parts";

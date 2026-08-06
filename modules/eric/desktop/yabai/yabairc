@@ -75,7 +75,7 @@ yabai -m config window_origin_display cursor # [default|focused|cursor]
 yabai -m config window_placement second_child # [first_child|second_child]
 
 # Specify where new managed windows will be inserted.
-yabai -m config window_insertion_point # [focused|first|last]
+# yabai -m config window_insertion_point focused # [focused|first|last]
 
 # Windows will keep their zoom-state through layout changes.
 yabai -m config window_zoom_persist off # [<BOOL_SEL>]
@@ -83,7 +83,7 @@ yabai -m config window_zoom_persist off # [<BOOL_SEL>]
 # Bypass macOS space animation when an application or window on an inactive space is focused.
 # You should only enable this if you do NOT use the scripting addition.
 # The scripting addition implements the same functionality in a more robust way.
-yabai -m config skip_window_focus_animation # [<BOOL_SEL>]
+# yabai -m config skip_window_focus_animation off # [<BOOL_SEL>]
 
 # Draw shadow for windows.
 # System Integrity Protection must be partially disabled.
@@ -180,5 +180,8 @@ yabai -m signal --add event=display_removed \
 
 # yabai -m signal --add event=space_changed \
 # action="sketchybar --trigger yabai_space_changed INFO=$YABAI_SPACE_ID"
+
+# apply once, after every rule above is registered
+yabai -m rule --apply
 
 printf "yabai configuration file loaded..\n"

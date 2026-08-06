@@ -103,7 +103,8 @@
 
     programs.btop = {
       enable = true;
-      # no actual cuda dependency
+      # cudaSupport only runs autoAddDriverRunpath so btop finds libnvidia-ml at
+      # runtime for the gpu panel, it pulls in no cuda toolkit and stays cached
       package = pkgs.btop.override { cudaSupport = true; };
       settings = {
         vim_keys = true;

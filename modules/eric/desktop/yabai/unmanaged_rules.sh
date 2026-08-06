@@ -68,6 +68,4 @@ yabai -m rule --add label="amazon workspaces" app="^Amazon WorkSpaces$" title="^
 # wezterm scratchpad
 # yabai -m rule --add label="terminal scratchpad" app="WezTerm" manage=off
 
-yabai -m rule --apply
-
 printf 'loaded unmanage rules..\n'

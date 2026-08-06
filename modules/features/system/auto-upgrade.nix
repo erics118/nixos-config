@@ -58,7 +58,7 @@
         description = "notify that the unattended upgrade failed";
         serviceConfig.Type = "oneshot";
         script = ''
-          topic=$(cat /run/secrets/ntfy/nix 2>/dev/null) || exit 0
+          topic=$(cat ${config.sops.secrets."ntfy/nix".path} 2>/dev/null) || exit 0
           [ -n "$topic" ] || exit 0
           ${pkgs.curl}/bin/curl -s -o /dev/null \
             -H "Title: nixos-upgrade failed on ${config.networking.hostName}" \
