@@ -1,23 +1,11 @@
 /* userChrome.css - Sidebery + Arc-like chrome for Firefox Dev Edition.
-   Targets FF154 with sidebar.revamp: true. Companion author sheet (for
-   ::part() selectors and chrome-only properties this file can't use):
-   resources/userChrome.au.css */
+   Targets FF154 with sidebar.revamp: true. Companion author sheet (needs
+   shadow-DOM ::part selectors this file can't reach): resources/userChrome.au.css */
 
 /* Hide the panel header above webextension sidebars. The id lives in
    webext-panels.xhtml (the doc that wraps Sidebery), not browser.xhtml. */
 #sidebar-panel-header {
   display: none;
-}
-
-/* Same document's root: global.css gives every chrome window
-   -moz-default-appearance: -moz-mac-window, an opaque macOS window background,
-   which lands on top of the main window's vibrancy and makes Sidebery look
-   solid no matter how transparent its own styles are. */
-@media (-moz-platform: macos) {
-  #webextpanels-window {
-    appearance: none !important;
-    background-color: transparent !important;
-  }
 }
 
 /* ===== Design tokens ===== */
@@ -34,15 +22,6 @@
   --chrome-pill-radius: 9999px;
   --urlbar-control-size: 26px;
   --urlbar-icon-size: 16px;
-  /* ATBC's color kept over the vibrancy: opaque would hide the blur entirely,
-     so it goes on as a tint. This one number sets how much color the whole
-     chrome carries - toolbar rows, page frame, sidebar backdrop, urlbar. */
-  --chrome-tint-strength: 40%;
-  --chrome-tint: color-mix(
-    in srgb,
-    var(--lwt-accent-color, #2b2a33) var(--chrome-tint-strength),
-    transparent
-  );
   /* Arc-like page frame around the rendered content */
   --page-frame-width: 8px;
   --page-frame-radius: 16px;
@@ -210,57 +189,6 @@
     border-top-left-radius: var(--page-frame-radius) !important;
     border-bottom-left-radius: var(--page-frame-radius) !important;
   }
-
-  /* --- macOS vibrancy (blur behind the chrome) ---
-     The vibrancy view itself lives on body::after and is set up in
-     resources/userChrome.au.css (-moz-default-appearance is chrome-only, so a
-     user sheet drops it). Everything stacked above body has to be transparent
-     or tinted, or it paints straight over the blur.
-     Needs browser.theme.native-theme and the blend-mode prefs (user.js). */
-  @media (-moz-platform: macos) {
-    &:not([macOSNativeFullscreen]) {
-      /* ATBC's theme reaches these as a background *image* (Firefox turns a
-         lightweight theme's colors into --toolbox-background-image on body and
-         the toolbox), so clearing background-color alone leaves an opaque layer
-         sitting over the vibrancy. */
-      &,
-      body,
-      #navigator-toolbox,
-      #sidebar-container,
-      #sidebar-box,
-      #sidebar-box #sidebar {
-        background-color: transparent !important;
-        background-image: none !important;
-      }
-
-      /* The tint rides on the toolbar rows, not on #navigator-toolbox itself:
-         the toolbox has `contain: paint`, so its ::after vibrancy view paints
-         above the toolbox's own background and would swallow the color.
-         #browser carries it for everything below, which keeps the frame, the
-         slivers outside its rounded corners, and the sidebar strip on one wash
-         instead of tinting the frame border separately and doubling up. */
-      #nav-bar,
-      #PersonalToolbar,
-      #browser {
-        background-color: var(--chrome-tint) !important;
-        background-image: none !important;
-      }
-
-      /* The urlbar paints its own opaque fill. Tinting it stacks over the
-         nav-bar wash, so it still reads as a distinct field. Focused keeps the
-         opaque fill, or the results list would sit on blurred wallpaper. */
-      #urlbar:not([focused]) .urlbar-background {
-        background-color: var(--chrome-tint) !important;
-      }
-
-      /* The border only reserves space now - #browser's tint shows through it,
-         so the frame and the corner slivers beside it stay the same shade. */
-      #tabbrowser-tabbox,
-      #browser:has(#sidebar-box[hidden]) #tabbrowser-tabbox {
-        border-color: transparent !important;
-      }
-    }
-  }
 }
 
 /* ===== Address bar =====
@@ -422,13 +350,4 @@ findbar {
 #tabbrowser-tabbox,
 .browserContainer {
   box-shadow: none !important;
-}
-
-/* allow_transparent_browser strips the opaque canvas from every content
-   browser, not just the sidebar panels it is enabled for, so pages that
-   declare no background of their own show the vibrancy behind #browser.
-   .browserStack is per-tab, so the sidebar (.sidebar-browser-stack) and the
-   frame around the content area stay transparent. */
-.browserStack {
-  background-color: white !important;
 }
