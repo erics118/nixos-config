@@ -7,7 +7,7 @@
 format = """
 [┌┤](surface1)\
 $directory\
-[├┤](surface1)$hostname\
+$hostname\
 $git_branch\
 $git_commit\
 $git_state\
@@ -80,7 +80,7 @@ style_root = "red"
 
 [hostname]
 ssh_only = true
-format = "[$hostname]($style)"
+format = "[├┤](surface1)[$hostname]($style)"
 style = "yellow"
 trim_at = "."
 
