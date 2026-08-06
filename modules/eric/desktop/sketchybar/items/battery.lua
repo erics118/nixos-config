@@ -26,7 +26,6 @@ battery:subscribe({ "routine", "power_source_change", "system_woke" }, function(
         local label = "?"
 
         local found, _, charge = batt_info:find("(%d+)%%")
-        label = found
         if found then
             charge = tonumber(charge)
             label = charge .. "%"

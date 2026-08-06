@@ -88,7 +88,7 @@ space_menu_swap:subscribe("swap_menus_and_spaces", function(env)
         menu_watcher:set({ updates = false })
 
         sbar.animate("sin", 10, function()
-            sbar.set("apple", { icon = { color = settings.mode_colors.default } })
+            sbar.set_mode("default")
 
             apply_to_menu_items({ y_offset = offset })
         end)
@@ -106,7 +106,7 @@ space_menu_swap:subscribe("swap_menus_and_spaces", function(env)
         menu_watcher:set({ updates = true })
 
         sbar.animate("sin", 10, function()
-            sbar.set("apple", { icon = { color = settings.mode_colors.menu } })
+            sbar.set_mode("menu")
 
             apply_to_space_items({ y_offset = offset })
         end)

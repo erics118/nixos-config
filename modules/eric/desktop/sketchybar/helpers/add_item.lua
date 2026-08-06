@@ -65,14 +65,14 @@ sbar.add_event = function(name)
     sbar.add("event", name)
 end
 
-sbar.get_mode = function()
-    local apple_color = tonumber(sbar.query("apple").icon.color)
+-- must match the apple icon color set in items/apple.lua
+local mode = "default"
 
-    if apple_color == settings.mode_colors.menu then
-        return "menu"
-    elseif apple_color == settings.mode_colors.zen then
-        return "zen"
-    else
-        return "default"
-    end
+sbar.set_mode = function(new_mode)
+    mode = new_mode
+    sbar.set("apple", { icon = { color = settings.mode_colors[new_mode] } })
+end
+
+sbar.get_mode = function()
+    return mode
 end

@@ -22,7 +22,7 @@ local function toggle_zen()
     -- showing spaces
     if mode == "default" or mode == "zen" then
         -- zen can only be enabled from the spaces mode
-        apple:set({ icon = { color = mode == "default" and settings.mode_colors.zen or settings.mode_colors.default } })
+        sbar.set_mode(mode == "default" and "zen" or "default")
 
         local switch = mode ~= "default"
 

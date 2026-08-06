@@ -112,7 +112,7 @@ local function has_value(tab, val)
     return false
 end
 
-local window_query2 = [[
+local window_query = [[
 yabai -m query --windows space,title,app,is-sticky,stack-index,is-hidden 2>/dev/null | jq '
   map(select((."is-sticky" or ."is-hidden" or (.title == "")) | not))
   | sort_by(.space, ."stack-index")
@@ -121,29 +121,14 @@ yabai -m query --windows space,title,app,is-sticky,stack-index,is-hidden 2>/dev/
   | add
 ' || echo '{}']]
 
-function printTable(t, indent)
-    indent = indent or 0
-    local prefix = string.rep("  ", indent)
-
-    for k, v in pairs(t) do
-        if type(v) == "table" then
-            print(prefix .. k .. ":")
-            printTable(v, indent + 1)
-        else
-            print(prefix .. k .. ": " .. tostring(v))
-        end
-    end
-end
-
 space_window_observer:subscribe({ "space_windows_change" }, function(env)
-    sbar.exec(window_query2, function(window_data)
+    sbar.exec(window_query, function(window_data)
         if type(window_data) ~= "table" then
             window_data = {}
         end
 
         for i = 1, 10, 1 do
             local apps = window_data[tostring(i)] or {}
-            -- printTable(apps)
 
             local label = ""
 
@@ -161,62 +146,7 @@ space_window_observer:subscribe({ "space_windows_change" }, function(env)
             spaces[i]:set({ label = label })
         end
     end)
-
-    -- sbar.exec(window_query, function(window_data)
-    --     -- create a table that looks like this:
-    --     -- { 1 : a string of icons, 2 : a string of icons, ... }
-    --     local labels = {}
-    --     -- printTable(window_data)
-    --     for _, window in ipairs(window_data) do
-    --         local space = window.space
-    --         local app = window.app
-    --         local is_sticky = window["is-sticky"]
-    --         local title = window.title
-
-    --         if not has_value(settings.ignored_apps, app) and title ~= "" then
-    --             if labels[space] == nil then
-    --                 labels[space] = ""
-    --             end
-
-    --             local icon = app_icons[app] or app_icons["Default"]
-
-    --             if not is_sticky then
-    --                 labels[space] = labels[space] .. icon
-    --             end
-    --         end
-    --     end
-
-    --     -- printTable(labels)
-
-    --     for i = 1, 10, 1 do
-    --         local label = labels[i] or "  "
-
-    --         -- sbar.animate("sinh", 10, function()
-    --             spaces[i]:set({ label = label })
-    --         -- end)
-    --     end
-    -- end)
 end)
-
--- space_window_observer:subscribe("space_windows_change", function(env)
---     local label = ""
---     for app, count in pairs(env.INFO.apps) do
---         if not has_value(settings.ignored_apps, app) then
---             local lookup = app_icons[app]
-
---             local icon = ((lookup == nil) and app_icons["default"] or lookup)
---             label = label .. string.rep(icon, count)
---         end
---     end
-
---     if label == "" then
---         label = "  "
---     end
-
---     sbar.animate("tanh", 10, function()
---         spaces[env.INFO.space]:set({ label = label })
---     end)
--- end)
 
 -- spaces_indicator:subscribe("mouse.entered", function(env)
 --     sbar.animate("tanh", 20, function()

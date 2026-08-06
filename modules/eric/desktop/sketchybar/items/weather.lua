@@ -1,7 +1,7 @@
 local weather = sbar.add_item("weather", {
     icon = {
         font = {
-            family = "Hack Nerd Font Mono",
+            family = "Hack Nerd Font Propo",
             style = "Regular",
             size = 13.0,
         },
@@ -18,7 +18,7 @@ local function add_weather_item(name, icon)
         icon = {
             string = icon,
             font = {
-                family = "Hack Nerd Font Mono",
+                family = "Hack Nerd Font Propo",
                 style = "Regular",
                 size = 13.0,
             },
@@ -149,6 +149,27 @@ local weather_icons_day = {
     ["moderate or heavy rain with thunder"] = "",
     ["patchy light snow with thunder"] = "",
     ["moderate or heavy snow with thunder"] = "",
+    ["patchy rain nearby"] = "",
+    ["patchy snow nearby"] = "",
+    ["patchy sleet nearby"] = "",
+    ["patchy freezing drizzle nearby"] = "",
+    ["thundery outbreaks in nearby"] = "",
+    ["patchy light rain in area with thunder"] = "",
+    ["patchy light snow in area with thunder"] = "",
+    ["moderate or heavy rain in area with thunder"] = "",
+    ["moderate or heavy snow in area with thunder"] = "",
+    ["dust"] = "",
+    ["blowing dust"] = "",
+    ["dust storm"] = "",
+    ["saharan dust"] = "",
+    ["dust haze"] = "",
+    ["haze"] = "",
+    ["smoky haze"] = "",
+    ["smoke"] = "",
+    ["smog"] = "",
+    ["severe smog"] = "",
+    ["sandstorm"] = "",
+    ["severe sandstorm"] = "",
 }
 
 local weather_icons_night = {
@@ -200,6 +221,27 @@ local weather_icons_night = {
     ["moderate or heavy rain with thunder"] = "",
     ["patchy light snow with thunder"] = "",
     ["moderate or heavy snow with thunder"] = "",
+    ["patchy rain nearby"] = "",
+    ["patchy snow nearby"] = "",
+    ["patchy sleet nearby"] = "",
+    ["patchy freezing drizzle nearby"] = "",
+    ["thundery outbreaks in nearby"] = "",
+    ["patchy light rain in area with thunder"] = "",
+    ["patchy light snow in area with thunder"] = "",
+    ["moderate or heavy rain in area with thunder"] = "",
+    ["moderate or heavy snow in area with thunder"] = "",
+    ["dust"] = "",
+    ["blowing dust"] = "",
+    ["dust storm"] = "",
+    ["saharan dust"] = "",
+    ["dust haze"] = "",
+    ["haze"] = "",
+    ["smoky haze"] = "",
+    ["smoke"] = "",
+    ["smog"] = "",
+    ["severe smog"] = "",
+    ["sandstorm"] = "",
+    ["severe sandstorm"] = "",
 }
 
 local function get_condition_icon(condition, is_day)
@@ -297,12 +339,17 @@ local function format_number(value, suffix)
     return tostring(value) .. (suffix or "")
 end
 
-weather:subscribe({ "forced", "routine" }, function()
+local key_retries = 0
+
+local function update_weather()
     local api_key = read_weather_api_key()
     if not api_key then
         set_weather_unavailable("No API Key")
-        -- sops may not have decrypted yet, retry soon
-        sbar.exec("sleep 5 && sketchybar --trigger forced")
+        -- sops may not have decrypted yet, retry a few times
+        if key_retries < 3 then
+            key_retries = key_retries + 1
+            sbar.delay(5, update_weather)
+        end
         return
     end
 
@@ -371,4 +418,6 @@ weather:subscribe({ "forced", "routine" }, function()
             weather_sunset:set({ label = { string = "Sunset: " .. sunset } })
         end
     )
-end)
+end
+
+weather:subscribe({ "forced", "routine" }, update_weather)
