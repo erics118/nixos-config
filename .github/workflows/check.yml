@@ -13,6 +13,10 @@ concurrency:
 
 jobs:
   flake-check:
+    # these runner labels are baked into the check names the branch ruleset
+    # requires (`flake-check (ubuntu-26.04)` etc). renaming one here makes the
+    # ruleset wait forever on a context that never reports, which hangs the
+    # `gh pr merge --auto` in update-flake-lock.yml. update the ruleset too
     strategy:
       fail-fast: false
       matrix:

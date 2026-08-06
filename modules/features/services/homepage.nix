@@ -1,67 +1,14 @@
 {
+  # homepageTiles and homelabDomain are declared in base, see homelab-options.nix
   flake.modules.nixos.homepage = { config, lib, ... }: {
-    # each module appends to homepageTiles with a flat structure
-    options.homepageTiles = lib.mkOption {
-      default = [ ];
-      description = "Flat list of service tiles, merged from all modules and transformed here";
-      type = lib.types.listOf (
-        lib.types.submodule (
-          { config, ... }: {
-            options = {
-              name = lib.mkOption {
-                type = lib.types.str;
-                description = "Unique name for the tile";
-              };
-              group = lib.mkOption {
-                type = lib.types.str;
-                description = "Dashboard group the tile is listed under";
-              };
-              subdomain = lib.mkOption {
-                type = lib.types.str;
-                default = lib.toLower config.name;
-                description = "Link target, defaults to name; expands to https://<subdomain>.h.eriz.cc";
-              };
-              port = lib.mkOption {
-                type = lib.types.port;
-                description = "Service port, used for the uptime monitor and widget";
-              };
-              host = lib.mkOption {
-                type = lib.types.str;
-                default = "127.0.0.1";
-                description = "IP used for the uptime monitor and widget; defaults to localhost";
-              };
-              proxy = lib.mkOption {
-                type = lib.types.bool;
-                default = true;
-                description = "Generate a Caddy reverse-proxy vhost <subdomain>.h.eriz.cc";
-              };
-              description = lib.mkOption {
-                type = lib.types.nullOr lib.types.str;
-                default = null;
-                description = "Short caption shown under the tile name";
-              };
-              icon = lib.mkOption {
-                type = lib.types.nullOr lib.types.str;
-                default = null;
-                description = "Icon file name, e.g. adguard.svg";
-              };
-              widget = lib.mkOption {
-                type = lib.types.nullOr (lib.types.attrsOf lib.types.anything);
-                default = null;
-                description = "Homepage widget config; the service url is filled in automatically";
-              };
-            };
-          }
-        )
-      );
-    };
-
     config =
       let
-        mkUrl = host: port: "http://${host}:${toString port}";
+        inherit (config) homelabDomain;
+        port = 8082;
+        mkUrl = host: p: "http://${host}:${toString p}";
         tileToService = t: {
           ${t.name} = lib.filterAttrs (_: v: v != null) {
-            href = "https://${t.subdomain}.h.eriz.cc";
+            href = "https://${t.subdomain}.${homelabDomain}";
             siteMonitor = mkUrl t.host t.port;
             inherit (t) description;
             inherit (t) icon;
@@ -77,20 +24,20 @@
 
           openFirewall = true;
 
-          listenPort = 8082;
+          listenPort = port;
 
+          # tailscale is reached by its magicdns name, not its address, which can change
           allowedHosts = lib.concatStringsSep "," [
-            "localhost:8082"
-            "127.0.0.1:8082"
-            "narwhal:8082"
-            "192.168.68.150:8082"
-            "100.122.182.28:8082"
-            "narwhal.dolphin-sailfin.ts.net:8082"
-            "h.eriz.cc"
+            "localhost:${toString port}"
+            "127.0.0.1:${toString port}"
+            "${config.networking.hostName}:${toString port}"
+            "192.168.68.150:${toString port}"
+            "narwhal.dolphin-sailfin.ts.net:${toString port}"
+            homelabDomain
           ];
 
           settings = {
-            title = "narwhal";
+            title = config.networking.hostName;
             headerStyle = "clean";
             # each group spans a full-width row; tiles wrap every 4 columns
             layout = lib.mapAttrs (_group: _tiles: {
@@ -134,12 +81,12 @@
         };
 
         # the dashboard is the home root
-        # services live at <service>.h.eriz.cc
+        # services live at <service>.<homelabDomain>
         # proxied to host:port from the registry
         services.caddy.virtualHosts = lib.mkMerge (
-          [ { "h.eriz.cc".extraConfig = "reverse_proxy localhost:8082"; } ]
+          [ { ${homelabDomain}.extraConfig = "reverse_proxy localhost:${toString port}"; } ]
           ++ map (t: {
-            "${t.subdomain}.h.eriz.cc".extraConfig = "reverse_proxy ${t.host}:${toString t.port}";
+            "${t.subdomain}.${homelabDomain}".extraConfig = "reverse_proxy ${t.host}:${toString t.port}";
           }) (lib.filter (t: t.proxy) config.homepageTiles)
         );
       };

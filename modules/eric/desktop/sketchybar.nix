@@ -5,23 +5,30 @@
     home.file.".config/sketchybar".source = repoFile "modules/eric/desktop/sketchybar";
   };
 
-  flake.modules.darwin.base = { pkgs, lib, ... }: {
-    environment.systemPackages = [ pkgs.sketchybar ];
+  flake.modules.darwin.base =
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
+    {
+      environment.systemPackages = [ pkgs.sketchybar ];
 
-    launchd.user.agents.sketchybar = {
-      serviceConfig = {
-        ProgramArguments = [ (lib.getExe pkgs.sketchybar) ];
-        WorkingDirectory = "/Users/eric/.config/sketchybar";
-        EnvironmentVariables = {
-          LANG = "en_US.UTF-8";
-          PATH = "/Users/eric/.local/bin:/Users/eric/.nix-profile/bin:/etc/profiles/per-user/eric/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+      launchd.user.agents.sketchybar = {
+        serviceConfig = {
+          ProgramArguments = [ (lib.getExe pkgs.sketchybar) ];
+          WorkingDirectory = "/Users/eric/.config/sketchybar";
+          EnvironmentVariables = {
+            LANG = "en_US.UTF-8";
+            PATH = config.launchdUserPath;
+          };
+          RunAtLoad = true;
+          KeepAlive = true;
+          ProcessType = "Interactive";
+          StandardOutPath = "/tmp/sketchybar_eric.out.log";
+          StandardErrorPath = "/tmp/sketchybar_eric.err.log";
         };
-        RunAtLoad = true;
-        KeepAlive = true;
-        ProcessType = "Interactive";
-        StandardOutPath = "/tmp/sketchybar_eric.out.log";
-        StandardErrorPath = "/tmp/sketchybar_eric.err.log";
       };
     };
-  };
 }

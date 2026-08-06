@@ -28,7 +28,7 @@
 
       # catch all for unmatched subdomains instead of a TLS error
       # explicit vhosts still take precedence
-      virtualHosts."*.h.eriz.cc".extraConfig = ''
+      virtualHosts."*.${config.homelabDomain}".extraConfig = ''
         respond "no such service" 404
       '';
     };

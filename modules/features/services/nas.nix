@@ -1,5 +1,5 @@
 {
-  flake.modules.nixos.nas = {
+  flake.modules.nixos.nas = { config, ... }: {
     # NOTE: hdparm head-parking control (-B/-S) is intentionally omitted. this
     # drive's USB-SATA bridge rejects those commands (SG_IO bad/missing sense data),
     # so the setting has no effect. If Load_Cycle_Count climbs, use hd-idle instead.
@@ -22,7 +22,7 @@
       settings = {
         global = {
           "workgroup" = "WORKGROUP";
-          "server string" = "narwhal";
+          "server string" = config.networking.hostName;
           "server role" = "standalone server";
           "map to guest" = "Never";
           "vfs objects" = "catia fruit streams_xattr";

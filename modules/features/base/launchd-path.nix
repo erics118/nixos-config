@@ -1,18 +1,11 @@
 {
   # launchd agents get no login shell, so each one has to be handed a PATH.
-  # derive it once from environment.systemPath instead of pasting a literal into
-  # every agent, where it silently drifts when systemPath changes
-  flake.modules.darwin.base = { lib, config, ... }: {
+  # defined once here so the agents that share it cannot drift apart
+  flake.modules.darwin.base = { lib, ... }: {
     options.launchdUserPath = lib.mkOption {
       type = lib.types.str;
-      readOnly = true;
-      description = "PATH for launchd user agents, derived from environment.systemPath";
+      default = "/Users/eric/.local/bin:/Users/eric/.nix-profile/bin:/etc/profiles/per-user/eric/bin:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+      description = "PATH for launchd user agents";
     };
-
-    config.launchdUserPath =
-      "/Users/eric/.local/bin:"
-      +
-        builtins.replaceStrings [ "$HOME" "$USER" ] [ "/Users/eric" "eric" ]
-          config.environment.systemPath;
   };
 }
