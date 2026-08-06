@@ -1,4 +1,5 @@
-/* Author-sheet rules that need shadow-DOM selectors unavailable to userChrome.css. */
+/* Author-sheet rules that need shadow-DOM selectors or chrome-only properties,
+   neither of which userChrome.css can use. */
 
 /* Default to xul namespace */
 @namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
@@ -12,4 +13,18 @@
    xul @namespace above would otherwise silently unmatch it */
 *|*#urlbar *|*.searchmode-switcher::part(button) {
   border-radius: var(--chrome-pill-radius) !important;
+}
+
+/* macOS vibrancy: -moz-default-appearance is chrome-only, so userChrome.css
+   (a user sheet) drops it silently. This sheet is loaded from a chrome: uri,
+   which parses it. The transparency that lets the vibrancy show through is in
+   userChrome.css, under the same media query. */
+@media (-moz-platform: macos) {
+  /* Firefox hangs the window's vibrancy off body::after (browser-shared.css),
+     but gates the appearance on :not([lwtheme]), so ATBC's theme kills it a
+     moment after startup. Same rule, without that gate. */
+  *|*:root:not([macOSNativeFullscreen]) html|body::after {
+    -moz-default-appearance: -moz-window-titlebar;
+    appearance: auto !important;
+  }
 }
