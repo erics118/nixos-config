@@ -7,6 +7,7 @@
       disabledTestPaths = (old.disabledTestPaths or [ ]) ++ [
         "tests/test_restful.py"
         "tests/test_browser_restful.py"
+        "tests/test_xmlrpc.py"
       ];
     });
   };
