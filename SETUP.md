@@ -196,7 +196,7 @@ Now, ssh into the new machine and follow [Set up sops](#set-up-sops) to set up s
 
 ## Post setup
 
-- AdGuard Home: set up `eric` admin account via the wizard at `http://narwhal:3000`. blocklists are declarative, but login isn't
+- AdGuard Home: set up `eric` admin account via the wizard on port 3000. blocklists are declarative, but login and other configs are not
 - Tailscale: run `sudo tailscale up --advertise-exit-node` the first time manually, and authenticate. Also, from admin console, you have to manually approve the exit node
 - `gh` cli: `gh auth login`
-- AI tools: `claude`, `codex`, `agy`
+- install `claude` and `codex` by using their own installers so they are auto-updated faster than it would be via nix

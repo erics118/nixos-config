@@ -66,13 +66,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # explicitly don't follow nixpkgs for binary cache hits
-    llm-agents = {
-      url = "github:numtide/llm-agents.nix";
-      inputs.flake-parts.follows = "flake-parts";
-      inputs.treefmt-nix.follows = "treefmt-nix";
-    };
-
     wezterm-src = {
       # we aren't using github: because dir= will result in unstable hashes
       url = "git+https://github.com/erics118/wezterm?ref=eric&dir=nix&shallow=1";
@@ -170,7 +163,7 @@
 
                 # keep top-level inputs' direct follows tidy (`inputs.X.follows`).
                 # --depth 1 stays at direct children: deeper follows here only
-                # pull pinned/cache inputs (nixvim.nixvim, llm-agents.*) off
+                # pull pinned/cache inputs (nixvim.nixvim) off
                 # their own nixpkgs, which we don't want. --no-lock because the
                 # treefmt check runs in the nix sandbox with no network
                 formatter.flake-edit = {

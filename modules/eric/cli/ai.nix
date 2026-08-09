@@ -2,7 +2,6 @@
   flake.modules.homeManager.base =
     { repoFile, pkgs, ... }:
     let
-      llm-agents = pkgs.inputs.llm-agents;
       base = "modules/eric/cli/claude";
     in
     {
@@ -13,32 +12,7 @@
       home.file.".claude/rules".source = repoFile "${base}/rules";
       home.file.".claude/skills".source = repoFile "${base}/skills";
 
-      programs.claude-code = {
-        enable = true;
-        package = llm-agents.claude-code;
-
-        # settings is unset so we can use a symlink
-      };
-
-      programs.codex = {
-        enable = true;
-        package = llm-agents.codex;
-      };
-
-      programs.antigravity-cli = {
-        enable = true;
-        package = llm-agents.antigravity-cli;
-      };
-
-      programs.github-copilot-cli = {
-        enable = true;
-        package = llm-agents.copilot-cli;
-      };
-
-      home.packages = with llm-agents; [
-        agentsview
-        herdr
-        skills
+      home.packages = with pkgs; [
         ccusage
       ];
     };
