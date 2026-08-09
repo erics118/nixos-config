@@ -1,9 +1,5 @@
 local app_icons = require("helpers.app_icons")
 
-sbar.add_event("yabai_window_focused")
-sbar.add_event("yabai_space_changed")
-sbar.add_event("yabai_window_state")
-
 local spaces = {}
 
 for i = 1, 10, 1 do

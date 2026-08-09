@@ -11,8 +11,7 @@ local apple = sbar.add_icon_item("apple", {
     padding_left = 3,
     padding_right = 3,
     background = { drawing = false },
-    updates = false,
-    update_freq = 1,
+    updates = true,
     -- y_offset = 2,
 })
 
@@ -57,16 +56,6 @@ end)
 
 -- local a = 0
 -- local paused = false
-
-apple:subscribe({ "routine", "mouse.entered" }, function()
-    apple:set({ updates = true })
-    -- paused = false
-    -- a = 0
-end)
-
-apple:subscribe({ "mouse.exited", "mouse.exited.global" }, function()
-    apple:set({ updates = false })
-end)
 
 apple:subscribe("mouse.clicked", function(env)
     if env.BUTTON == "left" then

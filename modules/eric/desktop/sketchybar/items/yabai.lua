@@ -1,3 +1,6 @@
+-- event triggered by yabai on window focus of the same app, as sketchybar doesn't handle this
+sbar.add_event("window_focused")
+
 local yabai = sbar.add_icon_item("yabai", {
     updates = true,
     background = { drawing = false },
@@ -7,7 +10,7 @@ local window_query =
     "yabai -m query --windows is-sticky,is-floating,sub-layer,has-fullscreen-zoom,stack-index --window 2>/dev/null || echo err"
 local space_query = "yabai -m query --spaces type --space 2>/dev/null || echo err"
 
-yabai:subscribe({ "front_app_switched", "yabai", "window_focused", "forced" }, function(env)
+yabai:subscribe({ "front_app_switched", "window_focused", "forced" }, function(env)
     sbar.exec(window_query, function(window_data)
         sbar.exec(space_query, function(space_data)
             local c = colors.text

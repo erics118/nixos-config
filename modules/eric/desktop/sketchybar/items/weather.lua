@@ -420,4 +420,4 @@ local function update_weather()
     )
 end
 
-weather:subscribe({ "forced", "routine" }, update_weather)
+weather:subscribe({ "forced", "routine", "system_woke" }, update_weather)

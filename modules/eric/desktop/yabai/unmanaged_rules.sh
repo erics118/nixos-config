@@ -1,29 +1,42 @@
 #!/usr/bin/env bash
 
+join_re() {
+  local IFS='|'
+  printf '^(%s)$\n' "$*"
+}
+
 # window only
 titles=("Window" "Software Updater?")
-title_regex=$(printf '%s|' "${titles[@]}" | sed 's/|$//')
+title_regex=$(join_re "${titles[@]}")
 
 yabai -m rule --add label="misc unmanaged windows" title="^($title_regex)$" manage=off
 
 # apps only
 apps=(
-  "AdGuard Mini" "AdGuard VPN" "AltTab"
-  "Background Music" "Bartender.*" "BetterDiscord" "Box"
-  "CleanShot.*" "Desk View" "Dropbox Dash" "Dropover" "Dropshare.*"
-  "Espanso" "Find Any File" "Flow" "Google Drive"
-  "GPG Keychain" "Grammarly Desktop" "Hammerspoon" "HazeOver" "Hidden Bar"
-  "Hyperduck" "Installer" "JetBrains Toolbox" "Karabiner-MultitouchExtension"
-  "MacGPT" "MediaMate" "Menuwhere" "Microsoft Remote Desktop"
-  "NepTunes" "NoteApp" "OmniDiskSweeper" "OnyX" "Photo Booth"
-  "Plain Text Editor" "Print Center" "Python" "Rectangle.*" "SideNotes"
-  "Silicio" "Siri" "Smooze.*" "Stickies" "System .*" "Tailscale" "Tot"
-  "Velja" "Raycast( Beta)?" "Mac Mouse Fix" "Linear Mouse" "Archive Utility"
-  "Actions" "Koofr" "Antinote" "FaceTime" "Alcove"
-  "Parallels Desktop" "WorkSpaces"
-  "Main" "java" "particle" "ocaml-voxel" "knot"
+  "AdGuard Mini" "AdGuard VPN" "AltTab" "Archive Utility" "Alcove"
+  "Background Music" "Box"
+  "CleanShot X"
+  "Desk View" "Dropover" "Dropshare.*"
+  "Espanso"
+  "Find Any File" "FaceTime"
+  "Google Drive"
+  "Hammerspoon" "HazeOver"
+  "Installer" "iPhone Mirroring"
+  "JetBrains Toolbox"
+  "Karabiner-MultitouchExtension"
+  "LinearMouse"
+  "MediaMate" "Menuwhere" "Mac Mouse Fix"
+  "OmniDiskSweeper" "OnyX"
+  "Photo Booth" "Print Center"
+  "Rectangle.*" "Raycast( Beta)?"
+  "Siri" "Stickies" "System .*"
+  "Tailscale"
+
+  "Microsoft Remote Desktop" "Parallels Desktop" "WorkSpaces"
+
+  "Main" "java" "Python" "knot"
 )
-app_regex=$(printf '%s|' "${apps[@]}" | sed 's/|$//')
+app_regex=$(join_re "${apps[@]}")
 
 yabai -m rule --add label="unmanaged apps" app="^($app_regex)$" manage=off
 
@@ -36,17 +49,16 @@ yabai -m rule --add label="orbstack prefs" app="^OrbStack$" title="^(General|Sys
 yabai -m rule --add label="weather prefs" app="^Weather$" title="^Settings$" manage=off
 yabai -m rule --add label="discord updater" app="^Discord.*$" title="^Discord Updater$" manage=off
 yabai -m rule --add label="fantastical" app="^Fantastical$" title="^(Flexibits Account|General|Appearance|Events & Tasks|Alerts|Accounts|Calendars & Lists|Openings|Weather|Advanced)$" manage=off
-# yabai -m rule --add label="intellij idea" app="^IntelliJ IDEA$" title="^(Move|Delete|Rename|Keyboard Shortcut|Update Project|Add File to Git|Copy)$" manage=off
 
-# intellij
-intellij_apps=(
+# jetbrains
+jetbrains=(
   "IntelliJ IDEA" "PyCharm" "WebStorm" "PhpStorm" "CLion" "Rider" "GoLand" "RubyMine"
 )
-intellij_app_regex=$(printf '%s|' "${intellij_apps[@]}" | sed 's/|$//')
+jetbrains_regex=$(join_re "${jetbrains[@]}")
 
 # only manage the main editor window, which has the dash in the title
-yabai -m rule --add label="intellij idea1" app="^($intellij_app_regex)$" title=".*" manage=off
-yabai -m rule --add label="intellij idea" app="^($intellij_app_regex)$" title=".* –.*" manage=on
+yabai -m rule --add label="intellij idea1" app="^($jetbrains_regex)$" manage=off
+yabai -m rule --add label="intellij idea" app="^($jetbrains_regex)$" title=".* –.*" manage=on
 
 # orion popups
 yabai -m rule --add label="orion popup 1" app="^Orion.*$" role="^AXPopover$" manage=off

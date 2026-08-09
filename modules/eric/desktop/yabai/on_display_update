@@ -1,33 +1,49 @@
 #!/usr/bin/env bash
 
-function switch_to_layout() {
-    current_mode=$(yabai -m config --space $1 layout)
-    if [[ $current_mode == $2 ]]; then
-        echo "mode already $2"
-        return
-    fi
+set -euo pipefail
 
-    yabai -m config --space $1 layout $2
-    echo "switched mode to $2"
+switch_to_layout() {
+  echo -n "$1 display: "
+  current_mode=$(yabai -m config --space "$2" layout)
+  if [[ $current_mode == "$3" ]]; then
+    echo "already $3"
+    return
+  fi
+
+  yabai -m config --space "$2" layout "$3"
+  echo "switched to $3"
 }
 
-displays=$(yabai -m query --displays)
+# invocation modes:
+#   display_added   -> YABAI_DISPLAY_ID set: only the new display
+#   display_removed -> arg "removed": all remaining displays, so migrated spaces get the right default
+#   manual/first run -> no arg, no env var: every display
+if [[ ${1:-} != removed && -n ${YABAI_DISPLAY_ID:-} ]]; then
+  displays=$(yabai -m query --displays | jq -c --argjson id "$YABAI_DISPLAY_ID" '.[] | select(.id == $id)')
+else
+  displays=$(yabai -m query --displays | jq -c '.[]')
+fi
 
-# for each display, check the display type and then switch to the appropriate mode of its spaces
-echo "$displays" | jq -c '.[]' | while read -r display; do
-    uuid=$(echo "$display" | jq -r '.uuid')
-    spaces=$(echo "$display" | jq -r '.spaces[]')
-    for space in $spaces; do
-        echo -n "space $space: "
-        if [[ $uuid == 37D8832A-2D66-02CA-B9F7-8F30A301B230 ]]; then
-            echo -n "built-in display: "
-            switch_to_layout $space stack
-        elif [[ $uuid == 4F66D0C3-C8B2-3E59-0857-D6964E3302DB ]]; then
-            echo -n "external monitor: "
-            switch_to_layout $space bsp
-        else
-            echo -n "other monitor: "
-            switch_to_layout $space bsp
-        fi
-    done
+# nothing matched
+[[ -z $displays ]] && exit 0
+
+# for each display, check the display type and then switch to the appropriate mode for its spaces
+echo "$displays" | while read -r display; do
+  uuid=$(echo "$display" | jq -r '.uuid')
+  spaces=$(echo "$display" | jq -r '.spaces[]')
+  for space in $spaces; do
+    echo -n "space $space: "
+
+    case $uuid in
+    37D8832A-2D66-02CA-B9F7-8F30A301B230)
+      switch_to_layout "built-in" "$space" stack
+      ;;
+    D5FC8913-9F25-4530-99D8-ACB6D74C7BD6)
+      switch_to_layout "external" "$space" bsp
+      ;;
+    *)
+      switch_to_layout "other" "$space" bsp
+      ;;
+    esac
+  done
 done
