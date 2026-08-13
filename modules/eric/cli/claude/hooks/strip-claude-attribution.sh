@@ -12,9 +12,9 @@ printf '%s' "$HOOK_COMMAND" | rg -q '\bgit commit|\bgh pr (create|edit)' || exit
 printf '%s' "$HOOK_COMMAND" | rg -qi '(co-authored-by|assisted-by):.*(claude|anthropic)|generated with.*claude|claude-session:' || exit 0
 
 stripped=$(printf '%s' "$HOOK_COMMAND" | jq -Rrs '
-  gsub("[^\n\"]*([Cc]o-[Aa]uthored-[Bb]y|[Aa]ssisted-[Bb]y):[^\n\"]*([Cc]laude|[Aa]nthropic)[^\n\"]*\n?"; "")
-  | gsub("[^\n\"]*[Gg]enerated with[^\n\"]*[Cc]laude[^\n\"]*\n?"; "")
-  | gsub("[^\n\"]*[Cc]laude-[Ss]ession:[^\n\"]*\n?"; "")
+  gsub("[^\n\"\u0027]*(co-authored-by|assisted-by):[^\n\"\u0027]*(claude|anthropic)[^\n\"\u0027]*\n?"; ""; "i")
+  | gsub("[^\n\"\u0027]*generated with[^\n\"\u0027]*claude[^\n\"\u0027]*\n?"; ""; "i")
+  | gsub("[^\n\"\u0027]*claude-session:[^\n\"\u0027]*\n?"; ""; "i")
 ')
 
 hook_update_command "$stripped"

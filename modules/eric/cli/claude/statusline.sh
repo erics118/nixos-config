@@ -4,12 +4,27 @@ set -uo pipefail
 
 input=$(cat)
 
-cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // empty')
-model=$(echo "$input" | jq -r '.model.display_name // empty')
-effort=$(echo "$input" | jq -r '.effort.level // empty')
-used_pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
-five_hour=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
-seven_day=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
+# one jq pass; newline-delimited + mapfile preserves empty fields
+# (read with a tab IFS would collapse leading/consecutive empties)
+mapfile -t f < <(
+  jq -r '.workspace.current_dir // .cwd // "",
+         .model.display_name // "",
+         .effort.level // "",
+         .context_window.used_percentage // "",
+         .rate_limits.five_hour.used_percentage // "",
+         .rate_limits.seven_day.used_percentage // "",
+         .rate_limits.seven_day_opus.used_percentage // "",
+         .rate_limits.seven_day_sonnet.used_percentage // "",
+         .rate_limits.fable.used_percentage // "",
+         (.rate_limits.seven_day.resets_at // null
+          | if type == "number" then . - now
+            elif type == "string" then (try (((.[0:19] + "Z") | fromdateiso8601) - now) catch null)
+            else null end
+          | if . == null then "" else floor end)' <<<"$input"
+)
+cwd=${f[0]} model=${f[1]} effort=${f[2]} used_pct=${f[3]}
+five_hour=${f[4]} seven_day=${f[5]} seven_day_opus=${f[6]} seven_day_sonnet=${f[7]} fable=${f[8]}
+reset_secs=${f[9]}
 
 # catppuccin mocha (truecolor), matching starship.toml palette
 SEP=$'\033[38;2;69;71;90m'       # surface1, pill separators
@@ -35,6 +50,13 @@ color_for() {
   else printf '%s' "$GREEN"; fi
 }
 
+# true when a usage percentage exceeds 70 (per-model buckets only surface when high)
+hot() {
+  [[ $1 =~ ^[0-9.]+$ ]] || return 1
+  local p=${1%%.*}
+  [ "${p:-0}" -gt 70 ]
+}
+
 # shorten home to ~
 [ -n "$cwd" ] && cwd="${cwd/#"$HOME"/\~}"
 
@@ -43,15 +65,10 @@ segs=()
 # directory
 [ -n "$cwd" ] && segs+=("${TEAL}${cwd}${RESET}")
 
-# user @ hostname (hostname only over ssh, matching starship)
-user=${USER:-$(id -un 2>/dev/null)}
-if [ -n "$user" ]; then
-  host=""
-  if [ -n "${SSH_CONNECTION:-}${SSH_TTY:-}" ]; then
-    h=${HOSTNAME:-$(hostname 2>/dev/null)}
-    host="@${h%%.*}"
-  fi
-  segs+=("${YELLOW}${user}${host}${RESET}")
+# hostname, only over ssh (matching starship)
+if [ -n "${SSH_CONNECTION:-}${SSH_TTY:-}" ]; then
+  h=${HOSTNAME:-$(hostname 2>/dev/null)}
+  [ -n "$h" ] && segs+=("${YELLOW}${h%%.*}${RESET}")
 fi
 
 # git: branch + status (modified ~, untracked +, ahead ↑ / behind ↓ / diverged ↕, no counts)
@@ -94,6 +111,18 @@ usage=""
 [[ $used_pct =~ ^[0-9.]+$ ]] && usage=$(printf '%sctx:%s%.0f%%%s' "$DIM" "$(color_for "$used_pct")" "$used_pct" "$RESET")
 [[ $five_hour =~ ^[0-9.]+$ ]] && usage="${usage:+$usage }$(printf '%s5h:%s%.0f%%%s' "$DIM" "$(color_for "$five_hour")" "$five_hour" "$RESET")"
 [[ $seven_day =~ ^[0-9.]+$ ]] && usage="${usage:+$usage }$(printf '%s7d:%s%.0f%%%s' "$DIM" "$(color_for "$seven_day")" "$seven_day" "$RESET")"
+hot "$seven_day_opus" && usage="${usage:+$usage }$(printf '%sopus:%s%.0f%%%s' "$DIM" "$(color_for "$seven_day_opus")" "$seven_day_opus" "$RESET")"
+hot "$seven_day_sonnet" && usage="${usage:+$usage }$(printf '%ssonnet:%s%.0f%%%s' "$DIM" "$(color_for "$seven_day_sonnet")" "$seven_day_sonnet" "$RESET")"
+hot "$fable" && usage="${usage:+$usage }$(printf '%sfable:%s%.0f%%%s' "$DIM" "$(color_for "$fable")" "$fable" "$RESET")"
+# resets: hours when <= 1 day out, else days (integer ceil)
+if [[ $reset_secs =~ ^[0-9]+$ ]] && [ "$reset_secs" -ge 1 ]; then
+  if [ "$reset_secs" -le 86400 ]; then
+    reset_label="$(((reset_secs + 3599) / 3600))h"
+  else
+    reset_label="$(((reset_secs + 86399) / 86400))d"
+  fi
+  usage="${usage:+$usage }$(printf '%s(resets %s)%s' "$DIM" "$reset_label" "$RESET")"
+fi
 [ -n "$usage" ] && segs+=("${usage}")
 
 # assemble: seg├┤seg├┤...

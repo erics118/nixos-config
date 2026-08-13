@@ -9,9 +9,10 @@
 
 ## Comment Style
 
-- Comment only what the code cannot show, and default to none
+- Comment only durable state the code cannot show, and default to none. Never the process or conversation that produced it (no "we decided", "the user asked", "as discussed", "temporary until"). It must read the same to someone who never saw this session.
 - One line is best, but two or three are fine when the point needs it
-- Never over-explain, and never force separate thoughts onto one line with punctuation
+- Never over-explain
+- One comment line states one thought. When you need two thoughts, use two lines. Never merge separate thoughts with a semicolon or comma splice. Trimming a comment means fewer words, not cramming more thoughts onto one line.
 - No summary or rationale block atop a file, function, namespace, or section
 - Put a comment on its own line, not trailing after code
 - Comments should be lowercase, minimal punctuation, no trailing periods

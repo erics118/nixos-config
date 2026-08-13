@@ -2,7 +2,6 @@
 name: audit
 description: Read-only survey of existing code for tech debt and modernization, prioritized by pain-to-effort
 argument-hint: [empty for entire repo | area | "diff" for uncommitted changes ] [+ "debt" or "idioms" to narrow]
-disable-model-invocation: true
 ---
 
 Survey existing code and report what is worth improving. Read-only audit, solo personal
