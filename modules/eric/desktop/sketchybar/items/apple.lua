@@ -39,7 +39,6 @@ local function toggle_zen()
         sbar.set("/cpu\\..*/", { drawing = switch })
         sbar.set("battery", { drawing = switch })
         sbar.set("calendar", { icon = { drawing = switch } })
-        -- sbar.set("/media.*/", { drawing = switch })
         sbar.set("weather", { drawing = switch })
 
         sbar.set("/space\\..*/", { background = { drawing = switch }, label = { drawing = switch } })
@@ -54,9 +53,6 @@ apple:subscribe("toggle_zen", function(env)
     toggle_zen()
 end)
 
--- local a = 0
--- local paused = false
-
 apple:subscribe("mouse.clicked", function(env)
     if env.BUTTON == "left" then
         toggle_zen()
@@ -65,40 +61,3 @@ apple:subscribe("mouse.clicked", function(env)
         sbar.trigger("swap_menus_and_spaces", { direction = 1 })
     end
 end)
-
--- apple:subscribe("mouse.scrolled", function(env)
---     if sbar.get_mode() == "zen" then
---         return
---     end
-
---     local delta = tonumber(env.SCROLL_DELTA) or 0
---     a = a + math.abs(delta)
-
---     print(delta, a, paused)
-
---     if a > 20 and not paused then
---         a = -10000
---         paused = true
---         sbar.trigger("swap_menus_and_spaces", { direction = delta < 0 and 1 or -1 })
---     end
--- end)
-
---[[
-   -- logic
-
-    -- if encounter a >= 20, then scroll once
-    -- then set paused to true, until we encounter a abs(delta) <= 2
-    -- then, set paused to false
-
-    if paused and math.abs(delta) <= 2 then
-        print("unpaused")
-        paused = false
-    end
-
-    if a >= 20 and not paused then
-        print("scrolled, paused")
-        sbar.trigger("swap_menus_and_spaces", { direction = delta < 0 and 1 or -1 })
-        paused = true
-    end
-
---]]

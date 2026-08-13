@@ -1,6 +1,6 @@
 local set_padding = function(options)
-    options.padding_left = options.padding_left or 3
-    options.padding_right = options.padding_right or 3
+    options.padding_left = options.padding_left or settings.outer_padding
+    options.padding_right = options.padding_right or settings.outer_padding
     return options
 end
 
@@ -13,11 +13,11 @@ sbar.add_label_item = function(name, options)
     options.label = options.label or {}
 
     if options.label.padding_left == nil then
-        options.label.padding_left = 7
+        options.label.padding_left = settings.inside_background_padding
     end
 
     if options.label.padding_right == nil then
-        options.label.padding_right = 7
+        options.label.padding_right = settings.inside_background_padding
     end
 
     local item = sbar.add("item", name, options)
@@ -33,11 +33,11 @@ sbar.add_icon_item = function(name, options)
     options.icon = options.icon or {}
 
     if options.icon.padding_left == nil then
-        options.icon.padding_left = 7
+        options.icon.padding_left = settings.inside_background_padding
     end
 
     if options.icon.padding_right == nil then
-        options.icon.padding_right = 7
+        options.icon.padding_right = settings.inside_background_padding
     end
 
     local item = sbar.add("item", name, options)

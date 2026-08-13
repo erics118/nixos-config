@@ -1,8 +1,6 @@
 local wezterm = require("wezterm")
 
-local c = {}
-
-c = wezterm.config_builder()
+local c = wezterm.config_builder()
 c:set_strict_mode(true)
 
 require("keys").apply_to_config(c)
@@ -88,7 +86,7 @@ c.inactive_pane_hsb = {
 -- c.animation_fps = 60
 
 -- etc.
-c.window_close_confirmation = "NeverPrompt"
+-- c.window_close_confirmation = "NeverPrompt"
 
 c.adjust_window_size_when_changing_font_size = false
 c.exit_behavior = "Close"
@@ -139,7 +137,7 @@ require("bar").apply_to_config(c, {
     },
 })
 
-wezterm.on("format-window-title", function(tab, pane, tabs, panes, config)
+wezterm.on("format-window-title", function(tab)
     local workspace = wezterm.mux.get_active_workspace()
     local prefix = workspace ~= "default" and "[" .. workspace .. "] " or ""
     return prefix .. tab.active_pane.title

@@ -65,7 +65,6 @@ local function apply_to_space_items(conf)
     sbar.set("/space\\..*/", conf)
     sbar.set("yabai", conf)
     sbar.set("front_app", conf)
-    -- sbar.set("/media.*/", conf)
 end
 
 local function apply_to_menu_items(conf)

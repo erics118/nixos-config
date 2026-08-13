@@ -1,7 +1,7 @@
 local weather = sbar.add_item("weather", {
     icon = {
         font = {
-            family = "Hack Nerd Font Propo",
+            family = "SF Pro",
             style = "Regular",
             size = 13.0,
         },
@@ -18,7 +18,7 @@ local function add_weather_item(name, icon)
         icon = {
             string = icon,
             font = {
-                family = "Hack Nerd Font Propo",
+                family = "SF Pro",
                 style = "Regular",
                 size = 13.0,
             },
@@ -29,16 +29,16 @@ local function add_weather_item(name, icon)
     })
 end
 
-local weather_condition = add_weather_item("condition", "")
-local weather_feels_like = add_weather_item("feels_like", "󰔏")
-local weather_low = add_weather_item("low", "󱃃")
-local weather_high = add_weather_item("high", "󱃂")
-local weather_humidity = add_weather_item("humidity", "")
-local weather_precipitation = add_weather_item("precipitation", "󰖗")
-local weather_wind = add_weather_item("wind", "")
-local weather_aqi = add_weather_item("aqi", "󰵃")
-local weather_sunrise = add_weather_item("sunrise", "")
-local weather_sunset = add_weather_item("sunset", "")
+local weather_condition = add_weather_item("condition", "􀆭")
+local weather_feels_like = add_weather_item("feels_like", "􀇬")
+local weather_low = add_weather_item("low", "􀇫")
+local weather_high = add_weather_item("high", "􀇪")
+local weather_humidity = add_weather_item("humidity", "􁃛")
+local weather_precipitation = add_weather_item("precipitation", "􀠒")
+local weather_wind = add_weather_item("wind", "􀇤")
+local weather_aqi = add_weather_item("aqi", "􀇮")
+local weather_sunrise = add_weather_item("sunrise", "􀆱")
+local weather_sunset = add_weather_item("sunset", "􀆳")
 
 weather:subscribe("mouse.clicked", function(env)
     weather:set({ popup = { drawing = "toggle" } })
@@ -70,21 +70,21 @@ local function degrees_to_direction(degrees)
 
     -- Calculate the cardinal direction
     if (degrees >= 0 and degrees < 22.5) or (degrees >= 337.5 and degrees <= 360) then
-        return "󱦲" -- N
+        return "􀄨" -- N
     elseif degrees >= 22.5 and degrees < 67.5 then
-        return "󱦴" -- NE
+        return "􀄯" -- NE
     elseif degrees >= 67.5 and degrees < 112.5 then
-        return "󱦰" -- E
+        return "􀄫" -- E
     elseif degrees >= 112.5 and degrees < 157.5 then
-        return "󱦷" -- SE
+        return "􀄱" -- SE
     elseif degrees >= 157.5 and degrees < 202.5 then
-        return "󱦳" -- S
+        return "􀄩" -- S
     elseif degrees >= 202.5 and degrees < 247.5 then
-        return "󱦶" -- SW
+        return "􀄰" -- SW
     elseif degrees >= 247.5 and degrees < 292.5 then
-        return "󱦱" -- W
+        return "􀄪" -- W
     elseif degrees >= 292.5 and degrees < 337.5 then
-        return "󱦵" -- NW
+        return "􀄮" -- NW
     else
         return "?"
     end
@@ -101,147 +101,149 @@ local function round_temperature(temperature)
 end
 
 local weather_icons_day = {
-    sunny = "",
-    ["partly cloudy"] = "",
-    cloudy = "",
-    overcast = "",
-    mist = "",
-    ["patchy rain possible"] = "",
-    ["patchy snow possible"] = "",
-    ["patchy sleet possible"] = "",
-    ["patchy freezing drizzle possible"] = "",
-    ["thundery outbreaks possible"] = "",
-    ["blowing snow"] = "",
-    blizzard = "",
-    fog = "",
-    ["freezing fog"] = "",
-    ["patchy light drizzle"] = "",
-    ["light drizzle"] = "",
-    ["freezing drizzle"] = "",
-    ["heavy freezing drizzle"] = "",
-    ["patchy light rain"] = "",
-    ["light rain"] = "",
-    ["moderate rain at times"] = "",
-    ["moderate rain"] = "",
-    ["heavy rain at times"] = "",
-    ["heavy rain"] = "",
-    ["light freezing rain"] = "",
-    ["moderate or heavy freezing rain"] = "",
-    ["light sleet"] = "",
-    ["moderate or heavy sleet"] = "",
-    ["patchy light snow"] = "",
-    ["light snow"] = "",
-    ["patchy moderate snow"] = "",
-    ["moderate snow"] = "",
-    ["patchy heavy snow"] = "",
-    ["heavy snow"] = "",
-    ["ice pellets"] = "",
-    ["light rain shower"] = "",
-    ["moderate or heavy rain shower"] = "",
-    ["torrential rain shower"] = "",
-    ["light sleet showers"] = "",
-    ["moderate or heavy sleet showers"] = "",
-    ["light snow showers"] = "",
-    ["moderate or heavy snow showers"] = "",
-    ["light showers of ice pellets"] = "",
-    ["moderate or heavy showers of ice pellets"] = "",
-    ["patchy light rain with thunder"] = "",
-    ["moderate or heavy rain with thunder"] = "",
-    ["patchy light snow with thunder"] = "",
-    ["moderate or heavy snow with thunder"] = "",
-    ["patchy rain nearby"] = "",
-    ["patchy snow nearby"] = "",
-    ["patchy sleet nearby"] = "",
-    ["patchy freezing drizzle nearby"] = "",
-    ["thundery outbreaks in nearby"] = "",
-    ["patchy light rain in area with thunder"] = "",
-    ["patchy light snow in area with thunder"] = "",
-    ["moderate or heavy rain in area with thunder"] = "",
-    ["moderate or heavy snow in area with thunder"] = "",
-    ["dust"] = "",
-    ["blowing dust"] = "",
-    ["dust storm"] = "",
-    ["saharan dust"] = "",
-    ["dust haze"] = "",
-    ["haze"] = "",
-    ["smoky haze"] = "",
-    ["smoke"] = "",
-    ["smog"] = "",
-    ["severe smog"] = "",
-    ["sandstorm"] = "",
-    ["severe sandstorm"] = "",
+    sunny = "􀆭",
+    clear = "􀆭",
+    ["partly cloudy"] = "􀇔",
+    cloudy = "􀇂",
+    overcast = "􀇃",
+    mist = "􀇊",
+    ["patchy rain possible"] = "􀇄",
+    ["patchy snow possible"] = "􀇎",
+    ["patchy sleet possible"] = "􀇐",
+    ["patchy freezing drizzle possible"] = "􀇐",
+    ["thundery outbreaks possible"] = "􀇘",
+    ["blowing snow"] = "􀇦",
+    blizzard = "􀇦",
+    fog = "􀇊",
+    ["freezing fog"] = "􀇊",
+    ["patchy light drizzle"] = "􀇄",
+    ["light drizzle"] = "􀇄",
+    ["freezing drizzle"] = "􀇐",
+    ["heavy freezing drizzle"] = "􀇐",
+    ["patchy light rain"] = "􀇖",
+    ["light rain"] = "􀇖",
+    ["moderate rain at times"] = "􀇖",
+    ["moderate rain"] = "􀇖",
+    ["heavy rain at times"] = "􀇈",
+    ["heavy rain"] = "􀇈",
+    ["light freezing rain"] = "􀇐",
+    ["moderate or heavy freezing rain"] = "􀇐",
+    ["light sleet"] = "􀇐",
+    ["moderate or heavy sleet"] = "􀇐",
+    ["patchy light snow"] = "􀇎",
+    ["light snow"] = "􀇎",
+    ["patchy moderate snow"] = "􀇎",
+    ["moderate snow"] = "􀇎",
+    ["patchy heavy snow"] = "􀇎",
+    ["heavy snow"] = "􀇎",
+    ["ice pellets"] = "􀇌",
+    ["light rain shower"] = "􀇖",
+    ["moderate or heavy rain shower"] = "􀇈",
+    ["torrential rain shower"] = "􀇈",
+    ["light sleet showers"] = "􀇐",
+    ["moderate or heavy sleet showers"] = "􀇐",
+    ["light snow showers"] = "􀇎",
+    ["moderate or heavy snow showers"] = "􀇎",
+    ["light showers of ice pellets"] = "􀇌",
+    ["moderate or heavy showers of ice pellets"] = "􀇌",
+    ["patchy light rain with thunder"] = "􀇠",
+    ["moderate or heavy rain with thunder"] = "􀇠",
+    ["patchy light snow with thunder"] = "􀇠",
+    ["moderate or heavy snow with thunder"] = "􀇠",
+    ["patchy rain nearby"] = "􀇄",
+    ["patchy snow nearby"] = "􀇎",
+    ["patchy sleet nearby"] = "􀇐",
+    ["patchy freezing drizzle nearby"] = "􀇐",
+    ["thundery outbreaks in nearby"] = "􀇘",
+    ["patchy light rain in area with thunder"] = "􀇠",
+    ["patchy light snow in area with thunder"] = "􀇠",
+    ["moderate or heavy rain in area with thunder"] = "􀇠",
+    ["moderate or heavy snow in area with thunder"] = "􀇠",
+    dust = "􀆵",
+    ["blowing dust"] = "􀆵",
+    ["dust storm"] = "􀆵",
+    ["saharan dust"] = "􀆵",
+    ["dust haze"] = "􀆵",
+    haze = "􀆷",
+    ["smoky haze"] = "􀇢",
+    smoke = "􀇢",
+    smog = "􀇢",
+    ["severe smog"] = "􀇢",
+    sandstorm = "􀆵",
+    ["severe sandstorm"] = "􀆵",
 }
 
 local weather_icons_night = {
-    clear = "",
-    ["partly cloudy"] = "",
-    cloudy = "",
-    overcast = "",
-    mist = "",
-    ["patchy rain possible"] = "",
-    ["patchy snow possible"] = "",
-    ["patchy sleet possible"] = "",
-    ["patchy freezing drizzle possible"] = "",
-    ["thundery outbreaks possible"] = "",
-    ["blowing snow"] = "",
-    blizzard = "",
-    fog = "",
-    ["freezing fog"] = "",
-    ["patchy light drizzle"] = "",
-    ["light drizzle"] = "",
-    ["freezing drizzle"] = "",
-    ["heavy freezing drizzle"] = "",
-    ["patchy light rain"] = "",
-    ["light rain"] = "",
-    ["moderate rain at times"] = "",
-    ["moderate rain"] = "",
-    ["heavy rain at times"] = "",
-    ["heavy rain"] = "",
-    ["light freezing rain"] = "",
-    ["moderate or heavy freezing rain"] = "",
-    ["light sleet"] = "",
-    ["moderate or heavy sleet"] = "",
-    ["patchy light snow"] = "",
-    ["light snow"] = "",
-    ["patchy moderate snow"] = "",
-    ["moderate snow"] = "",
-    ["patchy heavy snow"] = "",
-    ["heavy snow"] = "",
-    ["ice pellets"] = "",
-    ["light rain shower"] = "",
-    ["moderate or heavy rain shower"] = "",
-    ["torrential rain shower"] = "",
-    ["light sleet showers"] = "",
-    ["moderate or heavy sleet showers"] = "",
-    ["light snow showers"] = "",
-    ["moderate or heavy snow showers"] = "",
-    ["light showers of ice pellets"] = "",
-    ["moderate or heavy showers of ice pellets"] = "",
-    ["patchy light rain with thunder"] = "",
-    ["moderate or heavy rain with thunder"] = "",
-    ["patchy light snow with thunder"] = "",
-    ["moderate or heavy snow with thunder"] = "",
-    ["patchy rain nearby"] = "",
-    ["patchy snow nearby"] = "",
-    ["patchy sleet nearby"] = "",
-    ["patchy freezing drizzle nearby"] = "",
-    ["thundery outbreaks in nearby"] = "",
-    ["patchy light rain in area with thunder"] = "",
-    ["patchy light snow in area with thunder"] = "",
-    ["moderate or heavy rain in area with thunder"] = "",
-    ["moderate or heavy snow in area with thunder"] = "",
-    ["dust"] = "",
-    ["blowing dust"] = "",
-    ["dust storm"] = "",
-    ["saharan dust"] = "",
-    ["dust haze"] = "",
-    ["haze"] = "",
-    ["smoky haze"] = "",
-    ["smoke"] = "",
-    ["smog"] = "",
-    ["severe smog"] = "",
-    ["sandstorm"] = "",
-    ["severe sandstorm"] = "",
+    clear = "􀇀",
+    sunny = "􀇀",
+    ["partly cloudy"] = "􀇚",
+    cloudy = "􀇂",
+    overcast = "􀇃",
+    mist = "􀇊",
+    ["patchy rain possible"] = "􀇄",
+    ["patchy snow possible"] = "􀇎",
+    ["patchy sleet possible"] = "􀇐",
+    ["patchy freezing drizzle possible"] = "􀇐",
+    ["thundery outbreaks possible"] = "􀇞",
+    ["blowing snow"] = "􀇦",
+    blizzard = "􀇦",
+    fog = "􀇊",
+    ["freezing fog"] = "􀇊",
+    ["patchy light drizzle"] = "􀇄",
+    ["light drizzle"] = "􀇄",
+    ["freezing drizzle"] = "􀇐",
+    ["heavy freezing drizzle"] = "􀇐",
+    ["patchy light rain"] = "􀇜",
+    ["light rain"] = "􀇜",
+    ["moderate rain at times"] = "􀇜",
+    ["moderate rain"] = "􀇜",
+    ["heavy rain at times"] = "􀇈",
+    ["heavy rain"] = "􀇈",
+    ["light freezing rain"] = "􀇐",
+    ["moderate or heavy freezing rain"] = "􀇐",
+    ["light sleet"] = "􀇐",
+    ["moderate or heavy sleet"] = "􀇐",
+    ["patchy light snow"] = "􀇎",
+    ["light snow"] = "􀇎",
+    ["patchy moderate snow"] = "􀇎",
+    ["moderate snow"] = "􀇎",
+    ["patchy heavy snow"] = "􀇎",
+    ["heavy snow"] = "􀇎",
+    ["ice pellets"] = "􀇌",
+    ["light rain shower"] = "􀇜",
+    ["moderate or heavy rain shower"] = "􀇈",
+    ["torrential rain shower"] = "􀇈",
+    ["light sleet showers"] = "􀇐",
+    ["moderate or heavy sleet showers"] = "􀇐",
+    ["light snow showers"] = "􀇎",
+    ["moderate or heavy snow showers"] = "􀇎",
+    ["light showers of ice pellets"] = "􀇌",
+    ["moderate or heavy showers of ice pellets"] = "􀇌",
+    ["patchy light rain with thunder"] = "􀇠",
+    ["moderate or heavy rain with thunder"] = "􀇠",
+    ["patchy light snow with thunder"] = "􀇠",
+    ["moderate or heavy snow with thunder"] = "􀇠",
+    ["patchy rain nearby"] = "􀇄",
+    ["patchy snow nearby"] = "􀇎",
+    ["patchy sleet nearby"] = "􀇐",
+    ["patchy freezing drizzle nearby"] = "􀇐",
+    ["thundery outbreaks in nearby"] = "􀇞",
+    ["patchy light rain in area with thunder"] = "􀇠",
+    ["patchy light snow in area with thunder"] = "􀇠",
+    ["moderate or heavy rain in area with thunder"] = "􀇠",
+    ["moderate or heavy snow in area with thunder"] = "􀇠",
+    dust = "􀇊",
+    ["blowing dust"] = "􀇊",
+    ["dust storm"] = "􀇊",
+    ["saharan dust"] = "􀇊",
+    ["dust haze"] = "􀇊",
+    haze = "􀇊",
+    ["smoky haze"] = "􀇢",
+    smoke = "􀇢",
+    smog = "􀇢",
+    ["severe smog"] = "􀇢",
+    sandstorm = "􀇊",
+    ["severe sandstorm"] = "􀇊",
 }
 
 local function get_condition_icon(condition, is_day)
@@ -282,28 +284,30 @@ local function set_uv_index_color(uv_index)
     end
 end
 
-local function set_air_quality_color(air_quality_index)
-    if air_quality_index < 51 then
-        return colors.green, "Good"
-    elseif air_quality_index < 101 then
-        return colors.yellow, "Moderate"
-    elseif air_quality_index < 151 then
-        return colors.orange, "Unhealthy for Sensitive Groups"
-    elseif air_quality_index < 201 then
-        return colors.red, "Unhealthy"
-    elseif air_quality_index < 301 then
-        return colors.purple, "Very Unhealthy"
+local function set_air_quality_color(epa_index)
+    if epa_index == 1 then
+        return colors.green, "Good", "􀇭"
+    elseif epa_index == 2 then
+        return colors.yellow, "Moderate", "􀇭"
+    elseif epa_index == 3 then
+        return colors.orange, "Unhealthy for Sensitive Groups", "􀇮"
+    elseif epa_index == 4 then
+        return colors.red, "Unhealthy", "􀇮"
+    elseif epa_index == 5 then
+        return colors.purple, "Very Unhealthy", "􀇯"
+    elseif epa_index == 6 then
+        return colors.purple, "Hazardous", "􀇯"
     else
-        return colors.purple, "Hazardous"
+        return colors.text, "Unknown", "􀇮"
     end
 end
 
 local function set_weather_unavailable(message)
     weather:set({
-        icon = { string = "􀇔" },
+        icon = { string = "􀇾" },
         label = { string = message or "N/A" },
     })
-    weather_condition:set({ icon = { string = "􀇔" }, label = { string = message or "Unavailable" } })
+    weather_condition:set({ icon = { string = "􀇾" }, label = { string = message or "Unavailable" } })
     weather_feels_like:set({ label = { string = "Feels Like: --" } })
     weather_low:set({ label = { string = "Low: --" } })
     weather_high:set({ label = { string = "High: --" } })
@@ -379,7 +383,7 @@ local function update_weather()
             local high = round_temperature(day["maxtemp_" .. temperature_unit])
             local condition = (condition_data.text or "Unavailable"):lower()
             local is_day = current.is_day == 1
-            local icon = get_condition_icon(condition, is_day) or "􀇔"
+            local icon = get_condition_icon(condition, is_day) or "􀇾"
             local precipitation_amount =
                 format_number(current["precip_" .. precipitation_amount_unit], " " .. precipitation_amount_unit)
             local wind_direction = current.wind_degree and degrees_to_direction(current.wind_degree) or "?"
@@ -392,7 +396,7 @@ local function update_weather()
             local sunset = astro.sunset or "--"
             local air_quality = current.air_quality or {}
             local air_quality_index = air_quality["us-epa-index"] or 0
-            local air_quality_color, air_quality_category = set_air_quality_color(air_quality_index)
+            local air_quality_color, air_quality_category, air_quality_icon = set_air_quality_color(air_quality_index)
 
             weather:set({
                 icon = {
@@ -412,7 +416,7 @@ local function update_weather()
             weather_wind:set({ label = { string = "Wind: " .. wind_direction .. " " .. wind_speed } })
             weather_aqi:set({
                 label = { string = "AQI: " .. air_quality_index .. " " .. air_quality_category },
-                icon = { color = air_quality_color },
+                icon = { string = air_quality_icon, color = air_quality_color },
             })
             weather_sunrise:set({ label = { string = "Sunrise: " .. sunrise } })
             weather_sunset:set({ label = { string = "Sunset: " .. sunset } })

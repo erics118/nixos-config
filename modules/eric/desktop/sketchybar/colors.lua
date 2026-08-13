@@ -72,31 +72,3 @@ setmetatable(colors, {
 })
 
 return colors
-
---[[
-local old_ctp = {
-    red = 0xffe37d96,
-    orange = 0xffe6996a,
-    yellow = 0xffebca52,
-    green = 0xff87e088,
-    blue = 0xff74c7ec,
-    purple = 0xffc89eff,
-    white = 0xffe2e2e3,
-    grey = 0xff6d717c,
-    black = 0xff181819,
-
-    transparent = 0x00000000,
-
-    bar_color = 0xff000000,
-
-    item = {
-        bg = 0xff000000,
-        border = 0xff3d3d3d,
-    },
-
-    popup = {
-        bg = 0xff2c2e34,
-        border = 0xff7f8490,
-    }
-}
---]]

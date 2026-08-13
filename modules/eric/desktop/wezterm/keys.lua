@@ -37,14 +37,14 @@ local openUrl = act.QuickSelectArgs({
 })
 
 map("a", "LEADER", act.AttachDomain("unix"))
-map("d", "LEADER", act.DetachDomain({ DomainName = "unix" }))
-map("s", "LEADER", act.SpawnTab({ DomainName = "squid" }))
-map("n", "LEADER", act.SpawnTab({ DomainName = "narwhal" }))
+-- map("d", "LEADER", act.DetachDomain({ DomainName = "unix" }))
+-- map("s", "LEADER", act.SpawnTab({ DomainName = "squid" }))
+-- map("n", "LEADER", act.SpawnTab({ DomainName = "narwhal" }))
 -- map("w", "LEADER", act.ShowLauncherArgs { flags = 'WORKSPACES' })
 
 -- use 'Backslash' to split horizontally
 map("\\", "LEADER", act.SplitHorizontal({ domain = "CurrentPaneDomain" }))
--- and 'Minus' to split vertically
+-- and 'Equals' to split vertically
 map("=", "LEADER", act.SplitVertical({ domain = "CurrentPaneDomain" }))
 map(
     "+",
@@ -68,11 +68,10 @@ map(
 for i = 1, 9 do
     map(tostring(i), { "LEADER", MOD }, act.ActivateTab(i - 1))
 end
-map("e", { "SHIFT|CTRL" }, act.SpawnCommandInNewTab({ args = { "C:\\WINDOWS\\system32\\wsl.exe" } }))
 map("0", { "LEADER" }, act.ActivateTab(-1))
 -- 'hjkl' to move between panes
 map("h", { "LEADER" }, act.ActivatePaneDirection("Left"))
--- map("j", { "LEADER"}, act.ActivatePaneDirection("Down"))
+map("j", { "LEADER" }, act.ActivatePaneDirection("Down"))
 map("k", { "LEADER" }, act.ActivatePaneDirection("Up"))
 map("l", { "LEADER" }, act.ActivatePaneDirection("Right"))
 -- resize
@@ -199,7 +198,7 @@ M.apply_to_config = function(c)
             action = act.CompleteSelectionOrOpenLinkAtMouseCursor("ClipboardAndPrimarySelection"),
         },
 
-        -- enable normal click to open link (inside tmux)
+        -- enable super+click to open link (inside tmux)
         {
             event = { Up = { streak = 1, button = "Left" } },
             mods = "SUPER",

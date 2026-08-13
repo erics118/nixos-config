@@ -9,8 +9,8 @@ sbar.default({
             typographical_width = true,
         },
         color = colors.text,
-        padding_left = 7,
-        padding_right = 3,
+        padding_left = settings.inside_background_padding,
+        padding_right = settings.between_icon_label_padding,
         background = { image = { corner_radius = 9 } },
     },
     label = {
@@ -21,8 +21,8 @@ sbar.default({
             typographical_width = true,
         },
         color = colors.text,
-        padding_left = 3,
-        padding_right = 7,
+        padding_left = settings.between_icon_label_padding,
+        padding_right = settings.inside_background_padding,
     },
     background = {
         padding_left = 0,
@@ -49,7 +49,7 @@ sbar.default({
         },
         blur_radius = 50,
     },
-    padding_left = 3,
-    padding_right = 3,
+    padding_left = settings.outer_padding,
+    padding_right = settings.outer_padding,
     scroll_texts = true,
 })

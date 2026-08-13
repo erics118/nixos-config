@@ -77,37 +77,6 @@ local space_window_observer = sbar.add_item("space_window_observer", {
     updates = true,
 })
 
--- local spaces_indicator = sbar.add_item("spaces_indicator", {
---     padding_left = 3,
---     padding_right = 0,
---     icon = {
---         padding_left = 8,
---         padding_right = 9,
---         color = colors.grey,
---         string = icons.switch.on,
---     },
---     label = {
---         width = 0,
---         padding_left = 0,
---         padding_right = 8,
---         string = "Spaces",
---         color = colors.item.bg,
---     },
---     background = {
---         color = colors.with_alpha(colors.grey, 0.0),
---         border_color = colors.with_alpha(colors.item.bg, 0.0),
---     },
--- })
-
-local function has_value(tab, val)
-    for index, value in ipairs(tab) do
-        if value == val then
-            return true
-        end
-    end
-    return false
-end
-
 local window_query = [[
 yabai -m query --windows space,title,app,is-sticky,stack-index,is-hidden 2>/dev/null | jq '
   map(select((."is-sticky" or ."is-hidden" or (.title == "")) | not))
@@ -129,7 +98,7 @@ space_window_observer:subscribe({ "space_windows_change" }, function(env)
             local label = ""
 
             for _, app in ipairs(apps) do
-                if not has_value(settings.ignored_apps, app) then
+                if not settings.ignored_apps[app] then
                     local icon = app_icons[app] or app_icons["Default"]
                     label = label .. icon
                 end
@@ -143,33 +112,3 @@ space_window_observer:subscribe({ "space_windows_change" }, function(env)
         end
     end)
 end)
-
--- spaces_indicator:subscribe("mouse.entered", function(env)
---     sbar.animate("tanh", 20, function()
---         spaces_indicator:set({
---             background = {
---                 color = { alpha = 1.0 },
---                 border_color = { alpha = 1.0 },
---             },
---             icon = { color = colors.item.bg },
---             label = { width = "dynamic" }
---         })
---     end)
--- end)
---
--- spaces_indicator:subscribe("mouse.exited", function(env)
---     sbar.animate("tanh", 20, function()
---         spaces_indicator:set({
---             background = {
---                 color = { alpha = 0.0 },
---                 border_color = { alpha = 0.0 },
---             },
---             icon = { color = colors.grey },
---             label = { width = 0, }
---         })
---     end)
--- end)
---
--- spaces_indicator:subscribe("mouse.clicked", function(env)
---     sbar.trigger("swap_menus_and_spaces")
--- end)
