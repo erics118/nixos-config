@@ -25,15 +25,15 @@ add_newline = true
 
 follow_symlinks = false
 
-[directory.substitutions]
-".config" = " "
-"nixos-config" = " "
-"Desktop" = " "
-"Documents" = " "
-"Downloads" = " "
-"Music" = " "
-"Pictures" = " "
-"/dev/" = "/ /"
+# [directory.substitutions]
+# ".config" = " "
+# "nixos-config" = " "
+# "Desktop" = " "
+# "Documents" = " "
+# "Downloads" = " "
+# "Music" = " "
+# "Pictures" = " "
+# "/dev/" = "/ /"
 
 [shell]
 disabled = true

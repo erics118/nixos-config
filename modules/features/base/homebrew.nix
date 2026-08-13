@@ -11,12 +11,10 @@
 
       # we need to trust taps before we can use them
       trust = {
-        formulae = [
-          # "asmvik/formulae/yabai"
-        ];
+        formulae = [ ];
         casks = [ ];
         commands = [ ];
-        taps = [ "docker/tap" ];
+        taps = [ ];
       };
     };
 
@@ -33,7 +31,10 @@
 
       taps = [ ];
 
-      brews = [ "openssl" ];
+      brews = [
+        "openssl"
+        "cliclick"
+      ];
 
       casks = [ ];
 

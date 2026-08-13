@@ -20,7 +20,14 @@
         gui = {
           nerdFontsVersion = "3";
           filterMode = "fuzzy";
+          showRandomTip = false;
         };
+        git.pagers = [
+          {
+            colorArg = "always";
+            pager = "delta --paging=never";
+          }
+        ];
         update.method = "never";
       };
     };

@@ -109,7 +109,6 @@
           cp = "cp -i";
           rm = "rm -i";
 
-          t = "tmux";
           r = "rtmux";
           "?" = "ask";
 

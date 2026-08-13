@@ -40,6 +40,50 @@ hash -d n="$HOME/nixos-config"
 hash -d p="$HOME/nixos-config-private"
 hash -d d="$HOME/dev"
 
+t() {
+  case ${1:-main} in
+  --ls) tmux ls ;;
+  *) tmux new -A -s "${1:-main}" ;;
+  esac
+}
+
+# start/stop/restart launchd user agents by short name
+# resolves:
+#   ~/Library/LaunchAgents/<name>
+#   ~/Library/LaunchAgents/org.nixos.<name>
+#   ~/Library/LaunchAgents/*<name>*  (if unique)
+lctl() {
+  local cmd=$1 name=$2
+  if [[ -z $cmd || -z $name ]]; then
+    print -u2 "usage: lctl <start|stop|restart|status> <name>"
+    return 2
+  fi
+  local domain="gui/$(id -u)"
+  local dir="$HOME/Library/LaunchAgents"
+  local plist
+  if [[ -f $dir/$name.plist ]]; then
+    plist=$dir/$name.plist
+  elif [[ -f $dir/org.nixos.$name.plist ]]; then
+    plist=$dir/org.nixos.$name.plist
+  else
+    local matches=($dir/*$name*.plist(N))
+    if (( $#matches == 1 )); then
+      plist=$matches[1]
+    else
+      print -u2 "lctl: no unique agent matching '$name'"
+      return 1
+    fi
+  fi
+  local label=${${plist:t}:r}
+  case $cmd in
+  start) launchctl bootstrap $domain $plist ;;
+  stop) launchctl bootout $domain $plist ;;
+  restart) launchctl bootout $domain $plist 2>/dev/null; launchctl bootstrap $domain $plist ;;
+  status) launchctl print $domain/$label ;;
+  *) print -u2 "lctl: unknown command '$cmd'"; return 2 ;;
+  esac
+}
+
 clipboard-copy() {
   if (($+commands[pbcopy])) && [[ $(command -v pbcopy) != *shell_functions* ]]; then
     command pbcopy

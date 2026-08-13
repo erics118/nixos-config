@@ -25,6 +25,7 @@
       forceOverwriteSettings = true;
       settings = {
         enter_accept = true;
+        history_filter = [ "^\\?" ];
         filter_mode_shell_up_key_binding = "session";
         prefers_reduced_motion = true;
         records = true;

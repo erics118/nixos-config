@@ -46,6 +46,7 @@
           railway
           docker-sbx
           screen
+          blueutil
 
           # fonts
           nerd-fonts.hack
@@ -68,6 +69,10 @@
 
           # apps
           espanso
+        ]
+        ++ lib.optionals stdenv.hostPlatform.isLinux [
+          # sandboxing
+          bubblewrap
         ];
 
       sessionPath = [ "$HOME/.local/bin" ];

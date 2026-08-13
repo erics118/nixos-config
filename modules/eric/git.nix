@@ -61,6 +61,10 @@
             autoSetupRemote = true;
             autoSetupMerge = true;
           };
+          fetch.prune = true;
+          rerere.enabled = true;
+          rebase.autoStash = true;
+          diff.colorMoved = "zebra";
           commit.gpgsign = true;
           gpg = {
             format = "ssh";
@@ -84,6 +88,9 @@
         options = {
           navigate = true;
           dark = true;
+          syntax-theme = "Catppuccin Mocha";
+          line-numbers = true;
+          hyperlinks = true;
         };
       };
 
