@@ -46,7 +46,6 @@
           railway
           docker-sbx
           screen
-          blueutil
 
           # fonts
           nerd-fonts.hack
@@ -60,6 +59,7 @@
           glow
           serve
           terminal-notifier
+          blueutil
 
           # fonts
           sketchybar-app-font
