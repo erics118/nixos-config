@@ -1,25 +1,29 @@
 ---
 name: adversarial-review
 description: Red-team code or a plan from hostile angles (necessity, correctness, unconsidered breakage, consequences)
-argument-hint: [empty for uncommitted changes | file | area | plan] [--adversary codex]
+argument-hint: "[empty for uncommitted changes | file | area | plan] [--adversary]"
 disable-model-invocation: true
 ---
 
-Attack the target in $ARGUMENTS. View it from the lens that it is wrong and try to break it. This is an
-adversarial review, not a cooperative one: be blunt, do not soften, do not praise to
-balance. Read the real source or plan before judging, never from names alone.
+Attack the target supplied with the invocation. View it from the lens that it is wrong and
+try to break it. This is an adversarial review, not a cooperative one: be blunt, do not
+soften, do not praise to balance. Read the real source or plan before judging, never from
+names alone.
 
-Scope: default to the current working diff. If $ARGUMENTS names a file/dir/area or is a
-pasted plan or idea, review that instead. Strip any `--adversary` flag out of
-$ARGUMENTS before interpreting scope.
+Scope: default to the current working diff. If the invocation names a file/dir/area or
+includes a pasted plan or idea, review that instead. Strip the `--adversary` flag from the
+supplied text before interpreting scope.
 
-If `--adversary codex` is present, add codex as a second independent reviewer. Pass it the
+If `--adversary` is present, add the other agent as a second independent reviewer. Under
+Claude, use the `consulting-codex` skill. Under Codex, use the `consulting-claude` skill.
+If the matching consulting skill is unavailable or not implemented, say so and continue
+with the solo review rather than inventing invocation mechanics. Pass the other agent the
 same instruction block and scope; it is a different model on purpose.
 
 - Do your own pass first, exactly as below.
-- Use the `consulting-codex` skill for the mechanics.
-- Present codex's output verbatim under its own `## Codex` heading. Do not summarize,
-  soften, or reconcile away its findings, especially its verdict.
+- Use the matching consulting skill for the mechanics.
+- Present the other agent's output verbatim under a heading named for that agent. Do not
+  summarize, soften, or reconcile away its findings, especially its verdict.
 - After both passes, add a short `## Reconciliation`: where you agree (high confidence) and
   where you disagree (dig into why, do not just average). Keep every verdict intact.
 

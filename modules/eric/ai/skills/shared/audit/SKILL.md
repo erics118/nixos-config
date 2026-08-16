@@ -1,19 +1,19 @@
 ---
 name: audit
 description: Read-only survey of existing code for tech debt and modernization, prioritized by pain-to-effort
-argument-hint: [empty for entire repo | area | "diff" for uncommitted changes ] [+ "debt" or "idioms" to narrow]
+argument-hint: "[empty for entire repo | area | 'diff' for uncommitted changes] [+ 'debt' or 'idioms' to narrow]"
 ---
 
 Survey existing code and report what is worth improving. Read-only audit, solo personal
 project: skip enterprise theater (no dollar ROI, sprints, or blanket coverage mandates).
 Read the actual code and config, never judge from names.
 
-Scope: default to the entire repo. If $ARGUMENTS names a path or area, focus there. If it
-asks for the uncommitted changes ("diff", "uncommitted", "staged", "working"), use the
-current working diff.
+Scope: default to the entire repo. If the invocation names a path or area, focus there. If
+it asks for the uncommitted changes ("diff", "uncommitted", "staged", "working"), use
+the current working diff.
 
-Lens: run both lenses below by default. If $ARGUMENTS says "debt" run only the debt lens;
-if it says "idioms" or "modernize" run only the modernization lens.
+Lens: run both lenses below by default. If the invocation says "debt", run only the debt
+lens; if it says "idioms" or "modernize", run only the modernization lens.
 
 Debt lens, hunt for cost that is real here:
 

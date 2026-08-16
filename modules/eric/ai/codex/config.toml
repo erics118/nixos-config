@@ -1,0 +1,310 @@
+approvals_reviewer = "user"
+approval_policy = "on-request"
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+notify = [
+  "/Users/eric/.codex/computer-use/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient",
+  "turn-ended",
+]
+personality = "pragmatic"
+sandbox_mode = "workspace-write"
+
+[sandbox_workspace_write]
+network_access = true
+
+[desktop]
+conversationDetailMode = "STEPS_COMMANDS"
+dock-icon-preference = "codex-system"
+followUpQueueMode = "queue"
+
+[desktop.appearanceDarkChromeTheme]
+accent = "#339cff"
+contrast = 60
+ink = "#ffffff"
+opaqueWindows = false
+surface = "#181818"
+
+[desktop.appearanceDarkChromeTheme.fonts]
+code = "Hack Nerd Font"
+
+[desktop.appearanceDarkChromeTheme.semanticColors]
+diffAdded = "#40c977"
+diffRemoved = "#fa423e"
+skill = "#ad7bf9"
+
+[features]
+hooks = true
+js_repl = false
+memories = true
+mentions_v2 = true
+multi_agent = true
+steer = true
+terminal_resize_reflow = true
+
+[hooks.state."/Users/eric/.codex/hooks.json:session_start:0:0"]
+enabled = true
+trusted_hash = "sha256:7fe63c42973ca988a5758d5295fb0dc0a24afb6c970d412f11c71b6e91a48abb"
+
+[marketplaces.openai-bundled]
+last_updated = "2026-08-13T20:27:52Z"
+source_type = "local"
+source = "/Users/eric/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.openai-primary-runtime]
+last_updated = "2026-08-14T09:40:19Z"
+source_type = "local"
+source = "/Users/eric/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
+
+[mcp_servers.computer-use]
+args = ["mcp"]
+command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
+cwd = "."
+enabled = false
+
+[mcp_servers.context7]
+command = "/etc/profiles/per-user/eric/bin/context7-mcp"
+
+[mcp_servers.node_repl]
+args = []
+command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
+startup_timeout_sec = 120
+
+[mcp_servers.node_repl.env]
+NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
+NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
+NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/eric/.codex"
+CODEX_HOME = "/Users/eric/.codex"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "028a14b6eaa6d98dac2aae00764345ab9f244801ed8493d42b9af3be5575006e,f204d340535055781952b10ed396de20b842f00a19e430852f7e121ad1ce91f6"
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
+BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
+BROWSER_USE_CODEX_APP_VERSION = "26.727.51351"
+SKY_CUA_SERVICE_PATH = "/Users/eric/.codex/computer-use/Codex Computer Use.app"
+CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
+
+[mcp_servers.railway]
+args = ["mcp"]
+command = "railway"
+
+[notice.model_migrations]
+"gpt-5.2-codex" = "gpt-5.4"
+"gpt-5.4" = "gpt-5.5"
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."pdf@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[plugins."sites@openai-bundled"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."template-creator@openai-primary-runtime"]
+enabled = true
+
+[plugins."visualize@openai-bundled"]
+enabled = true
+
+[projects."/Users/eric"]
+trust_level = "untrusted"
+
+[projects."/Users/eric/.config"]
+trust_level = "trusted"
+
+[projects."/Users/eric/.config/fastfetch"]
+trust_level = "trusted"
+
+[projects."/Users/eric/.config/sketchybar"]
+trust_level = "trusted"
+
+[projects."/Users/eric/.vscode"]
+trust_level = "trusted"
+
+[projects."/Users/eric/Desktop/cornell/math3360"]
+trust_level = "trusted"
+
+[projects."/Users/eric/Documents/Codex/2026-07-10/hi"]
+trust_level = "trusted"
+
+[projects."/Users/eric/Documents/Codex/2026-07-10/sites-plugin-sites-openai-bundled-create"]
+trust_level = "trusted"
+
+[projects."/Users/eric/Documents/New project"]
+trust_level = "trusted"
+
+[projects."/Users/eric/Library/Application Support/Firefox/Profiles"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/DPP"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/GokuRakuJoudo"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/RaceEngineerDashboard"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/SketchyBar"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/agent-container"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/agentbox-claude-code"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/atuin"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/cornell/catc/Primary_Pipeline"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/cornell/cev/RaceEngineerDashboard"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/cornell/cev/tailscale-ros-telemetry"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/cornell/cev/uc26_sensor_reader"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/cornell/cev/uc26_sensor_reader/can/RP2040_MCP251863_Driver"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/cornell/cs3110"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/cornell/cs3110-proj/a4"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/cornell/cs3110project"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/cppssh"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/defaultb"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/eirkbot-cpp"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/eriz-links"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/knot"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/metal-lsp"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/mfl"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/mnist-mlp"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/nixpkgs"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/nixvim"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/ocaml-raytracer"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/ocaml-voxel"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/other/raycast-extensions"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/particle"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/resume"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/rmouse"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/sidebery"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/smhkd"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/starship"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/state-machine"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/website"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/wezterm"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/workers"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/yabai"]
+trust_level = "trusted"
+
+[projects."/Users/eric/nixos-config"]
+trust_level = "untrusted"
+
+[projects."/Users/eric/nixos-config/fastfetch"]
+trust_level = "trusted"
+
+[projects."/Users/eric/nixvim"]
+trust_level = "trusted"
+
+[projects."/Users/eric/smolvm"]
+trust_level = "trusted"
+
+[projects."/opt/homebrew/Library/Taps/erics118/homebrew-tap"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/alcove"]
+trust_level = "trusted"
+
+[shell_environment_policy.set]
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "028a14b6eaa6d98dac2aae00764345ab9f244801ed8493d42b9af3be5575006e,f204d340535055781952b10ed396de20b842f00a19e430852f7e121ad1ce91f6"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/eric/.codex"
+
+[tui]
+status_line = [
+  "model-with-reasoning",
+  "current-dir",
+  "git-branch",
+  "context-used",
+  "five-hour-limit",
+  "weekly-limit",
+]
+status_line_use_colors = true
+terminal_title = ["activity", "project-name", "current-dir"]
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4
+"gpt-5.6-sol" = 4

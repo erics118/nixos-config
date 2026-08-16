@@ -1,13 +1,13 @@
 ---
 name: explain
 description: Explain what a feature does, how it fits the codebase, why it exists, and its idioms
-argument-hint: [empty for uncommitted changes | file | dir | feature name]
+argument-hint: "[empty for uncommitted changes | file | dir | feature name]"
 disable-model-invocation: true
 ---
 
 Explain a component by reading the actual source, not from memory. Steps:
 
-1. Scope: default to the current working diff, explaining the changed component(s). If $ARGUMENTS names a file/dir/feature, explain that instead: resolve it to the real file(s)/dir, and if ambiguous list the candidates and ask which one before continuing.
+1. Scope: default to the current working diff, explaining the changed component(s). If the invocation names a file/dir/feature, explain that instead: resolve it to the real file(s)/dir, and if ambiguous list the candidates and ask which one before continuing.
 2. Read the component fully, plus enough of its neighbors to see how it is wired: who imports/calls it, what it imports/calls, and the module/layer it sits in.
 3. Explain, covering:
    - What it does: the behavior in one or two lines.
