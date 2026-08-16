@@ -1,2 +1,6 @@
+interface:
+  short_description: "Explain what a feature does and why it exists"
+  default_prompt: "Use $explain to walk through how this feature works and fits the codebase."
+
 policy:
   allow_implicit_invocation: false

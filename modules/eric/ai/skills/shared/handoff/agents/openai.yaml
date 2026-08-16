@@ -1,2 +1,6 @@
+interface:
+  short_description: "Compact this chat into a handoff for an agent"
+  default_prompt: "Use $handoff to write a handoff doc so another agent can continue this work."
+
 policy:
   allow_implicit_invocation: false

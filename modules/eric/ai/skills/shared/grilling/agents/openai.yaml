@@ -1,2 +1,6 @@
+interface:
+  short_description: "One-question interview to stress-test a plan"
+  default_prompt: "Use $grilling to interrogate my plan one question at a time."
+
 policy:
   allow_implicit_invocation: false

@@ -1,0 +1,3 @@
+interface:
+  short_description: "Work in flake + direnv dev projects"
+  default_prompt: "Use $nix-flake-direnv-projects to build, test, or run tooling in this flake project."

@@ -1,0 +1,3 @@
+interface:
+  short_description: "Scaffold a new dev project from templates"
+  default_prompt: "Use $new-project to scaffold a project with flake, direnv, and language init."

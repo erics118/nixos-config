@@ -1,2 +1,6 @@
+interface:
+  short_description: "Get an independent second opinion from Claude"
+  default_prompt: "Use $consulting-claude to get an independent second opinion from Claude on this."
+
 policy:
   allow_implicit_invocation: true

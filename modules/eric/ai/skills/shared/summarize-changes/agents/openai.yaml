@@ -1,2 +1,6 @@
+interface:
+  short_description: "Summarize a diff in concise BLUF style"
+  default_prompt: "Use $summarize-changes to summarize my working-tree diff."
+
 policy:
   allow_implicit_invocation: false

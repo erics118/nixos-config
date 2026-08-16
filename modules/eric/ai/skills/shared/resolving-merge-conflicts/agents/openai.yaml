@@ -1,0 +1,3 @@
+interface:
+  short_description: "Resolve an in-progress merge or rebase conflict"
+  default_prompt: "Use $resolving-merge-conflicts to work through the current merge conflict."

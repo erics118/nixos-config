@@ -1,0 +1,3 @@
+interface:
+  short_description: "Read-only survey of tech debt and modernization"
+  default_prompt: "Use $audit to survey this repo for tech debt and modernization wins."

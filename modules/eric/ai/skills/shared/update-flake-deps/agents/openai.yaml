@@ -1,2 +1,6 @@
+interface:
+  short_description: "Update flake inputs, rebuild, report changes"
+  default_prompt: "Use $update-flake-deps to bump flake inputs and summarize what changed."
+
 policy:
   allow_implicit_invocation: false

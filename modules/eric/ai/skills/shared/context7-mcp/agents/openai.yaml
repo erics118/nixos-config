@@ -1,0 +1,3 @@
+interface:
+  short_description: "Fetch current library and API docs on demand"
+  default_prompt: "Use $context7-mcp to pull up-to-date docs for a library or framework."

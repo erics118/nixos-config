@@ -1,2 +1,6 @@
+interface:
+  short_description: "Red-team code or a plan from hostile angles"
+  default_prompt: "Use $adversarial-review to attack my uncommitted changes and find what breaks."
+
 policy:
   allow_implicit_invocation: false
