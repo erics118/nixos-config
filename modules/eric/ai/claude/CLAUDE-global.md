@@ -52,6 +52,7 @@
 - Stop once the answer is determined
 - Don't keep gathering info or deliberating past the point of decision
 - Verify any fact from the source of truth before stating it, including in summaries and asides where an unchecked assumption slips in. Read the actual config, code, or live system, never memory or a generic prior
+- When a tool's output, a file, or an explicit rule contradicts your expectation or a generic prior, the concrete evidence wins and the prior is wrong. Do not discount, rationalize, or explain away the disproof in front of you; re-read it and make your answer match it. A remembered value (a path, a status, a number) is a prior too: re-fetch it rather than reuse it
 - If you cannot verify it in the moment, hedge it or leave it out rather than asserting it
 - To learn what a third-party tool can do (Claude Code, nix, gh, codex), read its documentation
 - Say "I couldn't find X", not "X doesn't exist". One failed search is weak evidence of absence
@@ -73,4 +74,4 @@
 
 - Parts of `~/.claude`, `~/.config`, `~/.flake` are symlinks into `~/nixos-config`. Everything else there is runtime state
 - To resolve a managed file's real path, `realpath` it. `ls -l` stops at a `/nix/store` hop that is itself a symlink to the repo
-- Editing a managed file takes effect immediately. Adding a new one needs `just switch` in `~/nixos-config`
+- Editing a managed file takes effect immediately, with NO `just switch`: the `/nix/store` hop is a symlink back to the repo file (not a compiled copy), so editing the `realpath`ed repo file changes the live file directly. `just switch` is only for ADDING a new managed file (to create its symlink) or changing what nix generates. Do not assume the generic home-manager "edit source, rebuild" model here; edit the real path and it is live.
