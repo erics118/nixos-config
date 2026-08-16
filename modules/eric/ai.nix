@@ -80,7 +80,7 @@
               case "$target" in
                 /nix/store/*-home-manager-files/.claude/skills)
                   verboseEcho "Removing obsolete Home Manager link at $skills"
-                  $DRY_RUN_CMD /bin/rm "$skills"
+                  $DRY_RUN_CMD ${pkgs.coreutils}/bin/rm "$skills"
                   ;;
                 *)
                   errorEcho "$skills is a dangling symlink not created by the previous Home Manager layout"
