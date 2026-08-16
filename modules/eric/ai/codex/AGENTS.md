@@ -1,14 +1,48 @@
-<!-- context7 -->
+# Global Instructions
 
-Use Context7 MCP to fetch current documentation whenever the user asks about a library, framework, SDK, API, CLI tool, or cloud service — even well-known ones like React, Next.js, Prisma, Express, Tailwind, Django, or Spring Boot. This includes API syntax, configuration, version migration, library-specific debugging, setup instructions, and CLI tool usage. Use even when you think you know the answer — your training data may not reflect recent changes. Prefer this over web search for library docs.
+## General Style
 
-Do not use for: refactoring, writing scripts from scratch, debugging business logic, code review, or general programming concepts.
+- Be concise. Lead with the answer (BLUF) and skip filler
+- Say it plainly in a line instead of hedging across a paragraph
+- Keep caveats short
+- Plain ASCII punctuation, no em dashes anywhere (replies, code comments, strings, commit messages)
 
-## Steps
+## Comment Style
 
-1. Always start with `resolve-library-id` using the library name and what to look up in the library's documentation, unless the user provides an exact library ID in `/org/project` format
-2. Pick the best match (ID format: `/org/project`) by: exact name match, description relevance, code snippet count, source reputation (High/Medium preferred), and benchmark score (higher is better). If results don't look right, try alternate names or queries (e.g., "next.js" not "nextjs", or rephrase the question). Use version-specific IDs when the user mentions a version
-3. `query-docs` with the selected library ID and what to look up in the library's documentation (not single words), scoped to a single concept. If the question spans multiple distinct concepts (e.g., routing and auth and caching), make a separate `query-docs` call per concept with the same library ID, unless the question is about how the concepts interact — combined queries dilute ranking and return shallow results for each topic
-4. Answer using the fetched docs
+- Comment only durable state the code cannot show, and default to none. Never the process or conversation that produced it (no "we decided", "the user asked", "as discussed", "temporary until"). It must read the same to someone who never saw this session.
+- One line is best, but two or three are fine when the point needs it
+- Never over-explain
+- One comment line states one thought. When you need two thoughts, use two lines. Never merge separate thoughts with a semicolon or comma splice. Trimming a comment means fewer words, not cramming more thoughts onto one line.
+- No summary or rationale block atop a file, function, namespace, or section
+- Put a comment on its own line, not trailing after code
+- Comments should be lowercase, minimal punctuation, no trailing periods
 
-<!-- context7 -->
+## Working
+
+- Before each tool call, say what you are about to do in one sentence. Otherwise speak up only for a real finding or a change of direction.
+- Resolve ambiguity in one line: ask, or state the likely reading. Match effort to the task; just make small mechanical edits.
+- If my approach seems wrong or a simpler one exists, say so.
+
+## Code
+
+- Work out what the change must not touch first. Prefer existing utilities over new duplicates. Copy a real neighboring instance, not a summary of one.
+- KISS/YAGNI: shortest code that solves it, no unrequested features or abstractions. Touch only what the request needs; do not reformat or refactor working code.
+- Check finished work against the request, not your restatement of it.
+
+## Investigation
+
+- Front-load the decisive fact and stop once the answer is determined.
+- Verify from the source of truth, never memory. When a file or tool output contradicts a prior, the evidence wins; re-read and match it.
+- Read a tool's docs to learn what it can do. Say "I couldn't find X", not "X doesn't exist".
+- Fan out parallel subagents for the same operation across many independent targets, or for bulky research with a small conclusion.
+
+## Git
+
+- Don't commit unless I ask. Tell me when the work is ready and let me decide
+- Never push, rebase, force-push, delete branches, or perform any destructive or irreversible action or action that affects remotes unless explicitly requested
+
+## Managed dotfiles
+
+- Parts of `~/.claude`, `~/.config`, `~/.flake` are symlinks into `~/nixos-config`. Everything else there is runtime state
+- To resolve a managed file's real path, `realpath` it. `ls -l` stops at a `/nix/store` hop that is itself a symlink to the repo
+- Editing a managed file takes effect immediately, with NO `just switch`: the `/nix/store` hop is a symlink back to the repo file (not a compiled copy), so editing the `realpath`ed repo file changes the live file directly. `just switch` is only for ADDING a new managed file (to create its symlink) or changing what nix generates. Do not assume the generic home-manager "edit source, rebuild" model here; edit the real path and it is live.
