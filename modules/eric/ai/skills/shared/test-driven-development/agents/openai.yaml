@@ -1,0 +1,3 @@
+interface:
+  short_description: "Write the failing test first, then implement"
+  default_prompt: "Use $test-driven-development to write a failing test before implementing this."
