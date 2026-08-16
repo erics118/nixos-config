@@ -55,6 +55,7 @@ If each attempt reveals a new problem somewhere else, or every fix would need "m
 ## Stop signals
 
 Any of these means return to Phase 1:
+
 - "Quick fix now, understand it later."
 - Proposing a fix before tracing the data flow.
 - Changing several things at once to see what sticks.

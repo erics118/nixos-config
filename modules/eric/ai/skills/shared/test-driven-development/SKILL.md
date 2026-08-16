@@ -57,6 +57,7 @@ A test that is hard to write is telling you the design is wrong, not that TDD is
 ## Stop and start over
 
 Any of these means delete the code and restart from a failing test:
+
 - Production code written before its test.
 - A new test that passes on the first run.
 - You cannot say why the test failed.
