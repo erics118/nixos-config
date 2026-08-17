@@ -58,13 +58,13 @@
         description = "notify that the unattended upgrade failed";
         serviceConfig.Type = "oneshot";
         script = ''
-          topic=$(cat ${config.sops.secrets."ntfy/nix".path} 2>/dev/null) || exit 0
-          [ -n "$topic" ] || exit 0
+          topic=nix
           ${pkgs.curl}/bin/curl -s -o /dev/null \
+            -H "Authorization: Bearer $(cat ${config.sops.secrets."ntfy/token".path})" \
             -H "Title: nixos-upgrade failed on ${config.networking.hostName}" \
             -H "Tags: nix,x" \
             -d "nixos-upgrade failed, see journalctl -u nixos-upgrade" \
-            "https://ntfy.sh/$topic"
+            "https://ntfy.eriz.cc/$topic"
         '';
       };
     };

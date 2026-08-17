@@ -2,7 +2,7 @@
   flake.modules.nixos.gatus = { config, lib, ... }: {
     # inject ntfy topic at runtime
     sops.templates."gatus-env".content = ''
-      NTFY_TOPIC=${config.sops.placeholder."ntfy/gatus"}
+      NTFY_TOKEN=${config.sops.placeholder."ntfy/token"}
     '';
 
     services.gatus = {
@@ -18,8 +18,9 @@
         };
 
         alerting.ntfy = {
-          url = "https://ntfy.sh";
-          topic = "\${NTFY_TOPIC}";
+          url = "https://ntfy.eriz.cc";
+          topic = "gatus";
+          token = "\${NTFY_TOKEN}";
           priority = 3;
           "default-alert" = {
             "failure-threshold" = 3;

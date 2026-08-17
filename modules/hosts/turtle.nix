@@ -2,7 +2,6 @@
   inputs,
   config,
   lib,
-  pkgs,
   ...
 }:
 let
@@ -19,6 +18,7 @@ in
       m.nixos.glances
       m.nixos.auto-upgrade
       m.nixos.ntfy
+      m.nixos.ntfy-client
       inputs.disko.nixosModules.disko
       ./_hardware/aarch64-turtle.nix
       ./_hardware/aarch64-turtle-disko.nix

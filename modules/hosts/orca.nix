@@ -7,6 +7,7 @@ in
     imports = [
       m.darwin.base
       m.darwin.sops
+      m.darwin.ntfy-client
     ];
     nixpkgs.hostPlatform = "aarch64-darwin";
 

@@ -2,19 +2,21 @@ set shell := ["zsh", "-uc"]
 set script-interpreter := ["zsh", "-eu"]
 
 system_target := if os() == "macos" { "darwin" } else { "os" }
-ntfy_topic := `cat /run/secrets/ntfy/nix 2>/dev/null || echo ""`
+ntfy_topic := "nix"
+ntfy_token := `cat /run/secrets/ntfy/token 2>/dev/null || echo ""`
 
 set default-list
 
 [private]
 ntfy msg status:
     #!/usr/bin/env zsh
-    [[ -z "{{ ntfy_topic }}" ]] && exit 0
+    [[ -z "{{ ntfy_token }}" ]] && exit 0
     curl -s -o /dev/null \
+      -H "Authorization: Bearer {{ ntfy_token }}" \
       -H "Title: just on `hostname` ({{ invocation_directory_native() }})" \
       -H "Tags: nix,{{ if status == "0" { "white_check_mark" } else { "x" } }}" \
       -d "just {{ msg }}: {{ if status == "0" { "ok" } else { "failed" } }}" \
-      "https://ntfy.sh/{{ ntfy_topic }}"
+      "https://ntfy.eriz.cc/{{ ntfy_topic }}"
 
 # update all flake inputs
 [group('flake')]
