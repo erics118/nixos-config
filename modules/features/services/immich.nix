@@ -3,7 +3,7 @@
   # the module only chowns it to immich:immich 0700 once it exists (tmpfiles
   # `e`); it never creates it, and immich can't (parent mount is eric:users
   # 0755), so we create it declaratively with the tmpfiles rule below
-  flake.modules.nixos.immich = _: {
+  flake.modules.nixos.immich = {
     services.immich = {
       enable = true;
       openFirewall = true;

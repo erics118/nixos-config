@@ -1,1 +1,5 @@
-{ flake.modules.nixos.glances = _: { services.glances.enable = true; }; }
+{
+  flake.modules.nixos.glances = {
+    services.glances.enable = true;
+  };
+}
