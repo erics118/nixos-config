@@ -32,6 +32,18 @@ in
 
     networking.hostName = "narwhal";
 
+    # ntfy runs on turtle at its own domain; link out, no local caddy vhost
+    homepageTiles = [
+      {
+        name = "ntfy";
+        group = "Infrastructure";
+        href = "https://ntfy.eriz.cc";
+        proxy = false;
+        description = "Push notifications";
+        icon = "ntfy.svg";
+      }
+    ];
+
     # wake-on-lan on the wired NIC
     networking.interfaces.enp5s0.wakeOnLan.enable = true;
 

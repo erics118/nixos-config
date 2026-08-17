@@ -2,6 +2,7 @@
   inputs,
   config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -17,6 +18,7 @@ in
       m.nixos.tailscale
       m.nixos.glances
       m.nixos.auto-upgrade
+      m.nixos.ntfy
       inputs.disko.nixosModules.disko
       ./_hardware/aarch64-turtle.nix
       ./_hardware/aarch64-turtle-disko.nix
@@ -46,5 +48,18 @@ in
       configurationLimit = 5;
     };
     boot.loader.efi.canTouchEfiVariables = true;
+
+    environment.systemPackages = [ pkgs.cloudflared ];
+
+    # cloudflared runs as a DynamicUser, so the creds file must be world-readable
+    sops.secrets."cloudflared/turtle-tunnel".mode = "0444";
+
+    # outbound tunnel, no inbound ports opened. public services fan out here:
+    # add "<name>.eriz.cc".service = "http://localhost:<port>" and a matching CNAME
+    services.cloudflared.tunnels."<TUNNEL-UUID>" = {
+      credentialsFile = config.sops.secrets."cloudflared/turtle-tunnel".path;
+      default = "http_status:404";
+      ingress."ntfy.eriz.cc".service = "http://localhost:2586";
+    };
   };
 }

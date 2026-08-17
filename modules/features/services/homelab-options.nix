@@ -31,8 +31,14 @@
                 description = "Link target, defaults to name; expands to https://<subdomain>.<homelabDomain>";
               };
               port = lib.mkOption {
-                type = lib.types.port;
+                type = lib.types.nullOr lib.types.port;
+                default = null;
                 description = "Service port, used for the uptime monitor and widget";
+              };
+              href = lib.mkOption {
+                type = lib.types.nullOr lib.types.str;
+                default = null;
+                description = "Override the link and uptime monitor with an explicit URL, for services not under homelabDomain";
               };
               host = lib.mkOption {
                 type = lib.types.str;

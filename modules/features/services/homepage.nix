@@ -8,8 +8,8 @@
         mkUrl = host: p: "http://${host}:${toString p}";
         tileToService = t: {
           ${t.name} = lib.filterAttrs (_: v: v != null) {
-            href = "https://${t.subdomain}.${homelabDomain}";
-            siteMonitor = mkUrl t.host t.port;
+            href = if t.href != null then t.href else "https://${t.subdomain}.${homelabDomain}";
+            siteMonitor = if t.href != null then t.href else mkUrl t.host t.port;
             inherit (t) description;
             inherit (t) icon;
             widget = if t.widget != null then ({ url = mkUrl t.host t.port; } // t.widget) else null;
