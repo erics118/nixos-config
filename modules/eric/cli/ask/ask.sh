@@ -65,7 +65,7 @@ EOF
   exit 0
 }
 
-while [ $# -gt 0 ]; do
+while [[ $# -gt 0 ]]; do
   case "$1" in
   -h | --help) show_help ;;
   -s)
@@ -103,19 +103,19 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-if [ -z "$PROMPT" ]; then
-  if [ -t 0 ]; then
+if [[ -z $PROMPT ]]; then
+  if [[ -t 0 ]]; then
     echo "Error: No prompt provided. Use 'ask -h' for help." >&2
     exit 1
   fi
   PROMPT=$(cat)
 fi
 
-if [ "$NO_SYSTEM" = false ] && [ -z "$SYSTEM_PROMPT" ]; then
+if [[ $NO_SYSTEM == false ]] && [[ -z $SYSTEM_PROMPT ]]; then
   SYSTEM_PROMPT="$DEFAULT_PROMPT"
 fi
 
-if [ -n "$SYSTEM_PROMPT" ]; then
+if [[ -n $SYSTEM_PROMPT ]]; then
   MESSAGES=$(jq -n --arg sys "$SYSTEM_PROMPT" --arg u "$PROMPT" \
     '[{"role":"system","content":$sys},{"role":"user","content":$u}]')
 else
@@ -126,9 +126,9 @@ fi
 START_TIME=$(date +%s.%N)
 
 PROVIDER_JSON=""
-if [ -n "$PROVIDER_ORDER" ]; then
+if [[ -n $PROVIDER_ORDER ]]; then
   IFS=',' read -r -a _providers <<<"$PROVIDER_ORDER"
-  if [ ${#_providers[@]} -gt 0 ]; then
+  if [[ ${#_providers[@]} -gt 0 ]]; then
     PROVIDER_JSON=$(jq -n --args '$ARGS.positional' "${_providers[@]}")
   fi
 fi
@@ -137,11 +137,11 @@ JSON_PAYLOAD=$(
   jq -n \
     --arg model "$MODEL" \
     --argjson messages "$MESSAGES" \
-    --argjson stream "$([ "$STREAMING" = true ] && echo true || echo false)" \
+    --argjson stream "$STREAMING" \
     '{model: $model, messages: $messages, stream: $stream}'
 )
 
-if [ -n "$PROVIDER_JSON" ]; then
+if [[ -n $PROVIDER_JSON ]]; then
   JSON_PAYLOAD=$(printf '%s' "$JSON_PAYLOAD" | jq --argjson provider_order "$PROVIDER_JSON" '. + {provider: {order: $provider_order}}')
 fi
 
@@ -151,23 +151,23 @@ elapsed_since_start() {
   printf '%.2f' "$(echo "$(date +%s.%N) - $START_TIME" | bc)"
 }
 
-if [ "$STREAMING" = true ]; then
+if [[ $STREAMING == true ]]; then
   curl -sS -N --fail-with-body "$API_URL" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $OPENROUTER_API_KEY" \
     -d "$JSON_PAYLOAD" | while IFS= read -r line; do
     if [[ $line == data:* ]]; then
       json="${line#data: }"
-      if [ -z "$json" ] || [ "$json" = "[DONE]" ]; then
+      if [[ -z $json ]] || [[ $json == "[DONE]" ]]; then
         continue
       fi
-      content=$(echo "$json" | jq -r '.choices[0].delta.content // ""' 2>/dev/null)
-      [ -n "$content" ] && printf '%s' "$content"
+      content=$(jq -r '.choices[0].delta.content // ""' <<<"$json" 2>/dev/null)
+      [[ -n $content ]] && printf '%s' "$content"
     fi
   done
   echo
 
-  if [ "$SHOW_METADATA" = true ]; then
+  if [[ $SHOW_METADATA == true ]]; then
     ELAPSED=$(elapsed_since_start)
     echo
     echo "[$MODEL - ${ELAPSED}s]" >&2
@@ -179,14 +179,14 @@ else
     -H "Authorization: Bearer $OPENROUTER_API_KEY" \
     -d "$JSON_PAYLOAD")" || status=$?
 
-  if [ "$status" -ne 0 ]; then
+  if [[ $status -ne 0 ]]; then
     echo "Error: $(printf '%s' "$response" | jq -r '.error.message // .error // "Unknown error"')" >&2
     exit 1
   fi
 
   printf '%s' "$response" | jq -r '.choices[0].message.content // "No response received"'
 
-  if [ "$SHOW_METADATA" = true ]; then
+  if [[ $SHOW_METADATA == true ]]; then
     ELAPSED=$(elapsed_since_start)
     TOKENS=$(printf '%s' "$response" | jq -r '.usage.completion_tokens // 0')
     PROVIDER=$(printf '%s' "$response" | jq -r '.provider // "Unknown"')

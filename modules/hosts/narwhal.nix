@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, ... }:
 let
   m = config.flake.modules;
 in
@@ -47,12 +47,6 @@ in
 
     # wake-on-lan on the wired NIC
     networking.interfaces.enp5s0.wakeOnLan.enable = true;
-
-    # enable firewall. everything is exposed through tailscale
-    networking.firewall = {
-      enable = lib.mkForce true;
-      trustedInterfaces = [ "tailscale0" ];
-    };
 
     # persistent machine-check, memory, pcie error log
     hardware.rasdaemon.enable = true;

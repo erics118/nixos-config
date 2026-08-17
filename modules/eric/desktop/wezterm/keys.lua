@@ -37,10 +37,6 @@ local openUrl = act.QuickSelectArgs({
 })
 
 map("a", "LEADER", act.AttachDomain("unix"))
--- map("d", "LEADER", act.DetachDomain({ DomainName = "unix" }))
--- map("s", "LEADER", act.SpawnTab({ DomainName = "squid" }))
--- map("n", "LEADER", act.SpawnTab({ DomainName = "narwhal" }))
--- map("w", "LEADER", act.ShowLauncherArgs { flags = 'WORKSPACES' })
 
 -- use 'Backslash' to split horizontally
 map("\\", "LEADER", act.SplitHorizontal({ domain = "CurrentPaneDomain" }))
@@ -74,11 +70,6 @@ map("h", { "LEADER" }, act.ActivatePaneDirection("Left"))
 map("j", { "LEADER" }, act.ActivatePaneDirection("Down"))
 map("k", { "LEADER" }, act.ActivatePaneDirection("Up"))
 map("l", { "LEADER" }, act.ActivatePaneDirection("Right"))
--- resize
--- map("h", "LEADER|SHIFT", act.AdjustPaneSize({ "Left", 5 }))
--- map("j", "LEADER|SHIFT", act.AdjustPaneSize({ "Down", 5 }))
--- map("k", "LEADER|SHIFT", act.AdjustPaneSize({ "Up", 5 }))
--- map("l", "LEADER|SHIFT", act.AdjustPaneSize({ "Right", 5 }))
 -- spawn & close
 map("c", "LEADER", act.SpawnTab("CurrentPaneDomain"))
 map("x", "LEADER", act.CloseCurrentPane({ confirm = true }))
@@ -121,25 +112,6 @@ map("DownArrow", "SHIFT", act.ScrollByLine(1))
 map("LeftArrow", MOD, act.SendKey({ key = "LeftArrow", mods = "CTRL" }))
 map("RightArrow", MOD, act.SendKey({ key = "RightArrow", mods = "CTRL" }))
 
--- map("E", "CTRL|SHIFT", act.PromptInputLine({
---     description = "Enter new name for tab",
---     initial_value = "My Tab Name",
---     action = wezterm.action_callback(function(window, _pane, line)
---         if line then
---             window:active_tab():set_title(line)
---         end
---     end),
--- }))
-
--- map(
--- 	"r",
--- 	{ "LEADER", "CTRL"},
--- 	act.ActivateKeyTable({
--- 		name = "resize_mode",
--- 		one_shot = false,
--- 	})
--- )
-
 -- from claude code
 map("Enter", "SHIFT", act.SendString("\x1b\r"))
 
@@ -160,7 +132,6 @@ local key_tables = {
 for k, _ in pairs(key_tables) do
     table.insert(key_tables[k], { key = "Escape", action = "PopKeyTable" })
     table.insert(key_tables[k], { key = "Enter", action = "PopKeyTable" })
-    -- table.insert(key_tables[k], { key = "c", mods = "CTRL", action = "PopKeyTable" })
 end
 
 local M = {}

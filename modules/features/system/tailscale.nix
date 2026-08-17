@@ -10,6 +10,9 @@
       ];
     };
 
+    # this module owns the interface, so it owns trusting it in the firewall
+    networking.firewall.trustedInterfaces = [ "tailscale0" ];
+
     # exit-node forwarding throughput: enable UDP GRO on the physical NIC
     # https://tailscale.com/s/ethtool-config-udp-gro
     systemd.services.tailscale-udp-gro = {

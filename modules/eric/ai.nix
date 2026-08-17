@@ -40,7 +40,15 @@
         name = "context7-mcp";
         runtimeInputs = [ pkgs.nodejs ];
         text = ''
-          CONTEXT7_API_KEY="$(< /run/secrets/api/context7)"
+          KEY_FILE=/run/secrets/api/context7
+          CONTEXT7_API_KEY="''${CONTEXT7_API_KEY:-}"
+          if [[ -z $CONTEXT7_API_KEY && -r $KEY_FILE ]]; then
+            CONTEXT7_API_KEY="$(<"$KEY_FILE")"
+          fi
+          if [[ -z $CONTEXT7_API_KEY ]]; then
+            printf >&2 'context7-mcp: no api key. export CONTEXT7_API_KEY or provision %s\n' "$KEY_FILE"
+            exit 1
+          fi
           export CONTEXT7_API_KEY
           npm_config_cache="''${XDG_CACHE_HOME:-$HOME/.cache}/context7/npm"
           export npm_config_cache

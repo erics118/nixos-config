@@ -9,7 +9,7 @@
       environmentFile = config.sops.secrets."ntfy/auth-env".path;
       settings = {
         # public url, fronted by the cloudflare tunnel; listens on 127.0.0.1:2586
-        base-url = "https://ntfy.eriz.cc";
+        base-url = "https://${config.ntfyHost}";
         behind-proxy = true;
         auth-default-access = "deny-all";
         enable-signup = false;

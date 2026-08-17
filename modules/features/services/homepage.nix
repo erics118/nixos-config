@@ -39,7 +39,7 @@
           settings = {
             title = config.networking.hostName;
             headerStyle = "clean";
-            # each group spans a full-width row; tiles wrap every 4 columns
+            # each group spans a full-width row; tiles wrap every 3 columns
             layout = lib.mapAttrs (_group: _tiles: {
               style = "row";
               columns = 3;

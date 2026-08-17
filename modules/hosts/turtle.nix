@@ -1,9 +1,4 @@
-{
-  inputs,
-  config,
-  lib,
-  ...
-}:
+{ inputs, config, ... }:
 let
   m = config.flake.modules;
 in
@@ -28,15 +23,8 @@ in
     networking = {
       hostName = "turtle";
       # public-facing oracle box: only ssh reachable
-      firewall = {
-        enable = lib.mkForce true;
-        allowedTCPPorts = [ 22 ];
-        trustedInterfaces = [ "tailscale0" ];
-      };
+      firewall.allowedTCPPorts = [ 22 ];
     };
-
-    # public-facing host: key auth only
-    services.openssh.settings.PasswordAuthentication = lib.mkForce false;
 
     # host-specific key, on top of the shared base key
     users.users.eric.openssh.authorizedKeys.keys = [

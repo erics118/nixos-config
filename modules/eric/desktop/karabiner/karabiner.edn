@@ -48,11 +48,6 @@
              :delayed {:canceled :vk_none}}]
            [:!!##tab :caps_lock]]}
 
-;;   ;; ralt-l to lock screen
-;;   {:des "right_option+l to lock screen"
-;;    :rules [;;    [:!El :!CTq]
-;;            [:!El "pmset displaysleepnow"]]}
-
   ;; use caps_lock for escape
   {:des "escape to vk_none"
    :rules [[:##escape :vk_none]]}
@@ -66,18 +61,6 @@
            [:!!##j :down_arrow]
            [:!!##k :up_arrow]
            [:!!##l :right_arrow]]}
-
-  ;;   {:des "fn keys: fn-[1-0] to [f1-f10]"
-  ;;    :rules [[:!F##1 :f1]
-  ;;            [:!F##2 :f2]
-  ;;            [:!F##3 :f3]
-  ;;            [:!F##4 :f4]
-  ;;            [:!F##5 :f5]
-  ;;            [:!F##6 :f6]
-  ;;            [:!F##7 :f7]
-  ;;            [:!F##8 :f8]
-  ;;            [:!F##9 :f9]
-  ;;            [:!F##0 :f10]]}
 
   {:des "finger function: 1finger-[f1-f12] to custom keys"
    :rules [
@@ -121,56 +104,4 @@
            [:right_shift :right_shift :vscode {:alone :!S0 :delayed {:invoked :vk_none}}]
            ]}
 
-  ;;   {:des "launch apps"
-  ;;    :rules [[:!!q [:front "Todoist"]]
-  ;;            [:!!Cq [:front "Notion"]]
-  ;;            [:!!w [:front "Preview"]]
-  ;;            [:!!e [:front "CotEditor"]]
-  ;;            [:!!r [:front "Orion RC"]]
-  ;;            [:!!t [:front "WezTerm"]]
-  ;;            [:!!Ct [:front "Photos"]]
-  ;;            [:!!Ot [:front "Notes"]]
-  ;;            [:!!s [:front "System Settings"]]
-  ;;            [:!!Cs [:front "Spotify"]]
-  ;;            [:!!Os [:front "Slack"]]
-  ;;            [:!!d [:front "Discord"]]
-  ;;            [:!!f [:front-p "/System/Library/CoreServices/Finder.app"]]
-  ;;            [:!!Cf [:front "Messages"]]
-  ;;            [:!!g [:front "Notion Mail"]]
-  ;;            [:!!z [:front "zoom.us"]]
-  ;;            [:!!c [:front "Fantastical"]]
-  ;;            [:!!Cc [:front "Google Chrome"]]
-  ;;            [:!!Oc [:front "ChatGPT"]]
-  ;;            [:!!v [:front "Visual Studio Code"]]
-  ;;            [:!!Cv [:front "Cursor"]]]}
-
-  ;;   {:des "activate mode"
-  ;;    :rules [[:!!a ["sketchybar --trigger skhd_mode_changed default" ["activate-mode" 1]]]
-  ;;            :activate-mode
-  ;;            [:escape ["sketchybar --trigger skhd_mode_changed INFO=default" ["activate-mode" 0]]]
-  ;;            [:e ["open 'raycast://extensions/mooxl/deepcast/englishUS?arguments=%7B%22text%22%3A%22%22%7D' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
-  ;;            [:s ["open 'raycast://extensions/mooxl/deepcast/spanish?arguments=%7B%22text%22%3A%22%22%7D' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
-  ;;            [:c ["open 'raycast://extensions/thomas/color-picker/pick-color' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
-  ;;            [:1 ["open 'raycast://extensions/abielzulio/chatgpt/ask' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
-  ;;            [:h ["open 'raycast://extensions/abielzulio/chatgpt/conversation' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
-  ;;            [:b ["open 'raycast://extensions/jomifepe/bitwarden/search' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
-  ;;            [:v ["open 'cleanshot://scrolling-capture' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
-  ;;            [:k ["open 'raycast://extensions/rolandleth/kill-process/index' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
-  ;;            [:f ["open 'raycast://extensions/raycast/file-search/search-files' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]
-  ;;            [:t ["open 'raycast://extensions/doist/todoist/home' && sketchybar --trigger skhd_mode_changed INFO=activate" ["activate-mode" 0]]]]}
-
-  ;;   {:des "tap w to set w-layer to 1"
-  ;;    :rules [
-  ;;                 ;; ;; ctrl+y to command+v when one finger on trackpad
-  ;;                 ;; [:!Ty :!Cv :multitouch_extension_finger_count_total]
-  ;;                 ;; ;; ctrl+y to command+v when one finger on trackpad
-  ;;                 ;; [:!Ty :!Cv ["multitouch_extension_finger_count_total" 1]]
-  ;;                 ;; ;; ctrl+y to command+v when two finger on trackpad
-  ;;                 ;; [:!Ty :!Cv ["multitouch_extension_finger_count_total" 2]]
-  ;;                 ;; ;; ctrl+y to command+v when three finger on the upper half of trackpad
-  ;;            :multitouch_extension_finger_count_right_quarter_area
-  ;;            :multitouch_extension_finger_count_total
-  ;;            :multitouch_extension_finger_count_bottom_quarter_area
-  ;;            [:!!#P9 :!Cv]]
-  ;;    }
   ]}

@@ -115,10 +115,9 @@ end
 
 -- resize (repeats while held)
 local rep = { repeating = true }
-hl.bind(mod .. " + ALT + left", hl.dsp.window.resize({ x = -40, y = 0 }), rep)
-hl.bind(mod .. " + ALT + right", hl.dsp.window.resize({ x = 40, y = 0 }), rep)
-hl.bind(mod .. " + ALT + up", hl.dsp.window.resize({ x = 0, y = -40 }), rep)
-hl.bind(mod .. " + ALT + down", hl.dsp.window.resize({ x = 0, y = 40 }), rep)
+for k, delta in pairs({ left = { -40, 0 }, right = { 40, 0 }, up = { 0, -40 }, down = { 0, 40 } }) do
+    hl.bind(mod .. " + ALT + " .. k, hl.dsp.window.resize({ x = delta[1], y = delta[2] }), rep)
+end
 
 -- workspaces
 for i = 1, 9 do

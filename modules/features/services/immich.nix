@@ -3,7 +3,7 @@
   # the module only chowns it to immich:immich 0700 once it exists (tmpfiles
   # `e`); it never creates it, and immich can't (parent mount is eric:users
   # 0755), so we create it declaratively with the tmpfiles rule below
-  flake.modules.nixos.immich = { config, lib, ... }: {
+  flake.modules.nixos.immich = _: {
     services.immich = {
       enable = true;
       openFirewall = true;
@@ -13,7 +13,7 @@
 
     systemd.tmpfiles.rules = [ "d /mnt/external/immich 0700 immich immich -" ];
 
-    homepageTiles = lib.mkIf config.services.homepage-dashboard.enable [
+    homepageTiles = [
       {
         name = "Immich";
         group = "Apps";

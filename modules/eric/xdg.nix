@@ -1,10 +1,6 @@
 {
   flake.modules.homeManager.base = {
-    home.sessionVariables = {
-      XDG_CONFIG_HOME = "$HOME/.config";
-      XDG_DATA_HOME = "$HOME/.local/share";
-      XDG_CACHE_HOME = "$HOME/.cache";
-      XDG_STATE_HOME = "$HOME/.local/state";
-    };
+    # exports XDG_CONFIG_HOME / DATA / CACHE / STATE and manages the base dirs
+    xdg.enable = true;
   };
 }

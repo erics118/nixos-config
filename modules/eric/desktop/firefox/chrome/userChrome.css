@@ -1,5 +1,5 @@
 /* userChrome.css - Sidebery + Arc-like chrome for Firefox Dev Edition.
-   Targets FF154 with sidebar.revamp: true. Companion author sheet (needs
+   Targets FF153 with sidebar.revamp: true. Companion author sheet (needs
    shadow-DOM ::part selectors this file can't reach): resources/userChrome.au.css */
 
 /* Hide the panel header above webextension sidebars. The id lives in
@@ -65,7 +65,7 @@
   }
 
   /* #navigator-toolbox is a .chrome-block whose 1px bottom border sits right
-     under the bookmarks bar. The 6px page frame already supplies that
+     under the bookmarks bar. The 8px page frame already supplies that
      separation, so drop the extra line. */
   #navigator-toolbox.chrome-block {
     border-bottom-width: 0 !important;

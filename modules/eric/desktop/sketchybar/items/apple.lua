@@ -26,11 +26,8 @@ local function toggle_zen()
         local switch = mode ~= "default"
 
         -- popups
-        if sbar.query("weather").popup.drawing == "on" then
-            sbar.set("weather", { popup = { drawing = false } })
-        end
-        if sbar.query("battery").popup.drawing == "on" then
-            sbar.set("battery", { popup = { drawing = false } })
+        for _, name in ipairs({ "weather", "battery" }) do
+            sbar.set(name, { popup = { drawing = false } })
         end
 
         sbar.set("smhkd", { drawing = switch })

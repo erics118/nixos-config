@@ -9,6 +9,12 @@
       description = "Base domain for homelab services, served by the caddy wildcard vhost";
     };
 
+    options.ntfyHost = lib.mkOption {
+      type = lib.types.str;
+      default = "ntfy.eriz.cc";
+      description = "Host of the self-hosted ntfy server, used by publishers and the cli";
+    };
+
     # each module appends to homepageTiles with a flat structure
     options.homepageTiles = lib.mkOption {
       default = [ ];

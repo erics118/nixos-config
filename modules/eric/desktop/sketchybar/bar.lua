@@ -1,5 +1,3 @@
-local colors = require("colors")
-
 sbar.bar({
     sticky = true,
     height = 33,

@@ -15,16 +15,10 @@
           # system-wide formatters
           nixfmt
           shfmt
-          # llvmPackages_22.clang-tools # clang-format, clang-tidy, clangd
 
           # global languages/toolchains
-          # clang_22
-          # typescript-language-server
           nodejs_24
           python3Minimal
-          # cmake
-          # ninja
-          # pkg-config
 
           # apps
           _1password-cli

@@ -29,8 +29,8 @@ fi
 
 # for each display, check the display type and then switch to the appropriate mode for its spaces
 echo "$displays" | while read -r display; do
-  uuid=$(echo "$display" | jq -r '.uuid')
-  spaces=$(echo "$display" | jq -r '.spaces[]')
+  uuid=$(jq -r '.uuid' <<<"$display")
+  spaces=$(jq -r '.spaces[]' <<<"$display")
   for space in $spaces; do
     echo -n "space $space: "
 

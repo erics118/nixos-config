@@ -37,6 +37,7 @@ local weather_humidity = add_weather_item("humidity", "􁃛")
 local weather_precipitation = add_weather_item("precipitation", "􀠒")
 local weather_wind = add_weather_item("wind", "􀇤")
 local weather_aqi = add_weather_item("aqi", "􀇮")
+local weather_uv = add_weather_item("uv", "􀆭")
 local weather_sunrise = add_weather_item("sunrise", "􀆱")
 local weather_sunset = add_weather_item("sunset", "􀆳")
 
@@ -173,78 +174,26 @@ local weather_icons_day = {
     ["severe sandstorm"] = "􀆵",
 }
 
-local weather_icons_night = {
+local weather_icons_night = setmetatable({
     clear = "􀇀",
     sunny = "􀇀",
     ["partly cloudy"] = "􀇚",
-    cloudy = "􀇂",
-    overcast = "􀇃",
-    mist = "􀇊",
-    ["patchy rain possible"] = "􀇄",
-    ["patchy snow possible"] = "􀇎",
-    ["patchy sleet possible"] = "􀇐",
-    ["patchy freezing drizzle possible"] = "􀇐",
     ["thundery outbreaks possible"] = "􀇞",
-    ["blowing snow"] = "􀇦",
-    blizzard = "􀇦",
-    fog = "􀇊",
-    ["freezing fog"] = "􀇊",
-    ["patchy light drizzle"] = "􀇄",
-    ["light drizzle"] = "􀇄",
-    ["freezing drizzle"] = "􀇐",
-    ["heavy freezing drizzle"] = "􀇐",
     ["patchy light rain"] = "􀇜",
     ["light rain"] = "􀇜",
     ["moderate rain at times"] = "􀇜",
     ["moderate rain"] = "􀇜",
-    ["heavy rain at times"] = "􀇈",
-    ["heavy rain"] = "􀇈",
-    ["light freezing rain"] = "􀇐",
-    ["moderate or heavy freezing rain"] = "􀇐",
-    ["light sleet"] = "􀇐",
-    ["moderate or heavy sleet"] = "􀇐",
-    ["patchy light snow"] = "􀇎",
-    ["light snow"] = "􀇎",
-    ["patchy moderate snow"] = "􀇎",
-    ["moderate snow"] = "􀇎",
-    ["patchy heavy snow"] = "􀇎",
-    ["heavy snow"] = "􀇎",
-    ["ice pellets"] = "􀇌",
     ["light rain shower"] = "􀇜",
-    ["moderate or heavy rain shower"] = "􀇈",
-    ["torrential rain shower"] = "􀇈",
-    ["light sleet showers"] = "􀇐",
-    ["moderate or heavy sleet showers"] = "􀇐",
-    ["light snow showers"] = "􀇎",
-    ["moderate or heavy snow showers"] = "􀇎",
-    ["light showers of ice pellets"] = "􀇌",
-    ["moderate or heavy showers of ice pellets"] = "􀇌",
-    ["patchy light rain with thunder"] = "􀇠",
-    ["moderate or heavy rain with thunder"] = "􀇠",
-    ["patchy light snow with thunder"] = "􀇠",
-    ["moderate or heavy snow with thunder"] = "􀇠",
-    ["patchy rain nearby"] = "􀇄",
-    ["patchy snow nearby"] = "􀇎",
-    ["patchy sleet nearby"] = "􀇐",
-    ["patchy freezing drizzle nearby"] = "􀇐",
     ["thundery outbreaks in nearby"] = "􀇞",
-    ["patchy light rain in area with thunder"] = "􀇠",
-    ["patchy light snow in area with thunder"] = "􀇠",
-    ["moderate or heavy rain in area with thunder"] = "􀇠",
-    ["moderate or heavy snow in area with thunder"] = "􀇠",
     dust = "􀇊",
     ["blowing dust"] = "􀇊",
     ["dust storm"] = "􀇊",
     ["saharan dust"] = "􀇊",
     ["dust haze"] = "􀇊",
     haze = "􀇊",
-    ["smoky haze"] = "􀇢",
-    smoke = "􀇢",
-    smog = "􀇢",
-    ["severe smog"] = "􀇢",
     sandstorm = "􀇊",
     ["severe sandstorm"] = "􀇊",
-}
+}, { __index = weather_icons_day })
 
 local function get_condition_icon(condition, is_day)
     if is_day then
@@ -255,34 +204,6 @@ local function get_condition_icon(condition, is_day)
 end
 
 -- # utils #######################################################################
-
--- #  cloud
--- #  cloudy
-
--- #  thermometer
--- #  horizon
--- #  hot
--- #  humidity
-
--- #  moonrise
--- #  moonset
-
--- #  sunrise
--- #  sunset
-
-local function set_uv_index_color(uv_index)
-    if uv_index < 3 then
-        return colors.green, "Low"
-    elseif uv_index < 6 then
-        return colors.yellow, "Moderate"
-    elseif uv_index < 8 then
-        return colors.orange, "High"
-    elseif uv_index < 11 then
-        return colors.red, "Very High"
-    else
-        return colors.purple, "Extreme"
-    end
-end
 
 local function set_air_quality_color(epa_index)
     if epa_index == 1 then
@@ -302,6 +223,20 @@ local function set_air_quality_color(epa_index)
     end
 end
 
+local function set_uv_index_color(uv_index)
+    if uv_index < 3 then
+        return colors.green, "Low"
+    elseif uv_index < 6 then
+        return colors.yellow, "Moderate"
+    elseif uv_index < 8 then
+        return colors.orange, "High"
+    elseif uv_index < 11 then
+        return colors.red, "Very High"
+    else
+        return colors.purple, "Extreme"
+    end
+end
+
 local function set_weather_unavailable(message)
     weather:set({
         icon = { string = "􀇾" },
@@ -315,6 +250,7 @@ local function set_weather_unavailable(message)
     weather_precipitation:set({ label = { string = "--" } })
     weather_wind:set({ label = { string = "Wind: --" } })
     weather_aqi:set({ label = { string = "AQI: --" } })
+    weather_uv:set({ label = { string = "UV: --" } })
     weather_sunrise:set({ label = { string = "Sunrise: --" } })
     weather_sunset:set({ label = { string = "Sunset: --" } })
 end
@@ -417,6 +353,10 @@ local function update_weather()
             weather_aqi:set({
                 label = { string = "AQI: " .. air_quality_index .. " " .. air_quality_category },
                 icon = { string = air_quality_icon, color = air_quality_color },
+            })
+            weather_uv:set({
+                label = { string = "UV: " .. uv_index .. " " .. uv_index_category },
+                icon = { color = uv_index_color },
             })
             weather_sunrise:set({ label = { string = "Sunrise: " .. sunrise } })
             weather_sunset:set({ label = { string = "Sunset: " .. sunset } })

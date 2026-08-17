@@ -61,7 +61,8 @@ bind_index() {
   echo "$key:change-prompt($prompt> )+change-preview($preview {})+reload($print)"
 }
 
-STATE_FILE="/tmp/nix-search-tv-fzf"
+STATE_FILE=$(mktemp)
+trap 'rm -f "$STATE_FILE"' EXIT
 
 # save_state saves the currently displayed index
 # to the $STATE_FILE. This file serves as an external script state

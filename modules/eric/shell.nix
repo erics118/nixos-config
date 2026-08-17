@@ -27,6 +27,8 @@
     in
     {
       home.sessionVariables.COLORTERM = "truecolor";
+      # exported so ad-hoc `nix shell nixpkgs#<unfree>` evaluates
+      home.sessionVariables.NIXPKGS_ALLOW_UNFREE = "1";
 
       programs.zsh = {
         enable = true;
@@ -97,7 +99,6 @@
 
         localVariables = {
           WORDCHARS = "*?_-.~";
-          NIXPKGS_ALLOW_UNFREE = "1";
         };
 
         shellAliases = {
@@ -180,7 +181,6 @@
           gswc = "git switch -c";
           # st = stash
           gst = "git stash";
-          # st = stash
           gstl = "git stash list";
           gstd = "git stash drop";
           gsta = "git stash apply";

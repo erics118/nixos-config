@@ -18,18 +18,12 @@ define_modifier hammer = cmd + alt + shift
 hammer + b :
     sketchybar --bar hidden=toggle
 
-mod + l |
-    cmd + ctrl + q
-
 # apps
 mod + return :
     front -p "/Applications/Nix Apps/WezTerm.app"
 
 mod + shift + return :
     front -n "Visual Studio Code"
-
-# mod + d :
-#     open -b com.raycast-x.macos
 
 mod + e :
     front -p "/System/Library/CoreServices/Finder.app"
@@ -62,9 +56,6 @@ mod + w :
     front -n "Preview"
 
 # window state
-# mod + q :
-#     yabai -m window --close
-
 mod + f :
     yabai -m window --toggle zoom-fullscreen && sketchybar --trigger yabai
 
@@ -74,26 +65,11 @@ mod + shift + f :
 mod + shift + space :
     yabai -m window --toggle float && sketchybar --trigger yabai
 
-# mod + m :
-#     yabai -m window --minimize
-
 # focus
-# mod + {left,down,up,right} :
-#     yabai -m window --focus {west,south,north,east}
-
 mod + {h,j,k,l} :
     yabai -m window --focus {west,south,north,east}
 
-# ctrl + up :
-#     yabai -m window --focus stack.prev
-
-# ctrl + down :
-#     yabai -m window --focus stack.next
-
 # move / swap
-# mod + shift + {left,down,up,right} :
-#     yabai -m window --swap {west,south,north,east}
-
 mod + shift + {h,j,k,l} :
     yabai -m window --swap {west,south,north,east}
 
@@ -106,12 +82,6 @@ mod + shift + {1,2,3,4,5,6,7,8,9} :
 
 mod + ctrl + {1,2,3,4,5,6,7,8,9} :
     yabai -m window --space {1,2,3,4,5,6,7,8,9} --focus
-
-# mod + ctrl + left :
-#     yabai -m space --focus prev
-
-# mod + ctrl + right :
-#     yabai -m space --focus next
 
 # launcher namespace
 hyper + a ; 1 :

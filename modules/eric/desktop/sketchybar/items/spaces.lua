@@ -2,7 +2,9 @@ local app_icons = require("helpers.app_icons")
 
 local spaces = {}
 
-for i = 1, 10, 1 do
+local num_spaces = 10
+
+for i = 1, num_spaces, 1 do
     local space = sbar.add_space("space." .. i, {
         space = i,
         icon = {
@@ -92,7 +94,7 @@ space_window_observer:subscribe({ "space_windows_change" }, function(env)
             window_data = {}
         end
 
-        for i = 1, 10, 1 do
+        for i = 1, num_spaces, 1 do
             local apps = window_data[tostring(i)] or {}
 
             local label = ""

@@ -45,13 +45,6 @@ local function update_menus(env, on_done)
             id = id + 1
         end
 
-        -- extra 1px padding on second item if there are more than 1+5 menus to match macos system
-        -- if id > 7 then
-        --     menu_items[2]:set({ label = { padding_right = 12 } })
-        -- else
-        --     menu_items[2]:set({ label = { padding_right = 11 } })
-        -- end
-
         if on_done then
             on_done()
         end
