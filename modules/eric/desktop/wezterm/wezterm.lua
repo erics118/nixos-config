@@ -47,10 +47,10 @@ else
 end
 
 c.window_padding = {
-    -- left = 6,
-    right = 8,
-    -- top = 12,
-    -- bottom = 6,
+    left = 12,
+    right = 12,
+    top = 12,
+    bottom = 12,
 }
 
 -- scroll bar
