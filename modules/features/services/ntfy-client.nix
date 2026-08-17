@@ -2,7 +2,9 @@
   flake.modules =
     let
       # ntfy cli default host + token, so `ntfy pub/sub <topic>` needs no flags
-      client = home: { config, ... }: {
+      client = home: { config, pkgs, ... }: {
+        environment.systemPackages = [ pkgs.ntfy-sh ];
+
         sops.templates."ntfy-client.yml" = {
           content = ''
             default-host: https://ntfy.eriz.cc
