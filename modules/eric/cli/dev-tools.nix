@@ -22,10 +22,10 @@
           filterMode = "fuzzy";
           showRandomTip = false;
         };
-        git.pagers = [
+        git.diffRenderers = [
           {
             colorArg = "always";
-            pager = "delta --paging=never";
+            command = "delta --paging=never";
           }
         ];
         update.method = "never";
