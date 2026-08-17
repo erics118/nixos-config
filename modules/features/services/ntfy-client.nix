@@ -19,5 +19,13 @@
     {
       nixos.ntfy-client = client "/home/eric";
       darwin.ntfy-client = client "/Users/eric";
+
+      # macos ntfy cli reads ~/Library/Application Support/ntfy/client.yml,
+      # so point it at the .config file the sops template renders
+      homeManager.darwin = { config, ... }: {
+        home.file."Library/Application Support/ntfy/client.yml".source =
+          config.lib.file.mkOutOfStoreSymlink
+            "${config.home.homeDirectory}/.config/ntfy/client.yml";
+      };
     };
 }
