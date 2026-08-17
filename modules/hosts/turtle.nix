@@ -9,7 +9,7 @@ let
   m = config.flake.modules;
 in
 {
-  configurations.nixos.turtle.module = {
+  configurations.nixos.turtle.module = { pkgs, config, ... }: {
     imports = [
       m.nixos.base
       m.nixos.ssh-server
@@ -56,7 +56,8 @@ in
 
     # outbound tunnel, no inbound ports opened. public services fan out here:
     # add "<name>.eriz.cc".service = "http://localhost:<port>" and a matching CNAME
-    services.cloudflared.tunnels."<TUNNEL-UUID>" = {
+    services.cloudflared.enable = true;
+    services.cloudflared.tunnels."91d785c6-c697-495c-a0aa-3e01037a3de2" = {
       credentialsFile = config.sops.secrets."cloudflared/turtle-tunnel".path;
       default = "http_status:404";
       ingress."ntfy.eriz.cc".service = "http://localhost:2586";

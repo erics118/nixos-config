@@ -2,7 +2,7 @@
   flake.modules.nixos.ntfy = { config, ... }: {
     # NTFY_AUTH_USERS + NTFY_AUTH_TOKENS, read by systemd as root before the
     # service drops to its DynamicUser
-    sops.secrets."ntfy/auth-env" = { };
+    sops.secrets."ntfy/auth-env".restartUnits = [ "ntfy-sh.service" ];
 
     services.ntfy-sh = {
       enable = true;
