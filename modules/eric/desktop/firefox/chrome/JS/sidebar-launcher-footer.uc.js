@@ -119,8 +119,8 @@
         `${sidebarRect.left - browserRect.left + inset}px`,
       );
       launcher.style.setProperty(
-        "--sidebery-launcher-right",
-        `${browserRect.right - sidebarRect.right + inset}px`,
+        "--sidebery-launcher-width",
+        `${sidebarRect.width - 2 * inset}px`,
       );
     };
     const syncBookmarksOffset = () => {

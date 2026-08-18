@@ -130,9 +130,9 @@
      across Sidebery. */
   #sidebar-container[data-sidebery-bottom-launcher] {
     position: absolute !important;
-    inset: auto var(--sidebery-launcher-right) var(--sidebery-launcher-inset)
+    inset: auto auto var(--sidebery-launcher-inset)
       var(--sidebery-launcher-left) !important;
-    width: auto !important;
+    width: var(--sidebery-launcher-width) !important;
     height: var(--sidebery-launcher-height) !important;
     z-index: 6 !important;
   }

@@ -27,7 +27,6 @@
     const cmd = el.getAttribute("command");
     if (badIds.includes(el.id) || badCommands.includes(cmd)) {
       el.remove();
-      console.log("kill-tab-shortcuts: removed", el.id || cmd);
     }
   }
 
