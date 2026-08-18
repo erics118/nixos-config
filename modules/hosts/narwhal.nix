@@ -3,7 +3,7 @@ let
   m = config.flake.modules;
 in
 {
-  configurations.nixos.narwhal.module = {
+  configurations.nixos.narwhal.module = { config, ... }: {
     imports = [
       m.nixos.base
       m.nixos.ssh-server
@@ -95,5 +95,7 @@ in
       precedence ::ffff:0:0/96  100
     '';
     boot.kernel.sysctl."net.ipv6.conf.wlo1.accept_ra" = 0;
+
+    environment.systemPackages = [ config.boot.kernelPackages.perf ];
   };
 }
