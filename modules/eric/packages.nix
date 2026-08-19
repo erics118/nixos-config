@@ -51,6 +51,7 @@
 
           # cli tools
           mosh
+          eternal-terminal
           glow
           serve
           terminal-notifier
