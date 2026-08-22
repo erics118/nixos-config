@@ -189,6 +189,14 @@
     border-top-left-radius: var(--page-frame-radius) !important;
     border-bottom-left-radius: var(--page-frame-radius) !important;
   }
+
+  /* The launcher pill is #sidebar-container, positioned absolutely in #browser,
+     not part of #sidebar-box. Closing the sidebar only hides #sidebar-box, so
+     hide the launcher alongside it. */
+  #browser:has(#sidebar-box[hidden])
+    #sidebar-container[data-sidebery-bottom-launcher] {
+    display: none !important;
+  }
 }
 
 /* ===== Address bar =====

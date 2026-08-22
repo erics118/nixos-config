@@ -111,7 +111,7 @@
         ),
       ) || 0;
     const syncPosition = () => {
-      if (!browser) return;
+      if (!browser || sidebarBox.hidden) return;
       const browserRect = browser.getBoundingClientRect();
       const sidebarRect = sidebarBox.getBoundingClientRect();
       launcher.style.setProperty(
