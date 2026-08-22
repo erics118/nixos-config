@@ -168,14 +168,14 @@ hyper + y ; {1,2,3,4,5,6,7,8,9,0} :
 
 # trackpad corner taps: hold cmd, tap a corner
 # right side -> volume, left side -> brightness
-cmd + trackpad_tap(tr) |
+alt + trackpad_tap(tr) |
     sound_up
 
-cmd + trackpad_tap(br) |
+alt + trackpad_tap(br) |
     sound_down
 
-cmd + trackpad_tap(tl) |
+alt + trackpad_tap(tl) |
     brightness_up
 
-cmd + trackpad_tap(bl) |
+alt + trackpad_tap(bl) |
     brightness_down
