@@ -1,10 +1,12 @@
 {
-  # attach to a persistent tmux session on a remote host over autossh
+  # attach to a persistent tmux session on a remote host over mosh
+  # -a falls back to autossh
   flake.modules.homeManager.base = { pkgs, ... }: {
     home.packages = [
       (pkgs.writeShellApplication {
         name = "rtmux";
         runtimeInputs = with pkgs; [
+          mosh
           autossh
           openssh
         ];

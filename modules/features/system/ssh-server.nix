@@ -16,10 +16,5 @@
     programs.mosh = {
       enable = true;
     };
-
-    services.eternal-terminal.enable = true;
-
-    # module has no openFirewall option, so open et's tcp port manually
-    networking.firewall.allowedTCPPorts = [ 2022 ];
   };
 }

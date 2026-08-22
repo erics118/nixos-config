@@ -13,19 +13,27 @@ _rtmux_sessions() {
 }
 
 _rtmux() {
-  local -a hosts sessions modes
+  local state
+  local -a line
 
-  case $CURRENT in
-    2)
-      hosts=(${(f)"$(_rtmux_hosts)"})
-      _describe -t hosts 'host' hosts
-      ;;
-    3)
-      sessions=(${(f)"$(_rtmux_sessions "$words[2]")"})
-      (( $#sessions )) && _describe -t sessions 'session' sessions
-      modes=('--ls:list sessions on the host')
-      _describe -t modes 'mode' modes
-      ;;
+  _arguments -C \
+    '(-a --autossh)'{-a,--autossh}'[fall back to autossh]' \
+    '1:host:->host' \
+    '2:session:->session'
+
+  case $state in
+  host)
+    local -a hosts
+    hosts=(${(f)"$(_rtmux_hosts)"})
+    _describe -t hosts 'host' hosts
+    ;;
+  session)
+    local -a sessions modes
+    sessions=(${(f)"$(_rtmux_sessions "${line[1]}")"})
+    (( $#sessions )) && _describe -t sessions 'session' sessions
+    modes=('--ls:list sessions on the host')
+    _describe -t modes 'mode' modes
+    ;;
   esac
 }
 

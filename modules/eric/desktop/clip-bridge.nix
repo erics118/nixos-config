@@ -9,9 +9,8 @@ in
     { pkgs, lib, ... }:
     let
       # remote-side sender: request a mode, stream the bytes back
-      # -t 30 keeps the read half open long enough to finish a large png
-      # connect-timeout keeps paste from hanging when the mac is asleep or off-tailnet
-      send = ''${pkgs.socat}/bin/socat -t 30 - "TCP:${orca}:${port},connect-timeout=2" 2>/dev/null'';
+      # -w 2 keeps paste from hanging when the mac is asleep or off-tailnet
+      send = "${pkgs.nmap}/bin/ncat -w 2 ${orca} ${port} 2>/dev/null";
 
       mkShim = text: {
         executable = true;
@@ -75,13 +74,13 @@ in
   flake.modules.homeManager.darwin =
     { pkgs, ... }:
     let
-      # mac-side responder, run per connection by socat
+      # mac-side responder, run per connection by ncat
       # peer must be inside the tailscale range 100.64.0.0/10
       clipServe = pkgs.writeShellApplication {
         name = "clip-bridge-serve";
         runtimeInputs = [ pkgs.pngpaste ];
         text = ''
-          ip="''${SOCAT_PEERADDR:-}"
+          ip="''${NCAT_REMOTE_ADDR:-}"
           o2="''${ip#100.}"
           o2="''${o2%%.*}"
           case "$ip" in
@@ -103,9 +102,12 @@ in
         enable = true;
         config = {
           ProgramArguments = [
-            "${pkgs.socat}/bin/socat"
-            "TCP-LISTEN:${port},reuseaddr,fork"
-            "EXEC:${clipServe}/bin/clip-bridge-serve"
+            "${pkgs.nmap}/bin/ncat"
+            "-l"
+            "-k"
+            "${port}"
+            "--sh-exec"
+            "${clipServe}/bin/clip-bridge-serve"
           ];
           RunAtLoad = true;
           KeepAlive = true;
