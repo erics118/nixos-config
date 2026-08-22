@@ -297,6 +297,8 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
     -- 1 for ellipsis
     -- 2 for testing purposes
     local tab_title = tab.active_pane.title
+    -- mosh prepends [mosh] to the title
+    tab_title = tab_title:gsub("^%[mosh[^%]]*%]%s*", "")
 
     local filler_width = #title - 11 + 3 + 1
     if (#tab_title + filler_width) > max_width then
