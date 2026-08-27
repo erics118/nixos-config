@@ -11,7 +11,11 @@
           show_doc_path = "1";
 
           # auto-enable synctex so right-click does inverse search
-          startup_commands = [ "toggle_synctex" ];
+          # fit to page width so docs open at a readable size
+          startup_commands = [
+            "toggle_synctex"
+            "fit_to_page_width"
+          ];
 
           # prevent scrolling past the first and last page
           scroll_past_document_ends = "0";
@@ -23,7 +27,6 @@
           # nicer navigation while reading/editing
           wheel_zoom_on_cursor = "1";
           should_draw_unrendered_pages = "1";
-          prerender_page_count = "3";
           super_fast_search = "1";
           case_sensitive_search = "0";
 
