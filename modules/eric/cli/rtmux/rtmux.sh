@@ -30,7 +30,7 @@ case $session in
       -o ControlMaster=no -o ControlPath=none \
       "$host" -t "tmux new -A -s $session"
   else
-    mosh "$host" -- tmux new -A -s "$session"
+    mosh --predict-overwrite "$host" -- tmux new -A -s "$session"
   fi
   ;;
 esac
