@@ -65,14 +65,14 @@ yabai -m rule --add label="orion popup 1" app="^Orion.*$" role="^AXPopover$" man
 yabai -m rule --add label="orion popup 2" app="^Orion.*$" title="^Orion Preview.*" manage=off
 
 # zoom
-yabai -m rule --add label="unmanage zoom" app="^zoom\\.us$" manage=off
-yabai -m rule --add label="manage zoom main window" title="^Zoom Meeting.*$" app="^zoom\\.us$" subrole="^AXStandardWindow$" manage=on
+# yabai -m rule --add label="unmanage zoom" app="^Zoom$" manage=off
+# yabai -m rule --add label="manage zoom main window" app="^Zoom$" subrole="^AXStandardWindow$" manage=on
 
 # apple music mini player
 yabai -m rule --add label="apple music" app="^Music$" title="^MiniPlayer$" manage=off
 
 # firefox pip
-yabai -m rule --add label="firefox pip" app="^Firefox$" title="^Picture-in-Picture$" manage=off
+yabai -m rule --add label="firefox pip" app="^Firefox.*$" title="^Picture-in-Picture$" manage=off
 
 # amazon workspaces login window
 yabai -m rule --add label="amazon workspaces" app="^Amazon WorkSpaces$" title="^$" manage=off

@@ -116,6 +116,8 @@
           mmv = "noglob zmv -W";
           zmv = "noglob zmv";
 
+          timeout = "gtimeout";
+
           sshn = "ssh -F /dev/null -o PubkeyAuthentication=no";
 
           ws = "wezterm cli spawn -- ";

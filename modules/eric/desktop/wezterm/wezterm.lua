@@ -16,7 +16,6 @@ c.skip_close_confirmation_for_processes_named = {
     "sh",
     "zsh",
     "fish",
-    "tmux",
     "nu",
     -- wsl
     "cmd.exe",

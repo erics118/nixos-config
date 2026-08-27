@@ -359,3 +359,25 @@ findbar {
 .browserContainer {
   box-shadow: none !important;
 }
+
+/* ===== Focus mode =====
+   focus-mode.uc.js toggles [focus-mode] with Cmd+Shift+F. Hide the whole
+   toolbox (nav/url bar, bookmarks bar), Sidebery, and its launcher so only the
+   page remains. Toggle again to restore. */
+#main-window[focus-mode] {
+  #navigator-toolbox,
+  #sidebar-box,
+  #sidebar-splitter,
+  #sidebar-container[data-sidebery-bottom-launcher] {
+    display: none !important;
+  }
+
+  /* Sidebery is gone, so close the page frame on the left like the
+     sidebar-hidden case above. */
+  #tabbrowser-tabbox {
+    border-left-width: var(--page-frame-width) !important;
+    border-left-color: var(--atbc-raised-surface) !important;
+    border-top-left-radius: var(--page-frame-radius) !important;
+    border-bottom-left-radius: var(--page-frame-radius) !important;
+  }
+}

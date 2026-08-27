@@ -46,13 +46,16 @@ mod + g :
 mod + q :
     front -n "Todoist"
 
+mod + w :
+    front -n "Notion"
+
 mod + s :
     front -n "Slack"
 
 mod + shift + s :
     front -n "Messages"
 
-mod + w :
+mod + r :
     front -n "Preview"
 
 # window state
