@@ -47,7 +47,7 @@
             # reuse one connection per host so repeat commands skip the
             # handshake and the 1password prompt; rtmux opts its autossh out
             controlMaster = "auto";
-            controlPath = "~/.ssh/master-%n-%C";
+            controlPath = "~/.ssh/master-%C";
             controlPersist = "10m";
             identitiesOnly = true;
             identityAgent = lib.mkIf isDarwin "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";

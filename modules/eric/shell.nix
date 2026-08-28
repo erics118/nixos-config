@@ -122,6 +122,7 @@
 
           ws = "wezterm cli spawn -- ";
 
+          rv = "docker run -i --init --rm -v \"$PWD\":/root ghcr.io/sampsyo/cs3410-infra";
           # # is an extended-glob operator in zsh; disable globbing so flake
           # refs like nixpkgs#foo work without quoting
           nix = "noglob nix";

@@ -43,5 +43,20 @@
       home.file."Library/Application Support/lazygit/config.yml" =
         lib.mkIf pkgs.stdenv.hostPlatform.isDarwin
           { inherit (config.home.file."${config.xdg.configHome}/lazygit/config.yml") source enable; };
+
+      xdg.configFile."clangd/config.yaml".text = ''
+        InlayHints:
+          Enabled: true
+          ParameterNames: true
+          DeducedTypes: true
+
+        Hover:
+          ShowAKA: true
+      '';
+
+      # clangd on macOS reads ~/Library/Preferences/clangd/config.yaml, not ~/.config
+      home.file."Library/Preferences/clangd/config.yaml" =
+        lib.mkIf pkgs.stdenv.hostPlatform.isDarwin
+          { inherit (config.home.file."${config.xdg.configHome}/clangd/config.yaml") source enable; };
     };
 }

@@ -163,7 +163,7 @@ config=(
   # vertical: The window is split along the y-axis.
   # horizontal: The window is split along the x-axis.
   # auto: The axis is determined based on width/height ratio.
-  split_type horizontal # [vertical|horizontal|auto]
+  split_type auto # [vertical|horizontal|auto]
 
   # Balance the window tree upon change, so that all windows occupy an equally sized area.
   auto_balance off # [<BOOL_SEL>|x-axis|y-axis]

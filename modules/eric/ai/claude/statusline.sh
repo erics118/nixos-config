@@ -114,8 +114,10 @@ usage=""
 hot "$seven_day_opus" && usage="${usage:+$usage }$(printf '%sopus:%s%.0f%%%s' "$DIM" "$(color_for "$seven_day_opus")" "$seven_day_opus" "$RESET")"
 hot "$seven_day_sonnet" && usage="${usage:+$usage }$(printf '%ssonnet:%s%.0f%%%s' "$DIM" "$(color_for "$seven_day_sonnet")" "$seven_day_sonnet" "$RESET")"
 hot "$fable" && usage="${usage:+$usage }$(printf '%sfable:%s%.0f%%%s' "$DIM" "$(color_for "$fable")" "$fable" "$RESET")"
-# resets: hours when <= 1 day out, else days (integer ceil)
-if [[ $reset_secs =~ ^[0-9]+$ ]] && [ "$reset_secs" -ge 1 ]; then
+# resets: only when 7d usage > 50% and reset is under 3 days out
+# hours when <= 1 day out, else days (integer ceil)
+if [[ $reset_secs =~ ^[0-9]+$ ]] && [ "$reset_secs" -ge 1 ] && [ "$reset_secs" -lt 259200 ] &&
+  [[ $seven_day =~ ^[0-9.]+$ ]] && [ "${seven_day%%.*}" -gt 50 ]; then
   if [ "$reset_secs" -le 86400 ]; then
     reset_label="$(((reset_secs + 3599) / 3600))h"
   else
