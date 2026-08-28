@@ -55,8 +55,8 @@
       '';
 
       # clangd on macOS reads ~/Library/Preferences/clangd/config.yaml, not ~/.config
-      home.file."Library/Preferences/clangd/config.yaml" =
-        lib.mkIf pkgs.stdenv.hostPlatform.isDarwin
-          { inherit (config.home.file."${config.xdg.configHome}/clangd/config.yaml") source enable; };
+      home.file."Library/Preferences/clangd/config.yaml" = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+        inherit (config.home.file."${config.xdg.configHome}/clangd/config.yaml") source enable;
+      };
     };
 }
