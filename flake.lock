@@ -313,11 +313,11 @@
         "vpn-confinement": "vpn-confinement"
       },
       "locked": {
-        "lastModified": 1787553095,
-        "narHash": "sha256-3AdmIN3O11dl6+ygzYffwQqRCSgfJZGq3UK6t5CNIBo=",
+        "lastModified": 1788177446,
+        "narHash": "sha256-5K3wXhMsXKOEXYsdbHke09LJ8o3ZId+DpVruYs0hkoU=",
         "ref": "refs/heads/main",
-        "rev": "53852566e8319ae9d80249e6bbc4aa0c623657c8",
-        "revCount": 46,
+        "rev": "4804fdcef480a2a255f6b7ec9ed3b05ab268b448",
+        "revCount": 47,
         "type": "git",
         "url": "ssh://git@github.com/erics118/nixos-config-private.git"
       },
@@ -569,11 +569,11 @@
     },
     "vpn-confinement": {
       "locked": {
-        "lastModified": 1785142579,
-        "narHash": "sha256-WEPxDMiKt3uGVVu/aorHnIgYYW62mEq2Q+rlN3qH6bg=",
+        "lastModified": 1788035501,
+        "narHash": "sha256-3Xs9lCMwjvFURU7/fPEGDR5kCKvcdX2l5Fah1nZoaGQ=",
         "owner": "Maroka-chan",
         "repo": "vpn-confinement",
-        "rev": "b3aa71a7edfe6af748c23729d1bdec3b499741ff",
+        "rev": "ce8949125b698406810ea71a8bd7b567d9a0b09f",
         "type": "github"
       },
       "original": {
