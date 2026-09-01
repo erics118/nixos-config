@@ -1,6 +1,11 @@
 {
   flake.modules.nixos.auto-upgrade =
-    { config, pkgs, lib, ... }:
+    {
+      config,
+      pkgs,
+      lib,
+      ...
+    }:
     let
       checkout = "/home/eric/.flake";
     in
