@@ -16,8 +16,8 @@
       chflags hidden /nix
       # disable duetexpertd, app-prediction daemon that pins a cpu core, unused with siri off
       duetuid=$(id -u eric)
-      launchctl bootout gui/$duetuid/com.apple.duetexpertd 2>/dev/null || true
-      launchctl disable gui/$duetuid/com.apple.duetexpertd 2>/dev/null || true
+      launchctl bootout gui/"$duetuid"/com.apple.duetexpertd 2>/dev/null || true
+      launchctl disable gui/"$duetuid"/com.apple.duetexpertd 2>/dev/null || true
     '';
 
     users.users.eric = {
