@@ -1,6 +1,6 @@
 {
   flake.modules.nixos.auto-upgrade =
-    { config, pkgs, ... }:
+    { config, pkgs, lib, ... }:
     let
       checkout = "/home/eric/.flake";
     in
@@ -25,6 +25,14 @@
 
       # if fail after 3 tries, revert back to a previous generation
       boot.loader.systemd-boot.bootCounting.enable = true;
+
+      # bless-boot runs once at boot; a switch that changes it re-runs `good`
+      # after the boot is already blessed, which errors on the missing counter
+      # file and aborts activation. the `-` prefix ignores that spurious failure
+      systemd.services.systemd-bless-boot.serviceConfig.ExecStart = lib.mkForce [
+        ""
+        "-${config.systemd.package}/lib/systemd/systemd-bless-boot good"
+      ];
 
       systemd.services.nixos-upgrade = {
         environment.SUDO_UID = "1000";
