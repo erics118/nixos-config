@@ -2,7 +2,7 @@ name: update-flake-lock
 
 on:
   schedule:
-    - cron: "0 6 * * 1" # mondays 06:00 utc
+    - cron: "22 16 * * 1" # 12:22 edt
   workflow_dispatch:
   repository_dispatch:
     types: [input-updated] # client_payload.input names the single input to bump
@@ -38,7 +38,9 @@ jobs:
         id: update
         with:
           token: ${{ steps.app-token.outputs.token }}
-          pr-title: ${{ github.event.client_payload.input && format('update {0} input', github.event.client_payload.input) || 'update all flake inputs' }}
+          # squash-merge titles the commit from the single commit-msg, not pr-title
+          commit-msg: ${{ github.event.client_payload.input && format('update {0}', github.event.client_payload.input) || 'update all inputs' }}
+          pr-title: ${{ github.event.client_payload.input && format('update {0}', github.event.client_payload.input) || 'update all inputs' }}
           pr-labels: dependencies
           # empty for schedule/workflow_dispatch, which updates every input
           inputs: ${{ github.event.client_payload.input }}
