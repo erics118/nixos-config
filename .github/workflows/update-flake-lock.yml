@@ -2,7 +2,7 @@ name: update-flake-lock
 
 on:
   schedule:
-    - cron: "22 16 * * 1" # 12:22 edt
+    - cron: "22 16 * * 1" # mondays 12:22 edt
   workflow_dispatch:
   repository_dispatch:
     types: [input-updated] # client_payload.input names the single input to bump
