@@ -27,6 +27,8 @@
           "Desktop.ini"
           # claude
           "**/.claude/*.local.*"
+          "**/.claude/worktrees/"
+          "CLAUDE.local.md"
           # nix
           ".direnv/"
           ".devenv/"
