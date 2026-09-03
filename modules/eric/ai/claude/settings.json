@@ -80,6 +80,15 @@
         ]
       },
       {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.claude/hooks/block-smart-punct.sh\""
+          }
+        ]
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {
@@ -112,6 +121,10 @@
           {
             "type": "command",
             "command": "\"$HOME/.claude/hooks/treefmt-on-edit.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.claude/hooks/warn-comment-block.sh\""
           }
         ]
       }
