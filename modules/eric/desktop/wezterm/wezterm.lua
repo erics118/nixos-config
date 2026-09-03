@@ -48,7 +48,7 @@ end
 c.window_padding = {
     left = 12,
     right = 12,
-    top = 12,
+    top = 0,
     bottom = 12,
 }
 

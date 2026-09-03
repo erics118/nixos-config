@@ -6,25 +6,19 @@
 // @include        chrome://browser/content/places/bookmarksSidebar.xhtml
 // ==/UserScript==
 
-// Scoped tweaks for the native sidebar panels. fx-autoconfig injects this into
-// each matched panel document at DOMContentLoaded, so document/window here are
-// the panel's own. Needs userChromeJS.persistent_domcontent_callback = true so
-// it re-runs each time a panel reloads, not just the first load.
+// scoped tweaks for the native sidebar panels, injected per matched panel doc
+// needs userChromeJS.persistent_domcontent_callback = true to re-run on reload
 (function () {
-  // fx-autoconfig injects with the chrome window as the ambient global, so
-  // reach the panel's own window explicitly. Sheets built from the wrong
-  // window's CSSStyleSheet throw when adopted into the panel's shadow root.
+  // use the panel's own window; a sheet from the chrome window's CSSStyleSheet
+  // throws when adopted into the panel's shadow root
   const win = document.defaultView;
   const root = document.documentElement;
 
-  // Round the search box + moz-buttons (e.g. the header's options menu) in
-  // every matched panel. These tokens inherit across shadow boundaries, and
-  // the legacy bookmarks sidebar's #search-box is a moz-input-search that
-  // reads them too.
+  // round the search box and moz-buttons; the tokens inherit across shadow
+  // boundaries into every matched panel
   root.style.setProperty("--input-text-border-radius", "9999px");
   root.style.setProperty("--button-border-radius", "9999px");
 
-  // Shift every matched panel down.
   root.style.boxSizing = "border-box";
   root.style.paddingTop = "25px";
 

@@ -58,6 +58,8 @@
           NSAutomaticPeriodSubstitutionEnabled = false;
           NSAutomaticQuoteSubstitutionEnabled = false;
           NSAutomaticSpellingCorrectionEnabled = false;
+          # window corner radius in points, 1 is effectively square corners
+          NSConvolutionOverride1 = 1.0;
           "com.apple.keyboard.fnState" = true;
           "com.apple.mouse.tapBehavior" = 1;
           "com.apple.sound.beep.feedback" = 0;
@@ -102,6 +104,10 @@
     # security.pam.services.sudo_local.touchIdAuth = true;
     security.pam.services.sudo_local.text = ''
       auth sufficient pam_tid.so.2
+    '';
+
+    security.sudo.extraConfig = ''
+      %admin ALL=(root) NOPASSWD: /usr/bin/pmset -a disablesleep 1, /usr/bin/pmset -a disablesleep 0
     '';
   };
 }

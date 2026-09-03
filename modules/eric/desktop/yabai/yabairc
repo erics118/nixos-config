@@ -13,7 +13,7 @@ sudo yabai --load-sa
 printf 'loaded sa..\n'
 
 # set padding
-padding=6
+padding=4
 
 # events
 yabai -m signal --add event=window_focused action="sketchybar --trigger window_focused"
@@ -50,7 +50,7 @@ config=(
   #   main: Apply the given padding only to spaces located on the main display.
   #   all: Apply the given padding to all spaces regardless of their display.
   #   off: Do not apply any special padding.
-  external_bar all:0:0 # [<main|all|off>:<top_padding>:<bottom_padding>]
+  external_bar all:-1:0 # [<main|all|off>:<top_padding>:<bottom_padding>]
 
   # Changes the transparency of the macOS menubar.
   # If the value is 0.0, the menubar will no longer respond to mouse-events, effectively hiding the menubar permanently.
@@ -107,7 +107,7 @@ config=(
 
   # Opacity of an unfocused window.
   # System Integrity Protection must be partially disabled.
-  normal_window_opacity 0.90 # [<FLOAT_SEL>]
+  normal_window_opacity 0.70 # [<FLOAT_SEL>]
 
   # Duration of window frame animation.
   # If 0.0, the change in dimension is not animated.

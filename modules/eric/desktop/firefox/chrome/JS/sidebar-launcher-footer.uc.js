@@ -1,15 +1,11 @@
 // sidebar-launcher-footer.uc.js
-// Move Firefox's native sidebar launcher (including Synced Tabs) to a
-// horizontal footer across the Sidebery pane. The launcher lives inside the
-// sidebar-main shadow DOM, so we inject an adopted stylesheet. adoptedStyleSheets survives the lit
-// re-renders that would clobber a plain injected <style>.
+// move the native sidebar launcher to a horizontal footer across the Sidebery
+// pane via an adopted stylesheet on the sidebar-main shadow root
 (function () {
   const VIEW = "sidebery-fork_erics118-sidebar-action";
 
-  // Firefox's revamped toolbar button toggles the whole sidebar launcher and
-  // runs its slide animation. Sidebery's _execute_sidebar_action shortcut
-  // instead toggles only the Sidebery panel. Intercept the toolbar command in
-  // the capture phase so the button behaves exactly like that shortcut.
+  // make the toolbar button toggle only the Sidebery panel, matching the
+  // _execute_sidebar_action shortcut instead of the native launcher slide
   if (!window._sideberyToolbarToggleInstalled) {
     window._sideberyToolbarToggleInstalled = true;
     window.addEventListener(

@@ -53,8 +53,10 @@
    :rules [[:##escape :vk_none]]}
 
   {:des "disable annoying shortcuts: hyper+comma to none"
-   :rules [[:!!##comma :vk_none]
-           [:!!##period :vk_none]]}
+   :rules [[:!CTOScomma :vk_none]
+           [:!QWERcomma :vk_none]
+           [:!QWERperiod :vk_none]
+           [:!CTOSperiod :vk_none]]}
 
   {:des "hyper navigation: hyper-(any-)hjkl to (any-)arrows)"
    :rules [[:!!##h :left_arrow]
@@ -70,16 +72,13 @@
            [:!S#Pf1 :!OSdisplay_brightness_decrement ["multitouch_extension_finger_count_total" 1]]
            [:!S#Pf2 :!OSdisplay_brightness_increment ["multitouch_extension_finger_count_total" 1]]
 
-           [:!C#Pf1 :illumination_decrement ["multitouch_extension_finger_count_total" 1]]
-           [:!C#Pf2 :illumination_increment ["multitouch_extension_finger_count_total" 1]]
-
-           [:!SC#Pf1 :!OSillumination_decrement ["multitouch_extension_finger_count_total" 1]]
-           [:!S#Pf2 :!OSillumination_increment ["multitouch_extension_finger_count_total" 1]]
-
            [:#Pf3 :mission_control ["multitouch_extension_finger_count_total" 1]]
-           [:f4 :launchpad ["multitouch_extension_finger_count_total" 1]]
-           [:f5 :vk_none ["multitouch_extension_finger_count_total" 1]]
-           [:f6 :illumination_increment ["multitouch_extension_finger_count_total" 1]]
+           [:#Pf4 :vk_none ["multitouch_extension_finger_count_total" 1]]
+           [:#Pf5 :illumination_decrement ["multitouch_extension_finger_count_total" 1]]
+           [:#Pf6 :illumination_increment ["multitouch_extension_finger_count_total" 1]]
+
+           [:!S#Pf5 :!OSillumination_decrement ["multitouch_extension_finger_count_total" 1]]
+           [:!S#Pf6 :!OSillumination_increment ["multitouch_extension_finger_count_total" 1]]
 
            [:#Pf7 :rewind ["multitouch_extension_finger_count_total" 1]]
            [:#Pf8 :play_or_pause ["multitouch_extension_finger_count_total" 1]]
@@ -93,8 +92,7 @@
            [:!STtab :!TOpage_up :firefox]
            ; [:!Creturn_or_enter :!CSreturn_or_enter :firefox]
            ; [:!CSreturn_or_enter :!Creturn_or_enter :firefox]
-]
-}
+    ]}
 
   {:des "latex: in vscode: rcmd -> $, ralt -> _, lshift -> (, rshift -> )"
    :rules [[:right_command :right_command :vscode {:alone :!S4 :delayed {:invoked :vk_none}}]

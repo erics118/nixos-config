@@ -1,8 +1,6 @@
 // focus-mode.uc.js
-// Cmd+Shift+F toggles a distraction-free view by setting focus-mode on
-// #main-window; userChrome.css hides the toolbox, bookmarks bar, and Sidebery.
-// Cmd+Shift+F is a native fullscreen alias (key_enterFullScreen_old), so remove
-// it to free the combo. Cmd+Ctrl+F, F11, and the macOS fullscreen button remain.
+// Cmd+Shift+F toggles focus-mode on #main-window; userChrome.css hides the
+// toolbox, bookmarks bar, and Sidebery. frees the combo from native fullscreen
 
 (function () {
   document.getElementById("key_enterFullScreen_old")?.remove();
