@@ -465,11 +465,11 @@
     "sketchybar-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1781118243,
-        "narHash": "sha256-YiUOomnuPfE4UHw+f6j/K3MKTnWfjXN23l14N4zbuD4=",
+        "lastModified": 1788488242,
+        "narHash": "sha256-BKo6fBpYgMkzyZhhQJKj/LBERKLrF4aJIKApAROBBsI=",
         "owner": "erics118",
         "repo": "SketchyBar",
-        "rev": "f44b57d20c4207353b92f3cf046b0e1804f3acb3",
+        "rev": "e9f4c47753a7ce7e3f0dc9dad29a526bb7c100a8",
         "type": "github"
       },
       "original": {
@@ -482,11 +482,11 @@
     "smhkd-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1786569719,
-        "narHash": "sha256-bXiZnBHHU/k8rsKgvAbpov68RAEU59h0dMXgxtbrj+E=",
+        "lastModified": 1788488305,
+        "narHash": "sha256-H/JHL3RZlxMFwiyqr2pvnfudtw/UNeedRdsNKcZJHdk=",
         "owner": "erics118",
         "repo": "smhkd",
-        "rev": "1e38c0e5b108c64cb1db3b4b99ca9c60b4b43921",
+        "rev": "12d58f2dc79491e91afc3efa73269cce1639cf89",
         "type": "github"
       },
       "original": {
