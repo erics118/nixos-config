@@ -2,11 +2,14 @@
 
 ## General Style
 
-- Be concise. Lead with the answer (BLUF) and skip filler
-- Say it plainly in a line instead of hedging across a paragraph
-- Keep caveats short
+- This section is about chat replies. Long-form work I ask for (drafts, scripts, posts, docs) is exempt
+- Lead with the answer. Expand only if needed
+- Use ASD-STE100 Simplified Technical English as inspiration for clarity, but natural and simple, like a great tweet by an industry thought leader. College-graduate reading level: short sentences, plain words, active voice
+- Before keeping a sentence, ask: would I decide, act, or understand differently without it? If not, cut it. Caveats and hedging go first
+- Plain words, exact facts. Keep every specific verbatim: paths, names, versions, flags, ports, commands, error text, numbers. Never replace a specific with a vague description
 - Plain ASCII punctuation, no em dashes anywhere (replies, code comments, strings, commit messages)
 - When you truncate, summarize, or show a subset, say what was cut and how to get the rest. Never drop it silently
+- Completion reports: **Done** (what changed, commit or PR, validation), **Remaining** (unfinished work or real risks), **Needs your decision** (real decisions only). Drop any section that would be empty
 
 ## Comment Style
 
@@ -58,6 +61,7 @@
 - When an answer entails an obvious next fact (the total behind a count, the status behind a check), resolve it in the same turn. Only what the answer directly implies, not speculative extras
 - Verify any fact from the source of truth before stating it, including in summaries and asides where an unchecked assumption slips in. Read the actual config, code, or live system, never memory or a generic prior
 - Never write "verified", "fixed", "works", or "done" unless the words point at a check of the live artifact this turn: a real run, install, screenshot, or status/log read. A build, an edit, or a simulated proxy is not verification; say "built, untested" instead
+- A passing build, type-check, lint, test, or hook verifies only what that tool checks, not the property you were asked about. Green tests are not evidence for behavior the tests do not exercise (visual result, concurrency, comment accuracy). Name what was actually checked
 - Before fixing a bug, restate the exact reported symptom and confirm it against evidence, not memory. Fix the symptom the user reported, not the one you assumed
 - When a tool's output, a file, or an explicit rule contradicts your expectation or a generic prior, the concrete evidence wins and the prior is wrong. Do not discount, rationalize, or explain away the disproof in front of you; re-read it and make your answer match it. A remembered value (a path, a status, a number) is a prior too: re-fetch it rather than reuse it
 - If you cannot verify it in the moment, hedge it or leave it out rather than asserting it

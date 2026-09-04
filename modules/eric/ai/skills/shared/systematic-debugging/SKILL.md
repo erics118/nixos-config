@@ -48,6 +48,10 @@ Done when: a single hypothesis is confirmed by a minimal test.
 
 Done when: the reproduction passes and no other check regresses.
 
+## When independent fixes fail identically, doubt the instrument
+
+If 2+ independent fixes fail the same way, suspect the measurement or test tool before the fix. Validate the instrument against a known-good baseline before changing code again. A probe that reports the same wrong result no matter what you change is lying. This is a different signature from the one below: fixes failing identically points at the instrument, fixes each revealing a new problem points at the architecture.
+
 ## When three fixes have failed, stop fixing
 
 If each attempt reveals a new problem somewhere else, or every fix would need "massive refactoring," the architecture is wrong, not the hypothesis. Stop and raise it with Eric before attempt four.
