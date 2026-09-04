@@ -40,6 +40,8 @@
         CustomUserPreferences = {
           # ignore apple remote desktop (interferes with touch id sudo)
           "com.apple.security.authorization".ignoreArd = true;
+          # window corner radius in points, 1 is effectively square corners
+          NSGlobalDomain.NSConvolutionOverride1 = 1.0;
         };
 
         NSGlobalDomain = {
@@ -58,8 +60,6 @@
           NSAutomaticPeriodSubstitutionEnabled = false;
           NSAutomaticQuoteSubstitutionEnabled = false;
           NSAutomaticSpellingCorrectionEnabled = false;
-          # window corner radius in points, 1 is effectively square corners
-          NSConvolutionOverride1 = 1.0;
           "com.apple.keyboard.fnState" = true;
           "com.apple.mouse.tapBehavior" = 1;
           "com.apple.sound.beep.feedback" = 0;
