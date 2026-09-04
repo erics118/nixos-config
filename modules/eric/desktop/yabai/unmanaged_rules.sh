@@ -49,6 +49,7 @@ yabai -m rule --add label="orbstack prefs" app="^OrbStack$" title="^(General|Sys
 yabai -m rule --add label="weather prefs" app="^Weather$" title="^Settings$" manage=off
 yabai -m rule --add label="discord updater" app="^Discord.*$" title="^Discord Updater$" manage=off
 yabai -m rule --add label="fantastical" app="^Fantastical$" title="^(Flexibits Account|General|Appearance|Events & Tasks|Alerts|Accounts|Calendars & Lists|Openings|Weather|Advanced)$" manage=off
+yabai -m rule --add label="messages" app="^Messages$" title="^(General|iMessage|Shared with You)$" manage=off
 
 # jetbrains
 jetbrains=(

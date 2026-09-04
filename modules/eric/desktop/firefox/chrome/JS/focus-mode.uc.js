@@ -16,6 +16,9 @@
   key.id = "key_focusMode";
   key.setAttribute("key", "F");
   key.setAttribute("modifiers", "accel,shift");
+  // reserved so the keydown never reaches web content, blocking page
+  // shortcuts that call requestFullscreen on Cmd+Shift+F
+  key.setAttribute("reserved", "true");
   key.addEventListener("command", toggleFocusMode);
   keyset.appendChild(key);
 
