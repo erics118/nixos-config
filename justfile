@@ -31,7 +31,7 @@ update input:
 # format nix files
 [group('flake')]
 fmt:
-    nix fmt
+    nix fmt -- --no-cache
 
 # check flake outputs
 [group('flake')]
