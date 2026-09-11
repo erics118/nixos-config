@@ -69,6 +69,9 @@ yabai -m rule --add label="orion popup 2" app="^Orion.*$" title="^Orion Preview.
 # yabai -m rule --add label="unmanage zoom" app="^Zoom$" manage=off
 # yabai -m rule --add label="manage zoom main window" app="^Zoom$" subrole="^AXStandardWindow$" manage=on
 
+# pin full opacity so popup-per-window focus stealing does not dim the meeting
+yabai -m rule --add label="zoom opacity" app="^Zoom$" opacity=1.0
+
 # apple music mini player
 yabai -m rule --add label="apple music" app="^Music$" title="^MiniPlayer$" manage=off
 

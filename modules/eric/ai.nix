@@ -70,7 +70,6 @@
           "settings.json" = "settings.json";
           "statusline.sh" = "statusline.sh";
           hooks = "hooks";
-          rules = "rules";
         }
         // skillDirectories skillLocations.agents "shared"
         // skillDirectories skillLocations.agents vendors.codex

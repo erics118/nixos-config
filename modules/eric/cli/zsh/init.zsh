@@ -47,6 +47,22 @@ t() {
   esac
 }
 
+o() {
+  open "${@:-.}"
+}
+
+# connect to the cornell vpn, pulling credentials from 1password
+# password is line 1 of stdin, line 2 answers the duo prompt with a push
+cuvpn() {
+  emulate -L zsh
+  local user pass
+  user=$(op read "op://Personal/Cornell/username") || return
+  pass=$(op read "op://Personal/Cornell/password") || return
+  printf '%s\npush\n' "$pass" | sudo $commands[openconnect] \
+    --authgroup=CornellVPN --user="$user" --passwd-on-stdin \
+    cuvpn.cuvpn.cornell.edu
+}
+
 # start/stop/restart launchd user agents by short name
 # resolves:
 #   ~/Library/LaunchAgents/<name>

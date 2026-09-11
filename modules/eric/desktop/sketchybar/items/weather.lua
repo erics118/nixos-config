@@ -10,7 +10,7 @@ local weather = sbar.add_item("weather", {
     update_freq = 600,
 })
 
-local weather_key_path = "/run/secrets/api/weather"
+local weather_key_path = "/run/secrets/api/weatherapi"
 
 local function add_weather_item(name, icon)
     return sbar.add_item("weather_" .. name, {

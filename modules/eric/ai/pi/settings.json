@@ -1,0 +1,53 @@
+{
+  "theme": "dark",
+  "defaultProvider": "openai",
+  "defaultModel": "gpt-5.6-terra",
+  "tuiMode": "fullscreen",
+  "fullscreenCopyOnSelect": true,
+  "showHardwareCursor": true,
+  "editorPaddingX": 2,
+  "enabledModels": [
+    "openai/*",
+    "openrouter/*"
+  ],
+  "packages": [
+    "npm:pi-web-access",
+    "npm:pi-hermes-memory",
+    "npm:pi-mcp-adapter",
+    "npm:pi-subagents",
+    "npm:pi-effort",
+    "npm:@tifan/pi-inline-skills",
+    "git:github.com/elpapi42/pi-fork",
+    {
+      "source": "git:github.com/amosblomqvist/pi-config",
+      "extensions": [
+        "bash-guard"
+      ]
+    }
+  ],
+  "subagents": {
+    "defaultProvider": "openai",
+    "defaultModel": "gpt-5.6-terra",
+    "agentOverrides": {
+      "oracle": {
+        "model": "gpt-5.6-sol",
+        "thinking": "high"
+      },
+      "reviewer": {
+        "model": "gpt-5.6-sol",
+        "thinking": "high"
+      }
+    }
+  },
+  "pi-fork": {
+    "defaultEffort": "balanced",
+    "effortProfiles": {
+      "deep": {
+        "provider": "openai",
+        "id": "gpt-5.6-sol",
+        "thinking": "high"
+      }
+    }
+  },
+  "lastChangelogVersion": "0.85.0"
+}

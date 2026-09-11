@@ -7,6 +7,7 @@
       mkEntries = lib.mapAttrsToList (k: v: "  [${k}]=${lib.escapeShellArg v}");
       abbrEntries = lib.concatStringsSep "\n" (mkEntries cfg.abbreviations);
       globalAbbrEntries = lib.concatStringsSep "\n" (mkEntries cfg.globalAbbreviations);
+      prefixWordsClause = lib.optionalString (cfg.commandPrefixWords != [ ]) " || $prefix =~ '(^|[;|&(])[[:space:]]*((${lib.concatStringsSep "|" cfg.commandPrefixWords})[[:space:]]+)+$'";
     in
     {
       options.programs.zsh-abbr-lite = {
@@ -22,6 +23,18 @@
             g = "git";
             gst = "git status";
           };
+        };
+
+        commandPrefixWords = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          description = ''
+            Words that may precede a command-position abbreviation and still let it expand (e.g. noglob, time, sudo)
+          '';
+          example = [
+            "noglob"
+            "time"
+          ];
         };
 
         globalAbbreviations = lib.mkOption {
@@ -59,7 +72,7 @@
               # only at command position: prefix empty after whitespace strip,
               # or ends with a command separator.
               local prefix=''${LBUFFER%$word}
-              if [[ $prefix =~ '^[[:space:]]*$' || $prefix =~ '[;|&(][[:space:]]*$' ]]; then
+              if [[ $prefix =~ '^[[:space:]]*$' || $prefix =~ '[;|&(][[:space:]]*$'${prefixWordsClause} ]]; then
                 LBUFFER="''${LBUFFER%$word}''${_ZSH_ABBR_LITE_CMD[$word]}"
               fi
             fi

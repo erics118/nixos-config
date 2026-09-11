@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "context7-mcp"
+    },
+    "railway": {
+      "command": "railway",
+      "args": ["mcp"]
+    }
+  }
+}

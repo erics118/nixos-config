@@ -30,6 +30,7 @@
           killall
           ccache
           autossh
+          openconnect
 
           # development
           hyperfine

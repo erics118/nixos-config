@@ -166,6 +166,7 @@
       }
     }
   },
+  "feedbackDrafts": "off",
   "effortLevel": "high",
   "advisorModel": "fable",
   "tui": "fullscreen",

@@ -112,8 +112,7 @@ map("DownArrow", "SHIFT", act.ScrollByLine(1))
 map("LeftArrow", MOD, act.SendKey({ key = "LeftArrow", mods = "CTRL" }))
 map("RightArrow", MOD, act.SendKey({ key = "RightArrow", mods = "CTRL" }))
 
--- from claude code
-map("Enter", "SHIFT", act.SendString("\x1b\r"))
+map("Enter", "SHIFT", act.SendString("\x1b[13;2u"))
 
 local key_tables = {
     resize_mode = {

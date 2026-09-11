@@ -47,7 +47,6 @@ sbar.default({
             color = colors.popup.bg,
             shadow = { drawing = true },
         },
-        blur_radius = 50,
     },
     padding_left = settings.outer_padding,
     padding_right = settings.outer_padding,
