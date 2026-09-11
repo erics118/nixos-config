@@ -7,7 +7,9 @@
       mkEntries = lib.mapAttrsToList (k: v: "  [${k}]=${lib.escapeShellArg v}");
       abbrEntries = lib.concatStringsSep "\n" (mkEntries cfg.abbreviations);
       globalAbbrEntries = lib.concatStringsSep "\n" (mkEntries cfg.globalAbbreviations);
-      prefixWordsClause = lib.optionalString (cfg.commandPrefixWords != [ ]) " || $prefix =~ '(^|[;|&(])[[:space:]]*((${lib.concatStringsSep "|" cfg.commandPrefixWords})[[:space:]]+)+$'";
+      prefixWordsClause =
+        lib.optionalString (cfg.commandPrefixWords != [ ])
+          " || $prefix =~ '(^|[;|&(])[[:space:]]*((${lib.concatStringsSep "|" cfg.commandPrefixWords})[[:space:]]+)+$'";
     in
     {
       options.programs.zsh-abbr-lite = {
