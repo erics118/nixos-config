@@ -10,7 +10,8 @@
         ".pi/agent/auth.json".source = repoFile "${base}/auth.json";
         ".pi/agent/APPEND_SYSTEM.md".source = repoFile "${base}/APPEND_SYSTEM.md";
         ".pi/agent/AGENTS.md".source = repoFile "${base}/AGENTS.md";
-        ".pi/agent/extensions/claude-statusline.ts".source = repoFile "${base}/extensions/claude-statusline.ts";
+        ".pi/agent/extensions/claude-statusline.ts".source =
+          repoFile "${base}/extensions/claude-statusline.ts";
         # pi-mcp-adapter reads ~/.config/mcp/mcp.json (highest precedence)
         ".config/mcp/mcp.json".source = repoFile "${base}/mcp.json";
       };

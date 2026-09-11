@@ -6,10 +6,7 @@
   "fullscreenCopyOnSelect": true,
   "showHardwareCursor": true,
   "editorPaddingX": 2,
-  "enabledModels": [
-    "openai/*",
-    "openrouter/*"
-  ],
+  "enabledModels": ["openai/*", "openrouter/*"],
   "packages": [
     "npm:pi-web-access",
     "npm:pi-hermes-memory",
@@ -20,9 +17,7 @@
     "git:github.com/elpapi42/pi-fork",
     {
       "source": "git:github.com/amosblomqvist/pi-config",
-      "extensions": [
-        "bash-guard"
-      ]
+      "extensions": ["bash-guard"]
     }
   ],
   "subagents": {

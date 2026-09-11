@@ -6,7 +6,11 @@ import {
   type ExtensionContext,
   type KeybindingsManager,
 } from "@earendil-works/pi-coding-agent";
-import { CURSOR_MARKER, type EditorTheme, type TUI } from "@earendil-works/pi-tui";
+import {
+  CURSOR_MARKER,
+  type EditorTheme,
+  type TUI,
+} from "@earendil-works/pi-tui";
 
 const execFileAsync = promisify(execFile);
 const reset = "\x1b[0m";
@@ -35,7 +39,8 @@ function formatStatusline({
   cost: number;
 }): string {
   const home = process.env.HOME;
-  const displayCwd = home && cwd?.startsWith(`${home}/`) ? `~${cwd.slice(home.length)}` : cwd;
+  const displayCwd =
+    home && cwd?.startsWith(`${home}/`) ? `~${cwd.slice(home.length)}` : cwd;
   const segments = [
     displayCwd,
     git,
@@ -87,11 +92,17 @@ function gitStatus(output: string): { branch?: string; status?: string } {
   return { branch, status };
 }
 
-async function getGitStatus(cwd: string): Promise<{ branch?: string; status?: string }> {
+async function getGitStatus(
+  cwd: string,
+): Promise<{ branch?: string; status?: string }> {
   try {
-    const { stdout } = await execFileAsync("git", ["-C", cwd, "status", "--porcelain=v1", "--branch"], {
-      timeout: 1000,
-    });
+    const { stdout } = await execFileAsync(
+      "git",
+      ["-C", cwd, "status", "--porcelain=v1", "--branch"],
+      {
+        timeout: 1000,
+      },
+    );
     return gitStatus(stdout);
   } catch {
     return {};
@@ -109,13 +120,21 @@ async function update(pi: ExtensionAPI, ctx: ExtensionContext): Promise<void> {
   const git = await getGitStatus(ctx.cwd);
   const usage = ctx.getContextUsage();
   const contextPercent =
-    usage?.tokens != null && usage.contextWindow > 0 ? Math.round((usage.tokens / usage.contextWindow) * 100) : undefined;
-  const model = ctx.model as { id: string; name?: string; reasoning?: boolean } | undefined;
+    usage?.tokens != null && usage.contextWindow > 0
+      ? Math.round((usage.tokens / usage.contextWindow) * 100)
+      : undefined;
+  const model = ctx.model as
+    { id: string; name?: string; reasoning?: boolean } | undefined;
   const home = process.env.HOME;
-  const cwd = home && ctx.cwd.startsWith(`${home}/`) ? `~${ctx.cwd.slice(home.length)}` : ctx.cwd;
+  const cwd =
+    home && ctx.cwd.startsWith(`${home}/`)
+      ? `~${ctx.cwd.slice(home.length)}`
+      : ctx.cwd;
   const text = formatStatusline({
     cwd: color(cwd, teal),
-    git: git.branch ? color(` ${git.branch}${git.status ? ` ${git.status}` : ""}`, pink) : undefined,
+    git: git.branch
+      ? color(` ${git.branch}${git.status ? ` ${git.status}` : ""}`, pink)
+      : undefined,
     model: model ? color(model.name ?? model.id, blue) : undefined,
     thinking: model?.reasoning ? color(pi.getThinkingLevel(), blue) : undefined,
     context:
@@ -137,7 +156,11 @@ async function update(pi: ExtensionAPI, ctx: ExtensionContext): Promise<void> {
 export default function createExtension(pi: ExtensionAPI): void {
   pi.on("session_start", (_event, ctx) => {
     class PromptEditor extends CustomEditor {
-      constructor(tui: TUI, theme: EditorTheme, keybindings: KeybindingsManager) {
+      constructor(
+        tui: TUI,
+        theme: EditorTheme,
+        keybindings: KeybindingsManager,
+      ) {
         super(tui, theme, keybindings, { paddingX: 2 });
       }
 
@@ -148,21 +171,39 @@ export default function createExtension(pi: ExtensionAPI): void {
       }
     }
 
-    ctx.ui.setEditorComponent((tui, theme, keybindings) => new PromptEditor(tui, theme, keybindings));
+    ctx.ui.setEditorComponent(
+      (tui, theme, keybindings) => new PromptEditor(tui, theme, keybindings),
+    );
     ctx.ui.addAutocompleteProvider((current) => ({
       async getSuggestions(lines, cursorLine, cursorCol, options) {
-        const suggestions = await current.getSuggestions(lines, cursorLine, cursorCol, options);
+        const suggestions = await current.getSuggestions(
+          lines,
+          cursorLine,
+          cursorCol,
+          options,
+        );
         if (!suggestions) return null;
         return {
           ...suggestions,
-          items: suggestions.items.filter((item) => !item.value.startsWith("/skill:")),
+          items: suggestions.items.filter(
+            (item) => !item.value.startsWith("/skill:"),
+          ),
         };
       },
       applyCompletion(lines, cursorLine, cursorCol, item, prefix) {
-        return current.applyCompletion(lines, cursorLine, cursorCol, item, prefix);
+        return current.applyCompletion(
+          lines,
+          cursorLine,
+          cursorCol,
+          item,
+          prefix,
+        );
       },
       shouldTriggerFileCompletion(lines, cursorLine, cursorCol) {
-        return current.shouldTriggerFileCompletion?.(lines, cursorLine, cursorCol) ?? true;
+        return (
+          current.shouldTriggerFileCompletion?.(lines, cursorLine, cursorCol) ??
+          true
+        );
       },
     }));
   });
