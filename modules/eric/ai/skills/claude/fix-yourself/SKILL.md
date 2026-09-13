@@ -23,5 +23,5 @@ I hit a failure worth fixing durably, not just correcting in-session. Work the s
    - repeatable multi-step process: new or amended skill, via writing-great-skills
      Done when: one layer is chosen and you can say why not the others.
 
-5. **Propose, then install and prune.** Show me the exact wording, the layer, and everything the new rule supersedes; wait for my approval. Then install (realpath managed files first; edit lands in ~/nixos-config) and delete or merge every superseded duplicate so the meaning lives in exactly one place.
-   Done when: I approved, the edit is verified on disk, and no duplicate remains.
+5. **Propose, then install and prune.** Before proposing, verify against the source of truth - the code, config, or docs, never memory or inference - every capability, default, flag, or mechanism the rule's wording relies on; a durable rule built on an unchecked premise fails silently until something trips over it. Show me the exact wording, the layer, and everything the new rule supersedes; wait for my approval. Then install (realpath managed files first; edit lands in ~/nixos-config) and delete or merge every superseded duplicate so the meaning lives in exactly one place.
+   Done when: the rule's premises are checked, I approved, the edit is verified on disk, and no duplicate remains.
