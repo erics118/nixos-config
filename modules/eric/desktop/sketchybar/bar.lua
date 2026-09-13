@@ -1,6 +1,6 @@
 sbar.bar({
     sticky = true,
-    height = 33,
+    height = 34,
     color = 0xff22253B, -- 0x00000000, --colors.bar_color,
     font_smoothing = "on",
     topmost = true,

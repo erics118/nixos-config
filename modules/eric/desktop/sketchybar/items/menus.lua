@@ -13,7 +13,7 @@ sbar.add_event("swap_menus_and_spaces")
 local max_items = 15
 local menu_items = {}
 
-local base_y_offset = 0
+local base_y_offset = 1 
 
 for i = 1, max_items, 1 do
     menu_items[i] = sbar.add_label_item("menu." .. i, {
