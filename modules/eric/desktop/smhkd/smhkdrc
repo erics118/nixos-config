@@ -114,9 +114,6 @@ hyper + a ; r :
 hyper + a ; f :
     open 'raycast-x://extensions/raycast/file-search/search-files'
 
-# hyper + a ; h :
-#     open 'raycast-x://extensions/abielzulio/chatgpt/conversation'
-
 hyper + a ; k :
     open 'raycast-x://extensions/rolandleth/kill-process/index'
 

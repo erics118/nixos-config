@@ -116,18 +116,20 @@
           mmv = "noglob zmv -W";
           zmv = "noglob zmv";
 
-          timeout = "gtimeout";
-
           sshn = "ssh -F /dev/null -o PubkeyAuthentication=no";
 
           ws = "wezterm cli spawn -- ";
 
-          rv = "docker run -i --init --rm -v \"$$PWD\":/root ghcr.io/sampsyo/cs3410-infra";
-          rv-debug = "docker run -it --rm --init --name testing --ulimit core=-1 --mount type=bind,source=\"$$PWD\"/,target=\"$$PWD\"/ -v \"$$PWD\":/root ghcr.io/sampsyo/cs3410-infra";
+          rv = "docker run -i --init --rm -v \"$PWD\":/root ghcr.io/sampsyo/cs3410-infra";
+          rv-debug = "docker run -it --rm --init --name testing --ulimit core=-1 --mount type=bind,source=\"$PWD\"/,target=\"$PWD\"/ -v \"$PWD\":/root ghcr.io/sampsyo/cs3410-infra";
 
           # # is an extended-glob operator in zsh; disable globbing so flake
           # refs like nixpkgs#foo work without quoting
           nix = "noglob nix";
+        }
+        // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+          # gtimeout comes from coreutils-prefixed, darwin-only
+          timeout = "gtimeout";
         }
         // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
           reboot-windows = "sudo systemctl reboot --boot-loader-entry=auto-windows";
@@ -143,7 +145,6 @@
           "sudo"
           "command"
           "builtin"
-          "rv"
         ];
 
         abbreviations = {

@@ -38,11 +38,8 @@ function formatStatusline({
   context?: string;
   cost: number;
 }): string {
-  const home = process.env.HOME;
-  const displayCwd =
-    home && cwd?.startsWith(`${home}/`) ? `~${cwd.slice(home.length)}` : cwd;
   const segments = [
-    displayCwd,
+    cwd,
     git,
     model && `${model}${thinking ? ` ${thinking}` : ""}`,
     context,

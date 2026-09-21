@@ -7,7 +7,7 @@
 
         sops.templates."ntfy-client.yml" = {
           content = ''
-            default-host: https://ntfy.eriz.cc
+            default-host: https://${config.ntfyHost}
             default-token: ${config.sops.placeholder."ntfy/token"}
           '';
           path = "${home}/.config/ntfy/client.yml";

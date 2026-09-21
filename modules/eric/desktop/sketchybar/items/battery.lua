@@ -22,7 +22,7 @@ local remaining_time = sbar.add_item("remaining_time", {
 
 battery:subscribe({ "routine", "power_source_change", "system_woke" }, function()
     sbar.exec("pmset -g batt", function(batt_info)
-        local icon = "!"
+        local icon
         local label = "?"
 
         local found, _, charge = batt_info:find("(%d+)%%")

@@ -49,10 +49,3 @@ hook_update_command() {
     '{hookSpecificOutput:{hookEventName:"PreToolUse", updatedInput:(.tool_input | .command=$cmd)}}'
   exit 0
 }
-
-# print an updated tool_input.file_path (requires hook_read_file_path to have run first), then exit.
-hook_update_file_path() {
-  printf '%s' "$HOOK_INPUT" | jq -c --arg path "$1" \
-    '{hookSpecificOutput:{hookEventName:"PreToolUse", updatedInput:(.tool_input | .file_path=$path)}}'
-  exit 0
-}

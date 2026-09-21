@@ -152,20 +152,33 @@ elapsed_since_start() {
 }
 
 if [[ $STREAMING == true ]]; then
-  curl -sS -N --fail-with-body "$API_URL" \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $OPENROUTER_API_KEY" \
-    -d "$JSON_PAYLOAD" | while IFS= read -r line; do
+  # process substitution keeps the loop in the main shell so a failed request
+  # surfaces its error body instead of being swallowed by the pipe under pipefail.
+  # on http error --fail-with-body writes the json error to stdout with no data: prefix
+  saw_data=false
+  error_body=""
+  while IFS= read -r line; do
     if [[ $line == data:* ]]; then
+      saw_data=true
       json="${line#data: }"
       if [[ -z $json ]] || [[ $json == "[DONE]" ]]; then
         continue
       fi
       content=$(jq -r '.choices[0].delta.content // ""' <<<"$json" 2>/dev/null)
       [[ -n $content ]] && printf '%s' "$content"
+    else
+      error_body+="$line"
     fi
-  done
+  done < <(curl -sS -N --fail-with-body "$API_URL" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $OPENROUTER_API_KEY" \
+    -d "$JSON_PAYLOAD")
   echo
+
+  if [[ $saw_data == false ]]; then
+    echo "Error: $(printf '%s' "$error_body" | jq -r '.error.message // .error // "Unknown error"' 2>/dev/null || echo "request failed")" >&2
+    exit 1
+  fi
 
   if [[ $SHOW_METADATA == true ]]; then
     ELAPSED=$(elapsed_since_start)

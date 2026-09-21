@@ -43,7 +43,7 @@
 
           # web ui is only reached over tailscale, which csrf rejects as a non-default origin
           # magicdns name only, the tailnet address can change
-          csrf_allowed_origins = "https://narwhal.dolphin-sailfin.ts.net:47990";
+          csrf_allowed_origins = "https://narwhal.${config.tailnetDomain}:47990";
         };
       };
     };

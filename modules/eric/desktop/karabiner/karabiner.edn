@@ -90,8 +90,8 @@
   {:des "firefox: ctrl-tab -> alt-pagedown, ctrl-shift-tab -> alt-pageup, swap cmd-shift-enter and cmd-enter"
    :rules [[:!Ttab :!TOpage_down :firefox]
            [:!STtab :!TOpage_up :firefox]
-           ; [:!Creturn_or_enter :!CSreturn_or_enter :firefox]
-           ; [:!CSreturn_or_enter :!Creturn_or_enter :firefox]
+           [:!Creturn_or_enter :!CSreturn_or_enter :firefox]
+           [:!CSreturn_or_enter :!Creturn_or_enter :firefox]
     ]}
 
   {:des "latex: in vscode: rcmd -> $, ralt -> _, lshift -> (, rshift -> )"

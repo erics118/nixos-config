@@ -76,30 +76,6 @@
         // skillDirectories skillLocations.claude "shared"
         // skillDirectories skillLocations.claude vendors.claude;
 
-      home.activation.migrateClaudeSkills =
-        lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ]
-          ''
-            skills="$HOME/.claude/skills"
-
-            if test -L "$skills" && ! test -e "$skills"; then
-              target="$(${pkgs.coreutils}/bin/readlink "$skills")"
-
-              case "$target" in
-                /nix/store/*-home-manager-files/.claude/skills)
-                  verboseEcho "Removing obsolete Home Manager link at $skills"
-                  $DRY_RUN_CMD ${pkgs.coreutils}/bin/rm "$skills"
-                  ;;
-                *)
-                  errorEcho "$skills is a dangling symlink not created by the previous Home Manager layout"
-                  exit 1
-                  ;;
-              esac
-            elif test -e "$skills" && ! test -d "$skills"; then
-              errorEcho "$skills exists but is not a directory"
-              exit 1
-            fi
-          '';
-
       home.packages = with pkgs; [
         ccusage
         context7Mcp

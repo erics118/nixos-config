@@ -3,7 +3,7 @@
   flake.modules.nixos.homepage = { config, lib, ... }: {
     config =
       let
-        inherit (config) homelabDomain;
+        inherit (config) homelabDomain tailnetDomain;
         port = 8082;
         mkUrl = host: p: "http://${host}:${toString p}";
         tileToService = t: {
@@ -32,7 +32,7 @@
             "127.0.0.1:${toString port}"
             "${config.networking.hostName}:${toString port}"
             "192.168.68.150:${toString port}"
-            "narwhal.dolphin-sailfin.ts.net:${toString port}"
+            "narwhal.${tailnetDomain}:${toString port}"
             homelabDomain
           ];
 
@@ -51,7 +51,7 @@
           widgets = [
             {
               glances = {
-                url = "http://narwhal.dolphin-sailfin.ts.net:61208";
+                url = "http://narwhal.${tailnetDomain}:61208";
                 cpu = true;
                 mem = true;
                 cputemp = true;
@@ -67,7 +67,7 @@
             }
             {
               glances = {
-                url = "http://turtle.dolphin-sailfin.ts.net:61208";
+                url = "http://turtle.${tailnetDomain}:61208";
                 cpu = true;
                 mem = true;
                 uptime = true;
