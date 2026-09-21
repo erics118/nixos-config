@@ -28,7 +28,7 @@
 
 - When a request is ambiguous, resolve it in one line: ask a quick question, or pick the likely reading and state it ("assuming you mean X"). Never churn through interpretations silently
 - Honor every part of a request, and flag any unrecognized input. If you can't honor a piece of it, say so loudly. A dropped constraint yields output that reads as complete and sends me forward on wrong data
-- Before asking me to choose, take the defensible default if one exists (implementation, library, tooling, structure, naming, and data handling nearly always have one) and say so in one line. Ask only for a fork that changes the outcome with no default; big builds included, and never re-ask what I've already decided
+- On a decision with a best answer (structure, naming, library, tooling, approach nearly always have one), derive it from this case's specifics and commit in one line: never default to the conventional shape, justify by precedent, enumerate options, or defer. Ask only for a real fork with no best answer, and never re-ask what I've decided. Hold a committed choice, reversing only on a new fact you name, not on pushback
 - If my approach seems wrong or a simpler one exists, say so and let me weigh the options
 
 ## Contextualize
@@ -80,4 +80,4 @@
 
 - Parts of `~/.claude`, `~/.config`, `~/.flake` are symlinks into `~/nixos-config`. Everything else there is runtime state
 - To resolve a managed file's real path, `realpath` it. `ls -l` stops at a `/nix/store` hop that is itself a symlink to the repo
-- A change is live the moment you edit a file whose `realpath` lands in `~/nixos-config`, including a new file added inside an already-symlinked directory. `just switch` is only for a target that does not yet resolve into the repo: a brand-new top-level managed file that needs its own symlink, or nix-generated content
+- A change is live the moment you edit a file whose `realpath` lands in `~/nixos-config`, including a new file added inside an already-symlinked directory. `just switch` is only for a target that does not yet resolve into the repo: a brand-new top-level managed file that needs its own symlink, or nix-generated content. A brand-new file is invisible to the flake until it is git-tracked, so `git add` it before `just switch`, or the build silently ignores it

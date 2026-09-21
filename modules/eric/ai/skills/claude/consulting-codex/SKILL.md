@@ -15,11 +15,13 @@ Runs take minutes. Launch with `run_in_background: true` and wait for the comple
 
 ```bash
 codex exec --sandbox read-only -m gpt-5.6-sol -c model_reasoning_effort="high" \
-  -C /path/to/repo --json -o <scratchpad>/codex-1.md "<prompt>" < /dev/null
+  -C /path/to/repo --json -o <scratchpad>/codex-1.md "<prompt>" \
+  < /dev/null > <scratchpad>/codex-1.jsonl 2> <scratchpad>/codex-1.err
 ```
 
 - `-o` writes **only** the final message. Bare `codex exec` buries it in a huge trace.
-- `--json` makes the first line `{"type":"thread.started","thread_id":"<uuid>"}`. **Capture that id** if a follow-up is at all likely; without it you are limited to `--last`.
+- Redirect the `--json` stream to a file (`> codex-1.jsonl` above); do not let it print to the terminal. **Never pipe codex stdout to `head`/`grep`/`tee` to grab the id** -- when that reader closes the pipe, codex dies with a `failed printing to stdout: Broken pipe` panic before `-o` is written, and you get an empty answer.
+- `--json` makes the first line `{"type":"thread.started","thread_id":"<uuid>"}`. **Capture that id** (read the first line of the `.jsonl` file) if a follow-up is at all likely; without it you are limited to `--last`.
 - `-C <repo>` is required, else it fails with `Not inside a trusted directory`.
 - `< /dev/null` stops codex blocking on stdin when stdin is not a TTY.
 
@@ -29,9 +31,11 @@ codex exec --sandbox read-only -m gpt-5.6-sol -c model_reasoning_effort="high" \
 
 ```bash
 codex exec resume -m gpt-5.6-sol -c model_reasoning_effort="high" \
-  -c sandbox_mode="read-only" -o <scratchpad>/codex-2.md <thread_id> "<prompt>" < /dev/null
+  -c sandbox_mode="read-only" -o <scratchpad>/codex-2.md <thread_id> "<prompt>" \
+  < /dev/null > <scratchpad>/codex-2.out 2> <scratchpad>/codex-2.err
 ```
 
+- The same pipe trap applies: redirect stdout to a file, never pipe it to `head`/`grep`/`tee`, or codex panics with `Broken pipe` before `-o` is written.
 - No `-C` and no `--sandbox`. Set the working directory yourself, and reach the sandbox through `-c sandbox_mode="read-only"`.
 - Options come **before** `<thread_id>`. `resume <id> -o file` fails with a bare usage error.
 - `--last` replaces `<thread_id>` to resume the most recent session.
