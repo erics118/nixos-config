@@ -22,9 +22,6 @@
   --chrome-pill-radius: 9999px;
   --urlbar-control-size: 26px;
   --urlbar-icon-size: 16px;
-  /* Arc-like page frame around the rendered content */
-  --page-frame-width: 8px;
-  --page-frame-radius: 16px;
 }
 
 /* ===== Sidebery-driven layout =====
@@ -64,10 +61,8 @@
     padding-left: 3px !important;
   }
 
-  /* #navigator-toolbox is a .chrome-block whose 1px bottom border sits right
-     under the bookmarks bar. The 8px page frame already supplies that
-     separation, so drop the extra line. */
-  #navigator-toolbox.chrome-block {
+  /* Drop #navigator-toolbox's hairline bottom border under the bookmarks bar. */
+  #navigator-toolbox {
     border-bottom-width: 0 !important;
   }
 
@@ -100,7 +95,7 @@
        (animated) height, so Sidebery's top edge holds through the whole
        bookmarks-bar show/hide transition. */
     margin-top: calc(
-      -1 * var(--sidebery-bookmarks-toolbar-height, 0px)
+      -1 * var(--sidebery-bookmarks-toolbar-height, 0px) - 8px
     ) !important;
     transition: none !important;
   }
@@ -149,45 +144,6 @@
       var(--sidebery-launcher-height) + var(--sidebery-launcher-inset)
     ) !important;
     box-sizing: border-box !important;
-  }
-
-  /* --- Page frame (Arc-like rounded border around the rendered page) ---
-     Sidebery owns the top-left join, so leave that corner and the left edge
-     open. */
-  #tabbrowser-tabbox {
-    border-style: solid;
-    border-color: var(--atbc-raised-surface);
-    /* don't add border to left side b/c sidebery/sidebar is already there */
-    border-width: var(--page-frame-width) var(--page-frame-width)
-      var(--page-frame-width) 0px;
-    border-left-color: transparent !important;
-    border-radius: var(--page-frame-radius) !important;
-    /* with no left border to subtract, the left corners' visible (padding-box)
-       curve runs the full radius horizontally but radius - frame vertically,
-       reading as a stretched ellipse. Pre-shrink the horizontal radius by the
-       frame width so both axes land on radius - frame, matching the right. */
-    border-top-left-radius: calc(
-        var(--page-frame-radius) - var(--page-frame-width)
-      )
-      var(--page-frame-radius) !important;
-    border-bottom-left-radius: calc(
-        var(--page-frame-radius) - var(--page-frame-width)
-      )
-      var(--page-frame-radius) !important;
-    background-clip: padding-box !important;
-    overflow: hidden !important;
-  }
-
-  /* When the sidebar is closed, #sidebar-box gets a native `hidden` attribute
-     (Firefox's own, not Sidebery). Nothing occupies the left edge then, so
-     restore the frame + top-left rounding to keep the page inset even. */
-  #browser:has(#sidebar-box[hidden]) #tabbrowser-tabbox {
-    border-left-width: var(--page-frame-width) !important;
-    border-left-color: var(--atbc-raised-surface) !important;
-    /* left border is back, so both left corners are symmetric again: undo the
-       horizontal compensation above or they stretch the other way */
-    border-top-left-radius: var(--page-frame-radius) !important;
-    border-bottom-left-radius: var(--page-frame-radius) !important;
   }
 
   /* The launcher pill is #sidebar-container, positioned absolutely in #browser,
@@ -354,10 +310,23 @@ findbar {
   transition: none !important;
 }
 
-/* remove shadow from web content */
+/* remove shadow/outline from web content */
 #tabbrowser-tabbox,
 .browserContainer {
   box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Firefox rounds .browserContainer's chrome-facing corners and draws a 1px
+   separator there whenever a sidebar is shown (Sidebery counts).
+   Two rules round it, so force the radii flat outright, not via the var. */
+.browserContainer {
+  --content-area-start-radius: 0 !important;
+  border-start-start-radius: 0 !important;
+  border-start-end-radius: 0 !important;
+  border-block-start: none !important;
+  border-inline-start: none !important;
+  border-inline-end: none !important;
 }
 
 /* ===== Focus mode =====
@@ -370,14 +339,5 @@ findbar {
   #sidebar-splitter,
   #sidebar-container[data-sidebery-bottom-launcher] {
     display: none !important;
-  }
-
-  /* Sidebery is gone, so close the page frame on the left like the
-     sidebar-hidden case above. */
-  #tabbrowser-tabbox {
-    border-left-width: var(--page-frame-width) !important;
-    border-left-color: var(--atbc-raised-surface) !important;
-    border-top-left-radius: var(--page-frame-radius) !important;
-    border-bottom-left-radius: var(--page-frame-radius) !important;
   }
 }

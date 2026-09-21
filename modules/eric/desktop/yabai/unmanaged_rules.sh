@@ -76,7 +76,8 @@ yabai -m rule --add label="zoom opacity" app="^Zoom$" opacity=1.0
 yabai -m rule --add label="apple music" app="^Music$" title="^MiniPlayer$" manage=off
 
 # firefox pip
-yabai -m rule --add label="firefox pip" app="^Firefox.*$" title="^Picture-in-Picture$" manage=off
+# pin full opacity so the floating pip window is not dimmed while unfocused
+yabai -m rule --add label="firefox pip" app="^Firefox.*$" title="^Picture-in-Picture$" manage=off opacity=1.0
 
 # amazon workspaces login window
 yabai -m rule --add label="amazon workspaces" app="^Amazon WorkSpaces$" title="^$" manage=off
