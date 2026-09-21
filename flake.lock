@@ -258,6 +258,23 @@
         "type": "github"
       }
     },
+    "mosh-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790015614,
+        "narHash": "sha256-nygorTNin/2uRb819ZbsRGKIOaVrn7im5SDqU8uMNVs=",
+        "owner": "erics118",
+        "repo": "mosh",
+        "rev": "9d15d44fd63b3180931181b9fbef679b07b8d469",
+        "type": "github"
+      },
+      "original": {
+        "owner": "erics118",
+        "ref": "eric",
+        "repo": "mosh",
+        "type": "github"
+      }
+    },
     "nix-homebrew": {
       "inputs": {
         "brew-src": "brew-src"
@@ -428,6 +445,7 @@
         "home-manager": "home-manager",
         "hyprland-contrib": "hyprland-contrib",
         "import-tree": "import-tree",
+        "mosh-src": "mosh-src",
         "nix-homebrew": "nix-homebrew",
         "nix-index-database": "nix-index-database",
         "nixos-config-private": "nixos-config-private",

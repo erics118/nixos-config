@@ -96,6 +96,11 @@
       url = "github:AhsanFazal/yabai";
       flake = false;
     };
+
+    mosh-src = {
+      url = "github:erics118/mosh/eric";
+      flake = false;
+    };
   };
 
   outputs =
