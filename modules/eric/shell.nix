@@ -95,27 +95,6 @@
             source ${fzfInit}
             source ${atuinInit}
           fi
-
-          # rv <cmd>: run in the turtle riscv64 dev env (flake at turtle:~/rv-infra)
-          # mirrors cwd to turtle, runs there, syncs results back; files stay local
-          rv() {
-            emulate -L zsh
-            local host=turtle
-            ssh -o BatchMode=yes -o ConnectTimeout=4 "$host" true 2>/dev/null || host=turtle-ip
-            local rdir="rvwork/$(pwd -P | shasum | cut -c1-12)"
-            ssh "$host" "mkdir -p '$rdir'" || return
-            rsync -az --delete \
-              --exclude .git --exclude _build --exclude result --exclude node_modules \
-              ./ "$host:$rdir/" || return
-            if (( $# )); then
-              ssh -o LogLevel=ERROR "$host" "cd '$rdir' && \$HOME/rv-infra/run.sh $*"
-            else
-              ssh -t -o LogLevel=ERROR "$host" "cd '$rdir' && nix develop \$HOME/rv-infra"
-            fi
-            local rc=$?
-            rsync -az "$host:$rdir/" ./
-            return $rc
-          }
         '';
 
         localVariables = {
@@ -142,6 +121,9 @@
           sshn = "ssh -F /dev/null -o PubkeyAuthentication=no";
 
           ws = "wezterm cli spawn -- ";
+
+          rv = "docker run -i --init --rm -v \"$$PWD\":/root ghcr.io/sampsyo/cs3410-infra";
+          rv-debug = "docker run -it --rm --init --name testing --ulimit core=-1 --mount type=bind,source=\"$$PWD\"/,target=\"$$PWD\"/ -v \"$$PWD\":/root ghcr.io/sampsyo/cs3410-infra";
 
           # # is an extended-glob operator in zsh; disable globbing so flake
           # refs like nixpkgs#foo work without quoting
