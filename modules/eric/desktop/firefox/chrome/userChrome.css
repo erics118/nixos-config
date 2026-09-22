@@ -177,28 +177,11 @@
   padding-inline: 3px 3px !important;
 }
 
-/* When the results view opens, Firefox's proton breakout rules
-   (urlbar-searchbar.css, not-nova branch) grow the popover in every axis:
-   negative margin-left plus widened width, UrlbarInput.mjs pins its top to
-   the container's border-box top (one --urlbar-padding-block above the idle
-   pill's static position), and the input container grows to
-   --urlbar-container-height with compensating padding. Hold the bar at its
-   exact idle geometry instead: anchor it horizontally, push it back down by
-   the padding delta the JS top-pin skipped (nova's own
-   --urlbar-margin-block-start-breakout trick), and pin the input container
-   at idle height. The results view is a sibling of the input container, so
-   it still expands normally below the pill. */
-#urlbar[breakout][breakout-extend] {
-  margin-inline-start: 0 !important;
-  width: var(--urlbar-width) !important;
-  margin-block-start: calc(
-    (var(--urlbar-container-height) - var(--urlbar-height)) / 2
-  ) !important;
-}
-
-#urlbar[breakout][breakout-extend] > .urlbar-input-container {
-  height: var(--urlbar-height) !important;
-  padding-block: var(--urlbar-input-container-padding) !important;
+/* on open, proton grows the input container and pads to match so contents hold
+   still; the padding-inline override above drops that pad and contents slide
+   re-add it here, keeping the same 3px inset */
+#urlbar[popover-open] > .urlbar-input-container {
+  padding-inline: calc(var(--urlbar-input-growth-open-inline) + 3px) !important;
 }
 
 /* Round every pill/button inside the url bar: search engine switcher,

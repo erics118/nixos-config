@@ -483,11 +483,11 @@
     "sketchybar-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1789343616,
-        "narHash": "sha256-23LLrK8YHCoenhBfGXGo8ElSw1Sw8GAr5zCIGN6lnR4=",
+        "lastModified": 1790035681,
+        "narHash": "sha256-NEU+PTGZb/msC6jtZAnD8+lwtSk6v3NnpdJp6M2Joro=",
         "owner": "erics118",
         "repo": "SketchyBar",
-        "rev": "9c2d57a275e58a55bec5e130a78f0cd1b18682aa",
+        "rev": "89a404783a463d4abc22bd9cdc2b21c10755f7ed",
         "type": "github"
       },
       "original": {
