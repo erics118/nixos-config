@@ -7,6 +7,7 @@
     ];
 
     catppuccin = {
+      sources = (import "${inputs.catppuccin}/default.nix" { inherit pkgs; }).packages;
       enable = true;
       autoEnable = false;
       tty.enable = true;
@@ -18,6 +19,9 @@
         trusted-users = [ "eric" ];
       };
     };
+
+    # skip evaluating the nixos option docs for the manual and nixos-help
+    documentation.nixos.enable = false;
 
     time.timeZone = "America/New_York";
 

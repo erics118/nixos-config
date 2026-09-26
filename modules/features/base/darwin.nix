@@ -20,6 +20,9 @@
       launchctl disable gui/"$duetuid"/com.apple.duetexpertd 2>/dev/null || true
     '';
 
+    # skip evaluating the darwin option docs for the html manual and darwin-help
+    documentation.doc.enable = false;
+
     users.users.eric = {
       name = "eric";
       home = "/Users/eric";
