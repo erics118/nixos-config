@@ -21,6 +21,15 @@
 - Put a comment on its own line, not trailing after code
 - Comments should be lowercase, minimal punctuation, no trailing periods
 
+## Execution policy
+
+- Continue automatically through routine, reversible work such as reading, editing, testing, formatting, and local inspection.
+- In an approved task or plan, continue through every routine task and its checks. Do not stop after a task, check, finding, explanation, correction, side note, or progress report.
+- A user question, correction, or side note does not pause the active task unless it explicitly changes, pauses, cancels, or replaces it.
+- After a required check passes, immediately begin the next incomplete task. After a routine failure, diagnose, repair, rerun the check, and continue.
+- When a guard blocks an action, use its reason to choose a safe alternative. Ask only after repeated blocks, or for destructive, remote, credential, system, or materially ambiguous actions.
+- Keep stricter safeguards for non-interactive subagents and irreversible operations.
+
 ## Progress Updates
 
 - Before each tool call, state what you're about to do in one short sentence

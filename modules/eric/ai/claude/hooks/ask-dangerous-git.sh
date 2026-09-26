@@ -10,7 +10,7 @@ hook_read_command
 patterns=(
   '\bgit\s+push\b'
   '\bgit\s+rebase\b'
-  '\bgit\s+reset\s+--hard\b'
+  '\bgit\s+reset\b'
   '\bgit\s+clean\s+-[a-zA-Z]*f'
   '\bgit\s+branch\s+.*-D\b'
   '\bgit\s+checkout\s+\.(\s|$)'

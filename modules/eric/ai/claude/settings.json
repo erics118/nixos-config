@@ -67,7 +67,6 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "claude-opus-4-8",
   "hooks": {
     "PreToolUse": [
       {
@@ -168,6 +167,11 @@
   },
   "feedbackDrafts": "off",
   "effortLevel": "high",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "medium"
+    }
+  },
   "advisorModel": "fable",
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
