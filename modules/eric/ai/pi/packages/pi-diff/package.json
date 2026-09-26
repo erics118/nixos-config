@@ -19,7 +19,7 @@
     "@shikijs/engine-javascript": "4.4.3",
     "@shikijs/langs": "4.4.3",
     "@shikijs/themes": "4.4.3",
-    "diff": "7.0.0"
+    "diff": "8.0.3"
   },
   "devDependencies": {
     "tsx": "^4.21.0"
