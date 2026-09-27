@@ -1,5 +1,5 @@
 {
-  "defaultProvider": "openai",
+  "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.6-terra",
   "defaultThinkingLevel": "medium",
   "tuiMode": "fullscreen",
@@ -9,7 +9,7 @@
   "showHardwareCursor": true,
   "editorPaddingX": 2,
   "outputPad": 1,
-  "enabledModels": ["openai/*", "openrouter/*"],
+  "enabledModels": ["openai/*", "openai-codex/*", "openrouter/*"],
   "packages": [
     "./packages/pi-web-activation",
     "npm:pi-web-access@0.31.0",
@@ -19,7 +19,7 @@
     "git:github.com/erics118/pi-diff"
   ],
   "subagents": {
-    "defaultProvider": "openai",
+    "defaultProvider": "openai-codex",
     "defaultModel": "gpt-5.6-terra",
     "agentOverrides": {
       "oracle": {

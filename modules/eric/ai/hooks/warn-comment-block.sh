@@ -3,7 +3,7 @@
 # the rule lives in CLAUDE.md but prose does not fire at edit time; this does.
 # scans only newly written text so pre-existing blocks in an edited file stay quiet.
 set -u
-source "$HOME/.claude/hooks/lib.sh"
+source "$(dirname "$0")/lib.sh"
 
 hook_require jq
 HOOK_INPUT=$(cat)
@@ -51,5 +51,5 @@ at=$(grep -nF -- "$endc" "$file" 2>/dev/null | head -1 | cut -d: -f1)
 loc="$file"
 [ -n "$at" ] && loc="$file:$at"
 
-printf 'comment block of %s lines ending at %s. CLAUDE.md: one line is best, two or three max, never a rationale/essay block. cut it to the durable fact or delete it.\n' "$max" "$loc" >&2
+printf 'comment block of %s lines ending at %s. AGENTS.md: one line is best, two or three max, never a rationale/essay block. cut it to the durable fact or delete it.\n' "$max" "$loc" >&2
 exit 2

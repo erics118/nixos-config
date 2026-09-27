@@ -1,6 +1,7 @@
 ---
 name: audit
-description: Complete read-only sweep of existing code across every lens -- correctness, robustness, concurrency, and security as much as tech debt, idioms, and structure -- reported by what to fix first, then applies the accepted fixes on confirm. Use to find everything a senior would call improper across a codebase or area, or narrow to one lens or the working diff.
+description: Read-only sweep of existing code across every lens, ranked by what to fix first, then applies accepted fixes on confirm
+disable-model-invocation: true
 argument-hint: "[empty for whole repo | area | 'diff' for uncommitted changes] [+ a lens to narrow: debt|modernize|structure|correctness|robustness|concurrency|security|contract|performance|tests|operability|docs]"
 ---
 
@@ -36,14 +37,15 @@ are fine.
 
 Coverage contract: inventory every identifiable subsystem. Give each a stable ID and name,
 an exact ownership boundary, its key files and major interfaces, and a status (queued, in
-review, finding, skip). Keep one canonical scratchpad holding the inventory, confirmed
+review, finding, skip). Keep one canonical inventory file outside the repo (Claude: the session
+scratchpad; Codex and pi: `$(mktemp -d)`) holding the inventory, confirmed
 findings, explicit skips, cross-cutting patterns, duplicates, and priorities. A broad
 catch-all row does not prove coverage. Do not skip the unglamorous corners: scripts, CLIs,
 build and deploy config, and vendored assets are subsystems too.
 
 Dispatch fresh read-only subagents in parallel, one distinct subsystem each with a
 non-overlapping boundary. Under Claude use Explore or general-purpose agents via the Agent
-tool; under Codex use its native subagents; only where no subagent mechanism exists, run
+tool; under Codex use its native subagents; under pi use pi-subagents; only where no subagent mechanism exists, run
 each subsystem review yourself in sequence. Keep every worker read-only, bound concurrency
 to the lanes you can coordinate, wait on the batch together, and harvest each result. Brief
 each worker to apply every lens (or the single focused lens) within its boundary and return,
@@ -103,8 +105,8 @@ Security and contract
 - **security** -- authn/authz on every path; CSRF and origin checks; XSS and injection, with
   escaping correct for the context it lands in, not just some context; sandbox and CSP; secret
   handling and exposure; info leakage in errors; SSRF and open-redirect; supply-chain
-  (vendored, pinned, integrity-checked). For a deeper dedicated pass, `security-review` and
-  `adversarial-review` go further; this lens is the broad net that finds where to aim them.
+  (vendored, pinned, integrity-checked). For a deeper dedicated pass, `adversarial-review` goes further
+  (Claude Code also has the built-in `security-review`); this lens is the broad net that finds where to aim them.
 - **contract** -- http/api semantics (status codes, headers, conditional and range requests,
   redirects and their cache stickiness); caching and invalidation (stale-on-mutate, and
   read-your-write on an eventually-consistent store); platform and runtime limits (memory, cpu,

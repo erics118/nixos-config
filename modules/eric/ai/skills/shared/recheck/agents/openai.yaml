@@ -1,0 +1,6 @@
+interface:
+  short_description: "Re-check the claims in the last reply"
+  default_prompt: "Use $recheck to re-check the claims in your last reply."
+
+policy:
+  allow_implicit_invocation: false

@@ -45,10 +45,6 @@ multi_agent = true
 steer = true
 terminal_resize_reflow = true
 
-[hooks.state."/Users/eric/.codex/hooks.json:session_start:0:0"]
-enabled = true
-trusted_hash = "sha256:7fe63c42973ca988a5758d5295fb0dc0a24afb6c970d412f11c71b6e91a48abb"
-
 [marketplaces.openai-bundled]
 source_type = "local"
 source = "/Users/eric/.codex/.tmp/bundled-marketplaces/openai-bundled"

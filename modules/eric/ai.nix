@@ -9,7 +9,6 @@
     let
       base = "modules/eric/ai";
       globalInstructions = repoFile "${base}/AGENTS.md";
-      claudeInstructions = repoFile "${base}/claude/CLAUDE-global.md";
       vendors = {
         claude = "claude";
         codex = "codex";
@@ -61,8 +60,9 @@
     in
     {
       home.file = {
-        ".claude/CLAUDE.md".source = claudeInstructions;
+        ".claude/CLAUDE.md".source = globalInstructions;
         ".codex/AGENTS.md".source = globalInstructions;
+        ".agents/hooks".source = repoFile "${base}/hooks";
       }
       // vendorFiles vendors.codex {
         "config.toml" = "config.toml";
@@ -72,7 +72,6 @@
       // vendorFiles vendors.claude {
         "settings.json" = "settings.json";
         "statusline.sh" = "statusline.sh";
-        hooks = "hooks";
       }
       // skillDirectories skillLocations.agents "shared"
       // skillDirectories skillLocations.agents vendors.codex

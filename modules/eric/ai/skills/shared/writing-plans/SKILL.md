@@ -9,7 +9,7 @@ Write a plan that an engineer with zero context on this codebase can execute tas
 
 ## 1. Settle the requirements
 
-Read the request and the code or files it touches first, so you never ask for a fact you could look up. Then run the grilling skill on what only Eric can decide: purpose, scope, constraints, and choices between valid options.
+Read the request and the code or files it touches first, so you never ask for a fact you could look up. For each choice of mechanism, cite a `redesign` verdict, or fill its survey slots (job, platform, standard tools, repo, zero-code, project rules) here and use the verdict as grilling's recommended answer. Plans never edit code. Then run the grilling skill on what only Eric can decide: purpose, scope, constraints, and choices between valid options.
 
 Done when: Eric confirms the shared understanding, and every requirement has an exact value or a decision.
 
@@ -61,4 +61,4 @@ Done when: all four checks pass with nothing open.
 
 ## 6. Hand off
 
-Link the plan and recommend an executor in one sentence: executing-plans (inline, no commits) for most work, or executing-plans-agentic (Claude only: subagent per task, reviews, commits on a branch) when tasks are many or a mistake is costly. Wait for Eric to approve the plan and pick the executor.
+Link the plan and recommend an executor in one sentence: executing-plans (inline, no commits) for most work, or executing-plans-agentic (Claude only: subagent per task, reviews, commits on a branch, so the repo needs `agent.autonomous` set) when tasks are many or a mistake is costly. Wait for Eric to approve the plan and pick the executor.

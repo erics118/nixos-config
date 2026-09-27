@@ -9,11 +9,11 @@ Summarize the current changes so I can glance before committing or opening a PR.
 
 1. Pick the diff scope:
    - If the invocation supplies a git range (e.g. `main`, `HEAD~3`, `main...HEAD`): diff that range.
-   - Else if staged changes exist: `git diff --cached`.
-   - Else: `git diff` (unstaged) plus untracked files from `git status --short`.
+   - Else: staged (`git diff --cached`), unstaged (`git diff`), and untracked files from `git status --short`, each reported under its own heading.
 2. Read the diff yourself; do not paste it back.
 3. Report:
    - One-line headline of the overall change.
    - A short bullet per logical change: what changed and why, referencing `file:line` where useful. Group related edits; do not enumerate every hunk.
    - Call out anything risky, incomplete, or unrelated that slipped in (debug leftovers, TODOs, formatting-only churn).
+   - For each changed prose file (docs, instructions, skills), run `git show <base>:<file> | ~/.claude/skills/rewrite/scripts/specifics - <file>` (Codex and pi: `~/.agents/skills/rewrite/scripts/specifics`), where `<base>` is `HEAD` for working-tree changes or the range's start, and list the `missing:` lines. Skip files the diff adds.
 4. Do NOT commit, stage, or modify anything. Read-only summary.

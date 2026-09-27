@@ -1,0 +1,6 @@
+interface:
+  short_description: "Answer a question or weigh an idea without changing files"
+  default_prompt: "Use $ask to answer my question without editing anything."
+
+policy:
+  allow_implicit_invocation: false

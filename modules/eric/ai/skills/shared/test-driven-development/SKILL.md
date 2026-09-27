@@ -11,7 +11,7 @@ NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST. If you wrote code before the te
 
 If you did not watch the test fail, you do not know it tests the right thing. A test written after the code passes on the first run, which proves nothing.
 
-Exceptions, and only with Eric's say-so: throwaway exploration (then throw it away and restart under TDD), generated code, config files.
+Skip TDD, and say so in one line, for: code in a project with no test harness, throwaway exploration, generated code, config, and docs.
 
 ## Red, green, refactor
 
@@ -48,7 +48,7 @@ Then the next failing test for the next behavior.
 
 ## Bug fixes
 
-Reproduce the bug as a failing test first, then run the cycle. The test proves the fix and guards against regression. Never fix a bug without a test.
+Reproduce the bug as a failing test first, then run the cycle. The test proves the fix and guards against regression. Where the project has a test harness, never fix a bug without a test.
 
 ## Listen to a hard test
 
@@ -59,6 +59,5 @@ A test that is hard to write is telling you the design is wrong, not that TDD is
 Any of these means delete the code and restart from a failing test:
 
 - Production code written before its test.
-- A new test that passes on the first run.
 - You cannot say why the test failed.
 - "I'll add tests after," "I already tested it by hand," or "just this once."

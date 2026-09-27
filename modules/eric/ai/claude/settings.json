@@ -74,7 +74,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/deny-symlink-path.sh\""
+            "command": "\"$HOME/.agents/hooks/deny-symlink-path.sh\""
           }
         ]
       },
@@ -83,7 +83,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/block-smart-punct.sh\""
+            "command": "\"$HOME/.agents/hooks/block-smart-punct.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/block-write-tracked.sh\""
           }
         ]
       },
@@ -92,23 +101,35 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/git-add-before-nix.sh\""
+            "command": "\"$HOME/.agents/hooks/git-add-before-nix.sh\""
           },
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/strip-claude-attribution.sh\""
+            "command": "\"$HOME/.agents/hooks/strip-claude-attribution.sh\""
           },
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/block-global-find.sh\""
+            "command": "\"$HOME/.agents/hooks/block-global-find.sh\""
           },
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/block-symlink-clobber.sh\""
+            "command": "\"$HOME/.agents/hooks/block-symlink-clobber.sh\""
           },
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/ask-dangerous-git.sh\""
+            "command": "\"$HOME/.agents/hooks/ask-dangerous-git.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/block-agent-commit.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/block-shell-edit.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/block-sudo-probe.sh\""
           }
         ]
       }
@@ -119,11 +140,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/treefmt-on-edit.sh\""
+            "command": "\"$HOME/.agents/hooks/treefmt-on-edit.sh\""
           },
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/warn-comment-block.sh\""
+            "command": "\"$HOME/.agents/hooks/warn-comment-block.sh\""
           }
         ]
       }

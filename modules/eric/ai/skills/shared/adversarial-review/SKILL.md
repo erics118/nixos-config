@@ -15,7 +15,7 @@ includes a pasted plan or idea, review that instead. Strip the `--adversary` fla
 supplied text before interpreting scope.
 
 If `--adversary` is present, add the other agent as a second independent reviewer. Under
-Claude, use the `consulting-codex` skill. Under Codex, use the `consulting-claude` skill.
+Claude, use the `consulting-codex` skill. Under Codex or pi, use the `consulting-claude` skill.
 If the matching consulting skill is unavailable or not implemented, say so and continue
 with the solo review rather than inventing invocation mechanics. Pass the other agent the
 same instruction block and scope; it is a different model on purpose.
@@ -32,7 +32,8 @@ have not built yet. For a plan, judge the design and its assumptions, not style,
 not demand code that does not exist yet. Hit the target from each of these angles and
 label every finding with its angle:
 
-1. Necessity: do we actually need this? What breaks if it is deleted? Is it solving a
+1. Necessity: do we actually need this? What breaks if it is deleted? How do the platform
+   and its standard tools already do this job, and is this reinventing that? Is it solving a
    problem I really have, or a hypothetical one (YAGNI)? Does something existing already
    do it?
 2. Correctness: did we do it right? Does it actually do what I intended, with the logic

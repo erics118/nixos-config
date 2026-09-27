@@ -1,0 +1,35 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/git-add-before-nix.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/block-global-find.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/block-symlink-clobber.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/block-agent-commit.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/block-shell-edit.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/block-sudo-probe.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}

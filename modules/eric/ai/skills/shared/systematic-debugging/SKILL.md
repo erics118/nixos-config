@@ -11,6 +11,8 @@ NO FIX WITHOUT A ROOT CAUSE FIRST. A fix aimed at the symptom is a failure, even
 
 This holds hardest exactly when it is tempting to skip: under time pressure, on an "obvious" one-liner, or after a previous fix did not stick.
 
+When the error message names the cause outright (a typo, a missing import, a wrong path), that is Phase 1 done: fix it and run the check.
+
 Work the phases in order. Each ends on a check.
 
 ## Phase 1: find the root cause

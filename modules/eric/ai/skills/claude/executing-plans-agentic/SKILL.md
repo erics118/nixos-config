@@ -1,6 +1,7 @@
 ---
 name: executing-plans-agentic
 description: Use when implementing an approved plan from writing-plans with a fresh subagent and review per task, committing on a branch.
+disable-model-invocation: true
 ---
 
 # Executing Plans, Agentic
@@ -12,7 +13,7 @@ A fresh implementer subagent per task, a fresh reviewer after it, and one final 
 - Continuous. Never pause between tasks. Eric's approval of the plan covers every task.
 - Rulings, not stalls. Decide every conflict, plan defect, or choice the plan left open that you can derive from the requirements, the code, or Eric's rules. Record it as `Ruling: <what you decided> - <why> - <cost if wrong>` and keep going.
 - Stop and ask only for a requirement the plan does not settle and only Eric can, an irreversible or destructive action, or anything leaving this repo (push, publish, merge).
-- Commits. Invoking this skill is the instruction to commit, on the plan's branch only, one or more commits per task.
+- Commits. Invoking this skill is the instruction to commit, on the plan's branch only, one or more commits per task. Agent commits need `git config --get agent.autonomous` to print `true` in this repo.
 - Hand artifacts over as files. Everything pasted into a dispatch or printed back stays in your context for the rest of the run.
 - Always pass the model explicitly, since an omitted model inherits the session's:
   - haiku: the brief contains the complete content, so the work is transcription plus checks, or a one-file mechanical fix
@@ -21,7 +22,7 @@ A fresh implementer subagent per task, a fresh reviewer after it, and one final 
 
 ## Setup
 
-1. Read the plan once. If you are on `main` or `master`, run `git switch -c plan/<topic>`.
+1. If `git config --get agent.autonomous` does not print `true`, stop: tell Eric this skill commits per task, so it needs that flag in this repo, or he can use executing-plans. Otherwise read the plan once. If you are on `main` or `master`, run `git switch -c plan/<topic>`.
 2. The workspace is `.eric/plans/<plan-basename>/`, and the ledger is `progress.md` inside it. If the ledger exists, every task with a `Task N: complete` line is done: resume at the first task without one, and trust the ledger and `git log` over your recollection. Otherwise run `mkdir -p .eric/plans/<plan-basename> && printf '*\n' > .eric/plans/<plan-basename>/.gitignore` and create the ledger with the first line `# ledger - plan: <plan path>` and a second line `Merge base: <git rev-parse HEAD>`.
 3. Pre-flight. For every task that consumes what an earlier task produces (the Interfaces blocks), write one ledger row: the two tasks, what one produces against what the other consumes, and what you found. Rule on each conflict. If no tasks share anything, write `Pre-flight: no shared interfaces`.
 

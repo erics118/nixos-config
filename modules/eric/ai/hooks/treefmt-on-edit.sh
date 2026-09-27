@@ -3,7 +3,7 @@
 # direnv devShell (nix-direnv cached, no flake eval, no store copy).
 # silently no-ops for non-direnv projects or shells without treefmt.
 set -u
-source "$HOME/.claude/hooks/lib.sh"
+source "$(dirname "$0")/lib.sh"
 
 # roots whose .envrc should not trigger formatting
 ignored_roots=("$HOME" "$HOME/dev" "$HOME/dev/other")

@@ -1,13 +1,11 @@
 ---
 name: ntfy
-description: Use when the user wants a push notification to their phone - pinging them when a long task finishes, an unattended run needs attention, or they explicitly ask to be notified/texted/alerted.
+description: Use whenever you notify the user - pinging them when a long task finishes, an unattended run needs attention, or they ask to be notified/texted/alerted.
 ---
 
 # ntfy
 
-Push a notification to the user's phone through the self-hosted ntfy server. It reaches the phone whether or not Claude Code is open, so it is the right tool for "ping me when this is done" on a long or backgrounded task.
-
-For a ping that only needs to reach the terminal or the Claude app, the normal `PushNotification` already covers it. Reach for ntfy when the user should get it on their phone.
+Push a notification to the user's phone through the self-hosted ntfy server. It reaches the phone whether or not the agent's terminal is open. Use it for every notification. In Claude Code, the `PushNotification` tool is fine too.
 
 Publish to the `claude` topic, which the user's phone subscribes to:
 

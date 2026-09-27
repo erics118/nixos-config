@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# usage: specifics OLD NEW
+# OLD may be - to read stdin, e.g. git show HEAD:f | specifics - f
+# no pipefail: a grep that finds nothing must not end the script before the sentence pass
+set -eu
+[ $# -eq 2 ] || { echo "usage: specifics OLD NEW" >&2; exit 2; }
+old=$(cat -- "$1")
+new=$(cat -- "$2")
+flat=$(printf '%s' "$new" | tr -s ' \n' ' ')
+
+# code spans, quotes, multi-part paths, flags, numbers
+printf '%s\n' "$old" |
+  grep -oE '`[^`]+`|"[^"]+"|~?\.{0,2}/[A-Za-z0-9_.${}-]+(/[A-Za-z0-9_.${}-]+)+|(^|[[:space:]])--?[A-Za-z][A-Za-z0-9-]*|\b[0-9]+([.:x][0-9]+)*\b' |
+  sed 's/^[[:space:]]*//' | sort -u |
+  while IFS= read -r s; do
+    grep -qF -- "$s" <<<"$new" || printf 'missing: %s\n' "$s"
+  done
+
+# every sentence of old that new no longer contains word for word
+printf '%s\n' "$old" | sed -E 's/^[[:space:]]*([-*#]+|[0-9]+\.)[[:space:]]+//' |
+  sed -E 's/([.!?])[[:space:]]+/\1\n/g' | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' |
+  grep -E '[[:alpha:]].*[[:space:]].*[[:alpha:]]' |
+  while IFS= read -r s; do
+    grep -qF -- "$s" <<<"$flat" || printf 'changed: %s\n' "$s"
+  done

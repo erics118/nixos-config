@@ -24,7 +24,7 @@ The plan already did the thinking. Execute it exactly, prove every task with its
    ```
 4. Load test-driven-development if any task's check is a test.
 
-Done when: the progress file exists and there is one todo per task.
+Done when: the progress file exists.
 
 ## Per task
 
@@ -39,7 +39,7 @@ Done when: every `Expected:` line was compared against real output, the check pa
 
 ## Final review
 
-Take a second snapshot the same way, and run `git diff <start> <end> > .eric/plans/<plan-basename>/final.diff`. The diff includes new files. Send it to the other model: consulting-codex from Claude, consulting-claude from codex. Give it the plan path and its Review Focus section verbatim, and ask it to report where the diff misses a requirement, breaks on a Review Focus input, or does anything the plan did not ask for.
+Take a second snapshot the same way, and run `git diff <start> <end> > .eric/plans/<plan-basename>/final.diff`. The diff includes new files. Send it to the other model: consulting-codex from Claude, consulting-claude from Codex or pi. Give it the plan path and its Review Focus section verbatim, and ask it to report where the diff misses a requirement, breaks on a Review Focus input, or does anything the plan did not ask for.
 
 Grade each finding by what a person using the result gets. Fix Critical and Important findings, each with its check re-run. Record a finding you decline as a ruling, and a minor one as `Final: minor (deferred): <one line>`.
 
@@ -47,4 +47,4 @@ Done when: every finding is fixed, ruled, or deferred, and every task's check st
 
 ## Finish
 
-Your final message lists every ruling under "Rulings I made", in order with its cost if wrong, and every deferred minor under "Deferred minors". Then delete `.eric/plans/<plan-basename>/`. The work stays uncommitted for Eric.
+Your final message marks every requirement PASS (its check ran and matched), FAIL, or UNVERIFIED (no check this session exercised it), then lists every ruling under "Rulings I made", in order with its cost if wrong, and every deferred minor under "Deferred minors". Then delete `.eric/plans/<plan-basename>/`. The work stays uncommitted for Eric.

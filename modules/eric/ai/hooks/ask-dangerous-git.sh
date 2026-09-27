@@ -2,25 +2,26 @@
 # prompt before git commands that rewrite history, discard uncommitted work, or touch a
 # remote. asks rather than denies, so anything genuinely wanted is one confirmation away.
 set -u
-source "$HOME/.claude/hooks/lib.sh"
+source "$(dirname "$0")/lib.sh"
 
-hook_require rg jq
+hook_require rg jq awk
 hook_read_command
+hook_bare_command
 
 patterns=(
-  '\bgit\s+push\b'
-  '\bgit\s+rebase\b'
-  '\bgit\s+reset\b'
-  '\bgit\s+clean\s+-[a-zA-Z]*f'
-  '\bgit\s+branch\s+.*-D\b'
-  '\bgit\s+checkout\s+\.(\s|$)'
-  '\bgit\s+restore\s+\.(\s|$)'
-  '\bgit\s+filter-branch\b'
-  '\bgit\s+reflog\s+expire\b'
+  "push$HOOK_END"
+  "rebase$HOOK_END"
+  "reset$HOOK_END"
+  'clean\s+-[a-zA-Z]*f'
+  'branch\s+.*-D\b'
+  'checkout\s+\.(\s|$)'
+  'restore\s+\.(\s|$)'
+  "filter-branch$HOOK_END"
+  "reflog\\s+expire$HOOK_END"
 )
 
 for p in "${patterns[@]}"; do
-  printf '%s' "$HOOK_COMMAND" | rg -q "$p" || continue
+  printf '%s' "$HOOK_BARE" | rg -q "$HOOK_GIT$p" || continue
   hook_ask 'This git command rewrites history, discards uncommitted work, or affects a remote. Approve it, or run it yourself.'
 done
 
