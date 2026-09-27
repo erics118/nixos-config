@@ -56,6 +56,7 @@ c.window_padding = {
 c.enable_scroll_bar = true
 c.min_scroll_bar_height = "4cell"
 c.scrollback_lines = 10000
+c.mouse_wheel_scrolls_tabs = false
 
 -- dim unfocused panes
 c.inactive_pane_hsb = {

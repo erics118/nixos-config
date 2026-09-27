@@ -26,18 +26,13 @@ test(
   { skip: process.platform !== "darwin" },
   () => {
     const target = path.join("/tmp", `pi-paths-${process.pid}`, "file.txt");
-    const tempRoot = realpathSync.native("/tmp");
 
     assert.deepEqual(
       resolveManagedPath(
         target,
         mkdtempSync(path.join(os.tmpdir(), "pi-home-")),
       ),
-      {
-        kind: "redirect",
-        path: target,
-        target: path.join(tempRoot, `pi-paths-${process.pid}`, "file.txt"),
-      },
+      { kind: "regular", path: target },
     );
   },
 );
@@ -94,6 +89,17 @@ test("blocks a nested managed symlink that escapes approved roots", () => {
   symlinkSync(outside, path.join(config, "link"));
   assert.equal(
     resolveManagedPath(path.join(config, "link", "file.txt"), home).kind,
+    "blocked",
+  );
+});
+
+test("blocks an existing file behind an unapproved directory symlink", () => {
+  const home = mkdtempSync(path.join(os.tmpdir(), "pi-home-"));
+  const outside = mkdtempSync(path.join(os.tmpdir(), "pi-outside-"));
+  writeFileSync(path.join(outside, "file.txt"), "");
+  symlinkSync(outside, path.join(home, "link"));
+  assert.equal(
+    resolveManagedPath(path.join(home, "link", "file.txt"), home).kind,
     "blocked",
   );
 });

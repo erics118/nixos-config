@@ -15,10 +15,19 @@ function approvedRoots(home: string): string[] {
   ];
 }
 
+// root-owned macOS system links, trusted as if written by their real path
+const systemAliases = ["/tmp", "/var/folders"];
+
 function isApproved(target: string, roots: readonly string[]): boolean {
   return roots.some(
     (root) => target === root || target.startsWith(`${root}${path.sep}`),
   );
+}
+
+function dealias(input: string): string {
+  const alias = systemAliases.find((a) => isApproved(input, [a]));
+  if (!alias || !fs.existsSync(alias)) return input;
+  return fs.realpathSync.native(alias) + input.slice(alias.length);
 }
 
 export function resolveManagedPath(
@@ -27,18 +36,15 @@ export function resolveManagedPath(
   cwd = process.cwd(),
 ): Resolution {
   const lexicalRoots = approvedRoots(home);
-  const canonicalRoots = [
-    ...approvedRoots(fs.realpathSync.native(home)),
-    fs.realpathSync.native("/tmp"),
-  ];
+  const canonicalRoots = approvedRoots(fs.realpathSync.native(home));
   const candidate = path.resolve(cwd, input.replace(/^~(?=$|\/)/, home));
-  let current = candidate;
+  const lexical = dealias(candidate);
+  let current = lexical;
   const suffix: string[] = [];
 
   while (true) {
-    let stat: fs.Stats;
     try {
-      stat = fs.lstatSync(current);
+      fs.lstatSync(current);
     } catch (error) {
       if (
         !(error instanceof Error) ||
@@ -53,20 +59,17 @@ export function resolveManagedPath(
       continue;
     }
 
-    const canonical = fs.realpathSync.native(current);
-    const resolved = path.join(canonical, ...suffix);
+    const resolved = path.join(fs.realpathSync.native(current), ...suffix);
 
-    if (stat.isSymbolicLink()) {
+    // a symlink anywhere along the existing part of the path
+    if (resolved !== lexical) {
       if (!isApproved(resolved, canonicalRoots))
         return { kind: "blocked", path: candidate, target: resolved };
       return { kind: "redirect", path: candidate, target: resolved };
     }
 
-    if (isApproved(candidate, lexicalRoots)) {
-      if (!isApproved(resolved, canonicalRoots))
-        return { kind: "blocked", path: candidate, target: resolved };
+    if (isApproved(candidate, lexicalRoots))
       return { kind: "redirect", path: candidate, target: resolved };
-    }
 
     return { kind: "regular", path: candidate };
   }
