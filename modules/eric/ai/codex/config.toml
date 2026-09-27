@@ -17,6 +17,9 @@ network_access = true
 conversationDetailMode = "STEPS_COMMANDS"
 dock-icon-preference = "codex-system"
 followUpQueueMode = "queue"
+show-context-window-usage = false
+avatar-overlay-pet-visible = false
+hotkey-window-projectless-default-enabled = true
 
 [desktop.appearanceDarkChromeTheme]
 accent = "#339cff"
@@ -47,12 +50,10 @@ enabled = true
 trusted_hash = "sha256:7fe63c42973ca988a5758d5295fb0dc0a24afb6c970d412f11c71b6e91a48abb"
 
 [marketplaces.openai-bundled]
-last_updated = "2026-08-13T20:27:52Z"
 source_type = "local"
 source = "/Users/eric/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-08-14T09:40:19Z"
 source_type = "local"
 source = "/Users/eric/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
@@ -74,15 +75,16 @@ startup_timeout_sec = 120
 NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
 NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
-NODE_REPL_TRUSTED_CODE_PATHS = "/Users/eric/.codex"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/eric/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 CODEX_HOME = "/Users/eric/.codex"
-NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "028a14b6eaa6d98dac2aae00764345ab9f244801ed8493d42b9af3be5575006e,f204d340535055781952b10ed396de20b842f00a19e430852f7e121ad1ce91f6"
 BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
-NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
-NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
-NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
+BROWSER_USE_TINYSKY_ENABLED = "1"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = ""
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = ""
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = ""
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.727.51351"
+BROWSER_USE_CODEX_APP_VERSION = "26.917.51856"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/eric/.codex/plugins/cache/openai-bundled/browser/26.917.51856/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
 SKY_CUA_SERVICE_PATH = "/Users/eric/.codex/computer-use/Codex Computer Use.app"
 CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
 
@@ -107,19 +109,106 @@ enabled = true
 enabled = true
 
 [plugins."presentations@openai-primary-runtime"]
-enabled = true
-
-[plugins."sites@openai-bundled"]
-enabled = true
+enabled = false
 
 [plugins."spreadsheets@openai-primary-runtime"]
-enabled = true
+enabled = false
 
 [plugins."template-creator@openai-primary-runtime"]
-enabled = true
+enabled = false
 
 [plugins."visualize@openai-bundled"]
 enabled = true
+
+[plugins."codex-app-tools@openai-bundled"]
+enabled = true
+
+[plugins."unified-computer-use@openai-bundled"]
+enabled = true
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-analytics-dashboard"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-business-review"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-design-report"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-experiment-analysis"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-financial-budget"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-investment-committee-memo"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-legal-memorandum"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-market-trends-report"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-minimal-letterhead"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-operating-calendar"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-operating-review"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-project-kickoff"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-project-tracker"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-sales-pipeline"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-simple-dark-mode"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-simple-light-mode"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-strategy-memorandum"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-system-design"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-team-alignment"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-three-statement-forecast"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/plugin-management/0.1.0/skills/plugin-management"
+enabled = false
 
 [projects."/Users/eric"]
 trust_level = "untrusted"
@@ -289,10 +378,14 @@ trust_level = "trusted"
 [projects."/Users/eric/dev/alcove"]
 trust_level = "trusted"
 
+[projects."/Users/eric/Documents/Codex/2026-09-22/hi"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/cornell/club/cev/urban-concept"]
+trust_level = "trusted"
+
 [shell_environment_policy.set]
-BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
 NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "028a14b6eaa6d98dac2aae00764345ab9f244801ed8493d42b9af3be5575006e,f204d340535055781952b10ed396de20b842f00a19e430852f7e121ad1ce91f6"
-NODE_REPL_TRUSTED_CODE_PATHS = "/Users/eric/.codex"
 
 [tui]
 status_line = [
@@ -305,7 +398,9 @@ status_line = [
 ]
 status_line_use_colors = true
 terminal_title = ["activity", "project-name", "current-dir"]
+screen_reader_detection_done = true
 
 [tui.model_availability_nux]
 "gpt-5.5" = 4
 "gpt-5.6-sol" = 4
+gpt-6-astra = 4

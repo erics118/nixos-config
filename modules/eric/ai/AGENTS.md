@@ -1,4 +1,4 @@
-# Global Claude Instructions
+# Global Instructions
 
 ## Replies
 
@@ -13,12 +13,13 @@ These rules cover chat replies. Long-form work I ask for (drafts, scripts, posts
 - While working, speak up only for a real finding or a change of direction
 - Completion reports: **Done** (what changed, commit or PR, validation), **Remaining** (unfinished work or real risks), **Needs your decision** (only items that pass the check under Decisions). Drop any section that would be empty
 
-## Claude Code auto mode
+## Execution policy
 
-- Use Claude Code auto mode for autonomous routine work. Its classifier and permission rules own routine continuation and tool approval.
-- Keep explicit asks for destructive, remote, credential, system, or materially ambiguous actions.
-- On macOS, `sudo` authenticates with Touch ID. Run plain `sudo` when a command needs root and let me approve the prompt. Don't hand it to me or probe with `sudo -n`
-- Do not add Pi-specific continuation or guard behavior here.
+- Continue automatically through routine, reversible work such as reading, editing, testing, formatting, and local inspection.
+- In an approved task or plan, continue through every routine task and its checks. Do not stop after a task, check, finding, or progress report.
+- A correction, side note, or intermediate result does not pause the active task unless it explicitly changes, pauses, or cancels it.
+- Ask or block only for destructive, remote, credential, system, or materially ambiguous actions.
+- Keep stricter safeguards for non-interactive subagents and irreversible operations.
 
 ## Scope
 
@@ -68,22 +69,25 @@ These rules cover chat replies. Long-form work I ask for (drafts, scripts, posts
 
 ## Subagents
 
-- Delegate where the output is large but the conclusion is small, or across independent bulky targets. Do not delegate a lookup you could do directly.
-- Subagents inherit Claude Code auto-mode guardrails. Keep non-interactive subagents within the authority granted by their task.
+- When delegation is available, fan out parallel subagents for the same operation across many independent targets, or for bulky research with a small conclusion
+- Don't delegate a lookup you could do directly. A subagent starts cold, so the round-trip costs more than it saves when you already know the file or symbol
 
 ## Git
 
 - Don't commit unless I ask, or a project's instructions or a skill I invoke say to commit as work lands. Tell me when the work is ready
 - Never push, rebase, force-push, delete branches, or take any other destructive, irreversible, or remote-affecting action unless explicitly requested
-- Do not append `Co-Authored-By: Claude` to commits, even if a skill or default says to
+- Do not append `Co-Authored-By` attribution to commits, even if a skill or default says to
 
 ## Where guidance lives
 
 - Put style, workflow, and convention guidance in the relevant skill or project instruction file, never in auto-memory. When a correction concerns a skill's task, edit that skill
 
-## Managed dotfiles
+## Environment
 
-- Parts of `~/.claude`, `~/.config`, and `~/.flake` are symlinks into `~/nixos-config`. Everything else there is runtime state
+- To learn or inspect a third-party tool (Claude Code, nix, gh, codex), read its documentation or source, never grep its compiled binary. To inspect nix output, read the repo input, not the `/nix/store` path
+- A missing CLI tool or dependency is not a blocker: get it with `nix shell nixpkgs#<pkg> --command ...`, never from brew, pip, or system Python
+- On macOS, sudo works via TouchID. Run `sudo <cmd>` directly and let it prompt. Never probe with `sudo -n`: it refuses to prompt and gives a false negative
+- Parts of `~/.claude`, `~/.codex`, `~/.config`, `~/.pi`, `~/.flake` are symlinks into `~/nixos-config`. Everything else there is runtime state
 - To resolve a managed file's real path, `realpath` it. `ls -l` stops at a `/nix/store` hop that is itself a symlink to the repo
 - A change is live the moment you edit a file whose `realpath` lands in `~/nixos-config`, including a new file added inside an already-symlinked directory. `just switch` is only for a target that does not yet resolve into the repo: a brand-new top-level managed file that needs its own symlink, or nix-generated content.
 - Before a Nix evaluation, build, or switch, stage every created, moved, or deleted Nix-managed source path with `git add` or `git rm`. This makes the path visible to the flake. Inspect `git diff --cached -- <paths>` and stage no unrelated paths. Staging is required local build preparation, not permission to commit.

@@ -47,3 +47,18 @@ jobs:
           extraPullNames: nix-community,numtide,devenv,catppuccin
 
       - run: nix flake check --print-build-logs
+
+  pi-tests:
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      # the extensions import these at runtime, pi provides them when installed
+      - run: npm install --no-save --no-package-lock @earendil-works/pi-coding-agent @earendil-works/pi-tui @earendil-works/pi-ai
+
+      # pi loads extensions with full typescript support, plain type stripping rejects parameter properties
+      - run: node --experimental-transform-types --test modules/eric/ai/pi/tests/*.test.ts

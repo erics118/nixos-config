@@ -8,6 +8,8 @@
     }:
     let
       base = "modules/eric/ai";
+      globalInstructions = repoFile "${base}/AGENTS.md";
+      claudeInstructions = repoFile "${base}/claude/CLAUDE-global.md";
       vendors = {
         claude = "claude";
         codex = "codex";
@@ -58,23 +60,24 @@
       };
     in
     {
-      home.file =
-        vendorFiles vendors.codex {
-          "AGENTS.md" = "AGENTS.md";
-          "config.toml" = "config.toml";
-          "hooks.json" = "hooks.json";
-          "rules/default.rules" = "rules/default.rules";
-        }
-        // vendorFiles vendors.claude {
-          "CLAUDE.md" = "CLAUDE-global.md";
-          "settings.json" = "settings.json";
-          "statusline.sh" = "statusline.sh";
-          hooks = "hooks";
-        }
-        // skillDirectories skillLocations.agents "shared"
-        // skillDirectories skillLocations.agents vendors.codex
-        // skillDirectories skillLocations.claude "shared"
-        // skillDirectories skillLocations.claude vendors.claude;
+      home.file = {
+        ".claude/CLAUDE.md".source = claudeInstructions;
+        ".codex/AGENTS.md".source = globalInstructions;
+      }
+      // vendorFiles vendors.codex {
+        "config.toml" = "config.toml";
+        "hooks.json" = "hooks.json";
+        "rules/default.rules" = "rules/default.rules";
+      }
+      // vendorFiles vendors.claude {
+        "settings.json" = "settings.json";
+        "statusline.sh" = "statusline.sh";
+        hooks = "hooks";
+      }
+      // skillDirectories skillLocations.agents "shared"
+      // skillDirectories skillLocations.agents vendors.codex
+      // skillDirectories skillLocations.claude "shared"
+      // skillDirectories skillLocations.claude vendors.claude;
 
       home.packages = with pkgs; [
         ccusage

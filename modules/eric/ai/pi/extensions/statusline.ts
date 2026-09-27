@@ -1,16 +1,9 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import {
-  CustomEditor,
   type ExtensionAPI,
   type ExtensionContext,
-  type KeybindingsManager,
 } from "@earendil-works/pi-coding-agent";
-import {
-  CURSOR_MARKER,
-  type EditorTheme,
-  type TUI,
-} from "@earendil-works/pi-tui";
 
 const execFileAsync = promisify(execFile);
 const reset = "\x1b[0m";
@@ -47,19 +40,6 @@ function formatStatusline({
   ].filter(Boolean);
 
   return segments.join(separator);
-}
-
-function removeSoftwareCursor(line: string): string {
-  const markerIndex = line.indexOf(CURSOR_MARKER);
-  if (markerIndex < 0) return line;
-
-  const start = markerIndex + CURSOR_MARKER.length;
-  if (!line.startsWith("\x1b[7m", start)) return line;
-
-  const end = line.indexOf("\x1b[0m", start);
-  if (end < 0) return line;
-
-  return `${line.slice(0, start)}${line.slice(start + 4, end)}${line.slice(end + 4)}`;
 }
 
 function color(value: string, ansi: string): string {
@@ -108,12 +88,21 @@ async function getGitStatus(
 
 function getSessionCost(ctx: ExtensionContext): number {
   return ctx.sessionManager.getEntries().reduce((total, entry) => {
-    const usage = entry.type === "message" ? entry.message.usage : entry.usage;
+    const usage =
+      entry.type === "message"
+        ? "usage" in entry.message
+          ? entry.message.usage
+          : undefined
+        : "usage" in entry
+          ? entry.usage
+          : undefined;
     return total + (usage?.cost.total ?? 0);
   }, 0);
 }
 
 async function update(pi: ExtensionAPI, ctx: ExtensionContext): Promise<void> {
+  if (ctx.mode !== "tui") return;
+
   const git = await getGitStatus(ctx.cwd);
   const usage = ctx.getContextUsage();
   const contextPercent =
@@ -141,7 +130,6 @@ async function update(pi: ExtensionAPI, ctx: ExtensionContext): Promise<void> {
     cost: getSessionCost(ctx),
   });
 
-  if (!ctx.hasUI) return;
   ctx.ui.setFooter(() => ({
     render(): string[] {
       return [text];
@@ -151,70 +139,33 @@ async function update(pi: ExtensionAPI, ctx: ExtensionContext): Promise<void> {
 }
 
 export default function createExtension(pi: ExtensionAPI): void {
-  pi.on("session_start", (_event, ctx) => {
-    class PromptEditor extends CustomEditor {
-      constructor(
-        tui: TUI,
-        theme: EditorTheme,
-        keybindings: KeybindingsManager,
-      ) {
-        super(tui, theme, keybindings, { paddingX: 2 });
-      }
+  let activeUpdate: Promise<void> | undefined;
+  let pendingContext: ExtensionContext | undefined;
 
-      render(width: number): string[] {
-        const lines = super.render(width);
-        if (lines.length > 2) lines[1] = lines[1].replace(/^ {2}/, "❯ ");
-        return lines.map(removeSoftwareCursor);
+  const refresh = async (ctx: ExtensionContext): Promise<void> => {
+    pendingContext = ctx;
+    if (activeUpdate) return activeUpdate;
+
+    activeUpdate = (async () => {
+      while (pendingContext) {
+        const nextContext = pendingContext;
+        pendingContext = undefined;
+        await update(pi, nextContext);
       }
+    })();
+    try {
+      await activeUpdate;
+    } finally {
+      activeUpdate = undefined;
     }
+  };
 
-    ctx.ui.setEditorComponent(
-      (tui, theme, keybindings) => new PromptEditor(tui, theme, keybindings),
-    );
-    ctx.ui.addAutocompleteProvider((current) => ({
-      async getSuggestions(lines, cursorLine, cursorCol, options) {
-        const suggestions = await current.getSuggestions(
-          lines,
-          cursorLine,
-          cursorCol,
-          options,
-        );
-        if (!suggestions) return null;
-        return {
-          ...suggestions,
-          items: suggestions.items.filter(
-            (item) => !item.value.startsWith("/skill:"),
-          ),
-        };
-      },
-      applyCompletion(lines, cursorLine, cursorCol, item, prefix) {
-        return current.applyCompletion(
-          lines,
-          cursorLine,
-          cursorCol,
-          item,
-          prefix,
-        );
-      },
-      shouldTriggerFileCompletion(lines, cursorLine, cursorCol) {
-        return (
-          current.shouldTriggerFileCompletion?.(lines, cursorLine, cursorCol) ??
-          true
-        );
-      },
-    }));
-  });
-
-  for (const event of [
-    "session_start",
-    "model_select",
-    "thinking_level_select",
-    "turn_start",
-    "turn_end",
-    "tool_result",
-    "session_compact",
-    "session_tree",
-  ] as const) {
-    pi.on(event, async (_event, ctx) => update(pi, ctx));
-  }
+  pi.on("session_start", async (_event, ctx) => refresh(ctx));
+  pi.on("model_select", async (_event, ctx) => refresh(ctx));
+  pi.on("thinking_level_select", async (_event, ctx) => refresh(ctx));
+  pi.on("turn_start", async (_event, ctx) => refresh(ctx));
+  pi.on("turn_end", async (_event, ctx) => refresh(ctx));
+  pi.on("tool_result", async (_event, ctx) => refresh(ctx));
+  pi.on("session_compact", async (_event, ctx) => refresh(ctx));
+  pi.on("session_tree", async (_event, ctx) => refresh(ctx));
 }
