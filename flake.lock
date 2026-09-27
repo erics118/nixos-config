@@ -330,11 +330,11 @@
         "vpn-confinement": "vpn-confinement"
       },
       "locked": {
-        "lastModified": 1790019277,
-        "narHash": "sha256-EhCnznoh4dTJ4zXqtRF2QHo2Eq+KZNJ64EyT482j3fU=",
+        "lastModified": 1790480567,
+        "narHash": "sha256-8khz35W4k8VcPdDk7GoFmda6neX+uXqKVi6Ew+i3OeU=",
         "ref": "refs/heads/main",
-        "rev": "c032fe77f07f39147b05aae57f6374e633c1039d",
-        "revCount": 52,
+        "rev": "6b73b401fe2679af021b132cb04405671730b649",
+        "revCount": 53,
         "type": "git",
         "url": "ssh://git@github.com/erics118/nixos-config-private.git"
       },
@@ -483,11 +483,11 @@
     "sketchybar-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1790035681,
-        "narHash": "sha256-NEU+PTGZb/msC6jtZAnD8+lwtSk6v3NnpdJp6M2Joro=",
+        "lastModified": 1790479251,
+        "narHash": "sha256-2uJsmSiA4zxvN5me07W4eJZNc138q7GUYBHcXQqqdvY=",
         "owner": "erics118",
         "repo": "SketchyBar",
-        "rev": "89a404783a463d4abc22bd9cdc2b21c10755f7ed",
+        "rev": "00a7fa168b35c9db1195ec7d77969dbd00380e17",
         "type": "github"
       },
       "original": {

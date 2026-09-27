@@ -14,6 +14,7 @@ in
       m.nixos.auto-upgrade
       m.nixos.ntfy
       m.nixos.ntfy-client
+      m.nixos.eriz
       inputs.disko.nixosModules.disko
       ./_hardware/aarch64-turtle.nix
       ./_hardware/aarch64-turtle-disko.nix

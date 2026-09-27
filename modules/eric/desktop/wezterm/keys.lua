@@ -113,6 +113,7 @@ map("LeftArrow", MOD, act.SendKey({ key = "LeftArrow", mods = "CTRL" }))
 map("RightArrow", MOD, act.SendKey({ key = "RightArrow", mods = "CTRL" }))
 
 map("Enter", "SHIFT", act.SendString("\x1b[13;2u"))
+map("Enter", "CMD", act.SendString("\x1b[13;9u"))
 
 local key_tables = {
     resize_mode = {

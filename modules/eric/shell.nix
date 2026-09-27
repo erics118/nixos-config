@@ -120,6 +120,8 @@
 
           ws = "wezterm cli spawn -- ";
 
+          scc = "scc --no-cocomo";
+
           rv = "docker run -i --init --rm -v \"$PWD\":/root ghcr.io/sampsyo/cs3410-infra";
           rv-debug = "docker run -it --rm --init --name testing --ulimit core=-1 --mount type=bind,source=\"$PWD\"/,target=\"$PWD\"/ -v \"$PWD\":/root ghcr.io/sampsyo/cs3410-infra";
 

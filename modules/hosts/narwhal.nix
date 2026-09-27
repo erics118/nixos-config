@@ -18,6 +18,7 @@ in
       m.nixos.glances
       m.nixos.auto-upgrade
       m.nixos.ntfy-client
+      m.nixos.eriz
       m.nixos.hyprland
       m.nixos.sunshine
       m.nixos.hp-printer

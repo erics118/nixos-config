@@ -8,6 +8,7 @@ in
       m.darwin.base
       m.darwin.sops
       m.darwin.ntfy-client
+      m.darwin.eriz
     ];
     nixpkgs.hostPlatform = "aarch64-darwin";
 
