@@ -21,16 +21,26 @@ test("regular paths pass through", () => {
   });
 });
 
-test("allows a new file below the macOS /tmp symlink", { skip: process.platform !== "darwin" }, () => {
-  const target = path.join("/tmp", `pi-paths-${process.pid}`, "file.txt");
-  const tempRoot = realpathSync.native("/tmp");
+test(
+  "allows a new file below the macOS /tmp symlink",
+  { skip: process.platform !== "darwin" },
+  () => {
+    const target = path.join("/tmp", `pi-paths-${process.pid}`, "file.txt");
+    const tempRoot = realpathSync.native("/tmp");
 
-  assert.deepEqual(resolveManagedPath(target, mkdtempSync(path.join(os.tmpdir(), "pi-home-"))), {
-    kind: "redirect",
-    path: target,
-    target: path.join(tempRoot, `pi-paths-${process.pid}`, "file.txt"),
-  });
-});
+    assert.deepEqual(
+      resolveManagedPath(
+        target,
+        mkdtempSync(path.join(os.tmpdir(), "pi-home-")),
+      ),
+      {
+        kind: "redirect",
+        path: target,
+        target: path.join(tempRoot, `pi-paths-${process.pid}`, "file.txt"),
+      },
+    );
+  },
+);
 
 test("approved managed symlink redirects", () => {
   const home = mkdtempSync(path.join(os.tmpdir(), "pi-home-"));

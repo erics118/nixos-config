@@ -72,7 +72,10 @@ export function parseExtractionResult(text: string): ExtractionResult | null {
   const candidates: string[] = [];
   const fenced = Array.from(
     text.matchAll(/```([a-z0-9_-]+)?\s*\n?([\s\S]*?)```/gi),
-    (match) => ({ language: match[1]?.toLowerCase(), content: match[2]!.trim() }),
+    (match) => ({
+      language: match[1]?.toLowerCase(),
+      content: match[2]!.trim(),
+    }),
   );
   candidates.push(
     ...fenced

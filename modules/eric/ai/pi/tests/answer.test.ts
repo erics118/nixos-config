@@ -17,7 +17,7 @@ test("parses structured questions from a fenced response", async () => {
 test("parses JSON after an earlier non-JSON fenced block", async () => {
   const module = await import("../lib/answer-parser.ts");
   const result = module.parseExtractionResult(
-    "```ts\nconst example = {};\n```\n```json\n{\"questions\":[{\"question\":\"Choose?\"}]}\n```",
+    '```ts\nconst example = {};\n```\n```json\n{"questions":[{"question":"Choose?"}]}\n```',
   );
   assert.deepEqual(result, { questions: [{ question: "Choose?" }] });
 });

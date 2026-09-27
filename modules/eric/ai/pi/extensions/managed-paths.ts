@@ -31,10 +31,7 @@ export function resolveManagedPath(
     ...approvedRoots(fs.realpathSync.native(home)),
     fs.realpathSync.native("/tmp"),
   ];
-  const candidate = path.resolve(
-    cwd,
-    input.replace(/^~(?=$|\/)/, home),
-  );
+  const candidate = path.resolve(cwd, input.replace(/^~(?=$|\/)/, home));
   let current = candidate;
   const suffix: string[] = [];
 

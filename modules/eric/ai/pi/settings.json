@@ -9,10 +9,7 @@
   "showHardwareCursor": true,
   "editorPaddingX": 2,
   "outputPad": 1,
-  "enabledModels": [
-    "openai/*",
-    "openrouter/*"
-  ],
+  "enabledModels": ["openai/*", "openrouter/*"],
   "packages": [
     "./packages/pi-web-activation",
     "npm:pi-web-access@0.31.0",

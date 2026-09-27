@@ -5,7 +5,8 @@ const noop = () => {};
 
 test("answer does not invoke terminal-only UI in RPC mode", async () => {
   const module = await import("../extensions/answer.ts");
-  let command: { handler: (args: string, ctx: unknown) => Promise<void> } | undefined;
+  let command:
+    { handler: (args: string, ctx: unknown) => Promise<void> } | undefined;
   module.default({
     registerCommand: (_name, value) => {
       command = value as typeof command;
@@ -32,14 +33,17 @@ test("statusline skips non-TUI updates before inspecting session state", async (
   } as never);
 
   await assert.doesNotReject(() =>
-    handlers[0]!({}, {
-      mode: "rpc",
-      hasUI: true,
-      cwd: process.cwd(),
-      getContextUsage: () => {
-        throw new Error("statusline must not inspect non-TUI state");
+    handlers[0]!(
+      {},
+      {
+        mode: "rpc",
+        hasUI: true,
+        cwd: process.cwd(),
+        getContextUsage: () => {
+          throw new Error("statusline must not inspect non-TUI state");
+        },
       },
-    }),
+    ),
   );
 });
 
