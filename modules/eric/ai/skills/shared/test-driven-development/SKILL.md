@@ -25,7 +25,7 @@ Done when: the test exists and expresses one intended behavior.
 
 Run it. Confirm it fails, does not error, and fails for the right reason: the feature is missing, not a typo or bad import.
 
-- Passes already: it tests existing behavior. Fix the test.
+- Passes already: either the test is wrong (fix it), or the behavior already exists (say so and stop).
 - Errors instead of failing: fix the error and rerun until it fails cleanly.
 
 Done when: you have seen a clean failure with the expected message.
@@ -40,7 +40,7 @@ Done when: this test passes and the rest stay green.
 
 ### REFACTOR: clean up on green
 
-Only once green. Remove duplication, improve names, extract helpers. Add no behavior. Stay green throughout.
+Only once green. Refactor only code written in this cycle: remove duplication, improve names, extract helpers. Add no behavior. Stay green throughout.
 
 Done when: the code is clean and every test still passes.
 

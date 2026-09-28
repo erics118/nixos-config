@@ -19,7 +19,7 @@ These findings were raised on the previous round: <findings verbatim>. The imple
 For each finding, in order: ADDRESSED or NOT ADDRESSED, with file:line evidence. "Attempted" is not addressed. Then list new breakage the fix itself introduced. Put anything outside the fix diff under "Out of scope". It does not block this round.
 
 <scope: branch>
-This is the whole change, reviewed once before Eric sees it. Review Focus from the plan: <verbatim>. Check each Review Focus input deliberately. The ledger's rulings, parked findings, and deferred minors are at <ledger path>: weigh them and say which must be fixed before merge.
+This is the whole change, reviewed once before the human user sees it. Review Focus from the plan: <verbatim>. Check each Review Focus input deliberately. The ledger's rulings, parked findings, and deferred minors are at <ledger path>: weigh them and say which must be fixed before merge.
 
 Grade every finding Critical (wrong or broken), Important (cannot be trusted until fixed: a missed requirement, fragile behavior, duplicated logic, a check that asserts nothing), or Minor (polish). Something the plan itself mandates that this rubric calls a defect is still a finding: label it plan-mandated. Cite file:line for every finding.
 

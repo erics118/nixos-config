@@ -28,7 +28,8 @@ same instruction block and scope; it is a different model on purpose.
   where you disagree (dig into why, do not just average). Keep every verdict intact.
 
 This is for work I just produced and am unsure about, whether that is code or a plan I
-have not built yet. For a plan, judge the design and its assumptions, not style, and do
+have not built yet. For a plan, judge the design (right abstractions, idiomatic, easy to read, easy
+to change, hard to misuse) and its assumptions, not style, and do
 not demand code that does not exist yet. Hit the target from each of these angles and
 label every finding with its angle:
 

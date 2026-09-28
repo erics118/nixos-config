@@ -11,7 +11,7 @@ NO FIX WITHOUT A ROOT CAUSE FIRST. A fix aimed at the symptom is a failure, even
 
 This holds hardest exactly when it is tempting to skip: under time pressure, on an "obvious" one-liner, or after a previous fix did not stick.
 
-When the error message names the cause outright (a typo, a missing import, a wrong path), that is Phase 1 done: fix it and run the check.
+When the error message names the cause outright (a typo, a missing import, a wrong path), Phase 1 is done. Skip to Phase 4.
 
 Work the phases in order. Each ends on a check.
 
@@ -37,7 +37,7 @@ Done when: you can name the difference that accounts for the failure.
 
 - State it: "X is the root cause because Y."
 - Test it with the smallest possible change, one variable.
-- Worked: go to Phase 4. Did not: form a new hypothesis. Do not stack another fix on top.
+- Worked: go to Phase 4. Did not: count the failed fix. After 2 that fail the same way, see "When independent fixes fail identically, doubt the instrument." After 3, see "When three fixes have failed, stop fixing." Otherwise form a new hypothesis. Do not stack another fix on top.
 - If you do not understand something, say so and dig. Do not pretend.
 
 Done when: a single hypothesis is confirmed by a minimal test.
@@ -56,7 +56,7 @@ If 2+ independent fixes fail the same way, suspect the measurement or test tool 
 
 ## When three fixes have failed, stop fixing
 
-If each attempt reveals a new problem somewhere else, or every fix would need "massive refactoring," the architecture is wrong, not the hypothesis. Stop and raise it with Eric before attempt four.
+If each attempt reveals a new problem somewhere else, or every fix would need "massive refactoring," the architecture is wrong, not the hypothesis. Stop and raise it with the user before attempt four.
 
 ## Stop signals
 

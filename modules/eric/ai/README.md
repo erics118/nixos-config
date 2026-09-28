@@ -3,23 +3,23 @@
 Claude Code, Codex, and pi share one instruction file and one set of skills.
 
 - `AGENTS.md` is linked as `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, and `~/.pi/agent/AGENTS.md`. pi-only rules live in `pi/APPEND_SYSTEM.md`.
-- `skills/shared/` goes to `~/.claude/skills` and `~/.agents/skills` (Codex and pi). `skills/claude/` and `skills/codex/` are agent-specific.
+- `skills/shared/` goes to `~/.claude/skills` and `~/.agents/skills` (Codex and pi). `skills/claude/` is Claude-only. `skills/codex/` also goes to `~/.agents/skills`, so Codex and pi both get it.
 - Guard hooks live in `hooks/`, linked as `~/.agents/hooks`. `claude/settings.json` is the one list of which hook runs for which tool: Claude runs it, and pi's `pi/extensions/guards.ts` reads the same file. Codex runs the shell-command guards listed in `codex/hooks.json` (trust them once with `/hooks`).
 
 ## When to invoke what
 
 Invoke with `/name` in Claude Code, `$name` in Codex, and `/skill:name` in pi.
 
-| Moment                                         | Skill                                   |
-| ---------------------------------------------- | --------------------------------------- |
-| Small, clear change                            | none                                    |
-| A question where an edit would be wrong        | `ask`                                   |
-| Which mechanism or design should do a job      | `redesign`                              |
-| Doubt a claim before acting on it              | `recheck`                               |
-| Many files, or code plus docs plus CI          | `writing-plans`, then `executing-plans` |
-| Before committing                              | `summarize-changes`                     |
-| Review                                         | `audit`, or `adversarial-review`        |
-| An agent failed and it should not happen again | `fix-yourself`                          |
+| Moment                                         | Skill                                                                            |
+| ---------------------------------------------- | -------------------------------------------------------------------------------- |
+| Small, clear change                            | none                                                                             |
+| A question where an edit would be wrong        | `ask`                                                                            |
+| Which mechanism or design should do a job      | `redesign`                                                                       |
+| Doubt a claim before acting on it              | `recheck`                                                                        |
+| Many files, or code plus docs plus CI          | `writing-plans`, then `executing-plans` (or `executing-plans-agentic` in Claude) |
+| Before committing                              | `summarize-changes`                                                              |
+| Review                                         | `audit`, or `adversarial-review`                                                 |
+| An agent failed and it should not happen again | `fix-yourself`                                                                   |
 
 These load on their own when they apply: `rewrite` (cutting or restructuring prose), `recall` (past sessions), `grilling`, `systematic-debugging`, `test-driven-development`.
 

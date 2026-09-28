@@ -2,7 +2,7 @@
 name: audit
 description: Read-only sweep of existing code across every lens, ranked by what to fix first, then applies accepted fixes on confirm
 disable-model-invocation: true
-argument-hint: "[empty for whole repo | area | 'diff' for uncommitted changes] [+ a lens to narrow: debt|modernize|structure|correctness|robustness|concurrency|security|contract|performance|tests|operability|docs]"
+argument-hint: "[empty for whole repo | area | 'diff' for uncommitted changes] [+ a lens to narrow: cleanup|quality|debt|modernize|structure|correctness|robustness|concurrency|security|contract|performance|tests|operability|docs]"
 ---
 
 Survey existing code and report what is worth fixing, then apply the accepted fixes once
@@ -19,12 +19,13 @@ By default the sweep is complete: hunt everything a careful senior would flag as
 any way. The lenses below are a checklist to force that breadth, not a fence -- a genuine
 problem that fits no named lens still counts. Reach for the list to check you have missed no
 dimension, never to bound what you look for. Narrow to a single lens, or to `cleanup` /
-`quality` for the debt+structure+modernize group, only when the ask names one.
+`quality` for the debt+structure+modernize group, only when the ask names one. `cleanup` also
+means a light pass.
 
-Match depth to the ask too. A light ask -- "surface", "quick", "cleanup", "tidy", or a small
-named target -- is a single direct pass for the obvious, high-confidence wins: read, report,
-apply, and skip the coordinated apparatus below. A wide ask -- the whole repo, or "thorough" /
-"deep" / "everything" -- earns the full sweep in Survey the scope.
+Match depth to the ask too. A light ask is one of "surface", "quick", "cleanup", "tidy", or a
+small named target. It gets a single direct pass for the obvious, high-confidence wins: read,
+report, and apply on confirm. Skip the coordinated apparatus below. A wide ask is the whole
+repo, or "thorough" / "deep" / "everything". It earns the full sweep in Survey the scope.
 
 ## Survey the scope (wide audits)
 
@@ -48,8 +49,8 @@ non-overlapping boundary. Under Claude use Explore or general-purpose agents via
 tool; under Codex use its native subagents; under pi use pi-subagents; only where no subagent mechanism exists, run
 each subsystem review yourself in sequence. Keep every worker read-only, bound concurrency
 to the lanes you can coordinate, wait on the batch together, and harvest each result. Brief
-each worker to apply every lens (or the single focused lens) within its boundary and return,
-per finding: what and where (`file:line`), severity or effort, why it matters with a concrete
+each worker to apply every lens (or the single focused lens) within its boundary. For each
+finding it returns: what and where (`file:line`), severity or effort, why it matters with a concrete
 failure scenario, the proposed fix, regression risk, and confidence. It may note
 cross-subsystem concerns but must not expand scope.
 
@@ -105,7 +106,7 @@ Security and contract
 - **security** -- authn/authz on every path; CSRF and origin checks; XSS and injection, with
   escaping correct for the context it lands in, not just some context; sandbox and CSP; secret
   handling and exposure; info leakage in errors; SSRF and open-redirect; supply-chain
-  (vendored, pinned, integrity-checked). For a deeper dedicated pass, `adversarial-review` goes further
+  (vendored, pinned, integrity-checked). For a deeper dedicated pass, the user can run `adversarial-review`
   (Claude Code also has the built-in `security-review`); this lens is the broad net that finds where to aim them.
 - **contract** -- http/api semantics (status codes, headers, conditional and range requests,
   redirects and their cache stickiness); caching and invalidation (stale-on-mutate, and

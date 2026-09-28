@@ -13,5 +13,5 @@ Explain a component by reading the actual source, not from memory. Steps:
    - What it does: the behavior in one or two lines.
    - How it fits: where it plugs into the rest of the repo (callers, module wiring, data/control flow in and out). Reference `file:line`.
    - Why it exists: the problem it solves and what would break or be worse without it.
-   - Idioms: for each non-obvious pattern, convention, or workaround it uses, why it is done that way (constraints, alternatives rejected, gotchas). Distinguish deliberate choices from incidental style.
+   - Idioms: for each non-obvious pattern, convention, or workaround it uses, why it is done that way (constraints, alternatives rejected, gotchas), citing the comment, commit, or doc that shows it. Say 'unknown' when no source shows it. Distinguish deliberate choices from incidental style.
 4. Flag anything that looks dead, redundant, or inconsistent with the rest of the codebase, but do not change it. Read-only explanation.

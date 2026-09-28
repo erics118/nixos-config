@@ -5,7 +5,7 @@ description: Use whenever you notify the user - pinging them when a long task fi
 
 # ntfy
 
-Push a notification to the user's phone through the self-hosted ntfy server. It reaches the phone whether or not the agent's terminal is open. Use it for every notification. In Claude Code, the `PushNotification` tool is fine too.
+Push a notification to the user's phone through the self-hosted ntfy server. It reaches the phone whether or not the agent's terminal is open. Use `ntfy` for notifications in every agent. In Claude Code, the `PushNotification` tool also works.
 
 Publish to the `claude` topic, which the user's phone subscribes to:
 

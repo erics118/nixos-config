@@ -25,7 +25,7 @@ Every plan starts with this header:
 
 ## Review Focus
 
-<up to five inputs or failure modes no task's check exercises, most likely first, each naming the input and the behavior a person would expect; each has its check added to the owning task>
+<every input or failure mode the tasks' checks did not exercise before self-review whose failure a person using the result would notice, most likely first, each naming the input and the behavior a person would expect; each has its check added to the owning task>
 
 ---
 ```

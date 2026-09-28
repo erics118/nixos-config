@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 Write a handoff document summarising the current conversation so a fresh agent can continue the work.
 
-Save it to `/tmp/handoff-<YYYYMMDD-HHMM>-<short-slug>.md`, in preference to `$TMPDIR` or any session scratchpad directory the environment nominates.
+Save it to `/tmp/handoff-<YYYYMMDD-HHMM>-<short-slug>.md`, not `$TMPDIR` or a session scratchpad.
 
 The reader shares the filesystem but none of the history: name absolute paths, spell out decisions already made and rejected, and state what is still open.
 

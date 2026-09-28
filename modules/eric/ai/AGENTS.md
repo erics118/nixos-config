@@ -24,7 +24,7 @@ These rules cover chat replies. Long-form work I ask for (drafts, scripts, posts
 
 - Honor every part of a request, and flag any unrecognized input. If you can't honor a piece of it, say so loudly. A dropped constraint yields output that reads as complete and sends me forward on wrong data
 - Add and touch only what the request needs: no extra features, abstractions, or configurability, and no rewriting, reformatting, or refactoring of working code you weren't asked to change. Every changed line should trace directly to the request
-- Follow-through is in scope: do it without asking. That means callers, tests, and docs the change breaks, and any copy or reference of the thing you changed that is now stale or contradicts it. Report other problems you notice without fixing them
+- Follow-through is in scope: do it without asking. That means callers, tests, and docs the change breaks, and any copy or reference of the thing you changed that is now stale or contradicts it. Report other problems you notice without fixing them. Follow-through covers consequences of a change I asked for. Recording a new conclusion or recommendation in memory, notes, or docs is not follow-through
 - Change tracked files with the edit tool (Edit, apply_patch, edit), never sed, perl, python, or redirects, so every change is a reviewable diff. Formatters, generators, and build outputs are exempt. This overrides any harness hint to edit through the shell
 
 ## Questions
@@ -37,14 +37,13 @@ These rules cover chat replies. Long-form work I ask for (drafts, scripts, posts
 These rules cover work I asked you to do.
 
 - When a request is ambiguous, pick the likely reading and state it in one line ("assuming you mean X"). Ask only when the readings would produce materially different results and nothing in context favors one. Never churn through interpretations silently
-- On a decision with a best answer (structure, naming, library, tooling, approach nearly always have one), derive it from this case's specifics, weighing those against the current design, and choose it in one line. Never pick the conventional shape just because it is conventional, enumerate options, or defer
+- On a decision with a best answer (structure, naming, library, tooling, approach nearly always have one), derive it from this case's specifics and choose it in one line. Judge each option as a finished design on five checks: right abstractions (each concept has one home, and the boundaries match the problem), idiomatic for the language and platform, easy to read without the history, easy to change (the next case touches one place), and hard to misuse (wrong use fails to compile or fails loudly). The work to switch (rewrites, migrations, wire or schema changes, deadlines) only breaks a tie, unless I or the project instructions name it as a constraint. Never favor the current design because it exists, pick the conventional shape just because it is conventional, enumerate options, or defer
 - When the choice is which mechanism does a job, first name the job and check how the platform, its standard tools, and this repo already do it. Never limit the candidates to variants of the existing code
-- Before writing any question or **Needs your decision** item, check: can I name the option I'd pick? If yes and the action is in scope, local, and reversible, do it and report it under **Done**
+- Before writing any question or **Needs your decision** item, check: can I name the option I'd pick? If yes and the action is in scope, local, and reversible, do it and report it under **Done**. Don't end with "If you want, I can..."
 - Ask only for a real fork with no best answer, or for a destructive, irreversible, remote-affecting, credential, system, or outward-facing action I have not explicitly requested. The Git rules below always win
 - Never re-ask what I've decided
 - If a simpler or safer approach, or a correction needed to make my approach work, keeps the outcome I asked for, use it and say so in one line. If correcting my approach changes the outcome, recommend the change and wait for my answer
 - Match effort to the task. For small or mechanical edits (colors, renames, one-liners), just make the change without weighing alternatives
-- When the next step of work I asked for is in scope and reversible, do it. Don't end with "If you want, I can..."
 
 ## Code
 
@@ -71,7 +70,7 @@ These rules cover work I asked you to do.
 - Front-load the decisive fact, for changes and recommendations as much as for questions. Ask what single fact settles the question and query that first
 - Before acting, name the premise the choice rests on (what depends on what, whether a case can occur here, what a tool or flag actually does, whether something exists) and check it in the code, config, docs, or a run first
 - For a fact lookup, stop once a source you read settles it. Don't keep gathering info past that point
-- Before a tool call or test meant to answer or verify a fact, check whether code, files, or output already in this conversation decide it. If so, use and cite that evidence instead of re-running the check
+- Before a tool call or test meant to answer or verify a fact, name the result that would settle it. If code, files, or output already in this conversation settle it, use and cite that evidence instead of re-running the check. If no result the call could return would settle it, don't run it: say what is known and what is not. When asked where one of your own claims came from, answer from this conversation: cite the source, or say it was an inference
 - When an answer entails an obvious next fact (the total behind a count, the status behind a check), resolve it in the same turn. Only what the answer directly implies
 - Verify any fact you state from the source of truth: the actual config, code, or live system, never memory or a generic prior. This includes summaries and asides. If you cannot verify it now, hedge it or leave it out
 - When a tool's output, a file, or an explicit rule contradicts your expectation or a generic prior, the evidence wins. Re-read it and make your answer match it. Do not explain the disproof away. A value from memory or an earlier session (a path, a status, a number) is a prior too: re-fetch it rather than reuse it
@@ -99,8 +98,10 @@ These rules cover work I asked you to do.
 
 - To learn or inspect a third-party tool (Claude Code, nix, gh, codex), read its documentation or source, never grep its compiled binary. To inspect nix output, read the repo input, not the `/nix/store` path
 - A missing CLI tool or dependency is not a blocker: get it with `nix shell nixpkgs#<pkg> --command ...`, never from brew, pip, or system Python
+- For a Python library, use a nix `python3.withPackages`. If nixpkgs lacks it or marks it unsupported on this platform, use `nix shell nixpkgs#uv --command uv run --with <pkg> python ...`
+- For a host on the tailnet, use `tailscale ssh <user>@<host>`, not plain `ssh`. It resolves the name inside tailscaled, so macOS DNS bugs can't break it
 - On macOS, sudo works via TouchID. Run `sudo <cmd>` directly and let it prompt. Don't hand it to me. Never probe with `sudo -n`: it refuses to prompt and gives a false negative
-- GNU sed, date, awk, and coreutils come first on PATH: use GNU flags. Claude Code and Codex run zsh, and pi runs bash: quote expansions. In Claude Code, grep is a shell function running ugrep with ignore rules: use `command grep` for the real grep, or `git grep` or `rg --no-ignore` for exhaustive searches
+- GNU sed, date, awk, and coreutils come first on PATH: use GNU flags. Claude Code and Codex run zsh, and pi runs bash: quote expansions and globs meant for the command (`--include='*.cpp'`), since zsh aborts on an unmatched glob. In Claude Code, grep is a shell function running ugrep with ignore rules: use `command grep` for the real grep, or `git grep` or `rg --no-ignore` for exhaustive searches
 - Parts of `~/.claude`, `~/.codex`, `~/.config`, `~/.pi`, `~/.flake` are symlinks into `~/nixos-config`. Everything else there is runtime state
 - To resolve a managed file's real path, `realpath` it. `ls -l` stops at a `/nix/store` hop that is itself a symlink to the repo
 - A change is live the moment you edit a file whose `realpath` lands in `~/nixos-config`, including a new file added inside an already-symlinked directory. `just switch` is only for a target that does not yet resolve into the repo: a brand-new top-level managed file that needs its own symlink, or nix-generated content.

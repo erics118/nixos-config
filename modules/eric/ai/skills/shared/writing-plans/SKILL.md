@@ -5,13 +5,13 @@ description: Use when a multi-step change needs a written implementation plan be
 
 # Writing Plans
 
-Write a plan that an engineer with zero context on this codebase can execute task by task without asking anything. The plan does the thinking, so execution is transcription plus checks.
+Write a plan that an engineer with zero context on this codebase can execute task by task without asking anything. The plan does the thinking, so execution is transcription plus checks. Plans never edit code.
 
 ## 1. Settle the requirements
 
-Read the request and the code or files it touches first, so you never ask for a fact you could look up. For each choice of mechanism, cite a `redesign` verdict, or fill its survey slots (job, platform, standard tools, repo, zero-code, project rules) here and use the verdict as grilling's recommended answer. Plans never edit code. Then run the grilling skill on what only Eric can decide: purpose, scope, constraints, and choices between valid options.
+Read the request and the code or files it touches first, so you never ask for a fact you could look up. For each mechanism choice, cite a `redesign` verdict. Without one, fill its survey slots here: job, platform, standard tools, repo, zero-code, project rules. Give a `Quality:` line per candidate (right abstractions, idiomatic, easy to read, easy to change, hard to misuse). Record a verdict as a decided choice. Pass it to grilling only if it is `Verdict: hold`. Then run the grilling skill on what only the user can decide: purpose, scope, constraints, and choices between valid options.
 
-Done when: Eric confirms the shared understanding, and every requirement has an exact value or a decision.
+Done when: the user confirms the shared understanding, and every requirement has an exact value or a decision.
 
 ## 2. Map the files
 
@@ -53,7 +53,7 @@ Check the plan against the settled requirements, not your notes:
 - Coverage: every requirement points to the task that delivers it. Add a task for any gap.
 - Placeholders: search the plan for every broken pattern in step 4.
 - Consistency: every name a task consumes matches the task that produces it.
-- Review Focus: list the inputs and failure modes the requirements imply but no task's check exercises. The five most likely to bite go in the plan's Review Focus section, each with its check added to the task that owns it.
+- Review Focus: list the inputs and failure modes the requirements imply that the tasks' checks do not yet exercise. Add a check for each one to the task that owns it. In the plan's Review Focus section, list every one whose failure a person using the result would notice, most likely first. If there are more than seven, flag that the plan may need splitting.
 
 Fix what you find in place.
 
@@ -61,4 +61,4 @@ Done when: all four checks pass with nothing open.
 
 ## 6. Hand off
 
-Link the plan and recommend an executor in one sentence: executing-plans (inline, no commits) for most work, or executing-plans-agentic (Claude only: subagent per task, reviews, commits on a branch, so the repo needs `agent.autonomous` set) when tasks are many or a mistake is costly. Wait for Eric to approve the plan and pick the executor.
+Link the plan and recommend one executor. Use `executing-plans` (inline) for most work. Use `executing-plans-agentic` when tasks are many or a mistake is costly. It is Claude-only, runs a subagent and a review per task, and commits on a branch, so the repo needs `agent.autonomous`. Wait for the user to approve the plan and pick the executor.

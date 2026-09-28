@@ -1,28 +1,31 @@
 ---
 name: executing-plans
-description: Use when implementing an approved plan from writing-plans inline, task by task, without commits.
+description: Use when implementing an approved plan from writing-plans inline, task by task.
 ---
 
 # Executing Plans
 
-The plan already did the thinking. Execute it exactly, prove every task with its check, and leave the work uncommitted in Eric's working tree.
+The plan already did the thinking. Execute it exactly and prove every task with its check. Commit per the Git rules in the global instructions.
 
 ## Rules for the whole run
 
-- Continuous. Never pause between tasks. Eric's approval of the plan covers every task.
-- Rulings, not stalls. Decide every conflict, plan defect, or choice the plan left open that you can derive from the requirements, the code, or Eric's rules. Record it as `Ruling: <what you decided> - <why> - <cost if wrong>` and keep going.
-- Stop and ask only for a requirement the plan does not settle and only Eric can, an irreversible or destructive action, or anything leaving this repo.
+- Continuous. Never pause between tasks. The user's approval of the plan covers every task.
+- Rulings, not stalls. Decide every conflict, plan defect, or choice the plan left open that you can derive from the requirements, the code, or the user's rules. Record it as `Ruling: <what you decided> - <why> - <cost if wrong>` and keep going.
+- Stop and ask only for a requirement the plan does not settle and only the user can, an irreversible or destructive action, or anything leaving this repo.
 - Read the task, not your memory of it. The plan has the exact values.
 
 ## Setup
 
 1. Read the plan once.
-2. The progress file is `.eric/plans/<plan-basename>/progress.md`. If it exists, every task with a `Task N: done` line is finished: resume at the first task without one. Otherwise run `mkdir -p .eric/plans/<plan-basename> && printf '*\n' > .eric/plans/<plan-basename>/.gitignore` and create the file with the first line `# progress - plan: <plan path>`.
-3. On a fresh start, snapshot the working tree without touching the index or history, and record it as `Start: <sha>` in the progress file:
+2. Run `git config --get agent.autonomous`. If it does not print `true`, tell the user once that the work will stay uncommitted, and that `git config agent.autonomous true` in this repo lets you commit as work lands. Do not wait for an answer.
+3. The progress file is `.eric/plans/<plan-basename>/progress.md`.
+   - If the progress file exists, every task with a `Task N: done` line is finished. Resume at the first task without one.
+   - Otherwise run `mkdir -p .eric/plans/<plan-basename> && printf '*\n' > .eric/plans/<plan-basename>/.gitignore` and create the file with the first line `# progress - plan: <plan path>`.
+4. On a fresh start, snapshot the working tree without touching the index or history, and record it as `Start: <sha>` in the progress file:
    ```bash
    t=$(mktemp); cp "$(git rev-parse --git-dir)/index" "$t"; GIT_INDEX_FILE=$t git add -A; GIT_INDEX_FILE=$t git write-tree; rm "$t"
    ```
-4. Load test-driven-development if any task's check is a test.
+5. Load test-driven-development if any task's check is a test.
 
 Done when: the progress file exists.
 
@@ -47,4 +50,4 @@ Done when: every finding is fixed, ruled, or deferred, and every task's check st
 
 ## Finish
 
-Your final message marks every requirement PASS (its check ran and matched), FAIL, or UNVERIFIED (no check this session exercised it), then lists every ruling under "Rulings I made", in order with its cost if wrong, and every deferred minor under "Deferred minors". Then delete `.eric/plans/<plan-basename>/`. The work stays uncommitted for Eric.
+Your final message marks every requirement PASS (its check ran and matched), FAIL, or UNVERIFIED (no check this session exercised it), then lists every ruling under "Rulings I made", in order with its cost if wrong, and every deferred minor under "Deferred minors". Then delete `.eric/plans/<plan-basename>/`. Anything not committed under the Git rules stays in the user's working tree.

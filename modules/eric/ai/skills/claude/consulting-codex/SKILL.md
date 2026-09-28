@@ -9,7 +9,7 @@ Codex is a **different model**, so its value is disagreement. Ask it to judge, n
 
 Pin `-m gpt-5.6-sol -c model_reasoning_effort="high"` on every call. `~/.codex/config.toml` sets the same values today, so pinning is what stops a later edit there from silently swapping the model mid-review.
 
-Runs take minutes. Launch with `run_in_background: true` and wait for the completion notification; never poll with `pgrep -f`, whose pattern matches the polling loop itself and never exits. The answer is whatever lands in `-o`; write it to the scratchpad and read it from there.
+Runs take minutes. Launch with `run_in_background: true` and wait for the completion notification. Never poll with `pgrep -f`, whose pattern matches the polling loop itself and never exits. The answer is whatever lands in `-o`; write it to the scratchpad and read it from there.
 
 ## First turn
 
@@ -20,7 +20,8 @@ codex exec --sandbox read-only -m gpt-5.6-sol -c model_reasoning_effort="high" \
 ```
 
 - `-o` writes **only** the final message. Bare `codex exec` buries it in a huge trace.
-- Redirect the `--json` stream to a file (`> codex-1.jsonl` above); do not let it print to the terminal. **Never pipe codex stdout to `head`/`grep`/`tee` to grab the id** -- when that reader closes the pipe, codex dies with a `failed printing to stdout: Broken pipe` panic before `-o` is written, and you get an empty answer.
+- Redirect the `--json` stream to a file (`> codex-1.jsonl` above); do not let it print to the terminal.
+- **Never pipe codex stdout to `head`/`grep`/`tee` to grab the id.** When that reader closes the pipe, codex dies with a `failed printing to stdout: Broken pipe` panic before `-o` is written, and you get an empty answer.
 - `--json` makes the first line `{"type":"thread.started","thread_id":"<uuid>"}`. **Capture that id** (read the first line of the `.jsonl` file) if a follow-up is at all likely; without it you are limited to `--last`.
 - `-C <repo>` is required, else it fails with `Not inside a trusted directory`.
 - `< /dev/null` stops codex blocking on stdin when stdin is not a TTY.
@@ -36,6 +37,6 @@ codex exec resume -m gpt-5.6-sol -c model_reasoning_effort="high" \
 ```
 
 - The same pipe trap applies: redirect stdout to a file, never pipe it to `head`/`grep`/`tee`, or codex panics with `Broken pipe` before `-o` is written.
-- No `-C` and no `--sandbox`. Set the working directory yourself, and reach the sandbox through `-c sandbox_mode="read-only"`.
+- No `-C` and no `--sandbox`. Set the working directory by prefixing the command with `cd /path/to/repo &&`. Reach the sandbox through `-c sandbox_mode="read-only"`.
 - Options come **before** `<thread_id>`. `resume <id> -o file` fails with a bare usage error.
 - `--last` replaces `<thread_id>` to resume the most recent session.

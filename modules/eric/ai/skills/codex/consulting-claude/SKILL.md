@@ -23,7 +23,7 @@ and never poll with `pgrep -f`.
 ## First turn
 
 ```bash
-d=$(mktemp -d)
+d=$(mktemp -d) && echo "$d"
 cd /path/to/repo && claude --print \
   --model claude-opus-5-5 \
   --permission-mode plan \
@@ -38,6 +38,8 @@ cd /path/to/repo && claude --print \
 - `--output-format text` keeps the saved file to the answer instead of a JSON
   event stream.
 - Redirect stdout to the temp dir; do not mix it with progress output.
+- `echo "$d"` prints the temp dir path. Shell variables do not persist between
+  tool calls. Paste that literal path in place of `$d` in every later call.
 
 ## Follow-up turns
 
@@ -61,5 +63,5 @@ $(cat "$d/claude-1.md")
 ```
 
 Do not ask Claude to commit, modify files, or make the verdict agree with
-Codex. If the consultation fails, report the command error rather than
+yours (Codex or pi). If the consultation fails, report the command error rather than
 inventing a second opinion.
