@@ -36,6 +36,11 @@
             # rebind ssh escape prefix off ~ so ~n/~p zsh aliases echo instantly
             EscapeChar = "^]";
 
+            # macOS skips tailscale's search domains for one-word names, so ssh appends them itself
+            CanonicalizeHostname = "yes";
+            CanonicalDomains = "tail4ccb95.ts.net dolphin-sailfin.ts.net tailda7ea.ts.net";
+            CanonicalizeMaxDots = 0;
+
             forwardAgent = false;
             addKeysToAgent = "no";
             compression = false;
