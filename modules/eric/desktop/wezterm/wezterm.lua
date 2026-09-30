@@ -7,9 +7,9 @@ require("keys").apply_to_config(c)
 
 -- c.default_prog = { "/bin/zsh" }
 
--- updates
-c.check_for_updates = true
-c.check_for_updates_interval_seconds = 86400
+-- nix builds report a commit hash as the version, which the update check
+-- compares against release tags as strings
+c.check_for_updates = false
 
 c.skip_close_confirmation_for_processes_named = {
     "bash",
@@ -17,11 +17,11 @@ c.skip_close_confirmation_for_processes_named = {
     "zsh",
     "fish",
     "nu",
-    -- wsl
+    -- windows
     "cmd.exe",
     "pwsh.exe",
     "powershell.exe",
-    -- windows wsl
+    -- wsl
     "wsl.exe",
     "wslhost.exe",
     "conhost.exe",

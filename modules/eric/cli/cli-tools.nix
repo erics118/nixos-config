@@ -13,8 +13,18 @@
     programs.fzf = {
       enable = true;
       enableZshIntegration = false; # pre-computed in shell.nix
+      # a script keeps the preview's own quoting out of FZF_DEFAULT_OPTS, which
+      # home-manager exports inside unescaped double quotes
       defaultOptions = [
-        "--preview='if [ -f {} ]; then bat --color=always --style=numbers --line-range=:500 -- {}; elif [ -d {} ]; then eza --tree --color=always --icons=always -- {}; else printf \"%s\\n\" {}; fi'"
+        "--preview='${pkgs.writeShellScript "fzf-preview" ''
+          if [ -f "$1" ]; then
+            bat --color=always --style=numbers --line-range=:500 -- "$1"
+          elif [ -d "$1" ]; then
+            eza --tree --color=always --icons=always -- "$1"
+          else
+            printf '%s\n' "$1"
+          fi
+        ''} {}'"
       ];
       historyWidget.command = "";
     };
@@ -65,10 +75,14 @@
 
     programs.eza = {
       enable = true;
+      # these generate the `eza` alias, and shell.nix points ls at it
       colors = "auto";
       icons = "auto";
-      extraOptions = [ "-F" ];
-      # disable eza aliases, as we set them up manually
+      extraOptions = [
+        "-F"
+        "auto"
+      ];
+      # disable the ls/ll/la aliases, as ls is set up manually
       enableZshIntegration = false;
     };
 

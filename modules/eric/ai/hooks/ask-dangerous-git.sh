@@ -13,9 +13,9 @@ patterns=(
   "rebase$HOOK_END"
   "reset$HOOK_END"
   'clean\s+-[a-zA-Z]*f'
-  'branch\s+.*-D\b'
-  'checkout\s+\.(\s|$)'
-  'restore\s+\.(\s|$)'
+  'branch\s+.*(?:-D\b|(?:-d|--delete)\b.*(?:-f|--force)\b|(?:-f|--force)\b.*(?:-d|--delete)\b)'
+  'checkout\s+(?:\S+\s+)?(?:--\s+)?\.(\s|$)'
+  'restore\s+(?:--\s+)?\.(\s|$)'
   "filter-branch$HOOK_END"
   "reflog\\s+expire$HOOK_END"
 )

@@ -74,7 +74,7 @@ local dividers = {
 }
 
 -- conforming to https://github.com/wez/wezterm/commit/e4ae8a844d8feaa43e1de34c5cc8b4f07ce525dd
--- exporting an apply_to_config function, even though we don't change the users config
+-- exporting an apply_to_config function, which sets the tab bar options on the config
 M.apply_to_config = function(c, opts)
     -- make the opts arg optional
     if not opts then
@@ -289,7 +289,10 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
     -- replace placeholders
     title = title:gsub("{tab_index}", index_i)
     title = title:gsub("{pane_count}", pane_count)
-    title = title:gsub("{workspace}", workspace)
+    -- function replacements, since a "%" in a title is special in a gsub replacement string
+    title = title:gsub("{workspace}", function()
+        return workspace
+    end)
 
     -- for measuring length
     -- 11 for {tab_title}
@@ -307,7 +310,9 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
         tab_title = wezterm.truncate_right(tab_title, new_title_width) .. "…"
     end
 
-    title = title:gsub("{tab_title}", tab_title)
+    title = title:gsub("{tab_title}", function()
+        return tab_title
+    end)
 
     -- padding
     title = " " .. title .. " "

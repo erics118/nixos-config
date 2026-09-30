@@ -20,7 +20,7 @@ zstyle ':completion:*:descriptions' format '[%d]'
 zstyle ':completion:*' list-colors ''
 # preview files/dirs in the fzf popup, matching the default fzf preview
 zstyle ':fzf-tab:complete:*' fzf-preview \
-  'if [ -f $realpath ]; then bat --color=always --style=numbers --line-range=:500 -- $realpath; elif [ -d $realpath ]; then eza --tree --color=always --icons=always -- $realpath; fi'
+  'if [ -f "$realpath" ]; then bat --color=always --style=numbers --line-range=:500 -- "$realpath"; elif [ -d "$realpath" ]; then eza --tree --color=always --icons=always -- "$realpath"; fi'
 # switch completion groups with < and >
 zstyle ':fzf-tab:*' switch-group '<' '>'
 # drop the leading dot marker on each entry
@@ -40,16 +40,21 @@ hash -d n="$HOME/nixos-config"
 hash -d p="$HOME/nixos-config-private"
 hash -d d="$HOME/dev"
 
+# no arg opens the sesh picker. an arg is resolved by sesh: a session, config
+# entry, dir, or zoxide match, so sessions are always named after their dir
 t() {
-  case ${1:-main} in
+  case $1 in
   --ls) tmux ls ;;
-  *) tmux new -A -s "${1:-main}" ;;
+  *) sesh-pick "$@" ;;
   esac
 }
 
-o() {
-  open "${@:-.}"
-}
+# macOS open
+if [[ $OSTYPE == darwin* ]]; then
+  o() {
+    open "${@:-.}"
+  }
+fi
 
 # connect to the cornell vpn, pulling credentials from 1password
 # password is line 1 of stdin, line 2 answers the duo prompt with a push
@@ -173,7 +178,7 @@ ZSH_HIGHLIGHT_STYLES[path_prefix_pathseparator]="none"
 ZSH_HIGHLIGHT_STYLES[autodirectory]="fg=none"
 ZSH_HIGHLIGHT_STYLES[autodirectory_prefix]="fg=none"
 
-# ctrl-X ase leader for custom widgets
+# ctrl-X as leader for custom widgets
 bindkey '^Xc' copy-command-line
 bindkey '^Xd' copy-working-directory
 bindkey '^Xe' edit-command-line
@@ -204,7 +209,11 @@ else
 fi
 
 preexec_title() {
-  print -Pn "\e]0;${_title_host}%~ - $1\a"
+  # prompt-expand only the prefix, so % and \ in the command print literally.
+  # control chars such as newlines would end the escape sequence early
+  print -Pn "\e]0;${_title_host}%~ - "
+  print -rn -- "${1//[[:cntrl:]]/ }"
+  print -n '\a'
 }
 
 precmd_title() {

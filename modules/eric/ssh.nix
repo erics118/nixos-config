@@ -32,6 +32,10 @@
 
           "github.coecis.cornell.edu" = mkGit "github.coecis.cornell.edu" "id_ed25519_cornell";
 
+          # cornellev club tailnet machines share the cev account. matches after the
+          # "*" block canonicalizes a one-word name onto the tailnet domain
+          "*.tail4ccb95.ts.net".user = "cev";
+
           "*" = {
             # rebind ssh escape prefix off ~ so ~n/~p zsh aliases echo instantly
             EscapeChar = "^]";

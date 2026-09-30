@@ -27,7 +27,8 @@
     in
     {
       home.sessionVariables.COLORTERM = "truecolor";
-      # exported so ad-hoc `nix shell nixpkgs#<unfree>` evaluates
+      # exported so ad-hoc `nix shell --impure nixpkgs#<unfree>` evaluates. flake
+      # refs ignore it without --impure
       home.sessionVariables.NIXPKGS_ALLOW_UNFREE = "1";
 
       programs.zsh = {
@@ -104,14 +105,14 @@
         shellAliases = {
           ":q" = "exit";
 
-          ls = "eza --icons auto --color auto -F always";
+          ls = "eza";
 
           mv = "mv -i";
           cp = "cp -i";
           rm = "rm -i";
 
           r = "rtmux";
-          "?" = "ask";
+          "?" = "noglob ask";
 
           mmv = "noglob zmv -W";
           zmv = "noglob zmv";
@@ -122,7 +123,6 @@
 
           scc = "scc --no-cocomo";
 
-          rv = "docker run -i --init --rm -v \"$PWD\":/root ghcr.io/sampsyo/cs3410-infra";
           rv-debug = "docker run -it --rm --init --name testing --ulimit core=-1 --mount type=bind,source=\"$PWD\"/,target=\"$PWD\"/ -v \"$PWD\":/root ghcr.io/sampsyo/cs3410-infra";
 
           # # is an extended-glob operator in zsh; disable globbing so flake

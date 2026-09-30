@@ -9,8 +9,9 @@ hook_read_command
 hook_command_dir
 hook_bare_command
 
-printf '%s' "$HOOK_BARE" | rg -q "${HOOK_GIT}config${HOOK_END}.*\bagent\.autonomous\b" &&
-  ! printf '%s' "$HOOK_BARE" | rg -q '\s--get\b' &&
+# each config segment naming the flag must itself be a --get read
+printf '%s' "$HOOK_BARE" | rg -o "${HOOK_GIT}config${HOOK_END}[^;&|]*\bagent\.autonomous\b[^;&|]*" |
+  rg -qv '\s--get\b' &&
   hook_deny 'Only the user sets agent.autonomous.'
 
 match=$(printf '%s' "$HOOK_BARE" | rg -o "${HOOK_GIT}(?:commit|merge|revert|cherry-pick|am)${HOOK_END}" | head -n 1)

@@ -10,7 +10,7 @@
           },
           {
             "type": "command",
-            "command": "\"$HOME/.agents/hooks/block-global-find.sh\""
+            "command": "\"$HOME/.agents/hooks/block-global-search.sh\""
           },
           {
             "type": "command",

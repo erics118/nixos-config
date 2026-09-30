@@ -31,7 +31,7 @@ Before a shell command:
 
 - `git-add-before-nix.sh`: no flake evaluation while new `.nix` files are untracked
 - `strip-claude-attribution.sh`: removes Claude attribution from commit and PR messages
-- `block-global-find.sh`: no `find` rooted at `/`, `~`, or `/nix`
+- `block-global-search.sh`: no `find`, `fd`, `rg`, or `grep` rooted at `/`, `~`, `/nix`, or another filesystem-wide directory
 - `block-symlink-clobber.sh`: no mv, cp, tee, or redirect over a managed symlink
 - `ask-dangerous-git.sh`: asks before push, rebase, reset, clean, and other history or remote changes
 - `block-agent-commit.sh`: agents commit only where `git config agent.autonomous true` is set, and only the user sets it
