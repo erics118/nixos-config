@@ -7,8 +7,6 @@
     in
     {
       nixos.base = {
-        nix.settings.auto-optimise-store = true;
-
         programs.nh = {
           enable = true;
           clean = {
@@ -21,8 +19,6 @@
 
       # darwin has no programs.nh.clean, so run the same policy via launchd
       darwin.base = { pkgs, ... }: {
-        nix.settings.auto-optimise-store = true;
-
         launchd.daemons = {
           nh-clean.serviceConfig = {
             # launchd daemons need to have PATH set

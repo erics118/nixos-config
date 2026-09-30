@@ -21,9 +21,9 @@
     homebrew = {
       enable = true;
       onActivation = {
-        autoUpdate = true;
+        autoUpdate = false;
         cleanup = "zap"; # or "none"
-        upgrade = true;
+        upgrade = false;
       };
       global = {
         brewfile = true;

@@ -13,6 +13,8 @@ let
 in
 {
   flake.modules.homeManager.base = { pkgs, ... }: {
+    # the module default builds ports from a separate nixpkgs instance
+    # building them from our pkgs avoids evaluating nixpkgs twice
     catppuccin.sources = (import "${inputs.catppuccin}/default.nix" { inherit pkgs; }).packages;
 
     imports = [

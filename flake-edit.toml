@@ -1,3 +1,0 @@
-[follow]
-# do not follow nixpkgs for these flakes, for cache hits
-ignore = ["catppuccin.nixpkgs"]

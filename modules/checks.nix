@@ -9,7 +9,7 @@
         forSystem =
           prefix: configs: toDrv:
           lib.mapAttrs' (name: cfg: lib.nameValuePair "${prefix}-${name}" (toDrv cfg)) (
-            lib.filterAttrs (_: cfg: cfg.pkgs.stdenv.hostPlatform.system == system) configs
+            lib.filterAttrs (_: cfg: cfg.config.nixpkgs.hostPlatform.system == system) configs
           );
       in
       lib.mkMerge [
