@@ -65,6 +65,7 @@
           rerere.enabled = true;
           rebase.autoStash = true;
           diff.colorMoved = "zebra";
+          diff.tool = "nvimdiff";
           commit.gpgsign = true;
           gpg = {
             format = "ssh";

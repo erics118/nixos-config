@@ -51,7 +51,7 @@ hook_bare_command() {
       delim = substr($0, RSTART, RLENGTH)
       sub(/^<<-?[ \t]*["\x27]?/, "", delim)
       body = 1
-    }' | tr '\n' ' ' | awk -v sq="'" '
+    }' | tr '\n' ';' | sed 's/;$//' | awk -v sq="'" '
     # walk quotes left to right so each opening quote pairs with its own closing one
     {
       out = ""; q = ""; buf = ""

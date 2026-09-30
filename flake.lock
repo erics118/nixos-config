@@ -456,11 +456,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1764470739,
-        "narHash": "sha256-sa9f81B1dWO16QtgDTWHX8DQbiHKzHndpaunY5EQtwE=",
+        "lastModified": 1780715792,
+        "narHash": "sha256-4+8gPeiPeud89mjo865RwpqmKwa1MThRsq2SvRxo7mg=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "3bfa664055e1a09c6aedab5533c5fc8d6ca5741a",
+        "rev": "27b7e78c6935293ee868469cc4172e9b8b17823b",
         "type": "github"
       },
       "original": {
@@ -603,10 +603,10 @@
       },
       "locked": {
         "dir": "nix",
-        "lastModified": 1780877386,
-        "narHash": "sha256-K+hc19t45JUJ9ZydShsFh9PkVXvaOmRpmP37B2wXpwU=",
+        "lastModified": 1790708119,
+        "narHash": "sha256-mcK4D/tskkEDEyM4JbMXdS8yuv5G5PrROiR45/8yOsY=",
         "ref": "eric",
-        "rev": "9d0cd8f26761411d5c6ad639bc6774b916f93cf5",
+        "rev": "febefaf2ddc1d277100b7c5c74fc2dfe40dab09b",
         "shallow": true,
         "type": "git",
         "url": "https://github.com/erics118/wezterm"

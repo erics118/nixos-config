@@ -4,7 +4,7 @@
 # from the remote tmux server, cheap because ssh multiplexing reuses the connection
 
 _rtmux_sessions() {
-  ssh -o BatchMode=yes -o ConnectTimeout=2 "$1" tmux ls 2>/dev/null | cut -d: -f1
+  ssh -o BatchMode=yes -o ConnectTimeout=2 "$1" tmux ls 2>/dev/null | cut -d: -f1 | grep -v '^scratch-'
 }
 
 _rtmux() {

@@ -11,11 +11,9 @@
   "outputPad": 1,
   "enabledModels": ["openai/*", "openai-codex/*", "openrouter/*"],
   "packages": [
-    "./packages/pi-web-activation",
-    "npm:pi-web-access@0.31.0",
+    "npm:pi-web-access@0.34.0",
     "git:github.com/erics118/pi-hermes-memory",
-    "npm:pi-mcp-adapter@2.37.0",
-    "npm:pi-subagents@0.71.0",
+    "npm:pi-subagents@0.73.1",
     "git:github.com/erics118/pi-diff"
   ],
   "subagents": {
@@ -42,7 +40,7 @@
       }
     }
   },
-  "lastChangelogVersion": "0.87.1",
+  "lastChangelogVersion": "0.99.1",
   "theme": "catppuccin-mocha",
   "modelThinkingLevels": {
     "openai/gpt-5.6-terra": "medium"

@@ -1,16 +1,27 @@
 #!/usr/bin/env bash
-# block agent pushes and GitHub writes in every repo. the user pushes and opens PRs
+# deny agent pushes by default. `eric-agent.push=ask` requests confirmation.
+# `eric-agent.push=on` allows pushes. GitHub writes remain user-only
 set -u
 source "$(dirname "$0")/lib.sh"
 
 hook_require rg jq awk
 hook_read_command
+hook_command_dir
 hook_bare_command
 
 GH="${HOOK_PREFIX}gh\\s+"
 
-printf '%s' "$HOOK_BARE" | rg -q "${HOOK_GIT}push${HOOK_END}" &&
-  hook_deny 'Agents never push. Tell the user the work is ready so they push it.'
+match=$(printf '%s' "$HOOK_BARE" | rg -o "${HOOK_GIT}push${HOOK_END}" | head -n 1)
+if [ -n "$match" ]; then
+  dir=$(printf '%s' "$match" | rg -o -r '$1' '\s-C\s+(\S+)' | head -n 1)
+  dir=${dir/#\~/$HOME}
+  case "$dir" in '') dir=$HOOK_DIR ;; /*) ;; *) dir=$HOOK_DIR/$dir ;; esac
+  case "$(git -C "$dir" config --get eric-agent.push 2>/dev/null)" in
+  on) exit 0 ;;
+  ask) hook_ask 'Agent pushes need approval in this repo. Approve this push, or push it yourself.' ;;
+  esac
+  hook_deny 'Agent pushes are off in this repo. Tell the user the work is ready so they push it.'
+fi
 
 # gh is read-only: allow only known reads, so new write commands are denied too
 while read -r group sub; do
