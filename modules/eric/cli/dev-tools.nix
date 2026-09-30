@@ -28,8 +28,10 @@
             nerdFontsVersion = "3";
             filterMode = "fuzzy";
             showRandomTip = false;
+            showNumstatInFilesView = true;
           };
           git = {
+            autoFetch = false;
             overrideGpg = true;
             diffRenderers = [
               {
@@ -39,6 +41,8 @@
             ];
           };
           update.method = "never";
+          disableStartupPopups = true;
+          promptToReturnFromSubprocess = false;
         };
       };
 
