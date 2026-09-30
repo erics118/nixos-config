@@ -60,7 +60,8 @@ hook_bare_command() {
         if (q == "") {
           if (c == "\"" || c == sq) { q = c; buf = "" } else out = out c
         } else if (c == q) {
-          if (buf !~ /[[:space:]]/) out = out buf
+          # quoted separators do not split the command, so they must not look like they do
+          if (buf !~ /[[:space:]]/) { gsub(/[;&|()]/, "_", buf); out = out buf }
           q = ""
         } else buf = buf c
       }
@@ -70,9 +71,10 @@ hook_bare_command() {
     }')
 }
 
-# regex for `git` where a command starts, with env assignments and global options allowed.
-# append the subcommand, then match it against $HOOK_BARE.
-HOOK_GIT='(?:^|[;&|(]\s*)(?:\w+=\S*\s+)*git(?:\s+(?:-[cC]\s+\S+|--\S+))*\s+'
+# regex for `git` where a command starts, with env assignments, a command/env/exec prefix,
+# a path, and global options allowed. append the subcommand, then match it against $HOOK_BARE.
+HOOK_PREFIX='(?:^|[;&|(]\s*)(?:(?:\w+=\S*|command|env|exec)\s+)*(?:\S*/)?'
+HOOK_GIT="${HOOK_PREFIX}"'git(?:\s+(?:-[cC]\s+\S+|--\S+))*\s+'
 
 # regex for the end of a subcommand word. \b would also end at a dash, so merge would match merge-base.
 HOOK_END='(?:\s|$|[;&|)])'

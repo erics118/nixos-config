@@ -17,7 +17,7 @@ The plan already did the thinking. Execute it exactly and prove every task with 
 ## Setup
 
 1. Read the plan once.
-2. Run `git config --get agent.autonomous`. If it does not print `true`, tell the user once that the work will stay uncommitted, and that `git config agent.autonomous true` in this repo lets you commit as work lands. Do not wait for an answer.
+2. Run `git config --get eric-agent.commit`. If it prints `on`, `branch`, or `ask`, commit as work lands. Otherwise tell the user once that the work will stay uncommitted, and that `git config eric-agent.commit on` (or `branch` or `ask`) in this repo lets you commit as work lands. Do not wait for an answer.
 3. The progress file is `.eric/plans/<plan-basename>/progress.md`.
    - If the progress file exists, every task with a `Task N: done` line is finished. Resume at the first task without one.
    - Otherwise run `mkdir -p .eric/plans/<plan-basename> && printf '*\n' > .eric/plans/<plan-basename>/.gitignore` and create the file with the first line `# progress - plan: <plan path>`.

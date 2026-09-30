@@ -12,8 +12,8 @@ A fresh implementer subagent per task, a fresh reviewer after it, and one final 
 
 - Continuous. Never pause between tasks. The user's approval of the plan covers every task.
 - Rulings, not stalls. Decide every conflict, plan defect, or choice the plan left open that you can derive from the requirements, the code, or the user's rules. Record it as `Ruling: <what you decided> - <why> - <cost if wrong>` and keep going.
-- Stop and ask only for a requirement the plan does not settle and only the user can, an irreversible or destructive action, or anything leaving this repo (push, publish, merge).
-- Commits. Invoking this skill is the instruction to commit, on the plan's branch only, one or more commits per task. Agent commits need `git config --get agent.autonomous` to print `true` in this repo.
+- Stop and ask only for a requirement the plan does not settle and only the user can, an irreversible or destructive action, or anything leaving this repo (publish). Never push or open a pull request: the user does.
+- Commits. Invoking this skill is the instruction to commit, on the plan's branch only, one or more commits per task. Agent commits need `git config --get eric-agent.commit` to print `branch` or `on` in this repo.
 - Hand artifacts over as files. Everything pasted into a dispatch or printed back stays in your context for the rest of the run.
 - Always pass the model explicitly, since an omitted model inherits the session's:
   - haiku: the brief contains the complete content, so the work is transcription plus checks, or a one-file mechanical fix
@@ -22,7 +22,7 @@ A fresh implementer subagent per task, a fresh reviewer after it, and one final 
 
 ## Setup
 
-1. If `git config --get agent.autonomous` does not print `true`, stop: tell the user this skill commits per task, so it needs that flag in this repo, or they can use executing-plans.
+1. If `git config --get eric-agent.commit` does not print `branch` or `on`, stop: tell the user this skill commits per task, so it needs one of those levels in this repo, or they can use executing-plans.
 2. Read the plan once.
 3. If you are on `main` or `master`, run `git switch -c plan/<topic>`.
 4. The workspace is `.eric/plans/<plan-basename>/`, and the ledger is `progress.md` inside it.

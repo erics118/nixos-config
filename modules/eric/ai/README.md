@@ -14,8 +14,12 @@ Invoke with `/name` in Claude Code, `$name` in Codex, and `/skill:name` in pi.
 | ---------------------------------------------- | -------------------------------------------------------------------------------- |
 | Small, clear change                            | none                                                                             |
 | A question where an edit would be wrong        | `ask`                                                                            |
-| Which mechanism or design should do a job      | `redesign`                                                                       |
+| Which mechanism should do a job, new or not    | `approach`                                                                       |
+| Why I said or did one specific thing           | `why`                                                                            |
+| Is this more than the job needs                | `overkill`                                                                       |
 | Doubt a claim before acting on it              | `recheck`                                                                        |
+| Where things stand, or what this project is    | `overview`                                                                       |
+| What is left before ending the session         | `remaining`                                                                      |
 | Many files, or code plus docs plus CI          | `writing-plans`, then `executing-plans` (or `executing-plans-agentic` in Claude) |
 | Before committing                              | `summarize-changes`                                                              |
 | Review                                         | `audit`, or `adversarial-review`                                                 |
@@ -30,14 +34,16 @@ All of these run in Claude and pi. Codex runs the shell-command guards except `s
 Before a shell command:
 
 - `git-add-before-nix.sh`: no flake evaluation while new `.nix` files are untracked
-- `strip-claude-attribution.sh`: removes Claude attribution from commit and PR messages
+- `strip-claude-attribution.sh`: removes Claude attribution from commit messages
 - `block-global-search.sh`: no `find`, `fd`, `rg`, or `grep` rooted at `/`, `~`, `/nix`, or another filesystem-wide directory
 - `block-symlink-clobber.sh`: no mv, cp, tee, or redirect over a managed symlink
-- `ask-dangerous-git.sh`: asks before push, rebase, reset, clean, and other history or remote changes
-- `block-agent-commit.sh`: agents commit only where `git config agent.autonomous true` is set, and only the user sets it
+- `ask-dangerous-git.sh`: asks before rebase, reset, clean, and other history changes
+- `block-agent-push.sh`: agents never push, and use `gh` read-only: only `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, `gh status`, and `gh api` without write flags run. In Codex this hook is the allowlist, because a `forbidden` rule for `gh` would also block the reads
+- `block-agent-commit.sh`: agent commits follow `git config eric-agent.commit`: `off` (default), `ask` (approve each; Codex treats it as `off`), `branch` (never on `main` or `master`), or `on`. Only the user sets `eric-agent` keys
+- `block-git-config-edit.sh`: no redirect, tee, or other write onto a `.git` config file, so `eric-agent` keys change only through `git config`
 - `block-shell-edit.sh`: no sed/perl in place, scripts that write, or redirects onto git-tracked files
 - `block-sudo-probe.sh`: no `sudo -n` on macOS, where Touch ID approves a plain `sudo`
 
-Before a file read or edit: `deny-symlink-path.sh` (use the real path, not a managed symlink), `block-smart-punct.sh` (no em dashes or curly quotes), `block-write-tracked.sh` (no whole-file Write over a git-tracked file).
+Before a file read or edit: `deny-symlink-path.sh` (use the real path, not a managed symlink), `block-smart-punct.sh` (no em dashes or curly quotes), `block-write-tracked.sh` (no whole-file Write over a git-tracked file), `block-git-config-edit.sh` (no Write or Edit of a `.git` config file).
 
 After an edit: `treefmt-on-edit.sh` (formats the file), `warn-comment-block.sh` (flags comment blocks of four or more lines).

@@ -31,8 +31,11 @@ prefix_rule(pattern=["git", "show"], decision="allow")
 prefix_rule(pattern=["git", "status"], decision="allow")
 prefix_rule(pattern=["git", "rev-parse"], decision="allow")
 
-# Ask before git commands that rewrite history, discard work, or touch a remote.
-prefix_rule(pattern=["git", "push"], decision="prompt")
+# Agents never push or write pull requests.
+prefix_rule(pattern=["git", "push"], decision="forbidden")
+prefix_rule(pattern=["gh", "pr", ["create", "merge", "close", "reopen", "edit", "comment", "review", "ready", "lock", "unlock", "update-branch"]], decision="forbidden")
+
+# Ask before git commands that rewrite history or discard work.
 prefix_rule(pattern=["git", "rebase"], decision="prompt")
 prefix_rule(pattern=["git", "reset"], decision="prompt")
 prefix_rule(pattern=["git", "clean"], decision="prompt")

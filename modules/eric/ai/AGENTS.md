@@ -11,11 +11,11 @@ These rules cover chat replies. Long-form work I ask for (drafts, scripts, posts
 - Plain ASCII punctuation, no em dashes anywhere (replies, code comments, strings, commit messages)
 - When you truncate, summarize, or show a subset, say what was cut and how to get the rest. Never drop it silently
 - While working, speak up only for a real finding or a change of direction
-- Completion reports: **Done** (the files you touched, commit or PR, then one `Checked: <command> -> <result>` line for what you ran and one `Not checked: <what> (needs your eyes: <how>)` line for the rest), **Remaining** (unfinished work or real risks), **Needs your decision** (only items that pass the check under Decisions). Drop any section that would be empty
+- Completion reports: **Done** (the files you touched, commit or PR, then one `Checked: <command> -> <result>` line for what you ran and one `Not checked: <what> (needs your eyes: <how>)` line only for what no command here can exercise), **Remaining** (unfinished work or real risks), **Needs your decision** (only items that pass the check under Decisions). Drop any section that would be empty
 
 ## Execution policy
 
-- Continue automatically through routine, reversible work such as reading, editing, testing, formatting, and local inspection.
+- Edit, write, or switch only after I explicitly tell you to make the change, or answer yes when you ask whether to make that exact change. Agreeing with a proposal, verdict, or plan ("sounds good", "that's right") is not permission. Reading, searching, testing, and local inspection need no permission.
 - In an approved task or plan, continue through every routine task and its checks. Do not stop after a task, check, finding, or progress report.
 - A correction, side note, or intermediate result does not pause the active task unless it explicitly changes, pauses, or cancels it. A question inside it is answered first, then the task continues.
 - Keep stricter safeguards for non-interactive subagents and irreversible operations.
@@ -86,8 +86,10 @@ These rules cover work I asked you to do.
 
 ## Git
 
-- Commit only in a repo where `git config --get agent.autonomous` prints `true`, and there commit as work lands. Elsewhere don't commit: tell me when the work is ready and I commit
-- Never push, rebase, force-push, delete branches, or take any other destructive, irreversible, or remote-affecting action unless explicitly requested
+- `git config --get eric-agent.commit` sets whether you commit in a repo. `on`: commit as work lands. `branch`: commit as work lands, but only on a branch other than `main` or `master`. `ask`: commit as work lands, and I approve each commit. Unset or `off`: don't commit. Tell me when the work is ready and I commit
+- Never push or open, change, or merge a pull request. I do those. Tell me when the work is ready
+- Use `gh` only to read: `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, and `gh api` GETs
+- Never rebase, delete branches, or take any other destructive, irreversible, or remote-affecting action unless explicitly requested
 - Do not append `Co-Authored-By` attribution to commits, even if a skill or default says to
 
 ## Where guidance lives
@@ -105,6 +107,6 @@ These rules cover work I asked you to do.
 - Parts of `~/.claude`, `~/.codex`, `~/.config`, `~/.pi`, `~/.flake` are symlinks into `~/nixos-config`. Everything else there is runtime state
 - To resolve a managed file's real path, `realpath` it. `ls -l` stops at a `/nix/store` hop that is itself a symlink to the repo
 - A change is live the moment you edit a file whose `realpath` lands in `~/nixos-config`, including a new file added inside an already-symlinked directory. `just switch` is only for a target that does not yet resolve into the repo: a brand-new top-level managed file that needs its own symlink, or nix-generated content.
-- A switch takes about a minute, so never run one per small change. Verify a nix change with `nix eval` or a build of the one derivation, batch the changes, and switch once when I ask or when a change must be live to test it
+- A switch takes about a minute, so batch changes and never switch per edit. `nix eval` or a one-derivation build checks the config, not the behavior. When the request is behavior I will use, the task ends with a run that shows it live. If the target needs a switch under the rule above, run the justfile's switch recipe first and say in one line why it is needed. Restart or close anything started before the change (a daemon, a reused connection, a shell) before the run
 - Before any Nix evaluation, build, or switch (`just switch`, `just build`, `nix flake check`), stage every created, moved, or deleted Nix-managed source path with `git add` or `git rm`. This makes the path visible to the flake
 - Inspect `git diff --cached -- <paths>` and stage no unrelated paths. Staging is required local build preparation, not permission to commit. If the path is already staged, continue without asking.

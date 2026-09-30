@@ -1,0 +1,6 @@
+interface:
+  short_description: "Judge whether a proposal is more than the job needs"
+  default_prompt: "Use $overkill to judge whether the current proposal is overkill."
+
+policy:
+  allow_implicit_invocation: false

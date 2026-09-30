@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# prompt before git commands that rewrite history, discard uncommitted work, or touch a
-# remote. asks rather than denies, so anything genuinely wanted is one confirmation away.
+# prompt before git commands that rewrite history or discard uncommitted work.
+# asks rather than denies, so anything genuinely wanted is one confirmation away.
 set -u
 source "$(dirname "$0")/lib.sh"
 
@@ -9,7 +9,6 @@ hook_read_command
 hook_bare_command
 
 patterns=(
-  "push$HOOK_END"
   "rebase$HOOK_END"
   "reset$HOOK_END"
   'clean\s+-[a-zA-Z]*f'
@@ -22,7 +21,7 @@ patterns=(
 
 for p in "${patterns[@]}"; do
   printf '%s' "$HOOK_BARE" | rg -q "$HOOK_GIT$p" || continue
-  hook_ask 'This git command rewrites history, discards uncommitted work, or affects a remote. Approve it, or run it yourself.'
+  hook_ask 'This git command rewrites history or discards uncommitted work. Approve it, or run it yourself.'
 done
 
 exit 0

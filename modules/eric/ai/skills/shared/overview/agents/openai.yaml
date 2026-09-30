@@ -1,0 +1,6 @@
+interface:
+  short_description: "Overview of this session's work, or of the whole project"
+  default_prompt: "Use $overview to give me a high-level overview of this session."
+
+policy:
+  allow_implicit_invocation: false

@@ -56,7 +56,7 @@ If 2+ independent fixes fail the same way, suspect the measurement or test tool 
 
 ## When three fixes have failed, stop fixing
 
-If each attempt reveals a new problem somewhere else, or every fix would need "massive refactoring," the architecture is wrong, not the hypothesis. Stop and raise it with the user before attempt four.
+If each attempt reveals a new problem somewhere else, or every fix would need "massive refactoring," the architecture is wrong, not the hypothesis. Stop and raise it with the user before attempt four, and suggest `approach` to pick the mechanism again.
 
 ## Stop signals
 

@@ -1,0 +1,6 @@
+interface:
+  short_description: "Explain why you said or did one specific thing"
+  default_prompt: "Use $why to explain why you said this."
+
+policy:
+  allow_implicit_invocation: false

@@ -65,6 +65,7 @@
       "Bash(readlink *)",
       "Bash(realpath *)"
     ],
+    "deny": ["EnterPlanMode", "ExitPlanMode"],
     "defaultMode": "auto"
   },
   "hooks": {
@@ -84,6 +85,10 @@
           {
             "type": "command",
             "command": "\"$HOME/.agents/hooks/block-smart-punct.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/block-git-config-edit.sh\""
           }
         ]
       },
@@ -122,6 +127,14 @@
           {
             "type": "command",
             "command": "\"$HOME/.agents/hooks/block-agent-commit.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/block-agent-push.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/block-git-config-edit.sh\""
           },
           {
             "type": "command",
@@ -201,5 +214,6 @@
   "autoCompactEnabled": true,
   "remoteControlAtStartup": false,
   "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "skipWorkflowUsageWarning": true
 }

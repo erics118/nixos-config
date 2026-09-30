@@ -1,6 +1,6 @@
 interface:
   short_description: "Survey how a job is normally done, then give one verdict"
-  default_prompt: "Use $redesign to survey how the platform and this repo already do this job before changing anything."
+  default_prompt: "Use $approach to survey how the platform and this repo already do this job before building or changing anything."
 
 policy:
   allow_implicit_invocation: false

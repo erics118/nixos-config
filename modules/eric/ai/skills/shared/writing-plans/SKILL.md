@@ -5,11 +5,11 @@ description: Use when a multi-step change needs a written implementation plan be
 
 # Writing Plans
 
-Write a plan that an engineer with zero context on this codebase can execute task by task without asking anything. The plan does the thinking, so execution is transcription plus checks. Plans never edit code.
+Write a plan that an engineer with zero context on this codebase can execute task by task without asking anything. The plan does the thinking, so execution is transcription plus checks. Write nothing but the plan file. Approving the plan is not a request to execute it. Edit only after the user explicitly asks for the work.
 
 ## 1. Settle the requirements
 
-Read the request and the code or files it touches first, so you never ask for a fact you could look up. For each mechanism choice, cite a `redesign` verdict. Without one, fill its survey slots here: job, platform, standard tools, repo, zero-code, project rules. Give a `Quality:` line per candidate (right abstractions, idiomatic, easy to read, easy to change, hard to misuse). Record a verdict as a decided choice. Pass it to grilling only if it is `Verdict: hold`. Then run the grilling skill on what only the user can decide: purpose, scope, constraints, and choices between valid options.
+Read the request and the code or files it touches first, so you never ask for a fact you could look up. For each mechanism choice, cite a verdict from `.eric/approach/`. Without one, follow [approach](../approach/SKILL.md) steps 1-5 here. Record a verdict as a decided choice. Pass it to grilling only if it is `Verdict: hold`. Then run the grilling skill on what only the user can decide: purpose, scope, constraints, and choices between valid options.
 
 Done when: the user confirms the shared understanding, and every requirement has an exact value or a decision.
 
@@ -61,4 +61,4 @@ Done when: all four checks pass with nothing open.
 
 ## 6. Hand off
 
-Link the plan and recommend one executor. Use `executing-plans` (inline) for most work. Use `executing-plans-agentic` when tasks are many or a mistake is costly. It is Claude-only, runs a subagent and a review per task, and commits on a branch, so the repo needs `agent.autonomous`. Wait for the user to approve the plan and pick the executor.
+Link the plan and recommend one executor. Use `executing-plans` (inline) for most work. Use `executing-plans-agentic` when tasks are many or a mistake is costly. It is Claude-only, runs a subagent and a review per task, and commits on a branch, so the repo needs `eric-agent.commit` set to `branch` or `on`. Wait for the user to approve the plan and pick the executor.

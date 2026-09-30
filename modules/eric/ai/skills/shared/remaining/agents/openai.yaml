@@ -1,0 +1,6 @@
+interface:
+  short_description: "List everything left to do in this session"
+  default_prompt: "Use $remaining to list everything left to do in this session."
+
+policy:
+  allow_implicit_invocation: false
