@@ -5,7 +5,7 @@
       inputs.sops-nix.darwinModules.sops
     ];
 
-    # spotlight, fseventsd, finder hardening for the /nix volume
+    # /nix volume hardening (spotlight, fseventsd, finder), plus disabling duetexpertd
     system.activationScripts.postActivation.text = ''
       # disable fseventsd on /nix volume
       mkdir -p /nix/.fseventsd
@@ -45,12 +45,30 @@
           "com.apple.security.authorization".ignoreArd = true;
           # window corner radius in points, 1 is effectively square corners
           NSGlobalDomain.NSConvolutionOverride1 = 1.0;
+          # ask to keep changes when closing documents
+          NSGlobalDomain.NSCloseAlwaysConfirmsChanges = true;
+          NSGlobalDomain.WebAutomaticSpellingCorrectionEnabled = false;
+          # liquid glass tint sliders
+          NSGlobalDomain.NSGlassTintAmount = 0.5111468;
+          NSGlobalDomain.NSGlassBuddyTintAmount = 0.5;
+          # no .DS_Store files on network shares or usb drives
+          "com.apple.desktopservices" = {
+            DSDontWriteNetworkStores = true;
+            DSDontWriteUSBStores = true;
+          };
+          # modifier held for the bottom-right hot corner
+          "com.apple.dock".wvous-br-modifier = 1966080;
+          # document icons in window title bars. macos protects this domain, so the
+          # write may need full disk access for the activation
+          "com.apple.universalaccess".showWindowTitlebarIcons = true;
         };
 
         NSGlobalDomain = {
           AppleICUForce24HourTime = true;
+          AppleIconAppearanceTheme = "RegularDark";
           AppleInterfaceStyle = "Dark";
           ApplePressAndHoldEnabled = false;
+          AppleReduceDesktopTinting = true;
           AppleScrollerPagingBehavior = true;
           AppleShowAllExtensions = true;
           AppleShowScrollBars = "WhenScrolling";
@@ -70,6 +88,31 @@
           "com.apple.trackpad.forceClick" = true;
         };
 
+        dock = {
+          autohide = true;
+          autohide-delay = 0.5;
+          minimize-to-application = true;
+          # keep spaces in a fixed order for the tiling wm
+          mru-spaces = false;
+          show-recents = false;
+          showhidden = true;
+          tilesize = 50;
+          # display sleep
+          wvous-br-corner = 10;
+          persistent-apps = [
+            "/Applications/Fantastical.app"
+            "/Applications/Todoist.app"
+            "/Applications/Notion.app"
+            "/System/Applications/Messages.app"
+            "/Applications/Firefox Developer Edition.app"
+            "/Applications/Nix Apps/WezTerm.app"
+            "/Applications/Slack.app"
+            "/Applications/Spotify.app"
+          ];
+        };
+
+        hitoolbox.AppleFnUsageType = "Do Nothing";
+
         finder = {
           _FXShowPosixPathInTitle = true;
           FXDefaultSearchScope = "SCcf";
@@ -87,6 +130,8 @@
         menuExtraClock = {
           IsAnalog = false;
           Show24Hour = true;
+          # always, not only when space allows
+          ShowDate = 1;
           ShowDayOfWeek = true;
           ShowSeconds = true;
         };
@@ -94,6 +139,10 @@
         WindowManager = {
           EnableStandardClickToShowDesktop = false;
           EnableTiledWindowMargins = false;
+          # macos's own window tiling off
+          EnableTilingByEdgeDrag = false;
+          EnableTilingOptionAccelerator = false;
+          EnableTopTilingByEdgeDrag = false;
           GloballyEnabled = false;
           HideDesktop = true;
           StandardHideDesktopIcons = false;
