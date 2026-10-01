@@ -404,3 +404,27 @@ screen_reader_detection_done = true
 "gpt-5.5" = 4
 "gpt-5.6-sol" = 4
 gpt-6-astra = 4
+
+[hooks.state."/Users/eric/.codex/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:9f5efe0b15abbd66b247a093b660a0985f97f30283e7d1d82324807ab4cd4b7e"
+
+[hooks.state."/Users/eric/.codex/hooks.json:pre_tool_use:0:1"]
+trusted_hash = "sha256:5fa229b1d59fe6cedc2a1b7527ef842d29a2fd4066bfa0e98bf92da1d16e8e28"
+
+[hooks.state."/Users/eric/.codex/hooks.json:pre_tool_use:0:2"]
+trusted_hash = "sha256:61df246c12fd6a6f686b9ad5fe9896d0db32854cc2b51b8c2752d3ad18ba476c"
+
+[hooks.state."/Users/eric/.codex/hooks.json:pre_tool_use:0:3"]
+trusted_hash = "sha256:4dd0f2c9c532a539f0119085557b20f0d434dea73f6f1312df14ca038574e6ff"
+
+[hooks.state."/Users/eric/.codex/hooks.json:pre_tool_use:0:4"]
+trusted_hash = "sha256:280855a5fd48577f2bf75615361aa5915280a3ea8aa2573ea1e32be01aeb7a5a"
+
+[hooks.state."/Users/eric/.codex/hooks.json:pre_tool_use:0:5"]
+trusted_hash = "sha256:b440d0214be680d6c1b4a4ed257939aeda2fcd78497d6e9857ec510ad74b54ea"
+
+[hooks.state."/Users/eric/.codex/hooks.json:pre_tool_use:0:6"]
+trusted_hash = "sha256:118987d2419aaf15d66bf228cd186ca66f6aba992b956996119465f25a96dc21"
+
+[hooks.state."/Users/eric/.codex/hooks.json:pre_tool_use:0:7"]
+trusted_hash = "sha256:0dc608aac4f81cc0a450eaf587585d68ec200c9e8121fff12953360466806362"
