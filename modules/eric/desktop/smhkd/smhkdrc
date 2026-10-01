@@ -125,6 +125,9 @@ hyper + a ; t :
 hyper + a ; v :
     open 'cleanshot://scrolling-capture'
 
+hyper + a ; escape :
+    true
+
 # wm namespace
 hyper + y ; e :
     yabai -m space --balance
@@ -164,6 +167,9 @@ hyper + y ; {j,k,l} :
 
 hyper + y ; {1,2,3,4,5,6,7,8,9,0} :
     yabai -m window --opacity {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0}
+
+hyper + y ; escape :
+    true
 
 # trackpad corner taps: hold cmd, tap a corner
 # right side -> volume, left side -> brightness

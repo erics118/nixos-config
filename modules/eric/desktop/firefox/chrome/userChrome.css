@@ -95,7 +95,7 @@
        (animated) height, so Sidebery's top edge holds through the whole
        bookmarks-bar show/hide transition. */
     margin-top: calc(
-      -1 * var(--sidebery-bookmarks-toolbar-height, 0px) - 8px
+      -1 * var(--sidebery-bookmarks-toolbar-height, 0px) + 2px
     ) !important;
     transition: none !important;
   }

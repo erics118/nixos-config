@@ -103,11 +103,11 @@ config=(
 
   # Opacity of the focused window.
   # System Integrity Protection must be partially disabled.
-  # active_window_opacity 0.95 # [<FLOAT_SEL>]
+  active_window_opacity 0.95 # [<FLOAT_SEL>]
 
   # Opacity of an unfocused window.
   # System Integrity Protection must be partially disabled.
-  normal_window_opacity 0.70 # [<FLOAT_SEL>]
+  normal_window_opacity 0.80 # [<FLOAT_SEL>]
 
   # Duration of window frame animation.
   # If 0.0, the change in dimension is not animated.

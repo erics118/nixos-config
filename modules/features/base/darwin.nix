@@ -49,7 +49,7 @@
           NSGlobalDomain.NSCloseAlwaysConfirmsChanges = true;
           NSGlobalDomain.WebAutomaticSpellingCorrectionEnabled = false;
           # liquid glass tint sliders
-          NSGlobalDomain.NSGlassTintAmount = 0.5111468;
+          NSGlobalDomain.NSGlassTintAmount = 0.5;
           NSGlobalDomain.NSGlassBuddyTintAmount = 0.5;
           # no .DS_Store files on network shares or usb drives
           "com.apple.desktopservices" = {
@@ -90,7 +90,7 @@
 
         dock = {
           autohide = true;
-          autohide-delay = 0.5;
+          autohide-delay = 0.2;
           minimize-to-application = true;
           # keep spaces in a fixed order for the tiling wm
           mru-spaces = false;
@@ -160,6 +160,7 @@
 
     security.sudo.extraConfig = ''
       %admin ALL=(root) NOPASSWD: /usr/bin/pmset -a disablesleep 1, /usr/bin/pmset -a disablesleep 0
+      %admin ALL=(root) NOPASSWD: /usr/bin/pmset -a powermode 0, /usr/bin/pmset -a powermode 1, /usr/bin/pmset -a powermode 2
     '';
   };
 }
