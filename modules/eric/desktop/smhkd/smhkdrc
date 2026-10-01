@@ -171,7 +171,7 @@ hyper + y ; {1,2,3,4,5,6,7,8,9,0} :
 hyper + y ; escape :
     true
 
-# trackpad corner taps: hold cmd, tap a corner
+# trackpad corner taps: hold alt, tap a corner
 # right side -> volume, left side -> brightness
 alt + trackpad_tap(tr) |
     sound_up

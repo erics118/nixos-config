@@ -22,8 +22,9 @@
             PATH = config.launchdUserPath;
           };
           RunAtLoad = true;
-          KeepAlive = true;
+          KeepAlive.SuccessfulExit = false;
           ProcessType = "Interactive";
+          Nice = -20;
           StandardOutPath = "/tmp/smhkd_eric.out.log";
           StandardErrorPath = "/tmp/smhkd_eric.err.log";
         };
