@@ -12,6 +12,8 @@ require("items.front_app")
 -- right
 require("items.calendar")
 require("items.battery")
+require("items.wifi")
 require("items.weather")
+require("items.sleep")
 require("items.cpu")
 -- require("items.volume")

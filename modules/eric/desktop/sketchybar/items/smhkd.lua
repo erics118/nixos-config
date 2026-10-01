@@ -1,5 +1,3 @@
-local colors = require("colors")
-
 sbar.add_event("smhkd_sequence")
 
 local smhkd = sbar.add_label_item("smhkd", {

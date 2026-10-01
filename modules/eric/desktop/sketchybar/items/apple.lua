@@ -25,7 +25,7 @@ local function toggle_zen()
         local switch = mode ~= "default"
 
         -- popups
-        for _, name in ipairs({ "weather", "battery" }) do
+        for _, name in ipairs({ "weather", "battery", "wifi" }) do
             sbar.set(name, { popup = { drawing = false } })
         end
 
@@ -34,6 +34,8 @@ local function toggle_zen()
         sbar.set("front_app", { drawing = switch })
         sbar.set("/cpu\\..*/", { drawing = switch })
         sbar.set("battery", { drawing = switch })
+        sbar.set("sleep", { drawing = switch })
+        sbar.set("wifi", { drawing = switch })
         sbar.set("calendar", { icon = { drawing = switch } })
         sbar.set("weather", { drawing = switch })
 

@@ -40,7 +40,7 @@ for i = 1, num_spaces, 1 do
 
     local space_popup = sbar.add_item("space_popup." .. i, {
         position = "popup." .. space.name,
-        padding_left = 5,
+        padding_left = 0,
         padding_right = 0,
         background = {
             drawing = true,
@@ -65,7 +65,7 @@ for i = 1, num_spaces, 1 do
             sbar.exec("yabai -m space --focus " .. env.SID .. " 2>/dev/null")
         else
             space_popup:set({ background = { image = "space." .. env.SID } })
-            space:set({ popup = { drawing = "toggle" } })
+            sbar.toggle_popup(space.name)
         end
     end)
 
@@ -79,23 +79,40 @@ local space_window_observer = sbar.add_item("space_window_observer", {
     updates = true,
 })
 
-local window_query = [[
-yabai -m query --windows space,title,app,is-sticky,stack-index,is-hidden 2>/dev/null | jq '
-  map(select((."is-sticky" or ."is-hidden" or (.title == "")) | not))
-  | sort_by(.space, ."stack-index")
-  | group_by(.space)
-  | map({ (.[0].space|tostring): map(.app) })
-  | add
-' || echo '{}']]
+local window_query = "yabai -m query --windows space,title,app,is-sticky,stack-index,is-hidden 2>/dev/null"
+
+-- app names per space, in stack order, skipping sticky, hidden and untitled windows
+local function apps_by_space(windows)
+    local visible = {}
+    for i, window in ipairs(type(windows) == "table" and windows or {}) do
+        if not window["is-sticky"] and not window["is-hidden"] and window.title ~= "" then
+            window.order = i
+            table.insert(visible, window)
+        end
+    end
+
+    -- the original order breaks ties because table.sort is not stable
+    table.sort(visible, function(a, b)
+        if a["stack-index"] ~= b["stack-index"] then
+            return a["stack-index"] < b["stack-index"]
+        end
+        return a.order < b.order
+    end)
+
+    local apps = {}
+    for _, window in ipairs(visible) do
+        apps[window.space] = apps[window.space] or {}
+        table.insert(apps[window.space], window.app)
+    end
+    return apps
+end
 
 space_window_observer:subscribe({ "space_windows_change" }, function(env)
-    sbar.exec(window_query, function(window_data)
-        if type(window_data) ~= "table" then
-            window_data = {}
-        end
+    sbar.exec(window_query, function(windows)
+        local window_data = apps_by_space(windows)
 
         for i = 1, num_spaces, 1 do
-            local apps = window_data[tostring(i)] or {}
+            local apps = window_data[i] or {}
 
             local label = ""
 

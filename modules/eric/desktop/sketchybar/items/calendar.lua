@@ -14,10 +14,10 @@ local calendar = sbar.add_item("calendar", {
         padding_left = 0,
         padding_right = 10,
     },
-    update_freq = 1,
+    update_freq = 10,
     background = { drawing = false },
 })
 
 calendar:subscribe({ "forced", "routine", "system_woke" }, function(env)
-    calendar:set({ icon = os.date("%a %b %d"), label = os.date("%H:%M:%S") })
+    calendar:set({ icon = os.date("%a %b %d"), label = os.date("%H:%M") })
 end)

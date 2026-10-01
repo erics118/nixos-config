@@ -1,48 +1,68 @@
+local render_symbol = require("helpers.symbols")
+
 local weather = sbar.add_item("weather", {
     icon = {
-        font = {
-            family = "SF Pro",
-            style = "Regular",
-            size = 13.0,
+        string = "",
+        padding_left = 0,
+        padding_right = 0,
+        background = {
+            drawing = true,
+            image = { scale = 0.5, padding_left = 7 },
         },
     },
     position = "right",
+    padding_left = 2,
+    padding_right = 1,
     update_freq = 600,
+    popup = { align = "center", height = 24 },
 })
 
 local weather_key_path = "/run/secrets/api/weatherapi"
 
-local function add_weather_item(name, icon)
+local dim = colors.with_alpha(colors.text, 0.6)
+
+local function add_row(name, color, text)
     return sbar.add_item("weather_" .. name, {
-        position = "popup.weather",
-        icon = {
-            string = icon,
-            font = {
-                family = "SF Pro",
-                style = "Regular",
-                size = 13.0,
-            },
-            align = "center",
-            width = 32,
+        position = "popup." .. weather.name,
+        padding_left = 12,
+        icon = { drawing = false },
+        label = {
+            string = text,
+            color = color,
+            padding_left = 0,
+            padding_right = 12,
         },
         background = { drawing = false },
     })
 end
 
-local weather_condition = add_weather_item("condition", "􀆭")
-local weather_feels_like = add_weather_item("feels_like", "􀇬")
-local weather_low = add_weather_item("low", "􀇫")
-local weather_high = add_weather_item("high", "􀇪")
-local weather_humidity = add_weather_item("humidity", "􁃛")
-local weather_precipitation = add_weather_item("precipitation", "􀠒")
-local weather_wind = add_weather_item("wind", "􀇤")
-local weather_aqi = add_weather_item("aqi", "􀇮")
-local weather_uv = add_weather_item("uv", "􀆭")
-local weather_sunrise = add_weather_item("sunrise", "􀆱")
-local weather_sunset = add_weather_item("sunset", "􀆳")
+local weather_title = add_row("title", colors.text)
+add_row("now_header", dim, "Now")
+local weather_feels_like = add_row("feels_like", colors.text)
+local weather_humidity = add_row("humidity", colors.text)
+local weather_wind = add_row("wind", colors.text)
+add_row("today_header", dim, "Today")
+local weather_range = add_row("range", colors.text)
+local weather_sun = add_row("sun", colors.text)
+
+-- aqi in the icon and uv in the label so each gets its own color
+local weather_air = sbar.add_item("weather_air", {
+    position = "popup." .. weather.name,
+    padding_left = 12,
+    icon = {
+        font = { style = "Semibold" },
+        padding_left = 0,
+        padding_right = 12,
+    },
+    label = {
+        padding_left = 0,
+        padding_right = 12,
+    },
+    background = { drawing = false },
+})
 
 weather:subscribe("mouse.clicked", function(env)
-    weather:set({ popup = { drawing = "toggle" } })
+    sbar.toggle_popup(weather.name)
 end)
 
 -- must be one of: f c
@@ -52,10 +72,6 @@ local temperature_unit = "c"
 -- must be one of: km miles
 -- used for vis
 local visibility_unit = "miles"
-
--- must be one of: in mm
--- used for precip
-local precipitation_amount_unit = "in"
 
 -- must be one of: mph kph
 -- used for wind_speed
@@ -101,99 +117,111 @@ local function round_temperature(temperature)
     end
 end
 
+-- sf symbol names
 local weather_icons_day = {
-    sunny = "􀆭",
-    clear = "􀆭",
-    ["partly cloudy"] = "􀇔",
-    cloudy = "􀇂",
-    overcast = "􀇃",
-    mist = "􀇊",
-    ["patchy rain possible"] = "􀇄",
-    ["patchy snow possible"] = "􀇎",
-    ["patchy sleet possible"] = "􀇐",
-    ["patchy freezing drizzle possible"] = "􀇐",
-    ["thundery outbreaks possible"] = "􀇘",
-    ["blowing snow"] = "􀇦",
-    blizzard = "􀇦",
-    fog = "􀇊",
-    ["freezing fog"] = "􀇊",
-    ["patchy light drizzle"] = "􀇄",
-    ["light drizzle"] = "􀇄",
-    ["freezing drizzle"] = "􀇐",
-    ["heavy freezing drizzle"] = "􀇐",
-    ["patchy light rain"] = "􀇖",
-    ["light rain"] = "􀇖",
-    ["moderate rain at times"] = "􀇖",
-    ["moderate rain"] = "􀇖",
-    ["heavy rain at times"] = "􀇈",
-    ["heavy rain"] = "􀇈",
-    ["light freezing rain"] = "􀇐",
-    ["moderate or heavy freezing rain"] = "􀇐",
-    ["light sleet"] = "􀇐",
-    ["moderate or heavy sleet"] = "􀇐",
-    ["patchy light snow"] = "􀇎",
-    ["light snow"] = "􀇎",
-    ["patchy moderate snow"] = "􀇎",
-    ["moderate snow"] = "􀇎",
-    ["patchy heavy snow"] = "􀇎",
-    ["heavy snow"] = "􀇎",
-    ["ice pellets"] = "􀇌",
-    ["light rain shower"] = "􀇖",
-    ["moderate or heavy rain shower"] = "􀇈",
-    ["torrential rain shower"] = "􀇈",
-    ["light sleet showers"] = "􀇐",
-    ["moderate or heavy sleet showers"] = "􀇐",
-    ["light snow showers"] = "􀇎",
-    ["moderate or heavy snow showers"] = "􀇎",
-    ["light showers of ice pellets"] = "􀇌",
-    ["moderate or heavy showers of ice pellets"] = "􀇌",
-    ["patchy light rain with thunder"] = "􀇠",
-    ["moderate or heavy rain with thunder"] = "􀇠",
-    ["patchy light snow with thunder"] = "􀇠",
-    ["moderate or heavy snow with thunder"] = "􀇠",
-    ["patchy rain nearby"] = "􀇄",
-    ["patchy snow nearby"] = "􀇎",
-    ["patchy sleet nearby"] = "􀇐",
-    ["patchy freezing drizzle nearby"] = "􀇐",
-    ["thundery outbreaks in nearby"] = "􀇘",
-    ["patchy light rain in area with thunder"] = "􀇠",
-    ["patchy light snow in area with thunder"] = "􀇠",
-    ["moderate or heavy rain in area with thunder"] = "􀇠",
-    ["moderate or heavy snow in area with thunder"] = "􀇠",
-    dust = "􀆵",
-    ["blowing dust"] = "􀆵",
-    ["dust storm"] = "􀆵",
-    ["saharan dust"] = "􀆵",
-    ["dust haze"] = "􀆵",
-    haze = "􀆷",
-    ["smoky haze"] = "􀇢",
-    smoke = "􀇢",
-    smog = "􀇢",
-    ["severe smog"] = "􀇢",
-    sandstorm = "􀆵",
-    ["severe sandstorm"] = "􀆵",
+    sunny = "sun.max.fill",
+    clear = "sun.max.fill",
+    ["partly cloudy"] = "cloud.sun.fill",
+    cloudy = "cloud.fill",
+    overcast = "smoke.fill",
+    mist = "cloud.fog.fill",
+    ["patchy rain possible"] = "cloud.sun.rain.fill",
+    ["patchy snow possible"] = "sun.snow.fill",
+    ["patchy sleet possible"] = "cloud.sleet.fill",
+    ["patchy freezing drizzle possible"] = "cloud.sleet.fill",
+    ["thundery outbreaks possible"] = "cloud.sun.bolt.fill",
+    ["blowing snow"] = "wind.snow",
+    blizzard = "wind.snow",
+    fog = "cloud.fog.fill",
+    ["freezing fog"] = "cloud.fog.fill",
+    ["patchy light drizzle"] = "cloud.drizzle.fill",
+    ["light drizzle"] = "cloud.drizzle.fill",
+    ["freezing drizzle"] = "cloud.sleet.fill",
+    ["heavy freezing drizzle"] = "cloud.sleet.fill",
+    ["patchy light rain"] = "cloud.sun.rain.fill",
+    ["light rain"] = "cloud.rain.fill",
+    ["moderate rain at times"] = "cloud.rain.fill",
+    ["moderate rain"] = "cloud.rain.fill",
+    ["heavy rain at times"] = "cloud.heavyrain.fill",
+    ["heavy rain"] = "cloud.heavyrain.fill",
+    ["light freezing rain"] = "cloud.sleet.fill",
+    ["moderate or heavy freezing rain"] = "cloud.sleet.fill",
+    ["light sleet"] = "cloud.sleet.fill",
+    ["moderate or heavy sleet"] = "cloud.sleet.fill",
+    ["patchy light snow"] = "cloud.snow.fill",
+    ["light snow"] = "cloud.snow.fill",
+    ["patchy moderate snow"] = "cloud.snow.fill",
+    ["moderate snow"] = "cloud.snow.fill",
+    ["patchy heavy snow"] = "cloud.snow.fill",
+    ["heavy snow"] = "cloud.snow.fill",
+    ["ice pellets"] = "cloud.hail.fill",
+    ["light rain shower"] = "cloud.sun.rain.fill",
+    ["moderate or heavy rain shower"] = "cloud.heavyrain.fill",
+    ["torrential rain shower"] = "cloud.heavyrain.fill",
+    ["light sleet showers"] = "cloud.sleet.fill",
+    ["moderate or heavy sleet showers"] = "cloud.sleet.fill",
+    ["light snow showers"] = "cloud.snow.fill",
+    ["moderate or heavy snow showers"] = "cloud.snow.fill",
+    ["light showers of ice pellets"] = "cloud.hail.fill",
+    ["moderate or heavy showers of ice pellets"] = "cloud.hail.fill",
+    ["patchy light rain with thunder"] = "cloud.bolt.rain.fill",
+    ["moderate or heavy rain with thunder"] = "cloud.bolt.rain.fill",
+    ["patchy light snow with thunder"] = "cloud.bolt.rain.fill",
+    ["moderate or heavy snow with thunder"] = "cloud.bolt.rain.fill",
+    ["patchy rain nearby"] = "cloud.sun.rain.fill",
+    ["patchy snow nearby"] = "sun.snow.fill",
+    ["patchy sleet nearby"] = "cloud.sleet.fill",
+    ["patchy freezing drizzle nearby"] = "cloud.sleet.fill",
+    ["thundery outbreaks in nearby"] = "cloud.sun.bolt.fill",
+    ["patchy light rain in area with thunder"] = "cloud.bolt.rain.fill",
+    ["patchy light snow in area with thunder"] = "cloud.bolt.rain.fill",
+    ["moderate or heavy rain in area with thunder"] = "cloud.bolt.rain.fill",
+    ["moderate or heavy snow in area with thunder"] = "cloud.bolt.rain.fill",
+    dust = "sun.dust.fill",
+    ["blowing dust"] = "sun.dust.fill",
+    ["dust storm"] = "sun.dust.fill",
+    ["saharan dust"] = "sun.dust.fill",
+    ["dust haze"] = "sun.dust.fill",
+    haze = "sun.haze.fill",
+    ["smoky haze"] = "smoke.fill",
+    smoke = "smoke.fill",
+    smog = "smoke.fill",
+    ["severe smog"] = "smoke.fill",
+    sandstorm = "sun.dust.fill",
+    ["severe sandstorm"] = "sun.dust.fill",
 }
 
 local weather_icons_night = setmetatable({
-    clear = "􀇀",
-    sunny = "􀇀",
-    ["partly cloudy"] = "􀇚",
-    ["thundery outbreaks possible"] = "􀇞",
-    ["patchy light rain"] = "􀇜",
-    ["light rain"] = "􀇜",
-    ["moderate rain at times"] = "􀇜",
-    ["moderate rain"] = "􀇜",
-    ["light rain shower"] = "􀇜",
-    ["thundery outbreaks in nearby"] = "􀇞",
-    dust = "􀇊",
-    ["blowing dust"] = "􀇊",
-    ["dust storm"] = "􀇊",
-    ["saharan dust"] = "􀇊",
-    ["dust haze"] = "􀇊",
-    haze = "􀇊",
-    sandstorm = "􀇊",
-    ["severe sandstorm"] = "􀇊",
+    clear = "moon.stars.fill",
+    sunny = "moon.stars.fill",
+    ["partly cloudy"] = "cloud.moon.fill",
+    ["thundery outbreaks possible"] = "cloud.moon.bolt.fill",
+    ["patchy rain possible"] = "cloud.moon.rain.fill",
+    ["patchy rain nearby"] = "cloud.moon.rain.fill",
+    ["patchy snow possible"] = "cloud.snow.fill",
+    ["patchy snow nearby"] = "cloud.snow.fill",
+    ["patchy light rain"] = "cloud.moon.rain.fill",
+    ["light rain"] = "cloud.moon.rain.fill",
+    ["moderate rain at times"] = "cloud.moon.rain.fill",
+    ["moderate rain"] = "cloud.moon.rain.fill",
+    ["light rain shower"] = "cloud.moon.rain.fill",
+    ["thundery outbreaks in nearby"] = "cloud.moon.bolt.fill",
+    dust = "moon.dust.fill",
+    ["blowing dust"] = "moon.dust.fill",
+    ["dust storm"] = "moon.dust.fill",
+    ["saharan dust"] = "moon.dust.fill",
+    ["dust haze"] = "moon.dust.fill",
+    haze = "moon.haze.fill",
+    sandstorm = "moon.dust.fill",
+    ["severe sandstorm"] = "moon.dust.fill",
 }, { __index = weather_icons_day })
+
+-- icon padding_left 7 plus the 3pt gap to the label, as for font icons
+local function set_icon(symbol, color)
+    render_symbol(symbol, color, 13, nil, function(path, width)
+        weather:set({ icon = { width = width + 10, background = { image = path } } })
+    end)
+end
 
 local function get_condition_icon(condition, is_day)
     if is_day then
@@ -207,19 +235,19 @@ end
 
 local function set_air_quality_color(epa_index)
     if epa_index == 1 then
-        return colors.green, "Good", "􀇭"
+        return colors.green, "Good"
     elseif epa_index == 2 then
-        return colors.yellow, "Moderate", "􀇭"
+        return colors.yellow, "Moderate"
     elseif epa_index == 3 then
-        return colors.orange, "Unhealthy for Sensitive Groups", "􀇮"
+        return colors.orange, "Unhealthy for Sensitive Groups"
     elseif epa_index == 4 then
-        return colors.red, "Unhealthy", "􀇮"
+        return colors.red, "Unhealthy"
     elseif epa_index == 5 then
-        return colors.purple, "Very Unhealthy", "􀇯"
+        return colors.purple, "Very Unhealthy"
     elseif epa_index == 6 then
-        return colors.purple, "Hazardous", "􀇯"
+        return colors.purple, "Hazardous"
     else
-        return colors.text, "Unknown", "􀇮"
+        return colors.text, "Unknown"
     end
 end
 
@@ -238,21 +266,27 @@ local function set_uv_index_color(uv_index)
 end
 
 local function set_weather_unavailable(message)
-    weather:set({
-        icon = { string = "􀇾" },
-        label = { string = message or "N/A" },
+    set_icon("exclamationmark.icloud", colors.text)
+    weather:set({ label = { string = message or "N/A" } })
+    weather_title:set({ label = { string = message or "Unavailable" } })
+    weather_feels_like:set({ label = { string = "Feels like --" } })
+    weather_humidity:set({ label = { string = "Humidity --" } })
+    weather_wind:set({ label = { string = "Wind --" } })
+    weather_range:set({ label = { string = "--" } })
+    weather_sun:set({ label = { string = "--" } })
+    weather_air:set({
+        icon = { string = "AQI --", color = colors.text },
+        label = { string = "UV --", color = colors.text },
     })
-    weather_condition:set({ icon = { string = "􀇾" }, label = { string = message or "Unavailable" } })
-    weather_feels_like:set({ label = { string = "Feels Like: --" } })
-    weather_low:set({ label = { string = "Low: --" } })
-    weather_high:set({ label = { string = "High: --" } })
-    weather_humidity:set({ label = { string = "Humidity: --" } })
-    weather_precipitation:set({ label = { string = "--" } })
-    weather_wind:set({ label = { string = "Wind: --" } })
-    weather_aqi:set({ label = { string = "AQI: --" } })
-    weather_uv:set({ label = { string = "UV: --" } })
-    weather_sunrise:set({ label = { string = "Sunrise: --" } })
-    weather_sunset:set({ label = { string = "Sunset: --" } })
+end
+
+-- weatherapi gives "07:03 AM", the bar clock is 24h
+local function to_24h(time)
+    local hour, minute, period = (time or ""):match("(%d+):(%d+) (%a+)")
+    if not hour then
+        return "--"
+    end
+    return string.format("%02d:%s", tonumber(hour) % 12 + (period == "PM" and 12 or 0), minute)
 end
 
 local function read_weather_api_key()
@@ -280,6 +314,7 @@ local function format_number(value, suffix)
 end
 
 local key_retries = 0
+local fetch_retries = 0
 
 local function update_weather()
     local api_key = read_weather_api_key()
@@ -305,9 +340,16 @@ local function update_weather()
                 or type(data.forecast.forecastday) ~= "table"
                 or type(data.forecast.forecastday[1]) ~= "table"
             then
-                set_weather_unavailable("Unavailable")
+                -- dns is often not up yet right after wake, so keep the last data and retry
+                if fetch_retries < 5 then
+                    fetch_retries = fetch_retries + 1
+                    sbar.delay(10, update_weather)
+                else
+                    set_weather_unavailable("Unavailable")
+                end
                 return
             end
+            fetch_retries = 0
 
             local day = data.forecast.forecastday[1].day or {}
             local astro = data.forecast.forecastday[1].astro or {}
@@ -319,9 +361,7 @@ local function update_weather()
             local high = round_temperature(day["maxtemp_" .. temperature_unit])
             local condition = (condition_data.text or "Unavailable"):lower()
             local is_day = current.is_day == 1
-            local icon = get_condition_icon(condition, is_day) or "􀇾"
-            local precipitation_amount =
-                format_number(current["precip_" .. precipitation_amount_unit], " " .. precipitation_amount_unit)
+            local icon = get_condition_icon(condition, is_day)
             local wind_direction = current.wind_degree and degrees_to_direction(current.wind_degree) or "?"
             local wind_speed = format_number(current["wind_" .. wind_speed_unit], " " .. wind_speed_unit)
             local uv_index = math.floor(current.uv or 0)
@@ -332,34 +372,25 @@ local function update_weather()
             local sunset = astro.sunset or "--"
             local air_quality = current.air_quality or {}
             local air_quality_index = air_quality["us-epa-index"] or 0
-            local air_quality_color, air_quality_category, air_quality_icon = set_air_quality_color(air_quality_index)
+            local air_quality_color, air_quality_category = set_air_quality_color(air_quality_index)
 
-            weather:set({
-                icon = {
-                    string = icon,
-                },
-                label = {
-                    string = temp,
-                },
+            if icon then
+                -- apple's colors, with the white parts in the text color
+                set_icon(icon, string.format("multicolor:0x%08x", colors.text))
+            else
+                set_icon("exclamationmark.icloud", colors.text)
+            end
+            weather:set({ label = { string = temp } })
+            weather_title:set({ label = { string = condition:gsub("^%l", string.upper) .. ", " .. temp } })
+            weather_feels_like:set({ label = { string = "Feels like " .. feels_like } })
+            weather_humidity:set({ label = { string = "Humidity " .. humidity_percentage } })
+            weather_wind:set({ label = { string = "Wind " .. wind_direction .. " " .. wind_speed } })
+            weather_range:set({ label = { string = low .. " - " .. high } })
+            weather_sun:set({ label = { string = to_24h(sunrise) .. " - " .. to_24h(sunset) } })
+            weather_air:set({
+                icon = { string = "AQI " .. air_quality_category, color = air_quality_color },
+                label = { string = "UV " .. uv_index_category, color = uv_index_color },
             })
-            weather_condition:set({ icon = { string = icon }, label = { string = condition } })
-
-            weather_feels_like:set({ label = { string = "Feels Like: " .. feels_like } })
-            weather_low:set({ label = { string = "Low: " .. low } })
-            weather_high:set({ label = { string = "High: " .. high } })
-            weather_humidity:set({ label = { string = "Humidity: " .. humidity_percentage } })
-            weather_precipitation:set({ label = { string = precipitation_amount } })
-            weather_wind:set({ label = { string = "Wind: " .. wind_direction .. " " .. wind_speed } })
-            weather_aqi:set({
-                label = { string = "AQI: " .. air_quality_index .. " " .. air_quality_category },
-                icon = { string = air_quality_icon, color = air_quality_color },
-            })
-            weather_uv:set({
-                label = { string = "UV: " .. uv_index .. " " .. uv_index_category },
-                icon = { color = uv_index_color },
-            })
-            weather_sunrise:set({ label = { string = "Sunrise: " .. sunrise } })
-            weather_sunset:set({ label = { string = "Sunset: " .. sunset } })
         end
     )
 end

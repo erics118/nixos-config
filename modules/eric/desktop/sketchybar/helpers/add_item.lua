@@ -65,6 +65,19 @@ sbar.add_event = function(name)
     sbar.add("event", name)
 end
 
+local popups = {}
+
+-- toggles the popup of the named item and closes any other popup
+sbar.toggle_popup = function(name)
+    popups[name] = true
+    for other in pairs(popups) do
+        if other ~= name then
+            sbar.set(other, { popup = { drawing = false } })
+        end
+    end
+    sbar.set(name, { popup = { drawing = "toggle" } })
+end
+
 -- must match the apple icon color set in items/apple.lua
 local mode = "default"
 
