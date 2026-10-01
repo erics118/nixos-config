@@ -141,10 +141,9 @@
             };
 
             devShells = {
-              default = pkgs.mkShell { packages = [ config.treefmt.build.wrapper ]; };
-
-              sketchybar = pkgs.mkShell {
+              default = pkgs.mkShell {
                 packages = with pkgs; [
+                  config.treefmt.build.wrapper
                   lua-language-server
                   stylua
                   lua5_5
