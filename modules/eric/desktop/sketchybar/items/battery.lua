@@ -18,14 +18,13 @@ local battery = sbar.add_item("battery", {
 
 local dim = colors.with_alpha(colors.text, 0.6)
 
-local function add_text_row(name, text, style, color)
+local function add_text_row(name, text, color)
     return sbar.add_item(name, {
         position = "popup." .. battery.name,
         padding_left = 12,
         icon = { drawing = false },
         label = {
             string = text,
-            font = { style = style },
             color = color,
             padding_left = 0,
             padding_right = 12,
@@ -34,8 +33,8 @@ local function add_text_row(name, text, style, color)
     })
 end
 
-local power_source = add_text_row("power_source", "Power Source: ?", "Regular", dim)
-local remaining_time = add_text_row("remaining_time", "", "Regular", dim)
+local power_source = add_text_row("power_source", "Power Source: ?", dim)
+local remaining_time = add_text_row("remaining_time", "", dim)
 
 -- index - 1 is the pmset powermode value
 local energy_modes = {
@@ -57,8 +56,8 @@ local function update_popup()
 
         for i, item in ipairs(energy_mode_items) do
             local color = tonumber(mode) == i - 1 and colors.blue or colors.text
-            render_symbol(energy_modes[i].symbol, color, 15, nil, function(path)
-                item:set({ icon = { background = { image = path } } })
+            render_symbol(energy_modes[i].symbol, color, 15, nil, function(path, width)
+                item:set({ icon = { width = width, background = { image = path } } })
             end)
         end
     end)
@@ -70,7 +69,6 @@ for i, mode in ipairs(energy_modes) do
         padding_left = 12,
         icon = {
             string = "",
-            width = 25,
             padding_left = 0,
             padding_right = 0,
             background = {
@@ -80,7 +78,6 @@ for i, mode in ipairs(energy_modes) do
         },
         label = {
             string = mode.name,
-            font = { style = "Regular" },
             padding_left = 8,
             padding_right = 12,
         },
@@ -118,9 +115,9 @@ local function update_battery()
             symbol = "battery.plug"
         end
 
-        render_symbol(symbol, color, 15, charge / 100, function(path)
+        render_symbol(symbol, color, 15, charge / 100, function(path, width)
             battery:set({
-                icon = { background = { image = path } },
+                icon = { width = width + 10, background = { image = path } },
                 label = { string = charge .. "%" },
             })
         end)

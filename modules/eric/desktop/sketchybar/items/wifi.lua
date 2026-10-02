@@ -28,6 +28,7 @@ local status = { power = false, name = "", strength = 0 }
 local networks = {}
 local show_other = false
 local joining = nil
+local icon_slot = 0
 
 local update_popup, update_status
 
@@ -38,13 +39,12 @@ local function add_header(name, text)
         padding_left = 12,
         icon = {
             string = text,
-            font = { style = "Semibold" },
+            font = { style = "Medium" },
             color = dim,
             padding_left = 0,
             padding_right = 0,
         },
         label = {
-            font = { style = "Semibold" },
             color = dim,
             padding_left = 6,
             padding_right = 12,
@@ -74,7 +74,6 @@ local function add_rows(prefix, count)
             padding_left = 12,
             icon = {
                 string = "",
-                width = 25,
                 padding_left = 0,
                 padding_right = 0,
                 background = {
@@ -83,7 +82,6 @@ local function add_rows(prefix, count)
                 },
             },
             label = {
-                font = { style = "Regular" },
                 padding_left = 8,
                 padding_right = 12,
             },
@@ -112,7 +110,6 @@ local settings = sbar.add_item("wifi_settings", {
     icon = { drawing = false },
     label = {
         string = "Wi-Fi Settings...",
-        font = { style = "Regular" },
         padding_left = 0,
         padding_right = 12,
     },
@@ -132,7 +129,12 @@ local function show_rows(rows, list, visible)
             if network.name == joining then
                 symbol, value = "progress.indicator", nil
             end
-            render_symbol(symbol, connected and colors.blue or colors.text, 15, value, function(path)
+            render_symbol(symbol, connected and colors.blue or colors.text, 15, value, function(path, width)
+                -- rows share the widest icon's width so their names line up
+                if width > icon_slot then
+                    icon_slot = width
+                    sbar.set("/wifi_.*\\..*/", { icon = { width = icon_slot } })
+                end
                 row.item:set({
                     drawing = true,
                     icon = { background = { image = path } },
@@ -195,10 +197,11 @@ function update_status()
         local symbol = status.power and "wifi" or "wifi.slash"
         local value = status.power and (status.name ~= "" and status.strength or 0) or nil
         local connected = status.name ~= ""
-        render_symbol(symbol, colors.text, 15, value, function(path)
+        render_symbol(symbol, colors.text, 15, value, function(path, width)
             wifi:set({
                 icon = {
-                    width = connected and 30 or 34,
+                    -- with no label the 7pt padding_left is mirrored on the right
+                    width = width + (connected and 10 or 14),
                     background = { image = path },
                 },
                 label = { drawing = connected, string = status.name },

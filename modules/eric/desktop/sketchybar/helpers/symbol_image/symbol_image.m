@@ -148,6 +148,21 @@ int main(int argc, char **argv) {
       }
     }
 
+    // trim transparent columns so the png width is the drawn width
+    NSInteger x0 = rep.pixelsWide, x1 = -1;
+    for (NSInteger y = 0; y < rep.pixelsHigh; y++) {
+      for (NSInteger x = 0; x < rep.pixelsWide; x++) {
+        if (rep.bitmapData[y * rep.bytesPerRow + x * 4 + 3] == 0) continue;
+        x0 = MIN(x0, x);
+        x1 = MAX(x1, x);
+      }
+    }
+    if (x1 >= x0) {
+      CGImageRef trimmed = CGImageCreateWithImageInRect(rep.CGImage, CGRectMake(x0, 0, x1 - x0 + 1, rep.pixelsHigh));
+      rep = [[NSBitmapImageRep alloc] initWithCGImage:trimmed];
+      CGImageRelease(trimmed);
+    }
+
     NSData *png = [rep representationUsingType:NSBitmapImageFileTypePNG properties:@{}];
     return [png writeToFile:@(argv[4]) atomically:YES] ? 0 : 1;
   }

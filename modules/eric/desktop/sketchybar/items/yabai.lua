@@ -6,6 +6,7 @@ sbar.add_event("yabai")
 
 local yabai = sbar.add_icon_item("yabai", {
     updates = true,
+    icon = { padding_left = 2 },
     background = { drawing = false },
 })
 
@@ -52,7 +53,7 @@ yabai:subscribe({ "front_app_switched", "window_focused", "forced", "yabai" }, f
 
             yabai:set({
                 drawing = sbar.get_mode() == "default" and icon ~= nil,
-                icon = { color = c, string = icon, width = icon and 25 or 0 },
+                icon = { color = c, string = icon, width = icon and 18 or 0 },
             })
         end)
     end)

@@ -11,6 +11,7 @@ for i = 1, num_spaces, 1 do
             padding_left = 7,
             padding_right = 3,
             string = i,
+            font = { style = "Bold" },
             color = colors.text,
             highlight_color = colors.red,
         },
@@ -22,7 +23,7 @@ for i = 1, num_spaces, 1 do
             font = "sketchybar-app-font:Regular:13.0",
         },
         padding_right = 1,
-        padding_left = i == 1 and 4 or 2,
+        padding_left = i == 1 and 0 or 2,
         background = {
             color = colors.item.bg,
             border_width = 2,

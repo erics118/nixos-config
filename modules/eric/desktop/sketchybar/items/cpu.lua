@@ -27,21 +27,21 @@ local cpu_base = {
 
 local cpu_user = sbar.add_graph(
     "cpu.user",
-    30,
+    40,
     merge(cpu_base, {
         graph = {
             color = colors.blue,
             fill_color = colors.with_alpha(colors.blue, 0.2),
         },
         label = { drawing = false },
-        padding_left = -39,
-        padding_right = 0,
+        padding_left = -49,
+        padding_right = 4,
     })
 )
 
 local cpu_sys = sbar.add_graph(
     "cpu.sys",
-    30,
+    40,
     merge(cpu_base, {
         graph = {
             color = colors.red,
@@ -50,7 +50,6 @@ local cpu_sys = sbar.add_graph(
         label = {
             string = "??%",
             font = {
-                style = "Bold",
                 size = 10.0,
             },
             align = "right",

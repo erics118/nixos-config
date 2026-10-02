@@ -37,7 +37,6 @@ local function add_row(name, color, text)
 end
 
 local weather_title = add_row("title", colors.text)
-add_row("now_header", dim, "Now")
 local weather_feels_like = add_row("feels_like", colors.text)
 local weather_humidity = add_row("humidity", colors.text)
 local weather_wind = add_row("wind", colors.text)
@@ -50,7 +49,7 @@ local weather_air = sbar.add_item("weather_air", {
     position = "popup." .. weather.name,
     padding_left = 12,
     icon = {
-        font = { style = "Semibold" },
+        font = { style = "Medium" },
         padding_left = 0,
         padding_right = 12,
     },
@@ -381,7 +380,7 @@ local function update_weather()
                 set_icon("exclamationmark.icloud", colors.text)
             end
             weather:set({ label = { string = temp } })
-            weather_title:set({ label = { string = condition:gsub("^%l", string.upper) .. ", " .. temp } })
+            weather_title:set({ label = { string = condition:gsub("^%l", string.upper) } })
             weather_feels_like:set({ label = { string = "Feels like " .. feels_like } })
             weather_humidity:set({ label = { string = "Humidity " .. humidity_percentage } })
             weather_wind:set({ label = { string = "Wind " .. wind_direction .. " " .. wind_speed } })
