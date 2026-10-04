@@ -19,6 +19,8 @@
     };
 
     launchd.user.agents.yabai.serviceConfig = {
+      # the label yabai's own --start-service/--stop-service manage
+      Label = "com.asmvik.yabai";
       StandardOutPath = "/tmp/yabai_eric.out.log";
       StandardErrorPath = "/tmp/yabai_eric.err.log";
       EnvironmentVariables.PATH = lib.mkForce (

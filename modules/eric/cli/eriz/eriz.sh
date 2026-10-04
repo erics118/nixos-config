@@ -16,6 +16,7 @@ done
 # load the access service token from XDG config
 creds="${XDG_CONFIG_HOME:-$HOME/.config}/eriz/credentials"
 [[ -f $creds ]] || die "missing $creds (holds the cloudflare access service token; see credentials.example)"
+# shellcheck source=/dev/null
 source "$creds"
 
 BASE="${ERIZ_BASE:-https://eriz.cc}"
@@ -76,7 +77,7 @@ api() {
 
   local response status body message
   response=$(
-    curl -sS -X "$method" "$BASE$path" \
+    curl -sS --connect-timeout 10 -X "$method" "$BASE$path" \
       -H "CF-Access-Client-Id: $CF_ACCESS_CLIENT_ID" \
       -H "CF-Access-Client-Secret: $CF_ACCESS_CLIENT_SECRET" \
       -w $'\n%{http_code}' "$@"
@@ -176,7 +177,7 @@ cmd_ls() {
   # shift every field after it. a timestamp is fixed width, so padding it in jq
   # cannot truncate anything the way padding a slug would.
 
-  # strflocaltime needs jq >= 1.7
+  # strflocaltime needs jq >= 1.6
   local created='def pad: . + (" " * (16 - length));
     def created: (if .created == null then "" else (.created
     | sub("\\.[0-9]+Z$"; "Z") | fromdateiso8601

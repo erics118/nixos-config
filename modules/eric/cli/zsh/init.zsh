@@ -84,8 +84,12 @@ lctl() {
   local plist
   if [[ -f $dir/$name.plist ]]; then
     plist=$dir/$name.plist
+  elif [[ -f $dir/com.erics118.$name.plist ]]; then
+    plist=$dir/com.erics118.$name.plist
   elif [[ -f $dir/org.nixos.$name.plist ]]; then
     plist=$dir/org.nixos.$name.plist
+  elif [[ -f $dir/org.nix-community.home.$name.plist ]]; then
+    plist=$dir/org.nix-community.home.$name.plist
   else
     local matches=($dir/*$name*.plist(N))
     if (( $#matches == 1 )); then
@@ -96,10 +100,11 @@ lctl() {
     fi
   fi
   local label=${${plist:t}:r}
+  # a job disabled by a tool's own --stop-service cannot be bootstrapped until enabled
   case $cmd in
-  start) launchctl bootstrap $domain $plist ;;
+  start) launchctl enable $domain/$label; launchctl bootstrap $domain $plist ;;
   stop) launchctl bootout $domain $plist ;;
-  restart) launchctl bootout $domain $plist 2>/dev/null; launchctl bootstrap $domain $plist ;;
+  restart) launchctl bootout $domain $plist 2>/dev/null; launchctl enable $domain/$label; launchctl bootstrap $domain $plist ;;
   status) launchctl print $domain/$label ;;
   *) print -u2 "lctl: unknown command '$cmd'"; return 2 ;;
   esac

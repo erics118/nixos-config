@@ -173,14 +173,14 @@ hyper + y ; escape :
 
 # trackpad corner taps: hold alt, tap a corner
 # right side -> volume, left side -> brightness
-alt + trackpad_tap(tr) |
-    sound_up
-
-alt + trackpad_tap(br) |
-    sound_down
-
-alt + trackpad_tap(tl) |
-    brightness_up
-
-alt + trackpad_tap(bl) |
-    brightness_down
+# alt + trackpad_tap(tr) |
+#     sound_up
+#
+# alt + trackpad_tap(br) |
+#     sound_down
+#
+# alt + trackpad_tap(tl) |
+#     brightness_up
+#
+# alt + trackpad_tap(bl) |
+#     brightness_down

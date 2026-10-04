@@ -14,7 +14,7 @@ local weather = sbar.add_item("weather", {
     padding_left = 2,
     padding_right = 1,
     update_freq = 600,
-    popup = { align = "center", height = 24 },
+    popup = { align = "left", height = 24 },
 })
 
 local weather_key_path = "/run/secrets/api/weatherapi"
@@ -394,4 +394,9 @@ local function update_weather()
     )
 end
 
-weather:subscribe({ "forced", "routine", "system_woke" }, update_weather)
+-- wifi_change fires on any primary ipv4 change, so a reconnect refreshes too
+-- each event starts a fresh retry budget, or one failed chain would leave it spent
+weather:subscribe({ "forced", "routine", "system_woke", "wifi_change" }, function()
+    fetch_retries = 0
+    update_weather()
+end)

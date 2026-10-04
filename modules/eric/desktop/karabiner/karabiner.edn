@@ -9,6 +9,10 @@
 ;; W  | right_control
 ;; E  | right_option
 ;; R  | right_shift
+;; CC | command
+;; TT | control
+;; OO | option
+;; SS | shift
 ;; P  | caps_lock
 ;; !! | mandatory rhyper
 ;; ## | optional any
@@ -53,10 +57,8 @@
    :rules [[:##escape :vk_none]]}
 
   {:des "disable annoying shortcuts: hyper+comma to none"
-   :rules [[:!CTOScomma :vk_none]
-           [:!QWERcomma :vk_none]
-           [:!QWERperiod :vk_none]
-           [:!CTOSperiod :vk_none]]}
+   :rules [[:!CCTTOOSScomma :vk_none]
+           [:!CCTTOOSSperiod :vk_none]]}
 
   {:des "hyper navigation: hyper-(any-)hjkl to (any-)arrows)"
    :rules [[:!!##h :left_arrow]
@@ -64,42 +66,42 @@
            [:!!##k :up_arrow]
            [:!!##l :right_arrow]]}
 
-  {:des "finger function: 1finger-[f1-f12] to custom keys"
-   :rules [
-           [:#Pf1 :display_brightness_decrement ["multitouch_extension_finger_count_total" 1]]
-           [:#Pf2 :display_brightness_increment ["multitouch_extension_finger_count_total" 1]]
-
-           [:!S#Pf1 :!OSdisplay_brightness_decrement ["multitouch_extension_finger_count_total" 1]]
-           [:!S#Pf2 :!OSdisplay_brightness_increment ["multitouch_extension_finger_count_total" 1]]
-
-           [:#Pf3 :mission_control ["multitouch_extension_finger_count_total" 1]]
-           [:#Pf4 :vk_none ["multitouch_extension_finger_count_total" 1]]
-           [:#Pf5 :illumination_decrement ["multitouch_extension_finger_count_total" 1]]
-           [:#Pf6 :illumination_increment ["multitouch_extension_finger_count_total" 1]]
-
-           [:!S#Pf5 :!OSillumination_decrement ["multitouch_extension_finger_count_total" 1]]
-           [:!S#Pf6 :!OSillumination_increment ["multitouch_extension_finger_count_total" 1]]
-
-           [:#Pf7 :rewind ["multitouch_extension_finger_count_total" 1]]
-           [:#Pf8 :play_or_pause ["multitouch_extension_finger_count_total" 1]]
-           [:#Pf9 :fast_forward ["multitouch_extension_finger_count_total" 1]]
-           [:#Pf10 :mute ["multitouch_extension_finger_count_total" 1]]
-           [:#Pf11 :volume_decrement ["multitouch_extension_finger_count_total" 1]]
-           [:#Pf12 :volume_increment ["multitouch_extension_finger_count_total" 1]]]}
+  ; {:des "finger function: 1finger-[f1-f12] to custom keys"
+  ;  :rules [
+  ;          [:#Pf1 :display_brightness_decrement ["multitouch_extension_finger_count_total" 1]]
+  ;          [:#Pf2 :display_brightness_increment ["multitouch_extension_finger_count_total" 1]]
+  ;
+  ;          [:!S#Pf1 :!OSdisplay_brightness_decrement ["multitouch_extension_finger_count_total" 1]]
+  ;          [:!S#Pf2 :!OSdisplay_brightness_increment ["multitouch_extension_finger_count_total" 1]]
+  ;
+  ;          [:#Pf3 :mission_control ["multitouch_extension_finger_count_total" 1]]
+  ;          [:#Pf4 :vk_none ["multitouch_extension_finger_count_total" 1]]
+  ;          [:#Pf5 :illumination_decrement ["multitouch_extension_finger_count_total" 1]]
+  ;          [:#Pf6 :illumination_increment ["multitouch_extension_finger_count_total" 1]]
+  ;
+  ;          [:!S#Pf5 :!OSillumination_decrement ["multitouch_extension_finger_count_total" 1]]
+  ;          [:!S#Pf6 :!OSillumination_increment ["multitouch_extension_finger_count_total" 1]]
+  ;
+  ;          [:#Pf7 :rewind ["multitouch_extension_finger_count_total" 1]]
+  ;          [:#Pf8 :play_or_pause ["multitouch_extension_finger_count_total" 1]]
+  ;          [:#Pf9 :fast_forward ["multitouch_extension_finger_count_total" 1]]
+  ;          [:#Pf10 :mute ["multitouch_extension_finger_count_total" 1]]
+  ;          [:#Pf11 :volume_decrement ["multitouch_extension_finger_count_total" 1]]
+  ;          [:#Pf12 :volume_increment ["multitouch_extension_finger_count_total" 1]]]}
 
   {:des "firefox: ctrl-tab -> alt-pagedown, ctrl-shift-tab -> alt-pageup, swap cmd-shift-enter and cmd-enter"
-   :rules [[:!Ttab :!TOpage_down :firefox]
-           [:!STtab :!TOpage_up :firefox]
-           [:!Creturn_or_enter :!CSreturn_or_enter :firefox]
-           [:!CSreturn_or_enter :!Creturn_or_enter :firefox]
+   :rules [[:!TTtab :!TOpage_down :firefox]
+           [:!SSTTtab :!TOpage_up :firefox]
+           [:!CCreturn_or_enter :!CSreturn_or_enter :firefox]
+           [:!CCSSreturn_or_enter :!Creturn_or_enter :firefox]
     ]}
 
-  {:des "latex: in vscode: rcmd -> $, ralt -> _, lshift -> (, rshift -> )"
-   :rules [[:right_command :right_command :vscode {:alone :!S4 :delayed {:invoked :vk_none}}]
-           [:right_option :right_option :vscode {:alone :!Shyphen :delayed {:invoked :vk_none}}]
-
-           [:left_shift :left_shift :vscode {:alone :!S9 :delayed {:invoked :vk_none}}]
-           [:right_shift :right_shift :vscode {:alone :!S0 :delayed {:invoked :vk_none}}]
-           ]}
+  ; {:des "latex: in vscode: rcmd -> $, ralt -> _, lshift -> (, rshift -> )"
+  ;  :rules [[:right_command :right_command :vscode {:alone :!S4 :delayed {:invoked :vk_none}}]
+  ;          [:right_option :right_option :vscode {:alone :!Shyphen :delayed {:invoked :vk_none}}]
+  ;
+  ;          [:left_shift :left_shift :vscode {:alone :!S9 :delayed {:invoked :vk_none}}]
+  ;          [:right_shift :right_shift :vscode {:alone :!S0 :delayed {:invoked :vk_none}}]
+  ;          ]}
 
   ]}

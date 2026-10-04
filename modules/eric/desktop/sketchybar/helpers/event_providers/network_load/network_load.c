@@ -20,6 +20,9 @@ int main(int argc, char **argv) {
   network_init(&network, argv[1]);
   char trigger_message[512];
   for (;;) {
+    // Wait
+    usleep(update_freq * 1000000);
+
     // Acquire new info
     network_update(&network);
 
@@ -31,9 +34,6 @@ int main(int argc, char **argv) {
 
     // Trigger the event
     sketchybar(trigger_message);
-
-    // Wait
-    usleep(update_freq * 1000000);
   }
   return 0;
 }

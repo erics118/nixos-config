@@ -1,19 +1,9 @@
-local menu_watcher = sbar.add_item("menu_watcher", {
-    drawing = false,
-    updates = false,
-})
-
-local space_menu_swap = sbar.add_item("space_menu_swap", {
-    drawing = false,
-    updates = true,
-})
+local space_menu_swap = sbar.add_watcher("space_menu_swap")
 
 sbar.add_event("swap_menus_and_spaces")
 
 local max_items = 15
 local menu_items = {}
-
-local base_y_offset = 1
 
 for i = 1, max_items, 1 do
     menu_items[i] = sbar.add_label_item("menu." .. i, {
@@ -32,42 +22,98 @@ for i = 1, max_items, 1 do
     })
 end
 
-local function update_menus(env, on_done)
-    sbar.exec("$CONFIG_DIR/helpers/menus/bin/menus -l", function(menus)
-        sbar.set("/menu\\..*/", { drawing = false })
-        local id = 1
-        for menu in string.gmatch(menus, "[^\r\n]+") do
-            if id <= max_items then
-                menu_items[id]:set({ label = menu, drawing = true })
-            else
-                break
-            end
-            id = id + 1
+-- x where menu.1 starts, right after the apple item
+local function menus_start()
+    local apple = sbar.query("apple")
+    for _, rect in pairs(apple.bounding_rects) do
+        return rect.origin[1] + rect.size[1] + apple.geometry.padding_right
+    end
+    return 0
+end
+
+-- app whose menus are shown, tracked in every mode so menu mode starts with the right one
+local current_app = nil
+
+-- right after a launch or a space switch the app's menu bar can still be empty
+local retry_delays = { 0.15, 0.3, 0.6, 1.2 }
+
+-- every update bumps this, so reads and retries for an older update do nothing
+local menu_generation = 0
+
+local function place_menus(entries)
+    -- with a fixed width, padding_left only shifts the item, so every menu lands on its native x
+    -- this also puts menus that macOS moved past the notch in the same place
+    local shift = entries[1].x - menus_start()
+
+    sbar.set("/menu\\..*/", { drawing = false })
+    for id, entry in ipairs(entries) do
+        if id > max_items then
+            break
+        end
+        local next_entry = entries[id + 1]
+        menu_items[id]:set({
+            label = entry.title,
+            drawing = true,
+            padding_left = shift,
+            width = next_entry and next_entry.x - entry.x or entry.width,
+        })
+    end
+end
+
+local function read_menus(generation, attempt, on_done)
+    local app = current_app and (" '" .. current_app:gsub("'", "'\\''") .. "'") or ""
+    sbar.exec("$CONFIG_DIR/helpers/menus/bin/menus -l" .. app, function(menus)
+        -- the mode can change while the menus are read
+        if generation ~= menu_generation or sbar.get_mode() ~= "menu" then
+            return
         end
 
+        local entries = {}
+        -- menus the app has not laid out yet report width -1
+        local complete = true
+        for line in string.gmatch(menus, "[^\r\n]+") do
+            local title, x, width = line:match("^(.*)\t(%-?%d+)\t(%-?%d+)$")
+            if title and tonumber(width) > 0 then
+                table.insert(entries, { title = title, x = tonumber(x), width = tonumber(width) })
+            elseif title then
+                complete = false
+            end
+        end
+
+        -- an empty or partial read keeps the menus already shown until a real one arrives
+        local delay = retry_delays[attempt]
+        if (#entries == 0 or not complete) and delay then
+            sbar.delay(delay, function()
+                read_menus(generation, attempt + 1, on_done)
+            end)
+            return
+        end
+
+        if #entries > 0 then
+            place_menus(entries)
+        end
         if on_done then
             on_done()
         end
     end)
 end
 
-menu_watcher:subscribe("front_app_switched", update_menus)
-
-local function apply_to_space_items(conf)
-    sbar.set("smhkd", conf)
-    sbar.set("/space\\..*/", conf)
-    sbar.set("yabai", conf)
-    sbar.set("front_app", conf)
+local function update_menus(on_done)
+    menu_generation = menu_generation + 1
+    read_menus(menu_generation, 1, on_done)
 end
 
-local function apply_to_menu_items(conf)
-    sbar.set("/menu\\..*/", conf)
-end
+space_menu_swap:subscribe({ "user_app_switched", "space_change" }, function(env)
+    if env.SENDER == "user_app_switched" then
+        current_app = env.INFO
+    end
+    if sbar.get_mode() == "menu" then
+        update_menus()
+    end
+end)
 
 space_menu_swap:subscribe("swap_menus_and_spaces", function(env)
-    env.direction = env.direction or 1
-
-    local offset = 20 * env.direction + base_y_offset
+    local direction = env.direction or 1
 
     local mode = sbar.get_mode()
 
@@ -77,41 +123,17 @@ space_menu_swap:subscribe("swap_menus_and_spaces", function(env)
     end
 
     if mode == "menu" then
-        menu_watcher:set({ updates = false })
+        sbar.set_mode("default")
 
-        sbar.animate("sin", 10, function()
-            sbar.set_mode("default")
-
-            apply_to_menu_items({ y_offset = offset })
-        end)
-
-        sbar.delay(0.18, function()
-            apply_to_menu_items({ drawing = false })
-
-            apply_to_space_items({ drawing = true, y_offset = -offset })
-
-            sbar.animate("sin", 10, function()
-                apply_to_space_items({ y_offset = base_y_offset })
-            end)
+        sbar.slide_out("swap", sbar.apply_to_menu_items, direction, { drawing = false }, function()
+            sbar.slide_in("swap", sbar.apply_to_space_items, direction, { drawing = true })
         end)
     else
-        menu_watcher:set({ updates = true })
+        sbar.set_mode("menu")
 
-        sbar.animate("sin", 10, function()
-            sbar.set_mode("menu")
-
-            apply_to_space_items({ y_offset = offset })
-        end)
-
-        sbar.delay(0.18, function()
-            apply_to_space_items({ drawing = false, y_offset = base_y_offset })
-
-            apply_to_menu_items({ y_offset = -offset })
-
-            update_menus(nil, function()
-                sbar.animate("sin", 10, function()
-                    apply_to_menu_items({ y_offset = base_y_offset })
-                end)
+        sbar.slide_out("swap", sbar.apply_to_space_items, direction, { drawing = false }, function()
+            sbar.slide_in("swap", sbar.apply_to_menu_items, direction, {}, function(done)
+                update_menus(done)
             end)
         end)
     end

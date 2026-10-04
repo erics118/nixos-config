@@ -6,6 +6,8 @@ require("items.spaces")
 require("items.yabai")
 require("items.front_app")
 
+require("items.lock_screen")
+
 -- center
 -- require("items.media")
 

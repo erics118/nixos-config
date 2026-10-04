@@ -24,6 +24,6 @@ local renames = {
     ["Code"] = "VS Code",
 }
 
-front_app:subscribe("front_app_switched", function(env)
+front_app:subscribe("user_app_switched", function(env)
     front_app:set({ label = { string = renames[env.INFO] or env.INFO } })
 end)

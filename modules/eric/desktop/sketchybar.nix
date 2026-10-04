@@ -17,6 +17,7 @@
 
       launchd.user.agents.sketchybar = {
         serviceConfig = {
+          Label = "com.erics118.sketchybar";
           ProgramArguments = [ (lib.getExe pkgs.sketchybar) ];
           WorkingDirectory = "/Users/eric/.config/sketchybar";
           EnvironmentVariables = {

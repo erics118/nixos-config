@@ -5,7 +5,6 @@ local apple = sbar.add_icon_item("apple", {
     icon = {
         font = { size = 16.0 },
         string = icons.apple,
-        color = settings.mode_colors.default,
     },
     padding_left = 3,
     padding_right = 3,
@@ -24,10 +23,7 @@ local function toggle_zen()
 
         local switch = mode ~= "default"
 
-        -- popups
-        for _, name in ipairs({ "weather", "battery", "wifi" }) do
-            sbar.set(name, { popup = { drawing = false } })
-        end
+        sbar.close_popups()
 
         sbar.set("smhkd", { drawing = switch })
         sbar.set("yabai", { drawing = switch })

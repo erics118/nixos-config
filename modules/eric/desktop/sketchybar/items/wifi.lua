@@ -19,7 +19,7 @@ local wifi = sbar.add_item("wifi", {
     },
     label = { drawing = false },
     update_freq = 10,
-    popup = { align = "center", height = 24 },
+    popup = { align = "left", height = 24 },
 })
 
 local dim = colors.with_alpha(colors.text, 0.6)

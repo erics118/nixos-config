@@ -134,6 +134,17 @@ Cross-cutting
   skip mere taste.
 - KISS/YAGNI: add no abstraction and rewrite no working code for fashion. If the code is
   already right, say so and move on.
+- Materiality: a finding needs a failure someone would plausibly hit. On a public surface,
+  that someone is any anonymous client sending hostile input. On an owner-only surface, it
+  is the owner and their real clients, so guards against the owner's own malformed input or
+  nonexistent callers go in note-only.
+- Exception: judge authn, authz, CSRF, injection, and secret-exposure findings as if every
+  outer layer (Access, WAF, the edge) has failed. Defense in depth is never demoted for
+  being behind another layer.
+- Unverified platform behavior on a public surface stays in the fix list as "verify, then
+  fix", not note-only. Probe the live system read-only when a probe can settle it.
+- When asked to "fix everything", apply the fix list only and ask before touching
+  note-only items.
 - Leave formatting and whitespace to the formatter; do not flag those.
 - A fix that would break a deliberate, tested behavior is not a fix. When a finding collides
   with an existing decision the code or tests encode, surface the collision instead of

@@ -103,7 +103,7 @@ config=(
 
   # Opacity of the focused window.
   # System Integrity Protection must be partially disabled.
-  active_window_opacity 0.95 # [<FLOAT_SEL>]
+  # active_window_opacity 0.95 # [<FLOAT_SEL>]
 
   # Opacity of an unfocused window.
   # System Integrity Protection must be partially disabled.

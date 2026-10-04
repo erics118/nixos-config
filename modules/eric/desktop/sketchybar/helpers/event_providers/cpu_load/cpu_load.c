@@ -17,8 +17,14 @@ int main(int argc, char **argv) {
   snprintf(event_message, 512, "--add event '%s'", argv[1]);
   sketchybar(event_message);
 
+  // baseline sample, so the first trigger measures a full interval
+  cpu_update(&cpu);
+
   char trigger_message[512];
   for (;;) {
+    // Wait
+    usleep(update_freq * 1000000);
+
     // Acquire new info
     cpu_update(&cpu);
 
@@ -29,9 +35,6 @@ int main(int argc, char **argv) {
 
     // Trigger the event
     sketchybar(trigger_message);
-
-    // Wait
-    usleep(update_freq * 1000000);
   }
   return 0;
 }

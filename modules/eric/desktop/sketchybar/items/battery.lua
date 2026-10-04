@@ -13,7 +13,7 @@ local battery = sbar.add_item("battery", {
             image = { scale = 0.5, padding_left = 7 },
         },
     },
-    popup = { align = "center", height = 24 },
+    popup = { align = "left", height = 24 },
 })
 
 local dim = colors.with_alpha(colors.text, 0.6)
@@ -94,17 +94,11 @@ end
 update_popup()
 
 local function update_battery()
-    sbar.exec("pmset -g batt", function(batt_info)
-        local _, _, charge = batt_info:find("(%d+)%%")
-        charge = tonumber(charge) or 0
-
-        local on_ac = batt_info:find("AC Power") ~= nil
-        local charging = batt_info:find("; charging") ~= nil
-
+    sbar.battery_status(function(charge, on_ac, charging)
         local color = colors.green
-        if not on_ac and charge <= 20 then
+        if not on_ac and charge <= 10 then
             color = colors.red
-        elseif not on_ac and charge <= 40 then
+        elseif not on_ac and charge <= 30 then
             color = colors.orange
         end
 
@@ -128,8 +122,9 @@ battery:subscribe({ "battery_change", "forced", "system_woke" }, update_battery)
 
 battery:subscribe("power_source_change", function()
     update_battery()
-    -- macos reports "not charging" for a few seconds after plugging in
+    -- macos can report "not charging" for up to a minute after plugging in
     sbar.delay(15, update_battery)
+    sbar.delay(60, update_battery)
 end)
 
 battery:subscribe("mouse.clicked", function(env)

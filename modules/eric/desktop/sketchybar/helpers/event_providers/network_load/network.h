@@ -47,6 +47,10 @@ static inline void network_init(struct network *net, char *ifname) {
       break;
     }
   }
+
+  // baseline sample, so the first update measures a full interval
+  ifdata(net->row, &net->data);
+  gettimeofday(&net->tv_nm1, NULL);
 }
 
 static inline void network_update(struct network *net) {

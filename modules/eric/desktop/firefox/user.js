@@ -16,3 +16,8 @@ user_pref("userChromeJS.experimental.enabled", true);
 user_pref("userChromeJS.persistent_domcontent_callback", true);
 user_pref("userChromeJS.firstRunShown", true);
 user_pref("userChromeJS.scriptsDisabled", "");
+// unload idle tabs under macOS memory pressure, non-nightly builds ship mask 0
+user_pref("browser.lowMemoryResponseMask", 3);
+user_pref("browser.lowMemoryResponseOnWarn", true);
+// pinned tabs stay unloaded at startup until clicked
+user_pref("browser.sessionstore.restore_pinned_tabs_on_demand", true);

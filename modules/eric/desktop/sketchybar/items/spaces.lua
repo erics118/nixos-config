@@ -75,10 +75,7 @@ for i = 1, num_spaces, 1 do
     end)
 end
 
-local space_window_observer = sbar.add_item("space_window_observer", {
-    drawing = false,
-    updates = true,
-})
+local space_window_observer = sbar.add_watcher("space_window_observer")
 
 local window_query = "yabai -m query --windows space,title,app,is-sticky,stack-index,is-hidden 2>/dev/null"
 

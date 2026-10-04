@@ -123,6 +123,8 @@ int main(int argc, char **argv) {
     rep.size = pt;
     [NSGraphicsContext saveGraphicsState];
     NSGraphicsContext.currentContext = [NSGraphicsContext graphicsContextWithBitmapImageRep:rep];
+    // the bitmap memory is not guaranteed to start empty
+    NSRectFillUsingOperation(NSMakeRect(0, 0, pt.width, pt.height), NSCompositingOperationClear);
     if (battery) {
       draw_battery(size, isnan(value) ? 1 : value, glyph, pt);
     } else {
