@@ -81,7 +81,7 @@
           NSAutomaticPeriodSubstitutionEnabled = false;
           NSAutomaticQuoteSubstitutionEnabled = false;
           NSAutomaticSpellingCorrectionEnabled = false;
-          "com.apple.keyboard.fnState" = true;
+          "com.apple.keyboard.fnState" = false;
           "com.apple.mouse.tapBehavior" = 1;
           "com.apple.sound.beep.feedback" = 0;
           "com.apple.sound.beep.volume" = 0.0;

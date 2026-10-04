@@ -35,7 +35,7 @@ Before a shell command:
 
 - `git-add-before-nix.sh`: no flake evaluation while new `.nix` files are untracked
 - `strip-claude-attribution.sh`: removes Claude attribution from commit messages
-- `block-global-search.sh`: no `find`, `fd`, `rg`, or `grep` rooted at `/`, `~`, `/nix`, or another filesystem-wide directory
+- `block-global-search.sh`: no `find`, `fd`, `rg`, or `grep` rooted at `/`, `~`, `/nix`, or another filesystem-wide directory, and no search after a bare `cd` or an unquoted `cd $var` / `cd $(...)` that could land in `$HOME`
 - `block-symlink-clobber.sh`: no mv, cp, tee, or redirect over a managed symlink
 - `ask-dangerous-git.sh`: asks before rebase, reset, clean, and other history changes
 - `block-agent-push.sh`: agents never push, and use `gh` read-only: only `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, `gh status`, and `gh api` without write flags run. In Codex this hook is the allowlist, because a `forbidden` rule for `gh` would also block the reads

@@ -20,7 +20,19 @@ word='[^\s;&|]+'
 printf '%s' "$HOOK_BARE" | rg -q \
   -e "${cmd}find\\s+(?:-[A-Za-z]+\\s+)*${root}" \
   -e "${cmd}(?:fd|rg|grep)\\s+(?:-${word}\\s+)*[^-\\s;&|][^\\s;&|]*\\s+(?:${word}\\s+)*${root}" \
-  -e "${cmd}(?:fd|rg|grep)\\s+(?:${word}\\s+)*(?:--files\\s+(?:${word}\\s+)*|--(?:base-directory|search-path)[\\s=])${root}" ||
-  exit 0
+  -e "${cmd}(?:fd|rg|grep)\\s+(?:${word}\\s+)*(?:--files\\s+(?:${word}\\s+)*|--(?:base-directory|search-path)[\\s=])${root}" &&
+  hook_deny 'find, fd, rg, or grep rooted at a filesystem-wide directory (/, /nix, ~, $HOME, /home/<user>, /Users/<user>, or a system root) scans far too much and can hang on special mounts. Search from a specific directory instead (e.g. `fd <pattern> .` or `fd <pattern> /path/to/project`).'
 
-hook_deny 'find, fd, rg, or grep rooted at a filesystem-wide directory (/, /nix, ~, $HOME, /home/<user>, /Users/<user>, or a system root) scans far too much and can hang on special mounts. Search from a specific directory instead (e.g. `fd <pattern> .` or `fd <pattern> /path/to/project`).'
+# a bare `cd`, or an unquoted `cd $var` / `cd ${var:-}` / `cd $(...)` that is the whole
+# argument, lands in $HOME when it expands to nothing, so a later relative search scans all of it.
+# the order check runs on the bare command (no heredoc bodies or quoted text)
+# the raw command must also hold the cd unquoted: "$d" empty stays put or fails, and `cd "${var:?}"` passes
+lead='(?:^|[;&|(]\s*)(?:\w+=\S*\s+)*'
+empty_cd="${lead}(?:builtin\\s+)?cd(?:\\s*(?:\$|[;&|)])|\\s+(?:--\\s+)?\\\$(?:\\w+|\\{\\w+(?::?-)?\\}|\\([^)]*\\))(?:\\s|\$|[;&|)]))"
+# the cd's own terminator can be the separator before the search, as in `cd $d; rg`
+search='(?:.*?[;&|(])?\s*(?:\w+=\S*\s+)*(?:command\s+|env\s+|exec\s+)?(?:\S*/)?(?:find|fd|rg|grep)(?:\s|$)'
+printf '%s' "$HOOK_BARE" | rg -q "${empty_cd}${search}" &&
+  printf '%s' "$HOOK_COMMAND" | rg -q -U "(?m)${empty_cd}" &&
+  hook_deny 'a search after a bare `cd` or an unquoted `cd $var` / `cd $(...)`: if the expansion is empty, cd goes to $HOME and the search scans all of it. Guard it: `cd -- "${var:?}"`.'
+
+exit 0

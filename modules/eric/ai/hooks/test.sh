@@ -63,6 +63,19 @@ expect_json strip-claude-attribution strip-claude-attribution.sh '(.hookSpecific
   "$(json "$repo" "git commit -m 'x\nCo-Authored-By: Claude <noreply@anthropic.com>'")"
 expect_json block-global-search block-global-search.sh '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'find / -name nope')"
+expect_json block-global-search-unguarded-cd block-global-search.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  "$(json "$repo" 'd=$(fd -t d gitsigns . | head -1); cd $d && rg -l GitSignsUpdate .')"
+expect_json block-global-search-default-cd block-global-search.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  "$(json "$repo" 'cd ${d:-}
+rg x .')"
+for cmd in 'cd "${d:?}" && rg -l GitSignsUpdate .' 'cd "$d" && rg x .' 'cd $dir/sub && rg x .' 'cd $d && ls' 'echo "cd $d && rg x ."'; do
+  output=$(run_hook block-global-search.sh "$(json "$repo" "$cmd")")
+  [ -z "$output" ] || {
+    printf 'FAIL block-global-search allows: %s\n' "$cmd"
+    exit 1
+  }
+done
+printf 'ok block-global-search-guarded-cd\n'
 expect_json block-symlink-clobber block-symlink-clobber.sh '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'echo x > managed-link')"
 expect_json ask-dangerous-git ask-dangerous-git.sh '.hookSpecificOutput.permissionDecision == "ask"' \
