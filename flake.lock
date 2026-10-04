@@ -171,6 +171,29 @@
         "type": "github"
       }
     },
+    "goku-src": {
+      "inputs": {
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791133060,
+        "narHash": "sha256-JBbJgdP3tEj0GKvOGvWUb2Q7ixCYIX0PZgT05Arrl2w=",
+        "owner": "erics118",
+        "repo": "GokuRakuJoudo",
+        "rev": "959a1bafa750251513695925da241f595358dc91",
+        "type": "github"
+      },
+      "original": {
+        "owner": "erics118",
+        "repo": "GokuRakuJoudo",
+        "type": "github"
+      }
+    },
     "harfbuzz": {
       "flake": false,
       "locked": {
@@ -431,6 +454,7 @@
         "disko": "disko",
         "flake-parts": "flake-parts",
         "fx-autoconfig-src": "fx-autoconfig-src",
+        "goku-src": "goku-src",
         "home-manager": "home-manager",
         "hyprland-contrib": "hyprland-contrib",
         "import-tree": "import-tree",
@@ -472,11 +496,11 @@
     "sketchybar-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1790876025,
-        "narHash": "sha256-KCYE+fkorfJ02TCQQ2QMUtAOsBOksQy4V/HKyldbkg8=",
+        "lastModified": 1790963120,
+        "narHash": "sha256-ibE0PYyALV/PLJiiiJFHLliGQkBj8HQzVg100L/ogCw=",
         "owner": "erics118",
         "repo": "SketchyBar",
-        "rev": "c71e6612dece90c45ece7d1c6566638ce212ad04",
+        "rev": "f5b5051b8316d8cdf89461e22ca6b48a24df7f2c",
         "type": "github"
       },
       "original": {

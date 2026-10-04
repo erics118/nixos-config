@@ -1,3 +1,4 @@
+#include <AppKit/AppKit.h>
 #include <Carbon/Carbon.h>
 
 void ax_init() {
@@ -57,6 +58,26 @@ void ax_select_menu_option(AXUIElementRef app, int id) {
   }
 }
 
+CGRect ax_get_frame(AXUIElementRef element) {
+  CFTypeRef position_ref = NULL;
+  CFTypeRef size_ref = NULL;
+  AXUIElementCopyAttributeValue(element, kAXPositionAttribute, &position_ref);
+  AXUIElementCopyAttributeValue(element, kAXSizeAttribute, &size_ref);
+
+  CGRect frame = CGRectZero;
+  if (position_ref) {
+    AXValueGetValue(position_ref, kAXValueCGPointType, &frame.origin);
+    CFRelease(position_ref);
+  }
+  if (size_ref) {
+    AXValueGetValue(size_ref, kAXValueCGSizeType, &frame.size);
+    CFRelease(size_ref);
+  }
+  return frame;
+}
+
+// one line per menu: title, then its native x and width in points, tab
+// separated
 void ax_print_menu_options(AXUIElementRef app) {
   AXUIElementRef menubars_ref = NULL;
   CFTypeRef menubar = NULL;
@@ -76,10 +97,9 @@ void ax_print_menu_options(AXUIElementRef app) {
         CFTypeRef title = ax_get_title(item);
 
         if (title) {
-          uint32_t buffer_len = 2 * CFStringGetLength(title);
-          char buffer[2 * CFStringGetLength(title)];
-          CFStringGetCString(title, buffer, buffer_len, kCFStringEncodingUTF8);
-          printf("%s\n", buffer);
+          CGRect frame = ax_get_frame(item);
+          printf("%s\t%.0f\t%.0f\n", [(__bridge NSString *)title UTF8String],
+                 frame.origin.x, frame.size.width);
           CFRelease(title);
         }
       }
@@ -96,9 +116,7 @@ AXUIElementRef ax_get_extra_menu_item(char *alias) {
   CGRect bounds = CGRectNull;
   CFArrayRef window_list =
       CGWindowListCopyWindowInfo(kCGWindowListOptionAll, kCGNullWindowID);
-  char owner_buffer[256];
-  char name_buffer[256];
-  char buffer[512];
+  NSString *target = [NSString stringWithUTF8String:alias];
   int window_count = CFArrayGetCount(window_list);
   for (int i = 0; i < window_count; ++i) {
     CFDictionaryRef dictionary = CFArrayGetValueAtIndex(window_list, i);
@@ -129,14 +147,11 @@ AXUIElementRef ax_get_extra_menu_item(char *alias) {
     bounds = CGRectNull;
     if (!CGRectMakeWithDictionaryRepresentation(bounds_ref, &bounds))
       continue;
-    CFStringGetCString(owner_ref, owner_buffer, sizeof(owner_buffer),
-                       kCFStringEncodingUTF8);
+    NSString *window_alias =
+        [NSString stringWithFormat:@"%@,%@", (__bridge NSString *)owner_ref,
+                                   (__bridge NSString *)name_ref];
 
-    CFStringGetCString(name_ref, name_buffer, sizeof(name_buffer),
-                       kCFStringEncodingUTF8);
-    snprintf(buffer, sizeof(buffer), "%s,%s", owner_buffer, name_buffer);
-
-    if (strcmp(buffer, alias) == 0) {
+    if ([window_alias isEqualToString:target]) {
       pid = owner_pid;
       break;
     }
@@ -225,14 +240,29 @@ AXUIElementRef ax_get_front_app() {
   return AXUIElementCreateApplication(pid);
 }
 
+// name is the localized name, which sketchybar sends as INFO with front_app_switched
+// background processes can share it, like the Messages assistant extension
+AXUIElementRef ax_get_app_named(const char *name) {
+  NSString *target = [NSString stringWithUTF8String:name];
+  for (NSRunningApplication *app in
+       [[NSWorkspace sharedWorkspace] runningApplications]) {
+    if (app.activationPolicy == NSApplicationActivationPolicyRegular &&
+        [app.localizedName isEqualToString:target])
+      return AXUIElementCreateApplication(app.processIdentifier);
+  }
+  return NULL;
+}
+
 int main(int argc, char **argv) {
   if (argc == 1) {
-    printf("Usage: %s [-l | -s id/alias ]\n", argv[0]);
+    printf("Usage: %s [-l [app] | -s id/alias ]\n", argv[0]);
     exit(0);
   }
   ax_init();
   if (strcmp(argv[1], "-l") == 0) {
-    AXUIElementRef app = ax_get_front_app();
+    // the named app can still be launching while the front process is the previous app
+    AXUIElementRef app =
+        argc == 3 ? ax_get_app_named(argv[2]) : ax_get_front_app();
     if (!app)
       return 1;
     ax_print_menu_options(app);

@@ -74,6 +74,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    goku-src = {
+      url = "github:erics118/GokuRakuJoudo";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "flake-parts";
+    };
+
     hyprland-contrib = {
       url = "github:hyprwm/contrib";
       inputs.nixpkgs.follows = "nixpkgs";
