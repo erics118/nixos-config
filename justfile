@@ -63,7 +63,7 @@ build:
 [script]
 dev:
     trap 'just ntfy dev $?' EXIT
-    nh {{ system_target }} switch . -- --override-input nixos-config-private path:../nixos-config-private
+    nh {{ system_target }} switch . -- --override-input nixos-config-private git+file:../nixos-config-private
 
 # test the NixOS configuration (Linux only)
 [group('system')]

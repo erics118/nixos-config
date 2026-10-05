@@ -56,8 +56,41 @@
             DSDontWriteNetworkStores = true;
             DSDontWriteUSBStores = true;
           };
-          # modifier held for the bottom-right hot corner
-          "com.apple.dock".wvous-br-modifier = 1966080;
+          # not system.defaults.dock, which restarts Dock every activation and drops yabai pip windows to 0,0
+          # so changes here apply at the next Dock restart or login
+          "com.apple.dock" = {
+            autohide = true;
+            autohide-delay = 0.2;
+            minimize-to-application = true;
+            # keep spaces in a fixed order for the tiling wm
+            mru-spaces = false;
+            show-recents = false;
+            showhidden = true;
+            tilesize = 50;
+            # display sleep
+            wvous-br-corner = 10;
+            # modifier held for the bottom-right hot corner
+            wvous-br-modifier = 1966080;
+            # the tile records system.defaults.dock.persistent-apps builds from app paths
+            persistent-apps =
+              map
+                (app: {
+                  tile-data.file-data = {
+                    _CFURLString = app;
+                    _CFURLStringType = 0;
+                  };
+                })
+                [
+                  "/Applications/Fantastical.app"
+                  "/Applications/Todoist.app"
+                  "/Applications/Notion.app"
+                  "/System/Applications/Messages.app"
+                  "/Applications/Firefox Developer Edition.app"
+                  "/Applications/Nix Apps/WezTerm.app"
+                  "/Applications/Slack.app"
+                  "/Applications/Spotify.app"
+                ];
+          };
           # document icons in window title bars. macos protects this domain, so the
           # write may need full disk access for the activation
           "com.apple.universalaccess".showWindowTitlebarIcons = true;
@@ -86,29 +119,6 @@
           "com.apple.sound.beep.feedback" = 0;
           "com.apple.sound.beep.volume" = 0.0;
           "com.apple.trackpad.forceClick" = true;
-        };
-
-        dock = {
-          autohide = true;
-          autohide-delay = 0.2;
-          minimize-to-application = true;
-          # keep spaces in a fixed order for the tiling wm
-          mru-spaces = false;
-          show-recents = false;
-          showhidden = true;
-          tilesize = 50;
-          # display sleep
-          wvous-br-corner = 10;
-          persistent-apps = [
-            "/Applications/Fantastical.app"
-            "/Applications/Todoist.app"
-            "/Applications/Notion.app"
-            "/System/Applications/Messages.app"
-            "/Applications/Firefox Developer Edition.app"
-            "/Applications/Nix Apps/WezTerm.app"
-            "/Applications/Slack.app"
-            "/Applications/Spotify.app"
-          ];
         };
 
         hitoolbox.AppleFnUsageType = "Do Nothing";
