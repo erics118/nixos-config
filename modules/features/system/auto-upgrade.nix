@@ -1,11 +1,6 @@
 {
   flake.modules.nixos.auto-upgrade =
-    {
-      config,
-      pkgs,
-      lib,
-      ...
-    }:
+    { config, pkgs, ... }:
     let
       checkout = "/home/eric/.flake";
     in
@@ -28,16 +23,8 @@
         dates = "0/6:00";
       };
 
-      # if fail after 3 tries, revert back to a previous generation
+      # a generation that fails to reach boot-complete.target 3 times falls back to the previous one
       boot.loader.systemd-boot.bootCounting.enable = true;
-
-      # bless-boot runs once at boot; a switch that changes it re-runs `good`
-      # after the boot is already blessed, which errors on the missing counter
-      # file and aborts activation. the `-` prefix ignores that spurious failure
-      systemd.services.systemd-bless-boot.serviceConfig.ExecStart = lib.mkForce [
-        ""
-        "-${config.systemd.package}/lib/systemd/systemd-bless-boot good"
-      ];
 
       systemd.services.nixos-upgrade = {
         environment.SUDO_UID = "1000";
@@ -70,9 +57,10 @@
       systemd.services.nixos-upgrade-notify = {
         description = "notify that the unattended upgrade failed";
         serviceConfig.Type = "oneshot";
+        # the token reaches curl through an fd, so it never shows in its argv
         script = ''
           ${pkgs.curl}/bin/curl -s -o /dev/null \
-            -H "Authorization: Bearer $(cat ${config.sops.secrets."ntfy/token".path})" \
+            -H @<(printf 'Authorization: Bearer %s\n' "$(cat ${config.sops.secrets."ntfy/token".path})") \
             -H "Title: nixos-upgrade failed on ${config.networking.hostName}" \
             -H "Tags: nix,x" \
             -d "nixos-upgrade failed, see journalctl -u nixos-upgrade" \

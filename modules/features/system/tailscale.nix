@@ -3,7 +3,8 @@
     services.tailscale = {
       enable = true;
       useRoutingFeatures = "server";
-      extraUpFlags = [
+      # extraUpFlags only apply with an authKeyFile, so the exit node goes through `tailscale set`
+      extraSetFlags = [
         "--advertise-exit-node"
         # we use normal ssh authentication
         # "--ssh"

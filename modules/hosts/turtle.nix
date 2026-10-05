@@ -23,7 +23,7 @@ in
 
     networking = {
       hostName = "turtle";
-      # public-facing oracle box: only ssh reachable
+      # public-facing oracle box: only ssh, plus mosh's udp 60000-61000 from programs.mosh
       firewall.allowedTCPPorts = [ 22 ];
     };
 
@@ -40,8 +40,12 @@ in
 
     environment.systemPackages = [ pkgs.cloudflared ];
 
-    # cloudflared runs as a DynamicUser, so the creds file must be world-readable
-    sops.secrets."cloudflared/turtle-tunnel".mode = "0444";
+    # docker's published ports skip the nixos firewall, so publish on loopback by default
+    # a container meant to be public needs an explicit -p 0.0.0.0:...
+    virtualisation.docker.daemon.settings.ip = "127.0.0.1";
+
+    # default root-only mode: cloudflared gets it through LoadCredential, read as root
+    sops.secrets."cloudflared/turtle-tunnel" = { };
 
     # outbound tunnel, no inbound ports opened. public services fan out here:
     # add "<name>.eriz.cc".service = "http://localhost:<port>" and a matching CNAME

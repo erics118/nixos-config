@@ -6,10 +6,8 @@
       autoPrune = {
         enable = true;
         dates = "weekly";
-        flags = [
-          "--all"
-          "--volumes"
-        ];
+        # no --volumes: it deletes the anonymous volumes of stopped containers, data included
+        flags = [ "--all" ];
       };
 
       daemon.settings = {
