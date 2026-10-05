@@ -141,14 +141,16 @@ hyper + y ; m :
 hyper + y ; r :
     yabai -m space --rotate 90
 
+# sticky also floats the window, and unsticky resets float to what the rules say
 hyper + y ; s :
-    yabai -m window --toggle sticky && sketchybar --trigger yabai
+    if [ "$(yabai -m query --windows is-sticky --window | jq '."is-sticky"')" = true ]; then yabai -m window --sticky off --float auto; else yabai -m window --float on --sticky on; fi; sketchybar --trigger yabai
 
 hyper + y ; t :
     yabai -m window --toggle float && sketchybar --trigger yabai
 
+# pip also floats and stickies the window, and unpip resets both to what the rules say
 hyper + y ; p :
-    yabai -m window --toggle pip && sketchybar --trigger yabai
+    if [ "$(yabai -m query --windows is-pip --window | jq '."is-pip"')" = true ]; then yabai -m window --pip off --sticky auto --float auto; else yabai -m window --float on --sticky on --pip on; fi; sketchybar --trigger yabai
 
 hyper + y ; w :
     yabai -m window --close

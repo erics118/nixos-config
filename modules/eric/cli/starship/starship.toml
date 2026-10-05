@@ -127,7 +127,7 @@ deleted = "×"
 diverged = "↕"
 modified = "~"
 renamed = "»"
-untracked = "+"
+untracked = "?"
 style = "pink"
 
 [fill]

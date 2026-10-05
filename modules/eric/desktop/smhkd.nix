@@ -14,6 +14,7 @@
     }:
     {
       environment.systemPackages = [ pkgs.smhkd ];
+      signedAgents.smhkd = pkgs.smhkd;
 
       launchd.user.agents.smhkd = {
         serviceConfig = {

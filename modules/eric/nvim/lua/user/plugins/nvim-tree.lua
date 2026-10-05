@@ -19,7 +19,20 @@ return {
                 indent_markers = { enable = true },
                 highlight_git = "name",
                 highlight_modified = "name",
-                icons = { git_placement = "right_align" },
+                icons = {
+                    git_placement = "right_align",
+                    -- match the starship git_status symbols
+                    glyphs = {
+                        git = {
+                            untracked = "?",
+                            staged = "+",
+                            unstaged = "~",
+                            renamed = "»",
+                            deleted = "×",
+                            unmerged = "!",
+                        },
+                    },
+                },
             },
             view = {
                 preserve_window_proportions = true,

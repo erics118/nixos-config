@@ -14,6 +14,7 @@
     }:
     {
       environment.systemPackages = [ pkgs.sketchybar ];
+      signedAgents.sketchybar = pkgs.sketchybar;
 
       launchd.user.agents.sketchybar = {
         serviceConfig = {

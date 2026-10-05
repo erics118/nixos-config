@@ -6,6 +6,11 @@ return function(colors)
         NormalFloat = { bg = colors.surface0 },
         FloatBorder = { fg = colors.overlay0, bg = colors.surface0 },
         NvimTreeWinSeparator = { link = "FloatBorder" },
+        -- git status colors shared with starship and vscode
+        NvimTreeGitNewIcon = { fg = colors.green },
+        NvimTreeGitStagedIcon = { fg = colors.green },
+        NvimTreeGitMergeIcon = { fg = colors.mauve },
+        NvimTreeGitIgnoredIcon = { fg = colors.overlay0 },
         WhichKeyBorder = { link = "FloatBorder" },
         -- telescope
         TelescopeBorder = { link = "FloatBorder" },
