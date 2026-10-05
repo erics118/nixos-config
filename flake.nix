@@ -194,6 +194,11 @@
                 statix.enable = true;
 
                 shfmt.enable = true;
+                shellcheck = {
+                  enable = true;
+                  # direnv syntax, no shebang
+                  excludes = [ ".envrc" ];
+                };
 
                 prettier.enable = true;
                 just.enable = true;

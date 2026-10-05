@@ -51,7 +51,7 @@ jobs:
 
       - run: nix flake check --print-build-logs
 
-  pi-tests:
+  ai-agent-tests:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -64,8 +64,8 @@ jobs:
       # unpinned, since the installed pi updates itself
       - run: npm install --no-save --no-package-lock @earendil-works/pi-coding-agent @earendil-works/pi-tui @earendil-works/pi-ai
 
-      # the guard hooks and the pi guards test need rg and jq. direnv runs the treefmt-on-edit case
-      - run: sudo apt-get update && sudo apt-get install -y ripgrep jq direnv
+      # the guard hooks and the pi guards test need rg, jq and shfmt. direnv runs the treefmt-on-edit case
+      - run: sudo apt-get update && sudo apt-get install -y ripgrep jq shfmt direnv
 
       # test.sh checks codex/rules/default.rules with `codex execpolicy check`
       # unpinned, since the installed codex updates itself
