@@ -25,7 +25,7 @@ A fresh implementer subagent per task, a fresh reviewer after it, and one final 
 1. If `git config --get eric-agent.commit` does not print `branch` or `on`, stop: tell the user this skill commits per task, so it needs one of those levels in this repo, or they can use executing-plans.
 2. Read the plan once.
 3. If you are on `main` or `master`, run `git switch -c plan/<topic>`.
-4. The workspace is `.eric/plans/<plan-basename>/`, and the ledger is `progress.md` inside it.
+4. The workspace is `.eric/plans/<plan-basename>/`, where `<plan-basename>` is the plan file name without `.md`, and the ledger is `progress.md` inside it.
    - If the ledger exists, every task with a `Task N: complete` line is done. Resume at the first task without one. Trust the ledger and `git log` over your recollection.
    - Otherwise run `mkdir -p .eric/plans/<plan-basename> && printf '*\n' > .eric/plans/<plan-basename>/.gitignore` and create the ledger with the first line `# ledger - plan: <plan path>` and a second line `Merge base: <git rev-parse HEAD>`.
 5. Pre-flight. For every task that consumes what an earlier task produces (the Interfaces blocks), write one ledger row: the two tasks, what one produces against what the other consumes, and what you found. Rule on each conflict. If no tasks share anything, write `Pre-flight: no shared interfaces`.

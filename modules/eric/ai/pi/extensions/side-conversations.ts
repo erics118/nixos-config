@@ -664,6 +664,7 @@ export default function (pi: ExtensionAPI) {
 
   pi.on("session_shutdown", (_event, ctx) => {
     closeDrawer();
+    btwTurns = [];
     ctx.ui.setWidget("side-session-launch", undefined);
   });
 

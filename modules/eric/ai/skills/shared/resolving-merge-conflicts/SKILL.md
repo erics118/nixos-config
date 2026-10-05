@@ -11,4 +11,4 @@ description: "Use when you need to resolve an in-progress git merge/rebase confl
 
 4. Discover the project's **automated checks** and run them: typically typecheck, then tests, then format. Fix anything the merge broke.
 
-5. **Finish.** `git add` only the files you resolved. If `git config --get eric-agent.commit` prints `on`, `branch`, or `ask`, run `git merge --continue` or `git rebase --continue` until done. `git rebase --continue` triggers the rebase approval prompt in every agent, so expect one prompt per step. Otherwise stop and tell the user the conflicts are resolved and staged, so they continue it.
+5. **Finish.** `git add` only the files you resolved. If `git config --get eric-agent.commit` prints `on`, or `branch` and the current branch is not `main` or `master` (a detached HEAD, as mid-rebase, counts as `main`), or `ask` and you are not Codex, run `git merge --continue` or `git rebase --continue` until done. `git rebase --continue` triggers the rebase approval prompt in every agent, so expect one prompt per step. Otherwise stop and tell the user the conflicts are resolved and staged, so they continue it.

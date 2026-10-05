@@ -234,9 +234,6 @@ trust_level = "trusted"
 [projects."/Users/eric/Documents/Codex/2026-07-10/sites-plugin-sites-openai-bundled-create"]
 trust_level = "trusted"
 
-[projects."/Users/eric/Documents/New project"]
-trust_level = "trusted"
-
 [projects."/Users/eric/Library/Application Support/Firefox/Profiles"]
 trust_level = "trusted"
 
@@ -315,9 +312,6 @@ trust_level = "trusted"
 [projects."/Users/eric/dev/nixpkgs"]
 trust_level = "trusted"
 
-[projects."/Users/eric/dev/nixvim"]
-trust_level = "trusted"
-
 [projects."/Users/eric/dev/ocaml-raytracer"]
 trust_level = "trusted"
 
@@ -362,15 +356,6 @@ trust_level = "trusted"
 
 [projects."/Users/eric/nixos-config"]
 trust_level = "untrusted"
-
-[projects."/Users/eric/nixos-config/fastfetch"]
-trust_level = "trusted"
-
-[projects."/Users/eric/nixvim"]
-trust_level = "trusted"
-
-[projects."/Users/eric/smolvm"]
-trust_level = "trusted"
 
 [projects."/opt/homebrew/Library/Taps/erics118/homebrew-tap"]
 trust_level = "trusted"

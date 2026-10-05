@@ -11,7 +11,6 @@ function approvedRoots(home: string): string[] {
     path.join(home, "nixos-config"),
     path.join(home, ".flake"),
     path.join(home, ".config"),
-    path.join(home, "dev", "nixvim"),
   ];
 }
 

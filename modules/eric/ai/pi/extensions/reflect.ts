@@ -17,6 +17,7 @@ ${focus ? `\nFocus: ${focus}` : ""}`;
 
 export default function reflect(pi: ExtensionAPI): void {
   let pending = false;
+  let pendingFocus = "";
 
   pi.on("before_agent_start", () => {
     if (!pending) return undefined;
@@ -24,7 +25,7 @@ export default function reflect(pi: ExtensionAPI): void {
     return {
       message: {
         customType: "reflect-instructions",
-        content: instructions(""),
+        content: instructions(pendingFocus),
         display: false,
       },
     };
@@ -40,6 +41,7 @@ export default function reflect(pi: ExtensionAPI): void {
       }
       pending = true;
       const focus = args.trim();
+      pendingFocus = focus;
       pi.sendUserMessage(
         focus
           ? `Reflect on this session. Focus: ${focus}`
