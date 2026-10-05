@@ -22,6 +22,8 @@
 
       programs.lazygit = {
         enable = true;
+        # its lg cd-on-exit wrapper never runs, since the lg abbr expands to lazygit first
+        enableZshIntegration = false;
 
         settings = {
           gui = {

@@ -32,6 +32,9 @@ COPY_KEY="ctrl-y"
 
 OPENER="xdg-open"
 CLIP="xclip -selection clipboard"
+if [[ -n ${WAYLAND_DISPLAY:-} ]]; then
+  CLIP="wl-copy"
+fi
 
 if [[ "$(uname)" == 'Darwin' ]]; then
   OPENER="open"

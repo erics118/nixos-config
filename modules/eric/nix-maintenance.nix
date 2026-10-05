@@ -48,6 +48,22 @@
           # deprioritize the nix build daemon
           nix-daemon.serviceConfig.Nice = 10;
         };
+
+        # launchd only appends to the nh-clean log, so newsyslog caps it (size in KB)
+        system.newsyslog = {
+          enable = true;
+          files.nh-clean = [
+            {
+              logfilename = "/var/log/nh-clean.log";
+              count = 3;
+              size = "1024";
+              flags = [
+                "Z"
+                "N"
+              ];
+            }
+          ];
+        };
       };
 
       homeManager.base = { config, ... }: {

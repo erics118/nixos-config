@@ -66,7 +66,8 @@
             emulate -L zsh
             local word=''${LBUFFER##* }
             [[ -z $word ]] && return
-            if [[ -n ''${_ZSH_ABBR_LITE_GLOBAL[$word]} ]]; then
+            # inside an open quote the lexer's last word is the quoted run, not $word
+            if [[ -n ''${_ZSH_ABBR_LITE_GLOBAL[$word]} && ''${''${(z)LBUFFER}[-1]} == "$word" ]]; then
               LBUFFER="''${LBUFFER%$word}''${_ZSH_ABBR_LITE_GLOBAL[$word]}"
               return
             fi

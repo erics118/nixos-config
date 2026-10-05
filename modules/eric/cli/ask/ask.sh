@@ -151,6 +151,7 @@ elapsed_since_start() {
   printf '%.2f' "$(echo "$(date +%s.%N) - $START_TIME" | bc)"
 }
 
+# the key reaches curl through an fd fed by builtin printf, so it never shows in ps
 if [[ $STREAMING == true ]]; then
   # process substitution keeps the loop in the main shell so a failed request
   # surfaces its error body instead of being swallowed by the pipe under pipefail.
@@ -164,19 +165,26 @@ if [[ $STREAMING == true ]]; then
       if [[ -z $json ]] || [[ $json == "[DONE]" ]]; then
         continue
       fi
-      content=$(jq -r '.choices[0].delta.content // ""' <<<"$json" 2>/dev/null)
+      content=$(jq -r '.choices[0].delta.content // ""' <<<"$json" 2>/dev/null) || content=""
       [[ -n $content ]] && printf '%s' "$content"
     else
       error_body+="$line"
     fi
   done < <(curl -sS -N --fail-with-body "$API_URL" \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $OPENROUTER_API_KEY" \
+    -H @<(printf 'Authorization: Bearer %s\n' "$OPENROUTER_API_KEY") \
     -d "$JSON_PAYLOAD")
+  # the process substitution's exit status, so a stream that dies midway still fails
+  curl_status=0
+  wait $! || curl_status=$?
   echo
 
   if [[ $saw_data == false ]]; then
     echo "Error: $(printf '%s' "$error_body" | jq -r '.error.message // .error // "Unknown error"' 2>/dev/null || echo "request failed")" >&2
+    exit 1
+  fi
+  if [[ $curl_status -ne 0 ]]; then
+    echo "Error: stream interrupted (curl exit $curl_status)" >&2
     exit 1
   fi
 
@@ -189,7 +197,7 @@ else
   status=0
   response="$(curl -sS --fail-with-body "$API_URL" \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $OPENROUTER_API_KEY" \
+    -H @<(printf 'Authorization: Bearer %s\n' "$OPENROUTER_API_KEY") \
     -d "$JSON_PAYLOAD")" || status=$?
 
   if [[ $status -ne 0 ]]; then

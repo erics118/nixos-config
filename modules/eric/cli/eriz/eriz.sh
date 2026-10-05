@@ -15,7 +15,7 @@ done
 
 # load the access service token from XDG config
 creds="${XDG_CONFIG_HOME:-$HOME/.config}/eriz/credentials"
-[[ -f $creds ]] || die "missing $creds (holds the cloudflare access service token; see credentials.example)"
+[[ -f $creds ]] || die "missing $creds (holds the cloudflare access service token; written by the eriz-credentials sops template in eriz.nix)"
 # shellcheck source=/dev/null
 source "$creds"
 
@@ -76,10 +76,11 @@ api() {
   fi
 
   local response status body message
+  # headers go through an fd fed by builtin printf, so the secret never shows in ps
   response=$(
     curl -sS --connect-timeout 10 -X "$method" "$BASE$path" \
-      -H "CF-Access-Client-Id: $CF_ACCESS_CLIENT_ID" \
-      -H "CF-Access-Client-Secret: $CF_ACCESS_CLIENT_SECRET" \
+      -H @<(printf 'CF-Access-Client-Id: %s\nCF-Access-Client-Secret: %s\n' \
+        "$CF_ACCESS_CLIENT_ID" "$CF_ACCESS_CLIENT_SECRET") \
       -w $'\n%{http_code}' "$@"
   )
   status=${response##*$'\n'}

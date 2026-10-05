@@ -66,8 +66,13 @@ if [[ $target == --ls ]]; then
   exec ssh "$host" tmux ls
 fi
 
-# one round trip, reusing the shared control connection
-mapfile -t caps < <(ssh "$host" 'for c in sesh-pick tmux mosh-server; do command -v "$c" >/dev/null && echo "$c"; done')
+# one round trip, reusing the shared control connection.
+# the trailing true keeps a missing last tool from reading as a failed connection
+if ! probe=$(ssh "$host" 'for c in sesh-pick tmux mosh-server; do command -v "$c" >/dev/null && echo "$c"; done; true'); then
+  printf >&2 'rtmux: cannot reach %s\n' "$host"
+  exit 1
+fi
+mapfile -t caps <<<"$probe"
 has() {
   local c
   for c in "${caps[@]}"; do

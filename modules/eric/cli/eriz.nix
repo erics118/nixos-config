@@ -12,8 +12,6 @@
               jq
             ];
             text = builtins.readFile ./eriz/eriz.sh;
-            # the credentials path is only known at runtime
-            excludeShellChecks = [ "SC1090" ];
           })
         ];
 

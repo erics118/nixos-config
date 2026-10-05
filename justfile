@@ -3,16 +3,17 @@ set script-interpreter := ["zsh", "-eu"]
 
 system_target := if os() == "macos" { "darwin" } else { "os" }
 ntfy_topic := "nix"
-ntfy_token := `cat /run/secrets/ntfy/token 2>/dev/null || echo ""`
 
 set default-list
 
 [private]
 ntfy msg status:
     #!/usr/bin/env zsh
-    [[ -z "{{ ntfy_token }}" ]] && exit 0
+    # read here, not as a just variable, so `just --evaluate` and curl's argv never show it
+    token=$(cat /run/secrets/ntfy/token 2>/dev/null) || exit 0
+    [[ -n "$token" ]] || exit 0
     curl -s -o /dev/null \
-      -H "Authorization: Bearer {{ ntfy_token }}" \
+      -H @<(printf 'Authorization: Bearer %s\n' "$token") \
       -H "Title: just on `hostname` ({{ invocation_directory_native() }})" \
       -H "Tags: nix,{{ if status == "0" { "white_check_mark" } else { "x" } }}" \
       -d "just {{ msg }}: {{ if status == "0" { "ok" } else { "failed" } }}" \

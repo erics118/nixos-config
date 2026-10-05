@@ -18,7 +18,7 @@
 
           # global languages/toolchains
           nodejs_24
-          python3Minimal
+          python3
 
           # apps
           _1password-cli

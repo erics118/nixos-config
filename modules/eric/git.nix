@@ -102,7 +102,6 @@
           };
         };
         extensions = with pkgs; [
-          gh-dash
           gh-markdown-preview
           gh-notify
           gh-skyline

@@ -37,7 +37,7 @@
           "*.tail4ccb95.ts.net".user = "cev";
 
           "*" = {
-            # rebind ssh escape prefix off ~ so ~n/~p zsh aliases echo instantly
+            # rebind ssh escape prefix off ~ so ~n/~p zsh named directories echo instantly
             EscapeChar = "^]";
 
             # macOS skips tailscale's search domains for one-word names, so ssh appends them itself
