@@ -14,6 +14,11 @@ printf '%s' "$HOOK_BARE" | rg -o "${HOOK_GIT}config${HOOK_END}[^;&|]*\beric-agen
   rg -qv '\s(?:--get|--get-regexp|get)\s' &&
   hook_deny 'Only the user sets eric-agent keys.'
 
+# a -c alias can run commit under another name
+# the raw command keeps a quoted alias value that $HOOK_BARE drops
+printf '%s\n%s' "$HOOK_COMMAND" "$HOOK_BARE" | rg -qi "${HOOK_PREFIX}git\\s[^;&|]*-c\\s*[\"']?alias\\." &&
+  hook_deny 'Agents never define git aliases with -c, since an alias can wrap push or commit.'
+
 match=$(printf '%s' "$HOOK_BARE" | rg -o "${HOOK_GIT}(?:commit|merge|revert|cherry-pick|am)${HOOK_END}" | head -n 1)
 [ -n "$match" ] || exit 0
 
@@ -31,7 +36,7 @@ branch)
   ;;
 ask)
   # codex runs a hook's ask as allow, so deny there
-  printf '%s' "$HOOK_INPUT" | jq -e '.transcript_path // "" | contains("/.codex/")' >/dev/null &&
+  printf '%s' "$HOOK_INPUT" | jq -e 'has("turn_id") or (.transcript_path // "" | contains("/.codex/"))' >/dev/null &&
     hook_deny 'Agent commits need approval in this repo, and Codex cannot prompt. Tell the user the work is ready so they commit it.'
   hook_ask 'Agent commits need approval in this repo. Approve this commit, or deny it and commit yourself.'
   ;;

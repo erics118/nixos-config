@@ -20,6 +20,8 @@ while [ "$d" != "/" ] && [ ! -f "$d/.envrc" ]; do
 done
 
 [ -f "$d/.envrc" ] || exit 0
+# direnv tracks allowed .envrc files by resolved path, so a symlinked root reads as blocked
+d=$(realpath "$d")
 
 for r in "${ignored_roots[@]}"; do
   [ "$d" != "$r" ] || exit 0

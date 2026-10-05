@@ -33,12 +33,12 @@ All of these run in Claude and pi. Codex runs the shell-command guards except `s
 
 Before a shell command:
 
-- `git-add-before-nix.sh`: no flake evaluation while new `.nix` files are untracked
+- `git-add-before-nix.sh`: no flake evaluation while new files are untracked
 - `strip-claude-attribution.sh`: removes Claude attribution from commit messages
 - `block-global-search.sh`: no `find`, `fd`, `rg`, or `grep` rooted at `/`, `~`, `/nix`, or another filesystem-wide directory, and no search after a bare `cd` or an unquoted `cd $var` / `cd $(...)` that could land in `$HOME`
 - `block-symlink-clobber.sh`: no mv, cp, tee, or redirect over a managed symlink
 - `ask-dangerous-git.sh`: asks before rebase, reset, clean, and other history changes
-- `block-agent-push.sh`: agents never push, and use `gh` read-only: only `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, `gh status`, and `gh api` without write flags run. In Codex this hook is the allowlist, because a `forbidden` rule for `gh` would also block the reads
+- `block-agent-push.sh`: agent pushes follow `git config eric-agent.push`: unset or `off` (default) denies, `ask` (approve each; Codex treats it as `off`), or `on` (Codex still forbids `git push` in `codex/rules/default.rules`). Agents use `gh` read-only: only `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, `gh status`, and `gh api` without write flags run. In Codex this hook is the allowlist, because a `forbidden` rule for `gh` would also block the reads
 - `block-agent-commit.sh`: agent commits follow `git config eric-agent.commit`: `off` (default), `ask` (approve each; Codex treats it as `off`), `branch` (never on `main` or `master`), or `on`. Only the user sets `eric-agent` keys
 - `block-git-config-edit.sh`: no redirect, tee, or other write onto a `.git` config file, so `eric-agent` keys change only through `git config`
 - `block-shell-edit.sh`: no sed/perl in place, scripts that write, or redirects onto git-tracked files

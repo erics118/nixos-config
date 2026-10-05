@@ -42,16 +42,21 @@ hook_command_dir() {
 
 # the command on one line with heredoc bodies and quoted text containing spaces removed,
 # and other quote marks dropped, so guards match what runs, not text it searches or writes.
-# sets $HOOK_BARE (requires hook_read_command to have run first).
+# sets $HOOK_BARE, with each `sh -c '...'` body appended as its own command (requires hook_read_command).
 hook_bare_command() {
-  HOOK_BARE=$(printf '%s\n' "$HOOK_COMMAND" | awk '
+  local text
+  text=$(printf '%s\n' "$HOOK_COMMAND" | awk '
     body { t = $0; gsub(/^[ \t]+|[ \t]+$/, "", t); if (t == delim) body = 0; next }
     { print }
     match($0, /<<-?[ \t]*["\x27]?[A-Za-z_][A-Za-z0-9_]*/) && substr($0, RSTART - 1, 1) != "<" {
       delim = substr($0, RSTART, RLENGTH)
       sub(/^<<-?[ \t]*["\x27]?/, "", delim)
       body = 1
-    }' | tr '\n' ';' | sed 's/;$//' | awk -v sq="'" '
+    }')
+  HOOK_BARE=$({
+    printf '%s\n' "$text"
+    printf '%s' "$text" | rg -U -o -r '${1}${2}' "(?:^|[\\s;&|(])(?:\\S*/)?(?:ba|z)?sh\\s+(?:-\\w+\\s+)*-\\w*c\\s+(?:'([^']*)'|\"((?:[^\"\\\\]|\\\\.)*)\")"
+  } | tr '\n' ';' | sed 's/;$//' | awk -v sq="'" '
     # walk quotes left to right so each opening quote pairs with its own closing one
     {
       out = ""; q = ""; buf = ""
@@ -71,10 +76,11 @@ hook_bare_command() {
     }')
 }
 
-# regex for `git` where a command starts, with env assignments, a command/env/exec prefix,
+# regex for `git` where a command starts, with env assignments, a command/env/exec/nohup/eval prefix,
 # a path, and global options allowed. append the subcommand, then match it against $HOOK_BARE.
-HOOK_PREFIX='(?:^|[;&|(]\s*)(?:(?:\w+=\S*|command|env|exec)\s+)*(?:\S*/)?'
-HOOK_GIT="${HOOK_PREFIX}"'git(?:\s+(?:-[cC]\s+\S+|--\S+))*\s+'
+# wrappers that run a command (direnv exec, nix develop -c, xargs, timeout, sudo, nice, time, find -exec) count as prefixes
+HOOK_PREFIX='(?:^|[;&|(]\s*)(?:(?:\w+=\S*|(?:command|env)(?:\s+-\S+)*|exec|nohup|eval|direnv\s+exec\s+\S+|nix\s+(?:develop|shell)(?:\s+[^\s;&|]+)*?\s+(?:-c|--command)|(?:xargs|timeout|sudo|nice|time)(?:\s+[^\s;&|]+)*?|find(?:\s+[^\s;&|]+)*?\s+-exec(?:dir)?)\s+)*(?:\S*/)?'
+HOOK_GIT="${HOOK_PREFIX}"'git(?:\s+(?:-[cC]\s+\S+|-\S+))*\s+'
 
 # regex for the end of a subcommand word. \b would also end at a dash, so merge would match merge-base.
 HOOK_END='(?:\s|$|[;&|)])'

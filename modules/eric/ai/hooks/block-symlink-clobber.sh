@@ -10,11 +10,15 @@ hook_read_command
 hook_bare_command
 
 # figure out which path this command would overwrite, based on its shape
-# mv/cp src dst, or tee file: destination is the last word. only in command position,
+# mv/cp src dst, or tee file: destination is the command's last word. only in command position,
 # so that a mention like `rg -n cp somefile` is not read as a copy
-target=$(printf '%s' "$HOOK_BARE" | rg -o -r '$1' '(?:^|[;|&]\s*)(?:mv|cp|tee)\b.*\s(\S+)$')
+# one command per line
+# the last word skips trailing redirects like 2>/dev/null
+segs=$(printf '%s' "$HOOK_BARE" | tr ';&|' '\n')
+last='\s([^\s>]+)(?:\s*\d*>{1,2}\s*\S*)*\s*$'
+target=$(printf '%s' "$segs" | rg -o -r '$1' "^\\s*(?:mv|cp|tee)\\b.*?$last")
 # in-place editors write a temp file and rename over the link: sed -i, perl -i, truncate
-[ -n "$target" ] || target=$(printf '%s' "$HOOK_BARE" | rg -o -r '$1' '\b(?:(?:sed|perl)\b[^;|]*\s-i|truncate)\b.*\s(\S+)$')
+[ -n "$target" ] || target=$(printf '%s' "$segs" | rg -o -r '$1' "\\b(?:(?:sed|perl)\\b.*\\s-i|truncate)\\b.*?$last")
 
 # check every candidate, since a trailing 2>/dev/null must not shadow the real redirect target
 while IFS= read -r candidate; do
