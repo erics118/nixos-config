@@ -50,14 +50,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # upstream nixvim.nixvim keeps its own pin to use cached builds
-    nixvim = {
-      url = "github:erics118/nixvim";
-      inputs.flake-parts.follows = "flake-parts";
-      inputs.treefmt-nix.follows = "treefmt-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     catppuccin = {
       url = "github:catppuccin/nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -179,7 +171,7 @@
 
                 # keep top-level inputs' direct follows tidy (`inputs.X.follows`).
                 # --depth 1 stays at direct children: deeper follows here only
-                # pull pinned/cache inputs (nixvim.nixvim) off
+                # pull pinned/cache inputs off
                 # their own nixpkgs, which we don't want. --no-lock because the
                 # treefmt check runs in the nix sandbox with no network
                 formatter.flake-edit = {

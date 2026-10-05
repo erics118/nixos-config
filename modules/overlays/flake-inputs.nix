@@ -1,6 +1,6 @@
 { inputs, ... }: {
   # aliases 'pkgs.inputs.${flake}' to the flake's packages
-  # eg: pkgs.inputs.nixvim.default
+  # eg: pkgs.inputs.hyprland-contrib.grimblast
   flake.overlays.flake-inputs = final: _: {
     inputs = builtins.mapAttrs (
       _: flake:
