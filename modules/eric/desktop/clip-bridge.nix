@@ -1,10 +1,8 @@
 let
-  # off: the listener trusts any 100.64.0.0/10 peer, so every tailnet orca joins can read the clipboard
   # gates both the mac listener and the remote shims, which would only time out without it
-  enable = false;
+  enable = true;
 
-  # orca (mac) serves its clipboard over tailscale; remotes pull from it
-  orca = "orca.dolphin-sailfin.ts.net";
+  # the mac serves its clipboard over tailscale and remotes pull from it
   port = "5556";
   shimDir = ".local/share/clip-bridge";
 in
@@ -12,9 +10,18 @@ in
   flake.modules.homeManager.base =
     { pkgs, lib, ... }:
     let
+      # the mac is the ssh client, so its tailnet address is the first field of SSH_CONNECTION
+      # inside tmux the shell's copy goes stale on reattach, so prefer the session's
+      findMac = ''
+        conn=
+        [ -n "''${TMUX:-}" ] && conn=$(tmux show-environment SSH_CONNECTION 2>/dev/null | sed -n 's/^SSH_CONNECTION=//p')
+        [ -n "$conn" ] || conn=''${SSH_CONNECTION:-}
+        mac=''${conn%% *}
+      '';
+
       # remote-side sender: request a mode, stream the bytes back
       # -w 2 keeps paste from hanging when the mac is asleep or off-tailnet
-      send = "${pkgs.nmap}/bin/ncat -w 2 ${orca} ${port} 2>/dev/null";
+      send = ''${pkgs.nmap}/bin/ncat -w 2 "$mac" ${port} 2>/dev/null'';
 
       mkShim = text: {
         executable = true;
@@ -27,6 +34,7 @@ in
       # claude tries xclip first, then wl-paste; both read from the mac
       wlPaste = mkShim ''
         #!/bin/sh
+        ${findMac}
         case " $* " in
           *" -l "*|*" --list-types "*) req=list ;;
           *image/*) req=png ;;
@@ -39,6 +47,7 @@ in
         #!/bin/sh
         case " $* " in
           *" -o "*)
+            ${findMac}
             case " $* " in
               *TARGETS*) req=list ;;
               *image/*) req=png ;;
@@ -79,18 +88,19 @@ in
     { pkgs, ... }:
     let
       # mac-side responder, run per connection by ncat
-      # peer must be inside the tailscale range 100.64.0.0/10
+      # serves only devices owned by the same tailscale login as this mac, on any tailnet it joins
+      # the tailscale cli comes from the tailscale app, outside launchd's PATH
       clipServe = pkgs.writeShellApplication {
         name = "clip-bridge-serve";
-        runtimeInputs = [ pkgs.pngpaste ];
+        runtimeInputs = [
+          pkgs.pngpaste
+          pkgs.jq
+        ];
         text = ''
           ip="''${NCAT_REMOTE_ADDR:-}"
-          o2="''${ip#100.}"
-          o2="''${o2%%.*}"
-          case "$ip" in
-            100.*) { [ "$o2" -ge 64 ] && [ "$o2" -le 127 ]; } || exit 0 ;;
-            *) exit 0 ;;
-          esac
+          me=$(/usr/local/bin/tailscale status --json | jq -r '.User[(.Self.UserID|tostring)].LoginName') || exit 0
+          peer=$(/usr/local/bin/tailscale whois --json "$ip" 2>/dev/null | jq -r '.UserProfile.LoginName // empty') || exit 0
+          [ -n "$peer" ] && [ "$peer" = "$me" ] || exit 0
 
           read -r req
           case "$req" in
