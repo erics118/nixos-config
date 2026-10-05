@@ -543,15 +543,15 @@
     "yabai-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1787164259,
-        "narHash": "sha256-CFC9KuBw7oyOjL5t8D+JIdk6/cdSh91J/K/8XA3v3aE=",
-        "owner": "AhsanFazal",
+        "lastModified": 1791171338,
+        "narHash": "sha256-TwTKHCt3DB+8x1o6kNh17nQOItqUMi631woGh6+sU8E=",
+        "owner": "erics118",
         "repo": "yabai",
-        "rev": "ad0a12d63f639534a296a1d065b0d04979f1b4db",
+        "rev": "51649835b9c97accfcb2fb28a6cd1da81b76e92d",
         "type": "github"
       },
       "original": {
-        "owner": "AhsanFazal",
+        "owner": "erics118",
         "repo": "yabai",
         "type": "github"
       }

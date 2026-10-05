@@ -53,6 +53,12 @@ esac
 host=${1:-}
 target=${2:-}
 
+# both layers use the C-b prefix, so the local tmux would swallow it
+if [[ -n ${TMUX:-} && $target != --ls ]]; then
+  printf >&2 'rtmux: inside tmux, run it from a plain wezterm tab\n'
+  exit 1
+fi
+
 if [[ -z $host ]]; then
   host=$(hosts all | fzf --height 40% --border --ansi --no-preview --border-label ' hosts ' --prompt "$all  " \
     --header '^a all ^g config ^t tailnet' \

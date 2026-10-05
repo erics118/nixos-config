@@ -19,7 +19,7 @@ padding=0
 yabai -m signal --add event=window_focused action="sketchybar --trigger window_focused"
 
 # Finder sticky
-yabai -m rule --add label="Finder" app=Finder sticky=on manage=off
+yabai -m rule --add label="Finder" app="^Finder$" sticky=on manage=off
 
 # unmanaged rules
 source "$CONFIG_DIR/unmanaged_rules.sh"

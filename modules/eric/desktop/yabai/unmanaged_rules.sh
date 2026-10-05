@@ -60,6 +60,9 @@ jetbrains_regex=$(join_re "${jetbrains[@]}")
 # only manage the main editor window, which has the dash in the title
 yabai -m rule --add label="intellij idea1" app="^($jetbrains_regex)$" manage=off
 yabai -m rule --add label="intellij idea" app="^($jetbrains_regex)$" title=".* –.*" manage=on
+# rules only match when a window is created, and the editor window gets its project title later
+yabai -m signal --add label="jetbrains_title" event=window_title_changed app="^($jetbrains_regex)$" \
+  action='yabai -m rule --apply "intellij idea"'
 
 # orion popups
 yabai -m rule --add label="orion popup 1" app="^Orion.*$" role="^AXPopover$" manage=off

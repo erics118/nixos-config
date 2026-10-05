@@ -168,6 +168,10 @@ hyper + y ; {j,k,l} :
 hyper + y ; {1,2,3,4,5,6,7,8,9,0} :
     yabai -m window --opacity {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0}
 
+# ` (keycode 0x32): opacity 0.0 hands the window back to yabai's automatic dimming
+hyper + y ; 0x32 :
+    yabai -m window --opacity 0.0
+
 hyper + y ; escape :
     true
 

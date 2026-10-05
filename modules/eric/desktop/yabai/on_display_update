@@ -47,3 +47,6 @@ echo "$displays" | while read -r display; do
     esac
   done
 done
+
+# the bar's layout icon shows the current space's layout, which may have just changed
+sketchybar --trigger yabai || true
