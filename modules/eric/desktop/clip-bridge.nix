@@ -1,4 +1,8 @@
 let
+  # off: the listener trusts any 100.64.0.0/10 peer, so every tailnet orca joins can read the clipboard
+  # gates both the mac listener and the remote shims, which would only time out without it
+  enable = false;
+
   # orca (mac) serves its clipboard over tailscale; remotes pull from it
   orca = "orca.dolphin-sailfin.ts.net";
   port = "5556";
@@ -51,14 +55,14 @@ in
       '';
     in
     {
-      home.file = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
+      home.file = lib.mkIf (enable && pkgs.stdenv.hostPlatform.isLinux) {
         "${shimDir}/wl-paste" = wlPaste;
         "${shimDir}/xclip" = xclip;
         "${shimDir}/wl-copy" = wlCopy;
       };
 
       # only route the clipboard to the mac over ssh, never on the local session
-      programs.zsh.initContent = lib.mkIf pkgs.stdenv.hostPlatform.isLinux (
+      programs.zsh.initContent = lib.mkIf (enable && pkgs.stdenv.hostPlatform.isLinux) (
         lib.mkAfter ''
           claude() {
             if [ -n "$SSH_CONNECTION" ]; then
@@ -99,7 +103,7 @@ in
     in
     {
       launchd.agents.clip-bridge = {
-        enable = true;
+        inherit enable;
         config = {
           ProgramArguments = [
             "${pkgs.nmap}/bin/ncat"

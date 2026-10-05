@@ -17,7 +17,6 @@ for i = 1, max_items, 1 do
             padding_left = 10,
             padding_right = 10,
         },
-        click_script = "$CONFIG_DIR/helpers/menus/bin/menus -s " .. i,
         background = { drawing = false },
     })
 end
@@ -56,6 +55,7 @@ local function place_menus(entries)
             drawing = true,
             padding_left = shift,
             width = next_entry and next_entry.x - entry.x or entry.width,
+            click_script = "$CONFIG_DIR/helpers/menus/bin/menus -s " .. entry.index,
         })
     end
 end
@@ -72,9 +72,9 @@ local function read_menus(generation, attempt, on_done)
         -- menus the app has not laid out yet report width -1
         local complete = true
         for line in string.gmatch(menus, "[^\r\n]+") do
-            local title, x, width = line:match("^(.*)\t(%-?%d+)\t(%-?%d+)$")
+            local title, x, width, index = line:match("^(.*)\t(%-?%d+)\t(%-?%d+)\t(%d+)$")
             if title and tonumber(width) > 0 then
-                table.insert(entries, { title = title, x = tonumber(x), width = tonumber(width) })
+                table.insert(entries, { title = title, x = tonumber(x), width = tonumber(width), index = index })
             elseif title then
                 complete = false
             end

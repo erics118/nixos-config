@@ -4,7 +4,7 @@
 
 - desktop: use the standard graphical installer
 - cloud vm: see later
-- macOS: use the determinate systems installer?
+- macOS: use the official installer from nixos.org. nix-darwin manages nix here, and it aborts activation when Determinate Nix is installed
 
 Enable flakes and nix-command if not already enabled:
 
@@ -142,7 +142,6 @@ Add the host module to `modules/hosts/HOSTNAME.nix`.
   inputs,
   config,
   lib,
-  mkHome,
   ...
 }:
 let
@@ -165,8 +164,6 @@ in
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
   };
-
-  configurations.homeManager."eric@HOSTNAME" = mkHome { system = "ARCH"; };
 }
 ```
 

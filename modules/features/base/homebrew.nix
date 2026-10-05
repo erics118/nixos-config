@@ -14,7 +14,7 @@
         formulae = [ ];
         casks = [ ];
         commands = [ ];
-        taps = [ "asmvik/formulae" ];
+        taps = [ ];
       };
     };
 

@@ -89,7 +89,7 @@
   ;          [:#Pf11 :volume_decrement ["multitouch_extension_finger_count_total" 1]]
   ;          [:#Pf12 :volume_increment ["multitouch_extension_finger_count_total" 1]]]}
 
-  {:des "firefox: ctrl-tab -> alt-pagedown, ctrl-shift-tab -> alt-pageup, swap cmd-shift-enter and cmd-enter"
+  {:des "firefox: ctrl-tab -> ctrl-alt-pagedown, ctrl-shift-tab -> ctrl-alt-pageup, swap cmd-shift-enter and cmd-enter"
    :rules [[:!TTtab :!TOpage_down :firefox]
            [:!SSTTtab :!TOpage_up :firefox]
            [:!CCreturn_or_enter :!CSreturn_or_enter :firefox]

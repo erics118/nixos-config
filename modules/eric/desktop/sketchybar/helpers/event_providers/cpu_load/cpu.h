@@ -37,17 +37,21 @@ static inline void cpu_update(struct cpu *cpu) {
     uint32_t delta_user = cpu->load.cpu_ticks[CPU_STATE_USER] -
                           cpu->prev_load.cpu_ticks[CPU_STATE_USER];
 
+    uint32_t delta_nice = cpu->load.cpu_ticks[CPU_STATE_NICE] -
+                          cpu->prev_load.cpu_ticks[CPU_STATE_NICE];
+
     uint32_t delta_system = cpu->load.cpu_ticks[CPU_STATE_SYSTEM] -
                             cpu->prev_load.cpu_ticks[CPU_STATE_SYSTEM];
 
     uint32_t delta_idle = cpu->load.cpu_ticks[CPU_STATE_IDLE] -
                           cpu->prev_load.cpu_ticks[CPU_STATE_IDLE];
 
-    uint32_t delta_total = delta_system + delta_user + delta_idle;
+    uint32_t delta_total = delta_system + delta_user + delta_nice + delta_idle;
 
     // no ticks since the last sample keeps the previous values
     if (delta_total > 0) {
-      cpu->user_load = (double)delta_user / (double)delta_total * 100.0;
+      cpu->user_load =
+          (double)(delta_user + delta_nice) / (double)delta_total * 100.0;
       cpu->sys_load = (double)delta_system / (double)delta_total * 100.0;
       cpu->total_load = cpu->user_load + cpu->sys_load;
     }

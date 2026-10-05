@@ -76,8 +76,8 @@ CGRect ax_get_frame(AXUIElementRef element) {
   return frame;
 }
 
-// one line per menu: title, then its native x and width in points, tab
-// separated
+// one line per menu: title, its native x and width in points, then the
+// menu bar child index that -s takes, tab separated
 void ax_print_menu_options(AXUIElementRef app) {
   AXUIElementRef menubars_ref = NULL;
   CFTypeRef menubar = NULL;
@@ -98,8 +98,9 @@ void ax_print_menu_options(AXUIElementRef app) {
 
         if (title) {
           CGRect frame = ax_get_frame(item);
-          printf("%s\t%.0f\t%.0f\n", [(__bridge NSString *)title UTF8String],
-                 frame.origin.x, frame.size.width);
+          printf("%s\t%.0f\t%.0f\t%d\n",
+                 [(__bridge NSString *)title UTF8String], frame.origin.x,
+                 frame.size.width, i);
           CFRelease(title);
         }
       }
@@ -111,120 +112,7 @@ void ax_print_menu_options(AXUIElementRef app) {
   }
 }
 
-AXUIElementRef ax_get_extra_menu_item(char *alias) {
-  pid_t pid = 0;
-  CGRect bounds = CGRectNull;
-  CFArrayRef window_list =
-      CGWindowListCopyWindowInfo(kCGWindowListOptionAll, kCGNullWindowID);
-  NSString *target = [NSString stringWithUTF8String:alias];
-  int window_count = CFArrayGetCount(window_list);
-  for (int i = 0; i < window_count; ++i) {
-    CFDictionaryRef dictionary = CFArrayGetValueAtIndex(window_list, i);
-    if (!dictionary)
-      continue;
-
-    CFStringRef owner_ref =
-        CFDictionaryGetValue(dictionary, kCGWindowOwnerName);
-
-    CFNumberRef owner_pid_ref =
-        CFDictionaryGetValue(dictionary, kCGWindowOwnerPID);
-
-    CFStringRef name_ref = CFDictionaryGetValue(dictionary, kCGWindowName);
-    CFNumberRef layer_ref = CFDictionaryGetValue(dictionary, kCGWindowLayer);
-    CFDictionaryRef bounds_ref =
-        CFDictionaryGetValue(dictionary, kCGWindowBounds);
-
-    if (!name_ref || !owner_ref || !owner_pid_ref || !layer_ref || !bounds_ref)
-      continue;
-
-    long long int layer = 0;
-    CFNumberGetValue(layer_ref, CFNumberGetType(layer_ref), &layer);
-    uint64_t owner_pid = 0;
-    CFNumberGetValue(owner_pid_ref, CFNumberGetType(owner_pid_ref), &owner_pid);
-
-    if (layer != 0x19)
-      continue;
-    bounds = CGRectNull;
-    if (!CGRectMakeWithDictionaryRepresentation(bounds_ref, &bounds))
-      continue;
-    NSString *window_alias =
-        [NSString stringWithFormat:@"%@,%@", (__bridge NSString *)owner_ref,
-                                   (__bridge NSString *)name_ref];
-
-    if ([window_alias isEqualToString:target]) {
-      pid = owner_pid;
-      break;
-    }
-  }
-  CFRelease(window_list);
-  if (!pid)
-    return NULL;
-
-  AXUIElementRef app = AXUIElementCreateApplication(pid);
-  if (!app)
-    return NULL;
-  AXUIElementRef result = NULL;
-  CFTypeRef extras = NULL;
-  CFArrayRef children_ref = NULL;
-  AXError error =
-      AXUIElementCopyAttributeValue(app, kAXExtrasMenuBarAttribute, &extras);
-  if (error == kAXErrorSuccess) {
-    error = AXUIElementCopyAttributeValue(extras, kAXVisibleChildrenAttribute,
-                                          (CFTypeRef *)&children_ref);
-
-    if (error == kAXErrorSuccess) {
-      uint32_t count = CFArrayGetCount(children_ref);
-      for (uint32_t i = 0; i < count; i++) {
-        AXUIElementRef item = CFArrayGetValueAtIndex(children_ref, i);
-        CFTypeRef position_ref = NULL;
-        CFTypeRef size_ref = NULL;
-        AXUIElementCopyAttributeValue(item, kAXPositionAttribute,
-                                      &position_ref);
-        AXUIElementCopyAttributeValue(item, kAXSizeAttribute, &size_ref);
-        if (!position_ref || !size_ref)
-          continue;
-
-        CGPoint position = CGPointZero;
-        AXValueGetValue(position_ref, kAXValueCGPointType, &position);
-        CGSize size = CGSizeZero;
-        AXValueGetValue(size_ref, kAXValueCGSizeType, &size);
-        CFRelease(position_ref);
-        CFRelease(size_ref);
-        // The offset is exactly 8 on macOS Sonoma...
-        // printf("%f %f\n", position.x, bounds.origin.x);
-        if (error == kAXErrorSuccess &&
-            fabs(position.x - bounds.origin.x) <= 10) {
-          result = item;
-          break;
-        }
-      }
-    }
-  }
-
-  CFRelease(app);
-  return result;
-}
-
 extern int SLSMainConnectionID();
-extern void SLSSetMenuBarVisibilityOverrideOnDisplay(int cid, int did,
-                                                     bool enabled);
-extern void SLSSetMenuBarVisibilityOverrideOnDisplay(int cid, int did,
-                                                     bool enabled);
-extern void SLSSetMenuBarInsetAndAlpha(int cid, double u1, double u2,
-                                       float alpha);
-void ax_select_menu_extra(char *alias) {
-  AXUIElementRef item = ax_get_extra_menu_item(alias);
-  if (!item)
-    return;
-  SLSSetMenuBarInsetAndAlpha(SLSMainConnectionID(), 0, 1, 0.0);
-  SLSSetMenuBarVisibilityOverrideOnDisplay(SLSMainConnectionID(), 0, true);
-  SLSSetMenuBarInsetAndAlpha(SLSMainConnectionID(), 0, 1, 0.0);
-  ax_perform_click(item);
-  SLSSetMenuBarVisibilityOverrideOnDisplay(SLSMainConnectionID(), 0, false);
-  SLSSetMenuBarInsetAndAlpha(SLSMainConnectionID(), 0, 1, 1.0);
-  CFRelease(item);
-}
-
 extern void _SLPSGetFrontProcess(ProcessSerialNumber *psn);
 extern void SLSGetConnectionIDForPSN(int cid, ProcessSerialNumber *psn,
                                      int *cid_out);
@@ -255,7 +143,7 @@ AXUIElementRef ax_get_app_named(const char *name) {
 
 int main(int argc, char **argv) {
   if (argc == 1) {
-    printf("Usage: %s [-l [app] | -s id/alias ]\n", argv[0]);
+    printf("Usage: %s [-l [app] | -s id ]\n", argv[0]);
     exit(0);
   }
   ax_init();
@@ -275,8 +163,7 @@ int main(int argc, char **argv) {
         return 1;
       ax_select_menu_option(app, id);
       CFRelease(app);
-    } else
-      ax_select_menu_extra(argv[2]);
+    }
   }
   return 0;
 }

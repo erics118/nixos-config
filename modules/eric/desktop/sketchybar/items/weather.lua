@@ -327,10 +327,11 @@ local function update_weather()
         return
     end
 
+    -- curl reads the url from stdin so the key stays out of process argv
     sbar.exec(
-        '/usr/bin/curl -fsSL "https://api.weatherapi.com/v1/forecast.json?key='
-            .. api_key
-            .. '&q=auto:ip&days=1&aqi=yes&alerts=no"',
+        [[printf 'url = "https://api.weatherapi.com/v1/forecast.json?key=%s&q=auto:ip&days=1&aqi=yes&alerts=no"\n' "$(cat ]]
+            .. weather_key_path
+            .. [[)" | /usr/bin/curl -fsSL -K -]],
         function(data)
             if
                 type(data) ~= "table"

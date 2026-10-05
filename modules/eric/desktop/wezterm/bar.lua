@@ -16,7 +16,6 @@ local config = {
         mode = {
             enabled = true,
             names = {
-                resize_mode = "RESIZE",
                 copy_mode = "VISUAL",
                 search_mode = "SEARCH",
             },
@@ -303,8 +302,8 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
     -- mosh prepends [mosh] to the title
     tab_title = tab_title:gsub("^%[mosh[^%]]*%]%s*", "")
 
-    local filler_width = #title - 11 + 3 + 1
-    if (#tab_title + filler_width) > max_width then
+    local filler_width = wezterm.column_width(title) - 11 + 3 + 1
+    if (wezterm.column_width(tab_title) + filler_width) > max_width then
         -- 1 for ellipsis
         local new_title_width = max_width - filler_width - 1
         tab_title = wezterm.truncate_right(tab_title, new_title_width) .. "…"

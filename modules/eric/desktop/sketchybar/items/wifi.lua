@@ -67,6 +67,7 @@ end
 local function add_rows(prefix, count)
     local rows = {}
     for i = 1, count do
+        ---@type { item: table, network: { name: string, strength: integer, known: boolean }? }
         local row = { network = nil }
         row.item = sbar.add_item(prefix .. "." .. i, {
             position = "popup." .. wifi.name,

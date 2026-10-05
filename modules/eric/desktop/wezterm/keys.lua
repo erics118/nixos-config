@@ -167,25 +167,6 @@ map("RightArrow", MOD, act.SendKey({ key = "RightArrow", mods = "CTRL" }))
 map("Enter", "SHIFT", act.SendString("\x1b[13;2u"))
 map("Enter", "CMD", act.SendString("\x1b[13;9u"))
 
-local key_tables = {
-    resize_mode = {
-        { key = "h", action = act.AdjustPaneSize({ "Left", 1 }) },
-        { key = "j", action = act.AdjustPaneSize({ "Down", 1 }) },
-        { key = "k", action = act.AdjustPaneSize({ "Up", 1 }) },
-        { key = "l", action = act.AdjustPaneSize({ "Right", 1 }) },
-        { key = "LeftArrow", action = act.AdjustPaneSize({ "Left", 1 }) },
-        { key = "DownArrow", action = act.AdjustPaneSize({ "Down", 1 }) },
-        { key = "UpArrow", action = act.AdjustPaneSize({ "Up", 1 }) },
-        { key = "RightArrow", action = act.AdjustPaneSize({ "Right", 1 }) },
-    },
-}
-
--- add a common escape sequence to all key tables
-for k, _ in pairs(key_tables) do
-    table.insert(key_tables[k], { key = "Escape", action = "PopKeyTable" })
-    table.insert(key_tables[k], { key = "Enter", action = "PopKeyTable" })
-end
-
 local M = {}
 
 M.apply_to_config = function(c)
@@ -196,7 +177,6 @@ M.apply_to_config = function(c)
     }
     c.keys = shortcuts
     c.disable_default_key_bindings = true
-    c.key_tables = key_tables
     c.mouse_bindings = {
         {
             event = { Down = { streak = 1, button = { WheelUp = 1 } } },
