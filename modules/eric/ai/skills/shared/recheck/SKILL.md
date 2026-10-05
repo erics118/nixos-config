@@ -1,9 +1,7 @@
 ---
 name: recheck
-description: Re-check the claims in the last reply before acting on them
+description: Use when the user doubts or pushes back on claims in the last reply, to re-check them against sources before acting.
 argument-hint: "[claim, file, or empty for the last reply]"
-disable-model-invocation: true
-disallowed-tools: Edit, Write, NotebookEdit
 effort: high
 ---
 

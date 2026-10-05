@@ -1,39 +1,31 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2016
 # prompt before git commands that rewrite history or discard uncommitted work.
 # asks rather than denies, so anything genuinely wanted is one confirmation away.
 set -u
+# shellcheck source-path=SCRIPTDIR source=lib.sh
 source "$(dirname "$0")/lib.sh"
 
-hook_require rg jq awk
+hook_require jq shfmt
 hook_read_command
-hook_bare_command
+hook_parse_command
 
-patterns=(
-  "rebase$HOOK_END"
-  "reset$HOOK_END"
-  'clean\s+(?:-\S+\s+)*(?:-[a-zA-Z]*f|--force)'
-  "stash\\s+(?:drop|clear)$HOOK_END"
-  "checkout\\s+(?:[^;&|]*\\s)?(?:-f|-B|--force)$HOOK_END"
-  "switch\\s+(?:[^;&|]*\\s)?(?:-f|-C|--force|--force-create|--discard-changes)$HOOK_END"
-  "worktree\\s+remove\\s+(?:[^;&|]*\\s)?(?:-f|--force)$HOOK_END"
-  'branch\s+.*(?:-D\b|(?:-d|--delete)\b.*(?:-f|--force)\b|(?:-f|--force)\b.*(?:-d|--delete)\b)'
-  'checkout\s+(?:\S+\s+)?(?:--\s+)?\.(\s|$)'
-  'checkout\s+(?:[^;&|]*\s)?--\s+\S'
-  "filter-branch$HOOK_END"
-  "reflog\\s+expire$HOOK_END"
-)
-
-reason='This git command rewrites history or discards uncommitted work. Approve it, or run it yourself.'
-for p in "${patterns[@]}"; do
-  printf '%s' "$HOOK_BARE" | rg -q "$HOOK_GIT$p" || continue
-  hook_ask "$reason"
-done
-
-# restore discards worktree changes unless it only unstages with --staged and no --worktree
-while IFS= read -r seg; do
-  printf '%s' "$seg" | rg -q '\s(?:--staged|-[a-zA-Z]*S)' &&
-    ! printf '%s' "$seg" | rg -q '\s(?:--worktree|-[a-zA-Z]*W)' && continue
-  hook_ask "$reason"
-done < <(printf '%s' "$HOOK_BARE" | rg -o "${HOOK_GIT}restore${HOOK_END}[^;&|]*")
+hook_any '
+  def has($xs): any(.[1:][]; IN($xs[]));
+  def dangerous: .[0] as $sub | .[1:] as $args |
+    ($sub | IN("rebase", "reset", "filter-branch")) or
+    ($sub == "reflog" and .[1] == "expire") or
+    ($sub == "clean" and any($args[]; test("^-[a-zA-Z]*f") or . == "--force")) or
+    ($sub == "stash" and (.[1] | IN("drop", "clear"))) or
+    ($sub == "checkout" and (has(["-f", "-B", "--force", "."]) or ($args | index(["--"]) as $i | $i != null and $i < ($args | length) - 1))) or
+    ($sub == "switch" and has(["-f", "-C", "--force", "--force-create", "--discard-changes"])) or
+    ($sub == "worktree" and .[1] == "remove" and has(["-f", "--force"])) or
+    ($sub == "branch" and (has(["-D"]) or (has(["-d", "--delete"]) and has(["-f", "--force"])))) or
+    # restore discards worktree changes unless it only unstages with --staged and no --worktree
+    ($sub == "restore" and (any($args[]; . == "--staged" or test("^-[a-zA-Z]*S")) and
+      (any($args[]; . == "--worktree" or test("^-[a-zA-Z]*W")) | not) | not));
+  git | dangerous
+' &&
+  hook_ask 'This git command rewrites history or discards uncommitted work. Approve it, or run it yourself.'
 
 exit 0

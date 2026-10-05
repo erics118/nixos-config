@@ -1,9 +1,7 @@
 ---
 name: overkill
-description: Judge whether the current proposal, or a named target, is more than the job needs, part by part
+description: Use when a proposal, plan, or change might be more than the job needs, to judge it part by part before building.
 argument-hint: "[empty for the current proposal | file | plan]"
-disable-model-invocation: true
-disallowed-tools: Edit, Write, NotebookEdit
 ---
 
 Follow [ask](../ask/SKILL.md) on this question: is the current proposal, or the target given, overkill? Change no files.

@@ -3,6 +3,7 @@
 # only denies when an edit adds more smart chars than it removes, so edits that merely
 # preserve existing ones are not blocked.
 set -u
+# shellcheck source-path=SCRIPTDIR source=lib.sh
 source "$(dirname "$0")/lib.sh"
 
 hook_require rg jq

@@ -3,4 +3,4 @@ interface:
   default_prompt: "Use $recheck to re-check the claims in your last reply."
 
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

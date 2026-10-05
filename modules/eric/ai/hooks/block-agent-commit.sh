@@ -2,29 +2,25 @@
 # gate agent commits on `git config eric-agent.commit`: off (default), ask, branch (not main or master), or on.
 # only the user sets eric-agent keys, so agents may not write them
 set -u
+# shellcheck source-path=SCRIPTDIR source=lib.sh
 source "$(dirname "$0")/lib.sh"
 
-hook_require rg jq git awk
+hook_require jq git shfmt
 hook_read_command
+hook_parse_command
 hook_command_dir
-hook_bare_command
 
-# each config segment naming an eric-agent key must itself be a read
-printf '%s' "$HOOK_BARE" | rg -o "${HOOK_GIT}config${HOOK_END}[^;&|]*\beric-agent\b[^;&|]*" |
-  rg -qv '\s(?:--get|--get-regexp|get)\s' &&
+# each config command naming an eric-agent key must itself be a read
+hook_any 'git | .[0] == "config" and any(.[]; contains("eric-agent")) and (any(.[]; IN("--get", "--get-regexp", "get")) | not)' &&
   hook_deny 'Only the user sets eric-agent keys.'
 
 # a -c alias can run commit under another name
-# the raw command keeps a quoted alias value that $HOOK_BARE drops
-printf '%s\n%s' "$HOOK_COMMAND" "$HOOK_BARE" | rg -qi "${HOOK_PREFIX}git\\s[^;&|]*-c\\s*[\"']?alias\\." &&
+hook_any 'git_alias' &&
   hook_deny 'Agents never define git aliases with -c, since an alias can wrap push or commit.'
 
-match=$(printf '%s' "$HOOK_BARE" | rg -o "${HOOK_GIT}(?:commit|merge|revert|cherry-pick|am)${HOOK_END}" | head -n 1)
-[ -n "$match" ] || exit 0
-
-dir=$(printf '%s' "$match" | rg -o -r '$1' '\s-C\s+(\S+)' | head -n 1)
-dir=${dir/#\~/$HOME}
-case "$dir" in '') dir=$HOOK_DIR ;; /*) ;; *) dir=$HOOK_DIR/$dir ;; esac
+dir=$(hook_each 'select(git | .[0] | IN("commit", "merge", "revert", "cherry-pick", "am")) | "dir:" + git_dir' | head -n 1)
+[ -n "$dir" ] || exit 0
+dir=$(hook_resolve "${dir#dir:}")
 
 case "$(git -C "$dir" config --get eric-agent.commit 2>/dev/null)" in
 on) exit 0 ;;
@@ -35,8 +31,7 @@ branch)
   exit 0
   ;;
 ask)
-  # codex runs a hook's ask as allow, so deny there
-  printf '%s' "$HOOK_INPUT" | jq -e 'has("turn_id") or (.transcript_path // "" | contains("/.codex/"))' >/dev/null &&
+  hook_is_codex &&
     hook_deny 'Agent commits need approval in this repo, and Codex cannot prompt. Tell the user the work is ready so they commit it.'
   hook_ask 'Agent commits need approval in this repo. Approve this commit, or deny it and commit yourself.'
   ;;

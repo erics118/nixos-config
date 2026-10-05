@@ -60,6 +60,9 @@ command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.
 cwd = "."
 enabled = false
 
+[mcp_servers.cornell-confluence]
+command = "/etc/profiles/per-user/eric/bin/cornell-confluence-mcp"
+
 [mcp_servers.context7]
 command = "/etc/profiles/per-user/eric/bin/context7-mcp"
 

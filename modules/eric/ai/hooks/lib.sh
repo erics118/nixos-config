@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2016
 # shared helpers for PreToolUse/PostToolUse hooks. source, don't run directly:
 #   source "$(dirname "$0")/lib.sh"
 
@@ -12,6 +13,9 @@ hook_require() {
     exit 2
   done
 }
+
+# any other failure blocks too, since claude code and codex run the command on every exit code but 2
+trap 'rc=$?; [ "$rc" -eq 0 ] || [ "$rc" -eq 2 ] || { printf "guard hook failed with exit %s, so the command was not checked.\n" "$rc" >&2; exit 2; }' EXIT
 
 # reads stdin once. sets $HOOK_INPUT (raw json) and $HOOK_COMMAND (tool_input.command).
 # exits 0 (no-op) if there's no command to inspect.
@@ -28,67 +32,134 @@ hook_read_file_path() {
   [ -n "$HOOK_FILE" ] || exit 0
 }
 
-# directory a command runs in: the hook's cwd, or the target of a leading `cd DIR &&` or `cd DIR;`.
-# sets $HOOK_DIR (requires hook_read_command to have run first).
+# directory a command runs in: the hook's cwd, or the target when the command starts with `cd DIR`.
+# sets $HOOK_DIR (requires hook_parse_command to have run first).
 hook_command_dir() {
   HOOK_DIR=$(printf '%s' "$HOOK_INPUT" | jq -r '.cwd // empty' 2>/dev/null)
   [ -n "$HOOK_DIR" ] || HOOK_DIR=$PWD
   local to
-  to=$(printf '%s' "$HOOK_COMMAND" | rg -o -r '$1' '^\s*\(?\s*cd\s+([^\s;&]+)\s*(&&|;)' | head -n 1)
-  [ -n "$to" ] || return 0
-  to=${to/#\~/$HOME}
-  case "$to" in /*) HOOK_DIR=$to ;; *) HOOK_DIR=$HOOK_DIR/$to ;; esac
+  to=$(printf '%s' "$HOOK_CALLS" | jq -s -r '.[0] // {} | select(.argv[0] == "cd" and (.argv | length) == 2) | .argv[1]')
+  [ -z "$to" ] || HOOK_DIR=$(hook_resolve "$to")
 }
 
-# the command on one line with heredoc bodies and quoted text containing spaces removed,
-# and other quote marks dropped, so guards match what runs, not text it searches or writes.
-# sets $HOOK_BARE, with each `sh -c '...'` body appended as its own command (requires hook_read_command).
-hook_bare_command() {
-  local text
-  text=$(printf '%s\n' "$HOOK_COMMAND" | awk '
-    body { t = $0; gsub(/^[ \t]+|[ \t]+$/, "", t); if (t == delim) body = 0; next }
-    { print }
-    match($0, /<<-?[ \t]*["\x27]?[A-Za-z_][A-Za-z0-9_]*/) && substr($0, RSTART - 1, 1) != "<" {
-      delim = substr($0, RSTART, RLENGTH)
-      sub(/^<<-?[ \t]*["\x27]?/, "", delim)
-      body = 1
-    }')
-  HOOK_BARE=$({
-    printf '%s\n' "$text"
-    printf '%s' "$text" | rg -U -o -r '${1}${2}' "(?:^|[\\s;&|(])(?:\\S*/)?(?:ba|z)?sh\\s+(?:-\\w+\\s+)*-\\w*c\\s+(?:'([^']*)'|\"((?:[^\"\\\\]|\\\\.)*)\")"
-  } | tr '\n' ';' | sed 's/;$//' | awk -v sq="'" '
-    # walk quotes left to right so each opening quote pairs with its own closing one
-    {
-      out = ""; q = ""; buf = ""
-      for (i = 1; i <= length($0); i++) {
-        c = substr($0, i, 1)
-        if (q == "") {
-          if (c == "\"" || c == sq) { q = c; buf = "" } else out = out c
-        } else if (c == q) {
-          # quoted separators do not split the command, so they must not look like they do
-          if (buf !~ /[[:space:]]/) { gsub(/[;&|()]/, "_", buf); out = out buf }
-          q = ""
-        } else buf = buf c
-      }
-      if (q != "") out = out q buf
-      sub(/[[:space:]]+$/, "", out)
-      print out
-    }')
+# a path with a leading ~ expanded and a relative path joined onto $HOOK_DIR. empty means $HOOK_DIR
+hook_resolve() {
+  local p=${1/#\~/$HOME}
+  case "$p" in '') p=$HOOK_DIR ;; /*) ;; *) p=$HOOK_DIR/$p ;; esac
+  printf '%s' "$p"
 }
 
-# regex for `git` where a command starts, with env assignments, a command/env/exec/nohup/eval prefix,
-# a path, and global options allowed. append the subcommand, then match it against $HOOK_BARE.
-# wrappers that run a command (direnv exec, nix develop -c, xargs, timeout, sudo, nice, time, find -exec) count as prefixes
-HOOK_PREFIX='(?:^|[;&|(]\s*)(?:(?:\w+=\S*|(?:command|env)(?:\s+-\S+)*|exec|nohup|eval|direnv\s+exec\s+\S+|nix\s+(?:develop|shell)(?:\s+[^\s;&|]+)*?\s+(?:-c|--command)|(?:xargs|timeout|sudo|nice|time)(?:\s+[^\s;&|]+)*?|find(?:\s+[^\s;&|]+)*?\s+-exec(?:dir)?)\s+)*(?:\S*/)?'
-HOOK_GIT="${HOOK_PREFIX}"'git(?:\s+(?:-[cC]\s+\S+|-\S+))*\s+'
+# true when the hook runs under codex, which runs a hook's ask as allow
+hook_is_codex() {
+  printf '%s' "$HOOK_INPUT" | jq -e 'has("turn_id") or (.transcript_path // "" | contains("/.codex/"))' >/dev/null
+}
 
-# regex for the end of a subcommand word. \b would also end at a dash, so merge would match merge-base.
-HOOK_END='(?:\s|$|[;&|)])'
+# set $HOOK_CALLS to one {argv, dyn, redirs} json line per simple command, wrapped commands also unwrapped
+# a command as written behind env, sudo, xargs, and the like has wrapper: true. dyn marks a bare unquoted $var or $(...), and `sh -c` and `eval` scripts are parsed too
+# a command shfmt cannot parse is denied (requires hook_read_command)
+hook_parse_command() {
+  HOOK_CALLS=$(hook_calls_of "$HOOK_COMMAND" 0) ||
+    hook_deny "The guard hooks could not parse this command, so they could not check it: $HOOK_CALLS. Rewrite it in plain bash syntax."
+}
+
+hook_calls_of() {
+  local ast calls script
+  ast=$(printf '%s' "$1" | shfmt -ln zsh --to-json 2>&1) || {
+    printf '%s' "$ast"
+    return 1
+  }
+  calls=$(printf '%s' "$ast" | jq -c "$HOOK_CALLS_JQ") || return 1
+  [ -z "$calls" ] || printf '%s\n' "$calls"
+  [ "$2" -lt 3 ] || return 0
+  while IFS= read -r script; do
+    hook_calls_of "$script" $(($2 + 1)) || {
+      printf '%s' "$script"
+      return 1
+    }
+  done < <(printf '%s' "$calls" | jq -r '.script // empty | @json' | jq -r .)
+}
+
+HOOK_CALLS_JQ='
+  def part: if .Type == "Lit" then .Value | gsub("\\\\(?<c>.)"; .c)
+    elif .Type == "SglQuoted" then .Value
+    elif .Type == "DblQuoted" then [.Parts[]? | part] | join("")
+    elif .Type == "ParamExp" then "$" + (.Param.Value // "")
+    else "$(...)" end;
+  def word: [.Parts[]? | part] | join("");
+  # ${d:?} fails when empty, so only other bare expansions can expand to nothing
+  def dyn: (.Parts | length) == 1 and (.Parts[0] |
+    (.Type == "ParamExp" and ((.Exp.Op // "") | test("\\?") | not)) or .Type == "CmdSubst");
+  # index of the first word after a wrapper and its options. $vals lists the options that take a value
+  def opts($vals): . as $a | def go($i):
+      if $i >= ($a | length) then $i
+      elif $a[$i] == "--" then $i + 1
+      elif ($a[$i] | test("^-|^[A-Za-z_][A-Za-z0-9_]*=")) then
+        (if ($vals | index([$a[$i]])) then go($i + 2) else go($i + 1) end)
+      else $i end;
+    go(1);
+  def pos($xs): . as $a | ([range(length) | select($a[.] as $w | $xs | index([$w]))][0] // null) | if . then . + 1 else 0 end;
+  # how many leading words are wrappers around the real command
+  def off: if length == 0 then 0 else
+      (.[0] | sub(".*/"; "")) as $c |
+      (if $c == "env" then opts(["-u", "-C", "-S"])
+       elif ["command", "builtin", "exec", "nohup", "eval", "time"] | index([$c]) then opts([])
+       elif $c == "sudo" then opts(["-u", "-g", "-p", "-C", "-D", "-h", "-R", "-T", "-U"])
+       elif $c == "nice" then opts(["-n"])
+       elif $c == "timeout" or $c == "gtimeout" then opts(["-s", "-k"]) + 1
+       elif $c == "xargs" then opts(["-I", "-n", "-P", "-L", "-d", "-E", "-s", "-a"])
+       elif $c == "direnv" and .[1] == "exec" then 3
+       elif $c == "nix" and (.[1] == "develop" or .[1] == "shell") then pos(["-c", "--command"])
+       elif $c == "find" then pos(["-exec", "-execdir", "-ok", "-okdir"])
+       else 0 end) as $n |
+      if $n > 0 and $n < length then $n + (.[$n:] | off) else 0 end
+    end;
+  # the script a shell runs with -c, or the words eval joins
+  def script: (.[0] // "" | sub(".*/"; "")) as $c |
+    if $c == "eval" then .[1:] | join(" ")
+    elif ["sh", "bash", "zsh", "dash"] | index([$c]) then
+      . as $a | ([range(1; length) | select($a[.] | test("^-[A-Za-z]*c[A-Za-z]*$"))][0]) as $i |
+      if $i then $a[$i + 1] else null end
+    else null end;
+  .. | objects | select(has("Cmd") and (.Cmd == null or .Cmd.Type == "CallExpr")) |
+    {argv: [.Cmd.Args[]? | word], dyn: [.Cmd.Args[]? | dyn], redirs: [.Redirs[]? | {op: .Op, fd: (.N.Value // ""), word: (.Word | word)}]} |
+    (.argv | off) as $n |
+    (if $n > 0 then .wrapper = true else . end), (select($n > 0) | .argv |= .[$n:] | .dyn |= .[$n:]) |
+    (.argv | script) as $s | if $s then .script = $s else . end
+'
+
+# jq helpers over one $HOOK_CALLS line. git yields the subcommand and its words after global options
+HOOK_JQ='
+  def tool: .argv[0] // "" | sub(".*/"; "");
+  def git: select(tool == "git") | .argv[1:] |
+    until(length == 0 or (.[0] | startswith("-") | not);
+      if .[0] | IN("-C", "-c", "--git-dir", "--work-tree", "--namespace", "--config-env") then .[2:] else .[1:] end) |
+    select(length > 0);
+  # files a > or >> redirect or tee writes
+  def writes: (.redirs[] | select(.op | IN(">", ">>", ">|", "&>", "&>>")) | .word),
+    (select(tool == "tee") | .argv[1:][] | select(startswith("-") | not));
+  def git_dir: .argv as $a | [range(1; $a | length) | select($a[.] == "-C") | $a[. + 1] // empty][0] // "";
+  def git_alias: tool == "git" and (.argv as $a | any(range(1; $a | length);
+    ($a[.] == "-c" and ($a[. + 1] // "" | ascii_downcase | startswith("alias."))) or ($a[.] | ascii_downcase | startswith("-calias."))));
+'
+
+# true when any $HOOK_CALLS line meets the jq condition, which can use the $HOOK_JQ helpers
+# a jq error exits rather than reading as false
+hook_any() {
+  local rc=0
+  printf '%s' "$HOOK_CALLS" | jq -s -e "$HOOK_JQ any(.[]; $1)" >/dev/null || rc=$?
+  [ "$rc" -le 1 ] || exit "$rc"
+  return "$rc"
+}
+
+# print the jq filter's raw output for each $HOOK_CALLS line, with the $HOOK_JQ helpers available
+hook_each() {
+  printf '%s' "$HOOK_CALLS" | jq -r "$HOOK_JQ $1"
+}
 
 # true when the path, relative to $HOOK_DIR, is an existing file that git tracks.
 hook_tracked() {
-  local f=${1/#\~/$HOME}
-  case "$f" in /*) ;; *) f=$HOOK_DIR/$f ;; esac
+  local f
+  f=$(hook_resolve "$1")
   [ -f "$f" ] && git -C "$(dirname "$f")" ls-files --error-unmatch -- "$(basename "$f")" >/dev/null 2>&1
 }
 

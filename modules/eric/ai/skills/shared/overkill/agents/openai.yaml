@@ -3,4 +3,4 @@ interface:
   default_prompt: "Use $overkill to judge whether the current proposal is overkill."
 
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

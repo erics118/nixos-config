@@ -1,17 +1,25 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2016
 # block flake-evaluating commands when untracked files exist: flakes only see
 # git-tracked files, so a new module, config file, or skill is silently invisible
 # and the change appears to do nothing. tells the model to git add them first.
 set -u
+# shellcheck source-path=SCRIPTDIR source=lib.sh
 source "$(dirname "$0")/lib.sh"
 
-hook_require rg jq git awk
+hook_require jq git shfmt
 hook_read_command
+hook_parse_command
 hook_command_dir
-hook_bare_command
 
 # only flake-evaluating commands
-printf '%s' "$HOOK_BARE" | rg -q "${HOOK_PREFIX}(?:just\\s+(?:build|switch|check|dev)|(?:nix\\s+(?:build|develop|eval|run|fmt|flake\\s+(?:check|show|metadata))|nh\\s+(?:darwin|os)\\s+(?:build|switch)|darwin-rebuild|nixos-rebuild|home-manager)${HOOK_END})" || exit 0
+hook_any '
+  .argv as $a | tool as $t |
+    ($t == "just" and ($a[1] | IN("build", "switch", "check", "dev"))) or
+    ($t == "nix" and (($a[1] | IN("build", "develop", "eval", "run", "fmt")) or ($a[1] == "flake" and ($a[2] | IN("check", "show", "metadata"))))) or
+    ($t == "nh" and ($a[1] | IN("darwin", "os")) and ($a[2] | IN("build", "switch"))) or
+    ($t | IN("darwin-rebuild", "nixos-rebuild", "home-manager"))
+' || exit 0
 
 root=$(git -C "$HOOK_DIR" rev-parse --show-toplevel 2>/dev/null) || exit 0
 [ -f "$root/flake.nix" ] || exit 0

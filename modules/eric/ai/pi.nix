@@ -16,8 +16,7 @@
         ".pi/agent/hermes-memory-config.json".source = repoFile "${base}/hermes-memory-config.json";
         ".pi/agent/APPEND_SYSTEM.md".source = repoFile "${base}/APPEND_SYSTEM.md";
         ".pi/agent/AGENTS.md".source = repoFile "modules/eric/ai/AGENTS.md";
-        # pi-mcp-adapter reads ~/.config/mcp/mcp.json (highest precedence)
-        ".config/mcp/mcp.json".source = repoFile "${base}/mcp.json";
+        ".pi/agent/mcp.json".source = repoFile "${base}/mcp.json";
       }
       // repoFileAll "${base}/extensions" ".pi/agent/extensions"
       // repoFileAll "${base}/lib" ".pi/agent/lib"

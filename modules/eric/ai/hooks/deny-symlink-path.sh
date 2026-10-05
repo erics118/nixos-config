@@ -5,6 +5,7 @@
 # symlink, Write moves to the target) and surfaces as "not read yet" / "modified
 # since read". deny-and-tell keeps Claude's read and write on the same real path.
 set -u
+# shellcheck source-path=SCRIPTDIR source=lib.sh
 source "$(dirname "$0")/lib.sh"
 
 hook_require jq realpath

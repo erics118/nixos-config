@@ -3,29 +3,23 @@
 # redirects or tee onto a tracked file. these skip the edit tool, so the change never
 # shows as a diff and /rewind cannot undo it
 set -u
+# shellcheck source-path=SCRIPTDIR source=lib.sh
 source "$(dirname "$0")/lib.sh"
 
-hook_require rg jq git awk
+hook_require rg jq git shfmt
 hook_read_command
+hook_parse_command
 hook_command_dir
-hook_bare_command
 reason='is tracked by git. Change it with the edit tool so the change shows as a reviewable diff.'
 
-# sed or perl in place: check that command's operands, up to the next separator
-while IFS= read -r segment; do
-  read -ra words <<<"$segment"
-  tool=${words[0]}
-  inplace=
-  for w in "${words[@]:1}"; do
-    [ "$tool" = sed ] && [[ $w =~ ^-(-in-place|[a-zA-Z]*i) ]] && inplace=1
-    [ "$tool" = perl ] && [[ $w =~ ^-[a-z]*i ]] && inplace=1
-  done
-  [ -n "$inplace" ] || continue
-  for w in "${words[@]:1}"; do
-    case "$w" in -*) continue ;; esac
-    hook_tracked "$w" && hook_deny "$w $reason"
-  done
-done < <(printf '%s' "$HOOK_BARE" | rg -o -r '$1' '(?:^|[;&|(]\s*)(?:sudo\s+)?((?:sed|perl)\s[^;&|)]*)')
+# sed or perl in place: check that command's operands
+while IFS= read -r w; do
+  hook_tracked "$w" && hook_deny "$w $reason"
+done < <(hook_each '
+  select((tool == "sed" and any(.argv[1:][]; test("^-(-in-place|[a-zA-Z]*i)"))) or
+    (tool == "perl" and any(.argv[1:][]; test("^-[a-z]*i")))) |
+  .argv[1:][] | select(startswith("-") | not)
+')
 
 # a script that writes files: check the literal path each write names. when a write
 # targets a variable instead, check every quoted path the script names
@@ -54,9 +48,6 @@ fi
 while IFS= read -r f; do
   case "$f" in /dev/* | '') continue ;; esac
   hook_tracked "$f" && hook_deny "$f $reason"
-done < <(
-  printf '%s' "$HOOK_BARE" | rg -o -r '$1' '>{1,2}\s*([^\s;&|<>()]+)'
-  printf '%s' "$HOOK_BARE" | rg -o -r '$1' '(?:^|[;&|(]\s*)tee\s+(?:-a\s+)?([^\s;&|<>()]+)'
-)
+done < <(hook_each 'writes')
 
 exit 0

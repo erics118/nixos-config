@@ -3,6 +3,7 @@
 # the rule lives in CLAUDE.md but prose does not fire at edit time; this does.
 # scans only newly written text so pre-existing blocks in an edited file stay quiet.
 set -u
+# shellcheck source-path=SCRIPTDIR source=lib.sh
 source "$(dirname "$0")/lib.sh"
 
 hook_require jq
@@ -15,7 +16,7 @@ file=$(printf '%s' "$HOOK_INPUT" | jq -r '.tool_input.file_path // empty')
 case "$file" in
 *.c | *.cc | *.cpp | *.cxx | *.h | *.hpp | *.hh | *.js | *.jsx | *.ts | *.tsx | *.go | *.rs | *.java | *.kt | *.swift | *.cs | *.scala | *.php | *.json | *.jsonc | *.json5) mode=slash ;;
 *.css | *.scss | *.less) mode=block ;;
-*.sh | *.bash | *.zsh | *.py | *.nix | *.yaml | *.yml | *.toml | *.rb | *.pl) mode=hash ;;
+*.sh | *.bash | *.zsh | *.py | *.nix | *.yaml | *.yml | *.toml | *.rb | *.pl) mode="hash" ;;
 *) exit 0 ;;
 esac
 
