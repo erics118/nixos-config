@@ -53,6 +53,8 @@ function runHook(script: string, event: HookEvent): Promise<Run> {
       resolve({ status: null, stdout, stderr: String(e) }),
     );
     child.on("close", (status) => resolve({ status, stdout, stderr }));
+    // a hook may exit without reading its input, and close still judges it
+    child.stdin.on("error", () => {});
     child.stdin.end(JSON.stringify(event));
   });
 }
