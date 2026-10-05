@@ -6,10 +6,11 @@ on:
   pull_request:
   workflow_dispatch:
 
-# only the latest run per ref needs to finish
+# only the latest run per pr needs to finish
+# a running main build is never cancelled, but a newer push still replaces one that is only queued
 concurrency:
   group: check-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   flake-check:
@@ -26,21 +27,23 @@ jobs:
           - macos-26
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v7
+      # actions are pinned to commit shas, which most repos don't need
+      # every host trusts the cachix cache these jobs push to, so a retagged action could poison it
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # the nixos-config-private input is a private git+ssh flake, so we need to set up ssh access for it
-      - uses: webfactory/ssh-agent@v0.10.0
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:
           ssh-private-key: ${{ secrets.PRIVATE_FLAKE_DEPLOY_KEY }}
 
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
         with:
           extra_nix_config: |
             extra-substituters = https://cache.numtide.com
             extra-trusted-public-keys = niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=
 
       # push to erics118.cachix.org, pull from the other cachix caches
-      - uses: cachix/cachix-action@v17
+      - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
         with:
           name: erics118
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
@@ -51,14 +54,24 @@ jobs:
   pi-tests:
     runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
 
       # the extensions import these at runtime, pi provides them when installed
+      # unpinned, since the installed pi updates itself
       - run: npm install --no-save --no-package-lock @earendil-works/pi-coding-agent @earendil-works/pi-tui @earendil-works/pi-ai
+
+      # the guard hooks and the pi guards test need rg and jq. direnv runs the treefmt-on-edit case
+      - run: sudo apt-get update && sudo apt-get install -y ripgrep jq direnv
+
+      # test.sh checks codex/rules/default.rules with `codex execpolicy check`
+      # unpinned, since the installed codex updates itself
+      - run: npm install -g @openai/codex
+
+      - run: bash modules/eric/ai/hooks/test.sh
 
       # pi loads extensions with full typescript support, plain type stripping rejects parameter properties
       - run: node --experimental-transform-types --test modules/eric/ai/pi/tests/*.test.ts
