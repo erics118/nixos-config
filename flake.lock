@@ -543,11 +543,11 @@
     "yabai-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1791230559,
-        "narHash": "sha256-3nqsqpPR5BZHmrR9Bk/ebz/3dXgkCzMJKH4HqBzNAaA=",
+        "lastModified": 1791264041,
+        "narHash": "sha256-qknjshPdGuCk0WTJglJ5FCLYWA+EEIxN4btdTtvYWKQ=",
         "owner": "erics118",
         "repo": "yabai",
-        "rev": "34e10e5aabf346236b0359685984b399d3971c72",
+        "rev": "a2bf9d13f3c27e9c733cc5f8c5cdd68f6807d7e9",
         "type": "github"
       },
       "original": {
