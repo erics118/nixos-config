@@ -1,5 +1,5 @@
 -- files copilot may never see, even when toggled on
-local function allowed(bufnr)
+local function may_attach(bufnr)
     if not vim.bo[bufnr].buflisted or vim.bo[bufnr].buftype ~= "" then
         return false
     end
@@ -11,21 +11,23 @@ local function allowed(bufnr)
 end
 
 -- copilot attaches to no file on its own, <leader>tc attaches or detaches the current one
-vim.keymap.set("n", "<leader>tc", function()
+local map = require("user.utils.map")
+
+map("n", "<leader>tc", function()
     require("lz.n").trigger_load("copilot.lua")
     local client = require("copilot.client")
     local bufnr = vim.api.nvim_get_current_buf()
     if client.buf_is_attached(bufnr) then
         require("copilot.command").detach()
         vim.notify("Copilot: OFF for this file", vim.log.levels.INFO)
-    elseif allowed(bufnr) then
+    elseif may_attach(bufnr) then
         -- force skips should_attach, which refuses every file to stop automatic attaching
         client.buf_attach(true, bufnr)
         vim.notify("Copilot: ON for this file", vim.log.levels.INFO)
     else
         vim.notify("Copilot: not allowed for this file", vim.log.levels.WARN)
     end
-end, { silent = true, desc = "Toggle Copilot for this file" })
+end, "Toggle Copilot for this file")
 
 return {
     "copilot.lua",

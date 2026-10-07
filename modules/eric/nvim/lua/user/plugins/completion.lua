@@ -1,3 +1,5 @@
+local map = require("user.utils.map")
+
 local function luasnip_forward()
     local ls = require("luasnip")
     if ls.expand_or_jumpable() then
@@ -15,22 +17,21 @@ local function luasnip_backward()
 end
 
 -- fall back to the builtin key (digraph, newline) when no snippet is active
-vim.keymap.set({ "i", "s" }, "<C-j>", function()
-    if not luasnip_forward() then
-        vim.api.nvim_feedkeys(vim.keycode("<C-j>"), "n", false)
-    end
-end, { silent = true, desc = "Snippet jump forward" })
-vim.keymap.set({ "i", "s" }, "<C-k>", function()
-    if not luasnip_backward() then
-        vim.api.nvim_feedkeys(vim.keycode("<C-k>"), "n", false)
-    end
-end, { silent = true, desc = "Snippet jump back" })
+local function map_snippet_jump(key, jump, desc)
+    map({ "i", "s" }, key, function()
+        if not jump() then
+            vim.api.nvim_feedkeys(vim.keycode(key), "n", false)
+        end
+    end, desc)
+end
+
+map_snippet_jump("<C-j>", luasnip_forward, "Snippet jump forward")
+map_snippet_jump("<C-k>", luasnip_backward, "Snippet jump back")
 
 return {
     {
         "luasnip",
-        -- loaded once the screen is drawn, so the first insert doesn't wait on it
-        event = { "DeferredUIEnter", "InsertEnter" },
+        event = require("user.utils.lazy").insert_events,
         after = function()
             require("luasnip").config.setup({
                 enable_autosnippets = true,

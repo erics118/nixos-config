@@ -19,7 +19,7 @@ local mode_info = {
     t = { "TERMINAL", "teal" },
 }
 
--- nerd font powerline glyphs, same as the old lualine setup
+-- nerd font powerline glyphs
 local sep_left = "\238\130\184" -- U+E0B8
 local sep_right = "\238\130\186" -- U+E0BA
 local thin_left = "\238\130\185" -- U+E0B9
@@ -36,9 +36,9 @@ local diag_items = {
     { vim.diagnostic.severity.HINT, "\243\176\140\182 ", "DiagnosticHint" },
 }
 
--- a = mode block, b = gray section, c = transparent middle (lualine's naming)
+-- a = mode block, b = gray section, c = transparent middle
 local function set_statusline_hl()
-    local p = require("catppuccin.palettes").get_palette("mocha")
+    local p = require("catppuccin.palettes").get_palette()
     for _, color in ipairs({ "blue", "green", "mauve", "red", "peach", "teal" }) do
         vim.api.nvim_set_hl(0, "StlA_" .. color, { fg = p.crust, bg = p[color], bold = true })
         vim.api.nvim_set_hl(0, "StlSepAB_" .. color, { fg = p[color], bg = p.surface0 })
@@ -55,11 +55,13 @@ end
 set_statusline_hl()
 
 -- % in names would be read as statusline items
-local function esc(s)
+local function escape_percent(s)
     return (s:gsub("%%", "%%%%"))
 end
 
-local function render()
+-- %l and %c always describe the window that owns the statusline
+-- so when rendering for another window, pos holds that window's values as plain text
+local function render(pos)
     local mode = vim.api.nvim_get_mode().mode
     local info = mode_info[mode:sub(1, 1)] or { mode:upper(), "blue" }
     local color = info[2]
@@ -67,9 +69,9 @@ local function render()
     -- section b: branch, diff, diagnostics, split by thin separators
     local b = {}
     -- non-file buffers (tree, help, terminal) fall back to the cwd's branch
-    local head = vim.b.gitsigns_head or vim.g.gitsigns_head
+    local head = vim.b.gitsigns_head or (vim.bo.buftype ~= "" and vim.g.gitsigns_head)
     if head and head ~= "" then
-        b[#b + 1] = "%#StlB#" .. branch_icon .. " " .. esc(head)
+        b[#b + 1] = "%#StlB#" .. branch_icon .. " " .. escape_percent(head)
     end
     local diff = vim.b.gitsigns_status_dict
     if diff then
@@ -94,8 +96,12 @@ local function render()
         b[#b + 1] = table.concat(diags, " ")
     end
 
+    -- the hidden cmdline row can't show "recording @a", so the mode block does
+    local rec = vim.fn.reg_recording()
+    local mode_text = rec ~= "" and info[1] .. " REC @" .. rec or info[1]
+
     -- %< after the mode: on a narrow screen the sections after it truncate, not the mode
-    local left = "%#StlA_" .. color .. "# " .. info[1] .. " %<"
+    local left = "%#StlA_" .. color .. "# " .. mode_text .. " %<"
     if #b > 0 then
         left = left
             .. "%#StlSepAB_"
@@ -126,7 +132,7 @@ local function render()
         end
     end
 
-    -- right side: filetype, then progress (b style), then position (mode color)
+    -- right side: filetype, then position (mode color)
     local right = ""
     local ft = vim.bo.filetype
     if ft ~= "" then
@@ -137,20 +143,19 @@ local function render()
         end
         right = (icon and ("%#" .. (icon_hl or "StatusLine") .. "#" .. icon .. " ") or "")
             .. "%#StatusLine#"
-            .. esc(ft)
+            .. escape_percent(ft)
             .. " "
     end
     right = right
-        .. "%#StlSepBC#"
-        .. sep_right
-        .. "%#StlB# %P "
-        .. "%#StlSepAB_"
+        .. "%#StlSepAC_"
         .. color
         .. "#"
         .. sep_right
         .. "%#StlA_"
         .. color
-        .. "# %l:%c "
+        .. "# "
+        .. (pos and pos.cursor or "%l:%c")
+        .. " "
 
     return left .. mid .. "%#StatusLine#%=" .. right
 end
@@ -161,7 +166,9 @@ function _G.Statusline()
     if vim.api.nvim_win_get_config(0).relative ~= "" then
         local prev = vim.fn.win_getid(vim.fn.winnr("#"))
         if prev ~= 0 and vim.api.nvim_win_get_config(prev).relative == "" then
-            return vim.api.nvim_win_call(prev, render)
+            return vim.api.nvim_win_call(prev, function()
+                return render({ cursor = vim.fn.line(".") .. ":" .. vim.fn.col(".") })
+            end)
         end
     end
     return render()
@@ -176,6 +183,13 @@ vim.api.nvim_create_autocmd({ "ModeChanged", "DiagnosticChanged" }, {
     group = group,
     callback = function()
         vim.cmd.redrawstatus()
+    end,
+})
+-- scheduled, since reg_recording() still names the register during RecordingLeave
+vim.api.nvim_create_autocmd({ "RecordingEnter", "RecordingLeave" }, {
+    group = group,
+    callback = function()
+        vim.schedule(vim.cmd.redrawstatus)
     end,
 })
 vim.api.nvim_create_autocmd("User", {

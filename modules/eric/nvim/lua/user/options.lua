@@ -13,7 +13,6 @@ vim.g.ignored_ui_filetypes = {
     "TelescopePrompt",
     "trouble",
 }
-vim.g.inlay_hints_enabled = true
 
 -- nvim-tree replaces netrw
 vim.g.loaded_netrw = 1
@@ -54,6 +53,12 @@ opt.pumheight = 15
 -- idle delay for CursorHold and swap writes
 opt.updatetime = 250
 
+-- wait for the next key of a mapping, like the : after q
+opt.timeoutlen = 300
+
+-- the cmdline types like insert mode, so it gets the same bar cursor
+opt.guicursor = "n-v-sm:block,i-c-ci-ve:ver25,r-cr-o:hor20,t:block-blinkon500-blinkoff500-TermCursor"
+
 -- default border for floating windows (hover, signature help, etc.)
 opt.winborder = "rounded"
 
@@ -69,7 +74,6 @@ opt.shiftwidth = 2
 opt.tabstop = 2
 opt.softtabstop = 2
 opt.expandtab = true
-opt.smartindent = true
 
 -- always show 1 column of sign column (gitsigns, etc.)
 opt.signcolumn = "yes:1"
@@ -80,6 +84,18 @@ opt.termguicolors = true
 -- hide the ~ on lines past the end of the buffer
 opt.fillchars = { eob = " " }
 
+-- undo history persists across restarts, in stdpath("state")/undo
+opt.undofile = true
+
+-- :q with unsaved changes asks to save instead of failing
+opt.confirm = true
+
+-- visual block can extend past the end of short lines
+opt.virtualedit = "block"
+
+-- :s previews every matching line in a split, including off-screen ones
+opt.inccommand = "split"
+
 -- folding via treesitter. files open fully unfolded, use zc/zo/za to manage
 opt.foldmethod = "expr"
 opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
@@ -87,9 +103,11 @@ opt.foldenable = true
 opt.foldlevel = 99
 opt.foldlevelstart = 99
 
--- filetypes Neovim doesn't detect on its own, plus .tex, which it would often call plaintex
+-- filetypes Neovim doesn't detect on its own or detects as something else, like .tex, which it would often call plaintex
+-- hujson gets jsonc so jsonls, prettier, and colorizer apply
 vim.filetype.add({
     extension = {
+        hujson = "jsonc",
         mdx = "markdown",
         mxx = "cpp",
         tex = "tex",

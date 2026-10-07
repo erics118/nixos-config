@@ -1,11 +1,9 @@
-local function map(lhs, command, desc)
-    vim.keymap.set("n", lhs, "<cmd>" .. command .. "<CR>", { silent = true, desc = desc })
-end
+local map = require("user.utils.map")
 
-map("<leader>xx", "Trouble diagnostics toggle", "Trouble diagnostics")
-map("<leader>xd", "Trouble lsp_definitions", "Trouble LSP definitions")
-map("<leader>xq", "Trouble quickfix", "Trouble quickfix")
-map("<leader>xl", "Trouble loclist", "Trouble location list")
+map("n", "<leader>xx", "<Cmd>Trouble diagnostics toggle<CR>", "Trouble diagnostics")
+map("n", "<leader>xd", "<Cmd>Trouble lsp_definitions<CR>", "Trouble LSP definitions")
+map("n", "<leader>xq", "<Cmd>Trouble quickfix<CR>", "Trouble quickfix")
+map("n", "<leader>xl", "<Cmd>Trouble loclist<CR>", "Trouble location list")
 
 return {
     "trouble.nvim",

@@ -1,10 +1,8 @@
-local function map(mode, lhs, rhs, desc)
-    vim.keymap.set(mode, lhs, rhs, { silent = true, desc = desc })
-end
+local map = require("user.utils.map")
 
-local function flash(fn)
+local function flash(mode)
     return function()
-        require("flash")[fn]()
+        require("flash")[mode]()
     end
 end
 
@@ -25,8 +23,7 @@ return {
     },
     {
         "todo-comments.nvim",
-        -- InsertEnter covers :enew buffers, which fire neither read event
-        event = { "BufReadPost", "BufNewFile", "InsertEnter" },
+        event = require("user.utils.lazy").file_events,
         cmd = { "TodoTelescope", "TodoTrouble", "TodoQuickFix", "TodoLocList" },
         after = function()
             require("todo-comments").setup({})
@@ -44,10 +41,18 @@ return {
     {
         "render-markdown.nvim",
         -- only filetypes with an installed treesitter parser
-        ft = { "markdown", "rmd" },
+        ft = "markdown",
         after = function()
             require("render-markdown").setup({
-                file_types = { "markdown", "rmd" },
+                file_types = { "markdown" },
+                render_modes = true,
+                win_options = { conceallevel = { rendered = 0 } },
+                bullet = { enabled = false },
+                checkbox = { enabled = false },
+                html = { enabled = false },
+                code = { border = "thick" },
+                sign = { enabled = false },
+                latex = { enabled = false },
                 -- lsp hover floats are nofile markdown, styled by user/autocmds.lua instead
                 overrides = { buftype = { nofile = { enabled = false } } },
             })

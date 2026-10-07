@@ -1,50 +1,39 @@
--- colors are hardcoded catppuccin mocha hex values
--- so they don't depend on catppuccin's load order
-local justfile = {
-    icon = "󱚣",
-    name = "Justfile",
-    -- mocha peach
-    color = "#fab387",
-}
-
 return {
     "nvim-web-devicons",
     -- bufferline, alpha, nvim-tree, and telescope read icons at setup
+    -- loads after catppuccin (priority 1000), so its palette is ready here
     priority = 900,
     after = function()
+        local p = require("catppuccin.palettes").get_palette()
+        local justfile = { icon = "󱚣", name = "Justfile", color = p.peach }
         require("nvim-web-devicons").setup({
             override_by_extension = {
                 astro = {
                     icon = "",
                     name = "Astro",
-                    -- mocha red
-                    color = "#f38ba8",
+                    color = p.red,
                 },
                 norg = {
                     icon = "",
                     name = "Neorg",
-                    -- mocha green
-                    color = "#a6e3a1",
+                    color = p.green,
                 },
             },
             override_by_filename = {
                 [".envrc"] = {
                     icon = "",
                     name = "envrc",
-                    -- mocha yellow
-                    color = "#f9e2af",
+                    color = p.yellow,
                 },
                 [".editorconfig"] = {
                     icon = "",
                     name = "EditorConfig",
-                    -- mocha green
-                    color = "#a6e3a1",
+                    color = p.green,
                 },
                 [".luacheckrc"] = {
                     icon = "󰢱",
                     name = "LuacheckRC",
-                    -- mocha blue
-                    color = "#89b4fa",
+                    color = p.blue,
                 },
                 [".Justfile"] = justfile,
                 [".justfile"] = justfile,

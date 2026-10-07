@@ -1,7 +1,6 @@
 return {
     "indent-blankline.nvim",
-    -- InsertEnter covers :enew buffers, which fire neither read event
-    event = { "BufReadPost", "BufNewFile", "InsertEnter" },
+    event = require("user.utils.lazy").file_events,
     after = function()
         require("ibl").setup({
             indent = { char = "▏" },

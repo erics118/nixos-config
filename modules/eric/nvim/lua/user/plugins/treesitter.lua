@@ -29,8 +29,7 @@ vim.api.nvim_create_autocmd("FileType", {
 return {
     -- auto-close/rename HTML tags
     "nvim-ts-autotag",
-    -- loaded once the screen is drawn, so the first insert doesn't wait on it
-    event = { "DeferredUIEnter", "InsertEnter" },
+    event = require("user.utils.lazy").insert_events,
     after = function()
         require("nvim-ts-autotag").setup({})
     end,

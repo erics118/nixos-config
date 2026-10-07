@@ -12,6 +12,8 @@ return function(colors)
         NvimTreeGitMergeIcon = { fg = colors.mauve },
         NvimTreeGitIgnoredIcon = { fg = colors.overlay0 },
         WhichKeyBorder = { link = "FloatBorder" },
+        -- centered cmdline (user/cmdline.lua)
+        CmdlineBorder = { fg = colors.mauve },
         -- telescope
         TelescopeBorder = { link = "FloatBorder" },
         TelescopeTitle = { fg = colors.text },
@@ -23,10 +25,6 @@ return function(colors)
         BufferLineTabSeparator = { link = "FloatBorder" },
         BufferLineSeparator = { link = "FloatBorder" },
         BufferLineOffsetSeparator = { link = "FloatBorder" },
-        --
-        FidgetTitle = { fg = colors.subtext1 },
-        FidgetTask = { fg = colors.subtext0 },
-
         NotifyBackground = { bg = colors.base },
         NotifyINFOBorder = { link = "NotifyINFOTitle" },
         NotifyINFOIcon = { link = "NotifyINFOTitle" },

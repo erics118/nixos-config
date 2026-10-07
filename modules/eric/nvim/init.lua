@@ -2,6 +2,8 @@
 vim.loader.enable()
 
 require("user.options")
+-- before plugins, so ui2 owns the cmdline and messages from the start
+require("user.cmdline")
 require("user.keymaps")
 
 -- during startup, :packadd! only adds the plugin to the runtimepath, and the load-plugins

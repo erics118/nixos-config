@@ -1,7 +1,6 @@
 return {
     "nvim-autopairs",
-    -- loaded once the screen is drawn, so the first insert doesn't wait on it
-    event = { "DeferredUIEnter", "InsertEnter" },
+    event = require("user.utils.lazy").insert_events,
     after = function()
         local npairs = require("nvim-autopairs")
         npairs.setup({

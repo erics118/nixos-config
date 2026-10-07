@@ -13,7 +13,7 @@ end
 
 -- runs callback unless the current window is a float or shows a UI filetype
 -- the list is vim.g.ignored_ui_filetypes from user/options.lua
-function M.ft_guard(callback)
+function M.in_editor_window(callback)
     if vim.api.nvim_win_get_config(0).relative ~= "" then
         return
     end

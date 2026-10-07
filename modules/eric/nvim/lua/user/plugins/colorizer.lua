@@ -13,9 +13,12 @@ local filetypes = {
     "scss",
     "json",
     "jsonc",
+    "json5",
 }
 
-vim.keymap.set("n", "<leader>tC", "<cmd>ColorizerToggle<CR>", { silent = true, desc = "Toggle colorizer" })
+local map = require("user.utils.map")
+
+map("n", "<leader>tC", "<cmd>ColorizerToggle<CR>", "Toggle colorizer")
 
 return {
     "nvim-colorizer.lua",

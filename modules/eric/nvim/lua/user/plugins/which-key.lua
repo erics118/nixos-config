@@ -1,16 +1,16 @@
 -- group labels for <leader> prefixes
 local groups = {
     b = "Buffer",
-    c = "CMake",
-    f = "Telescope",
-    g = "Fugitive",
-    h = "Gitsigns",
+    c = "Code action",
+    f = "Find",
+    g = "Git",
+    h = "Hunk",
     l = "LSP",
-    n = "Neogit",
+    r = "Rename",
     s = "Search",
     t = "Toggle",
     w = "Workspace",
-    x = "Trouble",
+    x = "Diagnostics",
 }
 
 return {

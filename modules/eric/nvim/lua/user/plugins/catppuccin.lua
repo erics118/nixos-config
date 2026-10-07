@@ -1,11 +1,14 @@
+-- pinned, with no runtime theme switching
+-- everything else reads colors through catppuccin.palettes.get_palette()
+local flavour = "mocha"
+
 return {
     "catppuccin-nvim",
     -- other plugins read its palette at setup
     priority = 1000,
     after = function()
         require("catppuccin").setup({
-            -- pin flavour explicitly; no runtime theme switching
-            flavour = "mocha",
+            flavour = flavour,
             transparent_background = true,
             styles = { comments = { "italic" } },
             term_colors = true,
@@ -37,7 +40,7 @@ return {
             },
             highlight_overrides = { all = require("user.catppuccin_overrides") },
         })
-        vim.cmd.colorscheme("catppuccin-mocha")
-        vim.env.BAT_THEME = "catppuccin-mocha"
+        vim.cmd.colorscheme("catppuccin-" .. flavour)
+        vim.env.BAT_THEME = "catppuccin-" .. flavour
     end,
 }

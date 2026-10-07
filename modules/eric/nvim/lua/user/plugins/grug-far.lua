@@ -1,4 +1,6 @@
-vim.keymap.set("n", "<leader>sr", "<cmd>GrugFar<CR>", { silent = true, desc = "Search and replace" })
+local map = require("user.utils.map")
+
+map("n", "<leader>sr", "<cmd>GrugFar<CR>", "Search and replace")
 
 return {
     "grug-far.nvim",

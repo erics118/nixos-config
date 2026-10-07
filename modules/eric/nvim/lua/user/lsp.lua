@@ -1,3 +1,6 @@
+local map = require("user.utils.map")
+local ui_guard = require("user.utils.ui_guard")
+
 vim.diagnostic.config({
     -- an error sign wins over a warning on the same line
     severity_sort = true,
@@ -14,9 +17,11 @@ vim.diagnostic.config({
 
 -- for servers whose lspconfig cmd is a function: neovim only skips a missing binary when cmd is a list,
 -- so these would warn on every open outside a devshell. start them only when the binary is on PATH
--- or in the project's node_modules/.bin, which their cmd also checks
-local function when_installed(name, bin)
+-- or in the project's node_modules/.bin, which the astro, tailwindcss, and ts_ls cmds also check
+-- root_dir replaces the lspconfig one when given
+local function when_installed(name, bin, root_dir)
     local config = assert(vim.lsp.config[name], name .. " has no lsp config")
+    root_dir = root_dir or config.root_dir
     return function(bufnr, on_dir)
         local function start(root)
             local project_bin = root and vim.fs.joinpath(root, "node_modules/.bin", bin)
@@ -24,8 +29,8 @@ local function when_installed(name, bin)
                 on_dir(root)
             end
         end
-        if config.root_dir then
-            config.root_dir(bufnr, start)
+        if root_dir then
+            root_dir(bufnr, start)
         else
             start(vim.fs.root(bufnr, config.root_markers))
         end
@@ -67,6 +72,19 @@ local servers = {
         before_init = function(_, config)
             config.settings.json.schemas = require("schemastore").json.schemas()
         end,
+        handlers = {
+            -- jsonc files (including .hujson) may use trailing commas
+            -- 519 is jsonls' trailing comma code
+            ["textDocument/diagnostic"] = function(err, result, ctx)
+                local bufnr = vim.uri_to_bufnr(ctx.params.textDocument.uri)
+                if result and result.items and vim.bo[bufnr].filetype == "jsonc" then
+                    result.items = vim.tbl_filter(function(d)
+                        return d.code ~= 519
+                    end, result.items)
+                end
+                return vim.lsp.handlers["textDocument/diagnostic"](err, result, ctx)
+            end,
+        },
     },
     lua_ls = {},
     marksman = {},
@@ -104,22 +122,14 @@ local servers = {
     },
     -- Tailwind's upstream filetype list is very broad
     -- only activate it when the nearest package.json declares Tailwind
-    tailwindcss = { root_dir = require("user.tailwind_root") },
+    tailwindcss = {
+        root_dir = when_installed("tailwindcss", "tailwindcss-language-server", require("user.tailwind_root")),
+    },
     taplo = {},
+    -- vimtex owns compiling and the skim viewer, so texlab only completes and lints
     texlab = {
         settings = {
             texlab = {
-                build = {
-                    executable = "latexmk",
-                    args = { "-pdf", "-interaction=nonstopmode", "-synctex=1", "%f" },
-                    -- vimtex owns compiling (\ll), so saving doesn't start a second latexmk
-                    onSave = false,
-                    forwardSearchAfter = false,
-                },
-                forwardSearch = {
-                    executable = "/Applications/Nix Apps/Skim.app/Contents/SharedSupport/displayline",
-                    args = { "-r", "%l", "%p", "%f" },
-                },
                 chktex = { onEdit = true, onOpenAndSave = true },
                 diagnosticsDelay = 300,
                 formatterLineLength = 100,
@@ -150,16 +160,98 @@ for name, config in pairs(servers) do
     vim.lsp.enable(name)
 end
 
-local function map(lhs, rhs, desc)
-    vim.keymap.set("n", lhs, rhs, { silent = true, desc = desc })
+vim.g.inlay_hints_enabled = true
+
+-- non-file buffers (hover floats, plugin views) never get inlay hints
+local function apply_inlay_hints(buf)
+    if ui_guard.is_file_backed_buffer(buf) then
+        vim.lsp.inlay_hint.enable(vim.g.inlay_hints_enabled, { bufnr = buf })
+    end
 end
 
-map("<leader>k", vim.lsp.buf.signature_help, "Signature help")
-map("<leader>lr", "<Cmd>lsp restart<CR>", "Restart LSP")
-map("<leader>ti", function()
+local group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true })
+
+vim.api.nvim_create_autocmd("LspAttach", {
+    desc = "Set LSP keymaps the attached server supports",
+    group = group,
+    callback = function(ev)
+        local client = vim.lsp.get_client_by_id(ev.data.client_id)
+        if not client then
+            return
+        end
+        local maps = {
+            { "gd", "textDocument/definition", vim.lsp.buf.definition, "Go to definition" },
+            { "gD", "textDocument/declaration", vim.lsp.buf.declaration, "Go to declaration" },
+            {
+                "K",
+                "textDocument/hover",
+                function()
+                    vim.lsp.buf.hover({ max_width = 80, max_height = 20 })
+                end,
+                "Hover documentation",
+            },
+        }
+        for _, m in ipairs(maps) do
+            if client:supports_method(m[2], ev.buf) then
+                vim.keymap.set("n", m[1], m[3], { buf = ev.buf, desc = m[4] })
+            end
+        end
+    end,
+})
+
+vim.api.nvim_create_autocmd("LspAttach", {
+    desc = "Enable inlay hints on LSP attach",
+    group = group,
+    callback = function(ev)
+        local client = vim.lsp.get_client_by_id(ev.data.client_id)
+        if client and client.server_capabilities.inlayHintProvider then
+            apply_inlay_hints(ev.buf)
+        end
+    end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    desc = "Style LSP floating windows (hover, signature help)",
+    group = vim.api.nvim_create_augroup("UserLspFloatStyle", { clear = true }),
+    pattern = "markdown",
+    callback = function(ev)
+        local win = vim.api.nvim_get_current_win()
+        if vim.api.nvim_win_get_config(win).relative == "" then
+            return
+        end
+        vim.wo[win].winbar = ""
+        vim.wo[win].relativenumber = false
+        vim.wo[win].scrolloff = 0
+        vim.wo[win].conceallevel = 0
+        vim.wo[win].concealcursor = ""
+        vim.wo[win].number = vim.api.nvim_buf_line_count(ev.buf) > 10
+
+        -- skip past leading blank lines so hover doesn't open on whitespace
+        local lines = vim.api.nvim_buf_get_lines(ev.buf, 0, -1, false)
+        local first = 1
+        while first <= #lines and lines[first]:match("^%s*$") do
+            first = first + 1
+        end
+        if first > 1 and first <= #lines then
+            vim.api.nvim_win_set_cursor(win, { first, 0 })
+        end
+    end,
+})
+
+map("n", "<leader>k", vim.lsp.buf.signature_help, "Signature help")
+map("n", "<leader>D", vim.lsp.buf.type_definition, "Type definition")
+map("n", "<leader>rn", vim.lsp.buf.rename, "Rename symbol")
+map("n", "<leader>e", vim.diagnostic.open_float, "Open diagnostic float")
+map({ "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, "Code action")
+map("n", "<leader>lr", "<Cmd>lsp restart<CR>", "Restart LSP")
+map("n", "<leader>ti", function()
     vim.g.inlay_hints_enabled = not vim.g.inlay_hints_enabled
-    vim.lsp.inlay_hint.enable(vim.g.inlay_hints_enabled)
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_loaded(buf) then
+            apply_inlay_hints(buf)
+        end
+    end
     vim.notify("Inlay hints: " .. (vim.g.inlay_hints_enabled and "ON" or "OFF"), vim.log.levels.INFO)
 end, "Toggle inlay hints")
-map("<leader>wa", vim.lsp.buf.add_workspace_folder, "Add workspace folder")
-map("<leader>wr", vim.lsp.buf.remove_workspace_folder, "Remove workspace folder")
+map("n", "<leader>wa", vim.lsp.buf.add_workspace_folder, "Add workspace folder")
+map("n", "<leader>wr", vim.lsp.buf.remove_workspace_folder, "Remove workspace folder")

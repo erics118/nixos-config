@@ -1,0 +1,6 @@
+// base markdownlint config for nvim-lint
+// a project .markdownlint.* file replaces it, and a .markdownlint-cli2.* file merges with it
+{
+  // long lines are fine, prose is soft-wrapped
+  "MD013": false
+}

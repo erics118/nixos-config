@@ -1,7 +1,9 @@
-vim.keymap.set({ "n", "x" }, "<leader>lf", function()
+local map = require("user.utils.map")
+
+map({ "n", "x" }, "<leader>lf", function()
     require("conform").format({ async = true })
-end, { silent = true, desc = "Format buffer or range" })
-vim.keymap.set("n", "<leader>li", "<cmd>ConformInfo<CR>", { silent = true, desc = "Conform formatter info" })
+end, "Format buffer or range")
+map("n", "<leader>li", "<cmd>ConformInfo<CR>", "Conform formatter info")
 
 local prettier = { "prettier" }
 
@@ -10,11 +12,17 @@ return {
     after = function()
         require("conform").setup({
             notify_on_error = false,
-            -- LSP source fixes (user/lsp_fix.lua) run first, so formatting sees their edits
+            -- LSP source fixes (user/lsp_save_actions.lua) run before the write
+            -- formatting runs after it in the background, so a slow formatter doesn't block :w
             format_on_save = function(bufnr)
-                require("user.lsp_fix").run(bufnr)
-                return { timeout_ms = 800 }
+                -- conform-internal flag, set while format_after_save rewrites the buffer
+                -- the fixes already ran before the first write
+                if vim.b[bufnr].conform_applying_formatting then
+                    return
+                end
+                require("user.lsp_save_actions").run(bufnr)
             end,
+            format_after_save = { timeout_ms = 800 },
             -- per-filetype lsp_format only applies when callers don't pass their own
             default_format_opts = { lsp_format = "fallback" },
             formatters = {
@@ -26,6 +34,12 @@ return {
                 -- treefmt-nix runs shfmt with these, so format-on-save agrees with it
                 -- instead of reindenting every shell script to tabs
                 shfmt = { prepend_args = { "-i", "2", "-s" } },
+                -- prettier can't infer a parser from the .hujson extension
+                prettier = {
+                    prepend_args = function(_, ctx)
+                        return ctx.filename:match("%.hujson$") and { "--parser", "jsonc" } or {}
+                    end,
+                },
             },
             formatters_by_ft = {
                 -- trim whitespace, then let the LSP format filetypes with no entry here
@@ -49,6 +63,7 @@ return {
                 svelte = prettier,
                 json = prettier,
                 jsonc = prettier,
+                json5 = prettier,
                 yaml = prettier,
                 markdown = prettier,
 

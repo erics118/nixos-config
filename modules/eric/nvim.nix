@@ -37,7 +37,8 @@
               bufferline-nvim
               catppuccin-nvim
               cmake-tools-nvim
-              codediff-nvim
+              # nixpkgs still lists nui.nvim, which codediff replaced with its own split, line, and tree modules
+              (codediff-nvim.overrideAttrs { dependencies = [ ]; })
               conform-nvim
               copilot-lua
               dropbar-nvim
