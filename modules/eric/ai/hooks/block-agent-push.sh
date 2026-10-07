@@ -32,7 +32,7 @@ fi
 # gh is read-only: allow only known reads, so new write commands are denied too
 while read -r group sub; do
   case "$group $sub" in
-  'api '* | 'search '* | 'status ' | 'repo clone' | *' view' | *' list' | *' status' | *' diff' | *' checks') continue ;;
+  'api '* | 'search '* | 'status ' | 'repo clone' | 'run watch' | *' view' | *' list' | *' status' | *' diff' | *' checks') continue ;;
   esac
   hook_deny "Agents use gh read-only, and gh $group $sub is not a known read. Tell the user what to run."
 done < <(hook_each 'select(tool == "gh") | "\(.argv[1] // "") \(.argv[2] // "")"')

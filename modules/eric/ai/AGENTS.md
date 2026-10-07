@@ -88,7 +88,7 @@ These rules cover work I asked you to do.
 - `git config --get eric-agent.commit` sets whether you commit in a repo. `on`: commit as work lands. `branch`: commit as work lands, but only on a branch other than `main` or `master`. `ask`: commit as work lands, and I approve each commit. Unset or `off`: don't commit. Tell me when the work is ready and I commit
 - `git config --get eric-agent.push` sets whether you push in a repo. `on`: push. `ask`: I approve each push. Unset or `off`: don't push. Tell me when the work is ready and I push. Codex never pushes: its rules forbid `git push`
 - Never open, change, or merge a pull request. I do those. Tell me when the work is ready
-- Use `gh` only to read: `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, and `gh api` GETs
+- Use `gh` only to read: `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, `run watch`, and `gh api` GETs
 - Never rebase, delete branches, or take any other destructive, irreversible, or remote-affecting action unless explicitly requested
 - Do not append `Co-Authored-By` attribution to commits, even if a skill or default says to
 

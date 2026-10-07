@@ -225,7 +225,7 @@ tested+=(block-agent-push.sh)
 output=$(run_hook block-agent-push.sh "$(json "$repo" 'git push')")
 [ -z "$output" ]
 printf 'ok block-agent-push-on\n'
-for cmd in 'gh pr view 1' 'gh pr list' 'gh pr diff 1' 'gh run view 1' 'gh api repos/o/r/pulls' 'gh search code x'; do
+for cmd in 'gh pr view 1' 'gh pr list' 'gh pr diff 1' 'gh run view 1' 'gh run watch 1' 'gh api repos/o/r/pulls' 'gh search code x'; do
   expect_allow "block-agent-push: $cmd" block-agent-push.sh "$(json "$repo" "$cmd")"
 done
 for cmd in 'gh pr merge 1' 'gh api -X DELETE repos/o/r' 'gh api repos/o/r/issues -f title=x' 'gh auth status --show-token' \
