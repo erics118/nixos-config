@@ -12,6 +12,9 @@ concurrency:
   group: check-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+permissions:
+  contents: read
+
 jobs:
   flake-check:
     # these runner labels are baked into the check names the branch ruleset
@@ -26,10 +29,14 @@ jobs:
           - ubuntu-26.04-arm
           - macos-26
     runs-on: ${{ matrix.os }}
+    # ~3x the slowest run, for a bump that misses the caches
+    timeout-minutes: 120
     steps:
       # actions are pinned to commit shas, which most repos don't need
       # every host trusts the cachix cache these jobs push to, so a retagged action could poison it
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # the nixos-config-private input is a private git+ssh flake, so we need to set up ssh access for it
       - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
@@ -53,8 +60,11 @@ jobs:
 
   ai-agent-tests:
     runs-on: ubuntu-26.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -62,7 +72,7 @@ jobs:
 
       # the extensions import these at runtime, pi provides them when installed
       # unpinned, since the installed pi updates itself
-      - run: npm install --no-save --no-package-lock @earendil-works/pi-coding-agent @earendil-works/pi-tui @earendil-works/pi-ai
+      - run: npm install --no-save --no-package-lock @earendil-works/pi-coding-agent @earendil-works/pi-tui @earendil-works/pi-ai # zizmor: ignore[adhoc-packages]
 
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
 
@@ -72,7 +82,7 @@ jobs:
 
       # test.sh checks codex/rules/default.rules with `codex execpolicy check`
       # unpinned, since the installed codex updates itself
-      - run: npm install -g @openai/codex
+      - run: npm install -g @openai/codex # zizmor: ignore[adhoc-packages]
 
       - run: bash modules/eric/ai/hooks/test.sh
 

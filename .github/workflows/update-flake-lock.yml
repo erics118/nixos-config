@@ -15,6 +15,7 @@ concurrency:
 jobs:
   update-lock:
     runs-on: ubuntu-26.04
+    timeout-minutes: 15
     # GITHUB_TOKEN only clones
     # every write uses the app token
     permissions:
@@ -38,6 +39,9 @@ jobs:
         with:
           client-id: ${{ secrets.CLIENT_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          # push the branch, open the pr, enable auto-merge
+          permission-contents: write
+          permission-pull-requests: write
 
       - uses: DeterminateSystems/update-flake-lock@da03c0f078bc4b2c37ee4f7e072d34bf8f188bb3 # v29
         id: update

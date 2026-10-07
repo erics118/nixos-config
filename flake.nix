@@ -209,6 +209,9 @@
                 };
                 jsonfmt.enable = true;
 
+                actionlint.enable = true;
+                zizmor.enable = true;
+
                 stylua.enable = true;
                 clang-format.enable = true;
               };
