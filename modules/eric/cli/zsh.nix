@@ -166,7 +166,8 @@
           mmv = "noglob zmv -W";
           zmv = "noglob zmv";
 
-          sshn = "ssh -F /dev/null -o PubkeyAuthentication=no";
+          # ssh with forced password auth
+          sshn = "ssh -o PubkeyAuthentication=no -o PreferredAuthentications=keyboard-interactive,password";
 
           ws = "wezterm cli spawn -- ";
 
@@ -174,8 +175,7 @@
 
           rv-debug = "docker run -it --rm --init --name testing --ulimit core=-1 --mount type=bind,source=\"$PWD\"/,target=\"$PWD\"/ -v \"$PWD\":/root ghcr.io/sampsyo/cs3410-infra";
 
-          # # is an extended-glob operator in zsh; disable globbing so flake
-          # refs like nixpkgs#foo work without quoting
+          # flake refs can carry glob characters, like ? in github:owner/repo?ref=main
           nix = "noglob nix";
         }
         // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
