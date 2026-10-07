@@ -1,7 +1,6 @@
 ---
 name: audit
-description: Read-only sweep of existing code across every lens, ranked by what to fix first, then applies accepted fixes on confirm
-disable-model-invocation: true
+description: Use when asked to audit, review, or sweep existing code or config for anything worth fixing. Read-only sweep across every lens, ranked by what to fix first, then applies accepted fixes on confirm
 argument-hint: "[empty for whole repo | area | 'diff' for uncommitted changes] [+ a lens to narrow: cleanup|quality|debt|modernize|structure|correctness|robustness|concurrency|security|contract|performance|tests|operability|docs]"
 ---
 

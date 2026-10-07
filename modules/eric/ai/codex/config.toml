@@ -392,6 +392,7 @@ screen_reader_detection_done = true
 "gpt-5.5" = 4
 "gpt-5.6-sol" = 4
 gpt-6-astra = 4
+"gpt-6.1-sol" = 1
 
 [hooks.state."/Users/eric/.codex/hooks.json:pre_tool_use:0:0"]
 trusted_hash = "sha256:9f5efe0b15abbd66b247a093b660a0985f97f30283e7d1d82324807ab4cd4b7e"

@@ -38,6 +38,16 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/caps-led.sh\""
+          }
+        ]
+      }
     ]
   }
 }

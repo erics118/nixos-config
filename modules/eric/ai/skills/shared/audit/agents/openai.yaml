@@ -3,4 +3,4 @@ interface:
   default_prompt: "Use $audit to sweep this repo for everything worth fixing."
 
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true

@@ -4,6 +4,7 @@ Claude Code, Codex, and pi share one instruction file and one set of skills.
 
 - `AGENTS.md` is linked as `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, and `~/.pi/agent/AGENTS.md`. pi-only rules live in `pi/APPEND_SYSTEM.md`.
 - `skills/shared/` goes to `~/.claude/skills` and `~/.agents/skills` (Codex and pi). `skills/claude/` is Claude-only. `skills/codex/` also goes to `~/.agents/skills`, so Codex and pi both get it.
+- Subagents live in `claude/agents/`, `codex/agents/`, and `pi/agents/`, linked as `~/.claude/agents`, `~/.codex/agents`, and `~/.pi/agent/agents`. Each tool has `auditor` and `recall`. Claude and Codex also have `researcher`, and pi uses its built-in one. Codex agents cannot be made read-only, so read-only is only an instruction there.
 - Guard hooks live in `hooks/`, linked as `~/.agents/hooks`. `claude/settings.json` is the one list of which hook runs for which tool: Claude runs it, and pi's `pi/extensions/guards.ts` reads the same file. Codex runs the shell-command guards listed in `codex/hooks.json` (trust them once with `/hooks`).
 
 ## When to invoke what
@@ -25,7 +26,7 @@ Invoke with `/name` in Claude Code, `$name` in Codex, and `/skill:name` in pi.
 | Review                                         | `audit`, or `adversarial-review`                                                 |
 | An agent failed and it should not happen again | `fix-yourself`                                                                   |
 
-These load on their own when they apply: `rewrite` (cutting or restructuring prose), `recall` (past sessions), `grilling`, `systematic-debugging`, `test-driven-development`.
+These load on their own when they apply: `audit` (review), `rewrite` (cutting or restructuring prose), `recall` (past sessions), `tmux` (checking or driving a program in a real terminal), `grilling`, `systematic-debugging`, `test-driven-development`.
 
 ## Guards
 

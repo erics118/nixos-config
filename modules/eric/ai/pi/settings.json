@@ -22,22 +22,32 @@
     "defaultModel": "gpt-5.6-terra",
     "agentOverrides": {
       "oracle": {
-        "model": "gpt-5.6-sol",
-        "thinking": "high"
+        "model": "gpt-6.1-sol",
+        "thinking": "high",
+        "inheritGlobalContext": true,
+        "inheritSkills": true
       },
       "reviewer": {
-        "model": "gpt-5.6-sol",
-        "thinking": "high"
-      }
-    }
-  },
-  "pi-fork": {
-    "defaultEffort": "balanced",
-    "effortProfiles": {
-      "deep": {
-        "provider": "openai",
-        "id": "gpt-5.6-sol",
-        "thinking": "high"
+        "model": "gpt-6.1-sol",
+        "thinking": "high",
+        "inheritGlobalContext": true,
+        "inheritSkills": true
+      },
+      "scout": {
+        "inheritGlobalContext": true,
+        "inheritSkills": true
+      },
+      "researcher": {
+        "inheritGlobalContext": true,
+        "inheritSkills": true
+      },
+      "evidence-auditor": {
+        "inheritGlobalContext": true,
+        "inheritSkills": true
+      },
+      "worker": {
+        "inheritGlobalContext": true,
+        "inheritSkills": true
       }
     }
   },

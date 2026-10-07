@@ -2,6 +2,7 @@
   flake.modules.homeManager.base =
     {
       repoFile,
+      repoFileAll,
       lib,
       pkgs,
       ...
@@ -9,33 +10,19 @@
     let
       base = "modules/eric/ai";
       globalInstructions = repoFile "${base}/AGENTS.md";
-      vendors = {
-        claude = "claude";
-        codex = "codex";
-      };
-      skillLocations = {
-        agents = ".agents/skills";
-        claude = ".claude/skills";
-      };
-      vendorFiles =
-        vendor: files:
-        lib.mapAttrs' (
-          target: source:
-          lib.nameValuePair ".${vendor}/${target}" { source = repoFile "${base}/${vendor}/${source}"; }
-        ) files;
+      # links each named path under ~/<target> to the same path under <base>/<source>
+      links =
+        target: source: names:
+        lib.genAttrs' names (
+          name: lib.nameValuePair "${target}/${name}" { source = repoFile "${base}/${source}/${name}"; }
+        );
+      # links every skill directory in <base>/skills/<scope> into ~/<target>
       skillDirectories =
-        location: scope:
-        let
-          skills = ./ai/skills + "/${scope}";
-          names = builtins.attrNames (
-            lib.filterAttrs (_: type: type == "directory") (builtins.readDir skills)
-          );
-        in
-        lib.listToAttrs (
-          map (
-            name:
-            lib.nameValuePair "${location}/${name}" { source = repoFile "${base}/skills/${scope}/${name}"; }
-          ) names
+        target: scope:
+        links target "skills/${scope}" (
+          builtins.attrNames (
+            lib.filterAttrs (_: type: type == "directory") (builtins.readDir (./ai/skills + "/${scope}"))
+          )
         );
       context7Mcp = pkgs.writeShellApplication {
         name = "context7-mcp";
@@ -83,21 +70,45 @@
       home.file = {
         ".claude/CLAUDE.md".source = globalInstructions;
         ".codex/AGENTS.md".source = globalInstructions;
+        ".pi/agent/AGENTS.md".source = globalInstructions;
         ".agents/hooks".source = repoFile "${base}/hooks";
       }
-      // vendorFiles vendors.codex {
-        "config.toml" = "config.toml";
-        "hooks.json" = "hooks.json";
-        "rules/default.rules" = "rules/default.rules";
-      }
-      // vendorFiles vendors.claude {
-        "settings.json" = "settings.json";
-        "statusline.sh" = "statusline.sh";
-      }
-      // skillDirectories skillLocations.agents "shared"
-      // skillDirectories skillLocations.agents vendors.codex
-      // skillDirectories skillLocations.claude "shared"
-      // skillDirectories skillLocations.claude vendors.claude;
+      // links ".claude" "claude" [
+        "agents"
+        "settings.json"
+        "statusline.sh"
+      ]
+      // links ".codex" "codex" [
+        "agents"
+        "config.toml"
+        "hooks.json"
+        "rules/default.rules"
+      ]
+      // links ".pi/agent" "pi" [
+        "agents"
+        "settings.json"
+        "hermes-memory-config.json"
+        "APPEND_SYSTEM.md"
+        "mcp.json"
+      ]
+      // repoFileAll "${base}/pi/extensions" ".pi/agent/extensions"
+      // repoFileAll "${base}/pi/lib" ".pi/agent/lib"
+      // repoFileAll "${base}/pi/themes" ".pi/agent/themes"
+      // repoFileAll "${base}/pi/packages/pi-web-activation" ".pi/agent/packages/pi-web-activation"
+      # claude reads ~/.claude/skills, codex and pi read ~/.agents/skills
+      // skillDirectories ".claude/skills" "shared"
+      // skillDirectories ".claude/skills" "claude"
+      // skillDirectories ".agents/skills" "shared"
+      // skillDirectories ".agents/skills" "codex";
+
+      # nix owns the pi binary lifecycle, so stop its update-check nag
+      home.sessionVariables.PI_SKIP_VERSION_CHECK = "1";
+      # pi's default agent dir, set explicitly so pi-subagents saves new agents to the
+      # repo-linked ~/.pi/agent/agents instead of ~/.agents, which it picks whenever that exists
+      home.sessionVariables.PI_CODING_AGENT_DIR = "$HOME/.pi/agent";
+      # pi's better-sqlite3 runs node-gyp on install
+      # gyp needs ctypes, which python3Minimal lacks
+      home.sessionVariables.npm_config_python = lib.getExe pkgs.python3;
 
       home.packages = with pkgs; [
         ccusage

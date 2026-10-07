@@ -296,6 +296,16 @@ expect_exit_2 warn-comment-block warn-comment-block.sh \
 expect_allow warn-comment-block-short warn-comment-block.sh \
   "$(jq -cn --arg file_path "$repo/comments.ts" --arg text $'// one\n// two\ncode' '{tool_input:{file_path:$file_path,edits:[{new_string:$text}]}}')"
 
+# a stub capsled records its args so the test never touches the real led
+mkdir "$repo/capsled-bin"
+printf '#!/bin/sh\necho "$@" >"%s/capsled-args"\n' "$repo" >"$repo/capsled-bin/capsled"
+chmod +x "$repo/capsled-bin/capsled"
+PATH=$repo/capsled-bin:$PATH expect_allow caps-led caps-led.sh '{}'
+[ "$(cat "$repo/capsled-args")" = "on --until-input" ] || {
+  printf 'FAIL caps-led did not run capsled on --until-input\n'
+  exit 1
+}
+
 configured=$(jq -r '.hooks | to_entries[] | .value[] | .hooks[] | .command' "$settings" | sed -E 's#.*/##; s/"//g' | sort -u)
 covered=$(printf '%s\n' "${tested[@]}" | sort -u)
 [ "$configured" = "$covered" ] || {
