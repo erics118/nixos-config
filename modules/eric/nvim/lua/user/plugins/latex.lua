@@ -13,14 +13,12 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 return {
-    -- loaded at startup: sioyek inverse search runs VimtexInverseSearch headlessly before any tex buffer opens
+    -- loaded at startup: skim inverse search runs VimtexInverseSearch headlessly before any tex buffer opens
     "vimtex",
     before = function()
         vim.g.vimtex_compiler_method = "latexmk"
         vim.g.vimtex_quickfix_mode = 0
-        vim.g.vimtex_view_method = "sioyek"
+        vim.g.vimtex_view_method = "skim"
         vim.g.vimtex_env_toggle_math_map = { ["$"] = "\\[", ["\\["] = "$" }
-        -- the nvim on PATH, not v:progpath's store path
-        vim.g.vimtex_callback_progpath = "nvim"
     end,
 }
