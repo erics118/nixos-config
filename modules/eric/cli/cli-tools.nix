@@ -35,7 +35,15 @@
       forceOverwriteSettings = true;
       settings = {
         enter_accept = true;
-        history_filter = [ "^\\?" ];
+        history_filter = [
+          "^\\?"
+          # literal secrets, while $VAR and $(...) references still get saved
+          "(?i)\\b\\w*(token|key|secret|passw(or)?d)=['\"]?[^$\\s'\"(]"
+          "(?i)(authorization|cookie):\\s*(bearer\\s+|basic\\s+|token\\s+)?['\"]?[^$\\s'\"]"
+          "(?i)\\bbearer\\s+[A-Za-z0-9._~+/=-]{12,}"
+          # a JWT anywhere, like a token passed as a plain argument
+          "eyJ[A-Za-z0-9_-]{10,}\\.eyJ"
+        ];
         filter_mode_shell_up_key_binding = "session";
         prefers_reduced_motion = true;
         records = true;

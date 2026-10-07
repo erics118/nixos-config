@@ -28,16 +28,21 @@
         ];
 
         settings = {
+          # default github
           "github.com" = mkGit "github.com" "id_ed25519_github_erics118";
 
+          # cornell github
           "github.coecis.cornell.edu" = mkGit "github.coecis.cornell.edu" "id_ed25519_cornell";
 
-          # cornellev club tailnet machines share the cev account. matches after the
-          # "*" block canonicalizes a one-word name onto the tailnet domain
-          "*.tail4ccb95.ts.net".user = "cev";
+          # cev tailnet, prefer password authentication
+          "*.tail4ccb95.ts.net" = {
+            user = "cev";
+            PubkeyAuthentication = "no";
+            PreferredAuthentications = "keyboard-interactive,password";
+          };
 
           "*" = {
-            # rebind ssh escape prefix off ~ so ~n/~p zsh named directories echo instantly
+            # rebind ssh escape prefix from ~ to Ctrl-] so zsh named directories work instantly
             EscapeChar = "^]";
 
             # macOS skips tailscale's search domains for one-word names, so ssh appends them itself

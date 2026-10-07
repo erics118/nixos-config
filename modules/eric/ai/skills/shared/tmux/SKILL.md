@@ -18,29 +18,29 @@ Use something else for:
 
 ```sh
 S=agent-$$-$RANDOM
-t() { tmux -L "$S" -f /dev/null "$@"; }
-t new-session -d -s main -x 120 -y 40 -c "$PWD" 'nvim -n file.lua'
-t set -t main remain-on-exit on
+tmx() { tmux -L "$S" -f /dev/null "$@"; }
+tmx new-session -d -s main -x 120 -y 40 -c "$PWD" 'nvim -n file.lua'
+tmx set -t main remain-on-exit on
 
 # ready: poll for a marker the real program draws, with a bound
 ready=0
 for i in $(seq 100); do
-  [ "$(t display -p -t main '#{C/r:NORMAL}')" != 0 ] && { ready=1; break; }
+  [ "$(tmx display -p -t main '#{C/r:NORMAL}')" != 0 ] && { ready=1; break; }
   sleep 0.1
 done
-[ "$ready" = 1 ] || { t capture-pane -p -t main; echo NOT READY; }
+[ "$ready" = 1 ] || { tmx capture-pane -p -t main; echo NOT READY; }
 
 # input: flags before keys, free text with -l, Enter in its own call
-t send-keys -t main -l ':echo "hello world"'
-t send-keys -t main Enter
+tmx send-keys -t main -l ':echo "hello world"'
+tmx send-keys -t main Enter
 
 # output
-t capture-pane -p -t main
-t capture-pane -p -e -t main
-t display -p -t main '#{cursor_x},#{cursor_y} #{pane_dead} #{pane_dead_status}'
+tmx capture-pane -p -t main
+tmx capture-pane -p -e -t main
+tmx display -p -t main '#{cursor_x},#{cursor_y} #{pane_dead} #{pane_dead_status}'
 
 # cleanup, on failure paths too
-t kill-server
+tmx kill-server
 rm -f "${TMUX_TMPDIR:-/tmp}/tmux-$(id -u)/$S"
 ```
 
@@ -48,7 +48,7 @@ A screen check is done when a capture shows the expected text, colors, or cursor
 
 ## Isolation
 
-- Every call goes through the `t` function with a fresh `-L` name per run. The agent often runs inside the user's own tmux (`$TMUX` is set), and a bare `tmux` command reaches the user's sessions.
+- Every call goes through the `tmx` function with a fresh `-L` name per run. The agent often runs inside the user's own tmux (`$TMUX` is set), and a bare `tmux` command reaches the user's sessions.
 - Use `-L`, not `-S <path>`: socket paths have an OS length limit (about 104 bytes on macOS), and scratch paths are often longer.
 - `-f /dev/null` skips the user's tmux.conf. It takes effect on the call that starts the server.
 - Always pass `-x` and `-y`. Layout depends on size, and the default is 80x24.
@@ -59,7 +59,7 @@ A screen check is done when a capture shows the expected text, colors, or cursor
 
 Wait by polling a condition with a bound, and print the screen when the bound runs out.
 
-- Text on screen: `t display -p -t main '#{C/r:REGEX}'` prints the matching line number, or 0. Or `t capture-pane -p -t main | grep -q REGEX`.
+- Text on screen: `tmx display -p -t main '#{C/r:REGEX}'` prints the matching line number, or 0. Or `tmx capture-pane -p -t main | grep -q REGEX`.
 - Pick the marker from a first capture of the real program. Stock markers fail under a user config: `^~` never matches when the config hides end-of-buffer `~`, while the statusline mode text does.
 - Anchor the pattern. The typed command line contains the marker too: `#{C:READY}` matched the echoed `echo READY` line before the output.
 - Shell command done: append `; tmux wait-for -S done` to the pane command, then `timeout 30 tmux -L "$S" wait-for done`. A signal sent before the wait starts is kept once. Wrap every `wait-for` in `timeout`.
@@ -71,7 +71,7 @@ Wait by polling a condition with a bound, and print the screen when the bound ru
 - Each `send-keys` argument is a key name (`Enter`, `Escape`, `C-c`, `BSpace`, `Up`, `F5`) or literal text. `-l` sends the whole argument as literal text.
 - Flags come before the keys: `send-keys -t main i -l SEP` types `-lSEP`.
 - `Escape x` in one call reaches nvim as `<M-x>`. Send `Escape` alone, pause about 0.2 s, then the next key.
-- Multi-line text: `printf '%s' "$text" | t load-buffer -` then `t paste-buffer -p -d -t main`.
+- Multi-line text: `printf '%s' "$text" | tmx load-buffer -` then `tmx paste-buffer -p -d -t main`.
 - After input, poll for the screen to change before capturing.
 
 ## Output

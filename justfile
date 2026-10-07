@@ -9,6 +9,7 @@ set default-list
 [private]
 ntfy msg status:
     #!/usr/bin/env zsh
+    (( $+commands[capsled] )) && capsled on --until-input
     # read here, not as a just variable, so `just --evaluate` and curl's argv never show it
     token=$(cat /run/secrets/ntfy/token 2>/dev/null) || exit 0
     [[ -n "$token" ]] || exit 0

@@ -214,18 +214,8 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
         end
     end
 
-    -- TODO: make colors configurable
-    local rainbow = {
-        conf.resolved_palette.ansi[2],
-        conf.resolved_palette.indexed[16],
-        conf.resolved_palette.ansi[4],
-        conf.resolved_palette.ansi[3],
-        conf.resolved_palette.ansi[5],
-        conf.resolved_palette.ansi[6],
-    }
-
-    local i = tab.tab_index % 6
-    local active_bg = rainbow[i + 1]
+    -- mocha red
+    local active_bg = "#f38ba8"
     local active_fg = colours.background
     local inactive_bg = colours.inactive_tab.bg_color
     local inactive_fg = colours.inactive_tab.fg_color
@@ -256,7 +246,7 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
 
     -- the tab before the active one
     if tab.tab_index == active_tab_index - 1 then
-        e_bg = rainbow[(i + 1) % 6 + 1]
+        e_bg = active_bg
     end
 
     -- now we format the tab string

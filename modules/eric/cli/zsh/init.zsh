@@ -1,7 +1,6 @@
 setopt auto_menu
 setopt complete_in_word
 setopt always_to_end
-setopt extended_glob
 setopt auto_pushd
 setopt pushd_ignore_dups
 setopt pushdminus
