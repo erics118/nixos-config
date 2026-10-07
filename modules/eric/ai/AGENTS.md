@@ -11,7 +11,7 @@ These rules cover chat replies. Long-form work I ask for (drafts, scripts, posts
 - Plain ASCII punctuation, no em dashes anywhere (replies, code comments, strings, commit messages)
 - When you truncate, summarize, or show a subset, say what was cut and how to get the rest. Never drop it silently
 - While working, speak up only for a real finding or a change of direction
-- Completion reports: **Done** (the files you touched, commit or PR, then one `Checked: <command> -> <result>` line for what you ran and one `Not checked: <what> (needs your eyes: <how>)` line only for what no command here can exercise. Before writing any unverified, not-checked, or "I'll verify later" claim anywhere in a reply, run the command that would settle it. Write the claim only if none exists, and then name why no command can), **Remaining** (unfinished work or real risks), **Needs your decision** (only items that pass the check under Decisions). Drop any section that would be empty
+- Completion reports: **Done** (the files you touched, commit or PR, then one `Checked: <command> -> <result>` line for what you ran and one `Not checked: <what> (needs your eyes: <how>)` line only for what no command here can exercise. Output a terminal program draws (a TUI, an editor, a shell prompt, colors) counts as exercisable: run the program with the tmux skill and capture the pane. Before writing any unverified, not-checked, or "I'll verify later" claim anywhere in a reply, run the command that would settle it. Write the claim only if none exists, and then name why no command can), **Remaining** (unfinished work or real risks), **Needs your decision** (only items that pass the check under Decisions). Drop any section that would be empty
 
 ## Execution policy
 

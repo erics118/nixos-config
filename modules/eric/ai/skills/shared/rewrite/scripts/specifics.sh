@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
-# usage: specifics OLD NEW
-# OLD may be - to read stdin, e.g. git show HEAD:f | specifics - f
+# usage: specifics.sh OLD NEW
+# OLD may be - to read stdin, e.g. git show HEAD:f | specifics.sh - f
 # no pipefail: a grep that finds nothing must not end the script before the sentence pass
 set -eu
-[ $# -eq 2 ] || { echo "usage: specifics OLD NEW" >&2; exit 2; }
+[ $# -eq 2 ] || {
+  echo "usage: specifics.sh OLD NEW" >&2
+  exit 2
+}
 old=$(cat -- "$1")
 new=$(cat -- "$2")
 flat=$(printf '%s' "$new" | tr -s ' \n' ' ')
 
 # code spans, quotes, multi-part paths, flags, numbers
+# shellcheck disable=SC2016
 printf '%s\n' "$old" |
   grep -oE '`[^`]+`|"[^"]+"|~?\.{0,2}/[A-Za-z0-9_.${}-]+(/[A-Za-z0-9_.${}-]+)+|(^|[[:space:]])--?[A-Za-z][A-Za-z0-9-]*|\b[0-9]+([.:x][0-9]+)*\b' |
   sed 's/^[[:space:]]*//' | sort -u |

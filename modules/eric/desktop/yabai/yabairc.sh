@@ -22,6 +22,7 @@ yabai -m signal --add event=window_focused action="sketchybar --trigger window_f
 yabai -m rule --add label="Finder" app="^Finder$" sticky=on manage=off
 
 # unmanaged rules
+# shellcheck source-path=SCRIPTDIR source=unmanaged_rules.sh
 source "$CONFIG_DIR/unmanaged_rules.sh"
 
 # dedicated spaces for certain apps
@@ -176,12 +177,12 @@ printf "configured layout..\n"
 # display update events
 
 yabai -m signal --add event=display_added \
-  action="$CONFIG_DIR/on_display_update"
+  action="$CONFIG_DIR/on_display_update.sh"
 
 # on unplug, re-evaluate all displays so migrated spaces get the right default
 yabai -m signal --add event=display_removed \
-  action="$CONFIG_DIR/on_display_update removed"
+  action="$CONFIG_DIR/on_display_update.sh removed"
 
-"$CONFIG_DIR/on_display_update"
+"$CONFIG_DIR/on_display_update.sh"
 
 printf "yabai configuration file loaded..\n"

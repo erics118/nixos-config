@@ -37,7 +37,7 @@ Done when: the ledger has its plan line, merge base, and pre-flight rows, and th
 
 ### 1. Dispatch the implementer
 
-Record `BASE=$(git rev-parse HEAD)`. From the repo root, run `<skill dir>/scripts/brief PLAN_FILE N`, where `<skill dir>` is this skill's base directory. It writes the task's text to `<workspace>/task-N-brief.md` and prints the path. The dispatch holds only:
+Record `BASE=$(git rev-parse HEAD)`. From the repo root, run `<skill dir>/scripts/brief.sh PLAN_FILE N`, where `<skill dir>` is this skill's base directory. It writes the task's text to `<workspace>/task-N-brief.md` and prints the path. The dispatch holds only:
 
 1. one line on where this task fits
 2. the task's deliverable and the repo path
@@ -56,7 +56,7 @@ Use [implementer-prompt.md](implementer-prompt.md). Never run two implementers a
 
 ### 3. Review the task
 
-From the repo root, run `<skill dir>/scripts/review-package PLAN_FILE BASE HEAD`. Dispatch a sonnet reviewer with [reviewer-prompt.md](reviewer-prompt.md), scope `task`: the brief, the report, the package path, and the plan's Global Constraints verbatim. Write the dispatch without pre-judging. If it contains "do not flag" or "at most Minor", delete that line.
+From the repo root, run `<skill dir>/scripts/review-package.sh PLAN_FILE BASE HEAD`. Dispatch a sonnet reviewer with [reviewer-prompt.md](reviewer-prompt.md), scope `task`: the brief, the report, the package path, and the plan's Global Constraints verbatim. Write the dispatch without pre-judging. If it contains "do not flag" or "at most Minor", delete that line.
 
 Resolve each `Cannot verify from diff` item yourself. A real gap joins the findings.
 
@@ -66,7 +66,7 @@ Minor findings go straight to the ledger as `Task N: minor (deferred): <one line
 
 - Rounds 1-3: resume the same implementer with the open findings verbatim.
 - Rounds 4-5: a fresh opus implementer, told "a prior implementer tried this 3 times, read the report file".
-- Every round: from the repo root, run `<skill dir>/scripts/review-package PLAN_FILE FIX_BASE HEAD` over the fix range, dispatch the reviewer with scope `re-review` and the findings verbatim, and ledger `Task N: fix round R/5 (<X> addressed, <Y> open; commits <first short sha>..<last short sha>)`.
+- Every round: from the repo root, run `<skill dir>/scripts/review-package.sh PLAN_FILE FIX_BASE HEAD` over the fix range, dispatch the reviewer with scope `re-review` and the findings verbatim, and ledger `Task N: fix round R/5 (<X> addressed, <Y> open; commits <first short sha>..<last short sha>)`.
 
 After round 5, adjudicate each open finding. If it is wrong or nothing builds on it, park it: `Task N: parked - <finding> - Ruling: <why>`. If it is load-bearing, rule on the smallest unblocking change and carry that ruling into the next dispatch.
 
@@ -78,7 +78,7 @@ Done when: the review is clean, or every open finding is parked with a ruling at
 
 ## Final review
 
-From the repo root, run `<skill dir>/scripts/review-package PLAN_FILE <merge base> HEAD`. Send the package to codex via consulting-codex, using [reviewer-prompt.md](reviewer-prompt.md) with scope `branch`, the plan path, the Review Focus section verbatim, and a pointer to the ledger's `Ruling:`, `parked`, and `minor (deferred)` lines.
+From the repo root, run `<skill dir>/scripts/review-package.sh PLAN_FILE <merge base> HEAD`. Send the package to codex via consulting-codex, using [reviewer-prompt.md](reviewer-prompt.md) with scope `branch`, the plan path, the Review Focus section verbatim, and a pointer to the ledger's `Ruling:`, `parked`, and `minor (deferred)` lines.
 
 Grade each finding by what a person using the result gets, not by its label. Send all Critical and Important findings to one opus fix subagent, then run one scoped re-review of its range. Adjudicate what remains as in the fix loop. There is no second fix wave. Ledger each minor as `Final: minor (deferred): <one line>`.
 

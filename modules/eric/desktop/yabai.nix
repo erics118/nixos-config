@@ -1,11 +1,11 @@
 {
   flake.modules.homeManager.darwin = {
     home.file = {
-      ".config/yabai/yabairc".source = ./yabai/yabairc;
+      ".config/yabai/yabairc".source = ./yabai/yabairc.sh;
       ".config/yabai/unmanaged_rules.sh".source = ./yabai/unmanaged_rules.sh;
       # yabairc execs this on load and from the display_added/removed signals
-      ".config/yabai/on_display_update" = {
-        source = ./yabai/on_display_update;
+      ".config/yabai/on_display_update.sh" = {
+        source = ./yabai/on_display_update.sh;
         executable = true;
       };
     };
