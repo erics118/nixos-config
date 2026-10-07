@@ -9,8 +9,11 @@
     {
       programs.direnv = {
         enable = true;
-        enableZshIntegration = false; # pre-computed in shell.nix
+        enableZshIntegration = false; # pre-computed in zsh.nix
         nix-direnv.enable = true;
+        # nix pins bash, direnv, and nix-direnv together, so its per-load version check can't fail
+        # unexported, so it stays out of the environment direnv hands to the shell
+        stdlib = "NIX_DIRENV_SKIP_VERSION_CHECK=1";
         config = {
           global = {
             load_dotenv = true;

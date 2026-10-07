@@ -9,24 +9,53 @@
     let
       # pre-compute the zsh init scripts for these tools at nix build time to
       # reduce shell startup time
+      # zsh -n fails the build on an init zsh can't parse
       mkInit =
-        name: cmd:
+        name: script:
         pkgs.runCommand "${name}-init.zsh" { } ''
           export HOME="$TMPDIR/home"
           export XDG_CONFIG_HOME="$HOME/.config"
           export XDG_CACHE_HOME="$HOME/.cache"
           mkdir -p "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
-          ${cmd} > $out
+          {
+            ${script}
+          } > $out
+          ${lib.getExe pkgs.zsh} -n $out
         '';
-      starshipInit = mkInit "starship" "${pkgs.starship}/bin/starship init zsh --print-full-init";
+      starship = lib.getExe pkgs.starship;
+
+      # without a right_format, RPROMPT would run starship at every prompt to print nothing
+      noRightPrompt = !config.programs.starship.settings ? right_format;
+
+      # init lines that run starship, replaced with values computed here
+      bakedLines = [ "^PROMPT2=" ] ++ lib.optional noRightPrompt "^RPROMPT=";
+
+      starshipInit = mkInit "starship" ''
+        # STARSHIP_SHELL makes it wrap escapes in %{ %}, as it does when zsh runs it
+        export STARSHIP_CONFIG=${./starship/starship.toml} STARSHIP_SHELL=zsh
+        init=$(${starship} init zsh --print-full-init)
+        # each baked line must appear exactly once, so a change in starship's init fails the build
+        for re in ${lib.escapeShellArgs bakedLines}; do
+          [ "$(grep -c -e "$re" <<<"$init")" = 1 ] || { echo "starship init: expected one $re line" >&2; exit 1; }
+        done
+        grep -v ${lib.concatMapStringsSep " " (re: "-e ${lib.escapeShellArg re}") bakedLines} <<<"$init"
+        printf 'PROMPT2=%q\n' "$(${starship} prompt --continuation)"
+        ${lib.optionalString noRightPrompt "echo RPROMPT="}
+      '';
+
       zoxideInit = mkInit "zoxide" "${pkgs.zoxide}/bin/zoxide init zsh";
+
       direnvInit = mkInit "direnv" "${pkgs.direnv}/bin/direnv hook zsh";
+
       nixYourShellInit = mkInit "nix-your-shell" "${pkgs.nix-your-shell}/bin/nix-your-shell zsh";
+
       fzfInit = mkInit "fzf" "${pkgs.fzf}/bin/fzf --zsh";
+
       atuinInit = mkInit "atuin" "${pkgs.atuin}/bin/atuin init zsh --disable-ai";
     in
     {
       home.sessionVariables.COLORTERM = "truecolor";
+
       # exported so ad-hoc `nix shell --impure nixpkgs#<unfree>` evaluates. flake
       # refs ignore it without --impure
       home.sessionVariables.NIXPKGS_ALLOW_UNFREE = "1";
@@ -55,15 +84,25 @@
           zmodload -F zsh/stat b:zstat
           zstat -L -A _gen +mtime /run/current-system 2>/dev/null
           zstat -A _dump +mtime "$ZSH_COMPDUMP" 2>/dev/null
+          # compiled to a per-shell file and renamed, so a shell starting at the same
+          # moment never reads a half-written .zwc
+          zmodload -F zsh/files b:zf_mv
+          _compdump_compile() {
+            zcompile -R -- "$ZSH_COMPDUMP.$$.zwc" "$ZSH_COMPDUMP" 2>/dev/null \
+              && zf_mv -f "$ZSH_COMPDUMP.$$.zwc" "$ZSH_COMPDUMP.zwc"
+          }
           if (( ''${_dump[1]:-0} < ''${_gen[1]:-1} )); then
+            # compinit skips rewriting an unchanged dump, which would leave it older than
+            # the generation and rebuild it at every start
+            command rm -f "$ZSH_COMPDUMP"
             compinit -d "$ZSH_COMPDUMP"
-            zcompile -R -- "$ZSH_COMPDUMP.zwc" "$ZSH_COMPDUMP" 2>/dev/null
+            _compdump_compile
           else
             compinit -C -d "$ZSH_COMPDUMP"
-            [[ -s "$ZSH_COMPDUMP.zwc" && "$ZSH_COMPDUMP" -ot "$ZSH_COMPDUMP.zwc" ]] \
-              || zcompile -R -- "$ZSH_COMPDUMP.zwc" "$ZSH_COMPDUMP" 2>/dev/null
+            [[ -s "$ZSH_COMPDUMP.zwc" && "$ZSH_COMPDUMP" -ot "$ZSH_COMPDUMP.zwc" ]] || _compdump_compile
           fi
           unset _gen _dump
+          unfunction _compdump_compile
         '';
 
         dotDir = "${config.home.homeDirectory}/.config/zsh";
@@ -94,6 +133,16 @@
 
           if [[ $options[zle] = on ]]; then
             source ${fzfInit}
+            # atuin's init runs `atuin uuid` unless this shell level already has a session
+            # a UUIDv7 built here in the same 32-hex format skips that process
+            if [[ -z $ATUIN_SESSION || $ATUIN_SHLVL != $SHLVL ]]; then
+              zmodload zsh/datetime
+              typeset -i _atuin_ms=$(( EPOCHREALTIME * 1000 ))
+              printf -v ATUIN_SESSION '%012x7%03x%x%03x%04x%04x%04x' $_atuin_ms \
+                $(( RANDOM & 4095 )) $(( 8 + (RANDOM & 3) )) $(( RANDOM & 4095 )) $RANDOM $RANDOM $RANDOM
+              export ATUIN_SESSION ATUIN_SHLVL=$SHLVL
+              unset _atuin_ms
+            fi
             source ${atuinInit}
           fi
         '';
@@ -261,6 +310,6 @@
         };
       };
 
-      xdg.configFile."zsh/init.zsh".source = ./cli/zsh/init.zsh;
+      xdg.configFile."zsh/init.zsh".source = ./zsh/init.zsh;
     };
 }

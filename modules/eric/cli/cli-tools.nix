@@ -2,17 +2,17 @@
   flake.modules.homeManager.base = { pkgs, ... }: {
     programs.zoxide = {
       enable = true;
-      enableZshIntegration = false; # pre-computed in shell.nix
+      enableZshIntegration = false; # pre-computed in zsh.nix
     };
 
     programs.nix-your-shell = {
       enable = true;
-      enableZshIntegration = false; # pre-computed in shell.nix
+      enableZshIntegration = false; # pre-computed in zsh.nix
     };
 
     programs.fzf = {
       enable = true;
-      enableZshIntegration = false; # pre-computed in shell.nix
+      enableZshIntegration = false; # pre-computed in zsh.nix
       # a script keeps the preview's own quoting out of FZF_DEFAULT_OPTS, which
       # home-manager exports inside unescaped double quotes
       defaultOptions = [
@@ -31,7 +31,7 @@
 
     programs.atuin = {
       enable = true;
-      enableZshIntegration = false; # pre-computed in shell.nix
+      enableZshIntegration = false; # pre-computed in zsh.nix
       forceOverwriteSettings = true;
       settings = {
         enter_accept = true;
@@ -75,7 +75,7 @@
 
     programs.eza = {
       enable = true;
-      # these generate the `eza` alias, and shell.nix points ls at it
+      # these generate the `eza` alias, and zsh.nix points ls at it
       colors = "auto";
       icons = "auto";
       extraOptions = [
