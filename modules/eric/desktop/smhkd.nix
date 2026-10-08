@@ -13,7 +13,11 @@
       ...
     }:
     {
-      environment.systemPackages = [ pkgs.smhkd ];
+      environment.systemPackages = [
+        pkgs.smhkd
+        # smhkdrc launches apps with it
+        pkgs.front
+      ];
       signedAgents.smhkd = pkgs.smhkd;
 
       launchd.user.agents.smhkd = {

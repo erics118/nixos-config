@@ -87,6 +87,11 @@
       flake = false;
     };
 
+    front-src = {
+      url = "github:erics118/front";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     sketchybar-src = {
       url = "github:erics118/SketchyBar/eric";
       flake = false;
@@ -160,11 +165,9 @@
 
               settings = {
                 excludes = [
-                  "secrets/**"
                   "result"
                   "result-*"
                   "flake.lock"
-                  "*.age"
                 ];
                 on-unmatched = "info";
                 # stylua config (indent type/width) lives in stylua.toml

@@ -10,9 +10,11 @@ define_modifier hyper = cmd + alt + ctrl + shift
 define_modifier hammer = cmd + alt + shift
 
 # modifier conventions:
-# mod         -> core wm actions
-# mod + shift -> wm move/send/state changes
-# hyper       -> launcher, layout, and namespaces
+# mod         -> launch apps, focus, window state, spaces
+# mod + shift -> alternate apps, swap, send to space
+# mod + ctrl  -> alternate apps, send to space and follow
+# hyper       -> launcher (a) and wm (y) namespaces
+# hammer      -> bar toggle
 
 hammer + b :
     sketchybar --bar hidden=toggle

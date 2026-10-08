@@ -1,5 +1,5 @@
 { inputs, ... }: {
-  # aliases 'pkgs.inputs.${flake}' to the flake's packages
+  # aliases 'pkgs.inputs.${flake}' to the flake's legacyPackages if non-empty, else its packages
   # eg: pkgs.inputs.hyprland-contrib.grimblast
   flake.overlays.flake-inputs = final: _: {
     inputs = builtins.mapAttrs (
