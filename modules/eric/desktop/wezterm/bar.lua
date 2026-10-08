@@ -29,106 +29,53 @@ local config = {
             inactive = "{tab_index}: {tab_title}{pane_count}",
         },
     },
-    clock = {
-        enabled = true,
-        format = "%H:%M:%S",
-    },
 }
 
--- parsed config
-local C = {}
-
-local function tableMerge(t1, t2)
-    for k, v in pairs(t2) do
-        if type(v) == "table" then
-            if type(t1[k] or false) == "table" then
-                tableMerge(t1[k] or {}, t2[k] or {})
-            else
-                t1[k] = v
-            end
+-- nested tables merge key by key, anything else replaces
+local function merge(base, over)
+    for k, v in pairs(over) do
+        if type(v) == "table" and type(base[k]) == "table" then
+            merge(base[k], v)
         else
-            t1[k] = v
+            base[k] = v
         end
     end
-    return t1
+    return base
 end
 
+-- right-hand divider glyph per style
 local dividers = {
-    slant_right = {
-        left = utf8.char(0xe0be),
-        right = utf8.char(0xe0bc),
-    },
-    slant_left = {
-        left = utf8.char(0xe0ba),
-        right = utf8.char(0xe0b8),
-    },
-    arrows = {
-        left = utf8.char(0xe0b2),
-        right = utf8.char(0xe0b0),
-    },
-    rounded = {
-        left = utf8.char(0xe0b6),
-        right = utf8.char(0xe0b4),
-    },
+    slant_right = utf8.char(0xe0bc),
+    slant_left = utf8.char(0xe0b8),
+    arrows = utf8.char(0xe0b0),
+    rounded = utf8.char(0xe0b4),
 }
+
+-- the divider after each tab, empty when dividers is false
+local div = ""
 
 -- conforming to https://github.com/wez/wezterm/commit/e4ae8a844d8feaa43e1de34c5cc8b4f07ce525dd
 -- exporting an apply_to_config function, which sets the tab bar options on the config
 M.apply_to_config = function(c, opts)
-    -- make the opts arg optional
-    if not opts then
-        opts = {}
-    end
+    merge(config, opts or {})
+    div = config.dividers and assert(dividers[config.dividers], "unknown dividers: " .. tostring(config.dividers)) or ""
 
-    -- combine user config with defaults
-    config = tableMerge(config, opts)
-    C.div = {
-        l = "",
-        r = "",
-    }
-
-    if config.dividers then
-        C.div.l = dividers[config.dividers].left
-        C.div.r = dividers[config.dividers].right
-    end
-
-    C.leader = {
-        enabled = config.indicator.leader.enabled and true,
-        off = config.indicator.leader.off,
-        on = config.indicator.leader.on,
-    }
-
-    C.mode = {
-        enabled = config.indicator.mode.enabled,
-        names = config.indicator.mode.names,
-    }
-
-    C.tabs = {
-        numerals = config.tabs.numerals,
-        pane_count_style = config.tabs.pane_count,
-        tab_format = {
-            active = config.tabs.tab_format.active,
-            inactive = config.tabs.tab_format.inactive,
-        },
-    }
-
-    C.clock = {
-        enabled = config.clock.enabled,
-        format = config.clock.format,
-    }
-
-    -- set wezterm config options according to the parsed config
+    -- set wezterm config options according to the merged config
     c.use_fancy_tab_bar = false
     c.tab_bar_at_bottom = config.position == "bottom"
     c.tab_max_width = config.max_width
 
+    -- built before wezterm resolves a palette, so colors come from the configured scheme
+    local scheme = (c.color_schemes or {})[c.color_scheme] or wezterm.color.get_builtin_schemes()[c.color_scheme]
+    assert(scheme, "bar.lua needs c.color_scheme set before apply_to_config")
+    local new_tab = scheme.tab_bar.new_tab
     local new_tab_style = wezterm.format({
-        { Background = { Color = "#313244" } },
-        { Foreground = { Color = "#cdd6f4" } },
+        { Background = { Color = new_tab.bg_color } },
+        { Foreground = { Color = new_tab.fg_color } },
         { Text = " + " },
-        { Background = { Color = "#1E1E2E" } },
-        { Foreground = { Color = "#313244" } },
-        { Text = C.div.r },
+        { Background = { Color = scheme.background } },
+        { Foreground = { Color = new_tab.bg_color } },
+        { Text = div },
     })
 
     -- TODO: plus sign config
@@ -138,70 +85,27 @@ M.apply_to_config = function(c, opts)
     }
 end
 
--- superscript/subscript
-local function numberStyle(number, script)
-    local scripts = {
-        superscript = {
-            "⁰",
-            "¹",
-            "²",
-            "³",
-            "⁴",
-            "⁵",
-            "⁶",
-            "⁷",
-            "⁸",
-            "⁹",
-        },
-        subscript = {
-            "₀",
-            "₁",
-            "₂",
-            "₃",
-            "₄",
-            "₅",
-            "₆",
-            "₇",
-            "₈",
-            "₉",
-        },
-    }
-    local numbers = scripts[script]
-    local number_string = tostring(number)
-    local result = ""
-    for i = 1, #number_string do
-        local char = number_string:sub(i, i)
-        local num = tonumber(char)
-        if num then
-            result = result .. numbers[num + 1]
-        else
-            result = result .. char
-        end
-    end
-    return result
-end
-
-local roman_numerals = {
-    "Ⅰ",
-    "Ⅱ",
-    "Ⅲ",
-    "Ⅳ",
-    "Ⅴ",
-    "Ⅵ",
-    "Ⅶ",
-    "Ⅷ",
-    "Ⅸ",
-    "Ⅹ",
-    "Ⅺ",
-    "Ⅻ",
+-- digits 0-9 in each pane_count style
+local digit_styles = {
+    superscript = { "⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹" },
+    subscript = { "₀", "₁", "₂", "₃", "₄", "₅", "₆", "₇", "₈", "₉" },
 }
 
-local function table_concat(t1, t2)
-    for i = 1, #t2 do
-        t1[#t1 + 1] = t2[i]
-    end
-    return t1
+local function styled_number(number, style)
+    return (tostring(number):gsub("%d", function(d)
+        return digit_styles[style][tonumber(d) + 1]
+    end))
 end
+
+local roman_numerals = { "Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ", "Ⅴ", "Ⅵ", "Ⅶ", "Ⅷ", "Ⅸ", "Ⅹ", "Ⅺ", "Ⅻ" }
+
+-- a bell in a background tab marks it until the tab is next shown
+wezterm.on("bell", function(window, pane)
+    local tab = pane:tab()
+    if tab and tab:tab_id() ~= window:active_tab():tab_id() then
+        wezterm.GLOBAL["bell_tab_" .. tab:tab_id()] = true
+    end
+end)
 
 -- custom tab bar
 wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width)
@@ -214,8 +118,8 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
         end
     end
 
-    -- mocha red
-    local active_bg = "#f38ba8"
+    -- the scheme's red
+    local active_bg = conf.resolved_palette.ansi[2]
     local active_fg = colours.background
     local inactive_bg = colours.inactive_tab.bg_color
     local inactive_fg = colours.inactive_tab.fg_color
@@ -251,27 +155,16 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
 
     -- now we format the tab string
 
+    -- a lone pane shows no count
     local pane_count = ""
-    if C.tabs.pane_count_style then
-        local tab_index = wezterm.mux.get_tab(tab.tab_id)
-        local muxpanes = tab_index:panes()
-        local count = #muxpanes == 1 and "" or tostring(#muxpanes)
-        pane_count = numberStyle(count, C.tabs.pane_count_style)
+    if config.tabs.pane_count then
+        local n = #wezterm.mux.get_tab(tab.tab_id):panes()
+        pane_count = styled_number(n == 1 and "" or n, config.tabs.pane_count)
     end
 
-    local index_i
-    if C.tabs.numerals == "roman" then
-        index_i = roman_numerals[tab.tab_index + 1]
-    else
-        index_i = tab.tab_index + 1
-    end
+    local index_i = config.tabs.numerals == "roman" and roman_numerals[tab.tab_index + 1] or tab.tab_index + 1
 
-    local title
-    if tab.is_active then
-        title = C.tabs.tab_format.active
-    else
-        title = C.tabs.tab_format.inactive
-    end
+    local title = tab.is_active and config.tabs.tab_format.active or config.tabs.tab_format.inactive
 
     local workspace = wezterm.mux.get_active_workspace()
 
@@ -283,19 +176,49 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
         return workspace
     end)
 
-    -- for measuring length
-    -- 11 for {tab_title}
-    -- 3 for padding, 2 spaces, 1 char
-    -- 1 for ellipsis
-    -- 2 for testing purposes
     local tab_title = tab.active_pane.title
     -- mosh prepends [mosh] to the title
     tab_title = tab_title:gsub("^%[mosh[^%]]*%]%s*", "")
 
-    local filler_width = wezterm.column_width(title) - 11 + 3 + 1
+    -- tmux prefixes its title with ✗, ‼, ✓ or • while any of its windows is flagged (see tmux/main.conf)
+    local tmux_alert
+    for marker, kind in pairs({ ["✗ "] = "fail", ["‼ "] = "bell", ["✓ "] = "ok", ["• "] = "activity" }) do
+        if tab_title:sub(1, #marker) == marker then
+            tmux_alert = kind
+            tab_title = tab_title:sub(#marker + 1)
+        end
+    end
+
+    -- a background tab's number turns bold red after a failed command, peach after a bell,
+    -- green after a successful command, or blue after new output, like tmux's tabline.
+    -- tmux's flags last until that tmux window is visited, so the colour survives switching tabs
+    local alert_fg
+    local bell_key = "bell_tab_" .. tab.tab_id
+    if tab.is_active then
+        wezterm.GLOBAL[bell_key] = nil
+    elseif tmux_alert == "fail" then
+        alert_fg = "#f38ba8"
+    elseif wezterm.GLOBAL[bell_key] or tmux_alert == "bell" then
+        alert_fg = "#fab387"
+    elseif tmux_alert == "ok" then
+        alert_fg = "#a6e3a1"
+    elseif tmux_alert == "activity" then
+        alert_fg = "#89b4fa"
+    else
+        for _, p in ipairs(wezterm.mux.get_tab(tab.tab_id):panes()) do
+            if p:has_unseen_output() then
+                alert_fg = "#89b4fa"
+            end
+        end
+    end
+
+    -- columns besides the title: the format minus the 11 of "{tab_title}",
+    -- plus 3 for the 2 padding spaces and the divider
+    local filler_width = wezterm.column_width(title) - 11 + 3
     if (wezterm.column_width(tab_title) + filler_width) > max_width then
         -- 1 for ellipsis
-        local new_title_width = max_width - filler_width - 1
+        -- floored at 0, since truncate_right errors on a negative width when a tab is narrower than its fixed parts
+        local new_title_width = math.max(0, max_width - filler_width - 1)
         tab_title = wezterm.truncate_right(tab_title, new_title_width) .. "…"
     end
 
@@ -312,27 +235,36 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
         { Text = title },
         { Background = { Color = e_bg } },
         { Foreground = { Color = e_fg } },
-        { Text = C.div.r },
+        { Text = div },
     }
 
-    -- for first tab, add additional divider for leader
-    if C.leader.enabled then
-        if tab.tab_index == 0 then
-            local divider = {
-                { Background = { Color = s_bg } },
-                { Foreground = { Color = conf.resolved_palette.ansi[5] } },
-                { Text = C.div.r },
-            }
-            res = table_concat(divider, res)
-        end
+    -- split the title around the number so only the number takes the alert colour
+    local i = alert_fg and title:find(tostring(index_i), 1, true)
+    if i then
+        local j = i + #tostring(index_i)
+        res[3] = { Text = title:sub(1, i - 1) }
+        table.insert(res, 4, { Foreground = { Color = alert_fg } })
+        table.insert(res, 5, { Attribute = { Intensity = "Bold" } })
+        table.insert(res, 6, { Text = title:sub(i, j - 1) })
+        table.insert(res, 7, { Attribute = { Intensity = "Normal" } })
+        table.insert(res, 8, { Foreground = { Color = s_fg } })
+        table.insert(res, 9, { Text = title:sub(j) })
+    end
+
+    -- the first tab also draws the divider after the leader pill
+    if config.indicator.leader.enabled and tab.tab_index == 0 then
+        table.insert(res, 1, { Text = div })
+        table.insert(res, 1, { Foreground = { Color = conf.resolved_palette.ansi[5] } })
+        table.insert(res, 1, { Background = { Color = s_bg } })
     end
 
     return res
 end)
 
 wezterm.on("update-status", function(window, _pane)
+    local leader_cfg, mode_cfg = config.indicator.leader, config.indicator.mode
     local active_kt = window:active_key_table() ~= nil
-    local show = C.leader.enabled or (active_kt and C.mode.enabled)
+    local show = leader_cfg.enabled or (active_kt and mode_cfg.enabled)
 
     if not show then
         window:set_left_status("")
@@ -347,11 +279,8 @@ wezterm.on("update-status", function(window, _pane)
     local palette = conf.resolved_palette
 
     local leader = ""
-    if C.leader.enabled then
-        local leader_text = C.leader.off
-        if window:leader_is_active() then
-            leader_text = C.leader.on
-        end
+    if leader_cfg.enabled then
+        local leader_text = window:leader_is_active() and leader_cfg.on or leader_cfg.off
         leader = wezterm.format({
             { Foreground = { Color = palette.background } },
             { Background = { Color = palette.ansi[5] } },
@@ -360,12 +289,8 @@ wezterm.on("update-status", function(window, _pane)
     end
 
     local mode = ""
-    if C.mode.enabled then
-        local mode_text = ""
-        local active = window:active_key_table()
-        if C.mode.names[active] ~= nil then
-            mode_text = C.mode.names[active] .. ""
-        end
+    if mode_cfg.enabled then
+        local mode_text = mode_cfg.names[window:active_key_table()] or ""
         mode = wezterm.format({
             { Foreground = { Color = palette.background } },
             { Background = { Color = palette.ansi[5] } },
@@ -376,15 +301,6 @@ wezterm.on("update-status", function(window, _pane)
     end
 
     window:set_left_status(leader .. mode)
-
-    if C.clock.enabled then
-        local time = wezterm.time.now():format(C.clock.format)
-        window:set_right_status(wezterm.format({
-            { Background = { Color = palette.tab_bar.background } },
-            { Foreground = { Color = palette.ansi[6] } },
-            { Text = time },
-        }))
-    end
 end)
 
 return M

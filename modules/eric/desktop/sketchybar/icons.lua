@@ -7,7 +7,6 @@ local icons = {
 
     circle = "􀀀",
     circle_fill = "􀀁",
-    circle_half = "\u{100002}",
 
     lock = "\u{1003A1}",
     chevron_right = "\u{10018A}",

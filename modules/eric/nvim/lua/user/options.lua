@@ -35,7 +35,7 @@ opt.relativenumber = true
 opt.scrolloff = 3
 opt.sidescrolloff = 10
 
--- always show status
+-- one global statusline
 opt.laststatus = 3
 
 -- the statusline shows the mode, so the cmdline doesn't repeat -- INSERT --

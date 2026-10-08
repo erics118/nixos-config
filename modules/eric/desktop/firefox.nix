@@ -21,9 +21,7 @@
         "${profile}/user.js".source = repoFile "${base}/user.js";
       };
 
-      # Firefox Developer Edition is an application bundle in /Applications,
-      # not a Nix Firefox package. Reinstall fx-autoconfig's two program files
-      # whenever the Home Manager generation is activated.
+      # a firefox update replaces the app bundle and drops these files
       home.activation.firefoxDeveloperEditionAutoconfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         resources="/Applications/Firefox Developer Edition.app/Contents/Resources"
         source_config="${fxAutoconfig}/program/config.js"

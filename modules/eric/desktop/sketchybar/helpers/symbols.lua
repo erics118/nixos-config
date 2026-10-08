@@ -12,7 +12,7 @@ local function png_width(path)
 end
 
 -- renders an sf symbol to a png on first use, then passes its path and point width to callback
--- value is the symbol's variable value, or the fill level for battery and battery.bolt
+-- value is the symbol's variable value, or the fill level for the battery symbols symbol_image.m draws itself
 -- color is a 0xAARRGGBB number, or a string the helper takes as is, like "multicolor:0xAARRGGBB"
 return function(symbol, color, size, value, callback)
     local value_arg = value and string.format("%.2f", value) or ""

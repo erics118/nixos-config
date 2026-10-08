@@ -241,7 +241,6 @@ vim.api.nvim_create_autocmd("FileType", {
 map("n", "<leader>k", vim.lsp.buf.signature_help, "Signature help")
 map("n", "<leader>D", vim.lsp.buf.type_definition, "Type definition")
 map("n", "<leader>rn", vim.lsp.buf.rename, "Rename symbol")
-map("n", "<leader>e", vim.diagnostic.open_float, "Open diagnostic float")
 map({ "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, "Code action")
 map("n", "<leader>lr", "<Cmd>lsp restart<CR>", "Restart LSP")
 map("n", "<leader>ti", function()

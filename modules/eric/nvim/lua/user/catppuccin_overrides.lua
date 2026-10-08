@@ -6,7 +6,7 @@ return function(colors)
         NormalFloat = { bg = colors.surface0 },
         FloatBorder = { fg = colors.overlay0, bg = colors.surface0 },
         NvimTreeWinSeparator = { link = "FloatBorder" },
-        -- git status colors shared with starship and vscode
+        -- git status colors for nvim-tree icons
         NvimTreeGitNewIcon = { fg = colors.green },
         NvimTreeGitStagedIcon = { fg = colors.green },
         NvimTreeGitMergeIcon = { fg = colors.mauve },
@@ -14,6 +14,8 @@ return function(colors)
         WhichKeyBorder = { link = "FloatBorder" },
         -- centered cmdline (user/cmdline.lua)
         CmdlineBorder = { fg = colors.mauve },
+        -- message float (user/cmdline.lua)
+        MsgBorder = { fg = colors.overlay0 },
         -- telescope
         TelescopeBorder = { link = "FloatBorder" },
         TelescopeTitle = { fg = colors.text },

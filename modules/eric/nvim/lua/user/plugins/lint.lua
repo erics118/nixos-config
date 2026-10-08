@@ -7,8 +7,7 @@ return {
             dockerfile = { "hadolint" },
             markdown = { "markdownlint-cli2" },
         }
-        -- base markdownlint config for every project
-        -- a project .markdownlint.* file replaces it, and a .markdownlint-cli2.* file merges with it
+        -- base markdownlint config (see markdownlint.jsonc)
         lint.linters["markdownlint-cli2"].args =
             { "--config", vim.fs.joinpath(vim.fn.stdpath("config"), "markdownlint.jsonc"), "-" }
         vim.api.nvim_create_autocmd({ "FileType", "BufWritePost" }, {

@@ -10,9 +10,6 @@ local sequence_colors = {
     ["default"] = colors.text,
     ["hyper + a"] = colors.yellow,
     ["hyper + y"] = colors.blue,
-    -- disabled = colors.red,
-    -- yabai = colors.purple,
-    -- resize = colors.green,
 }
 
 local hyper_groups = { alt = true, shift = true, cmd = true, ctrl = true }

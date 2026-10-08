@@ -5,11 +5,12 @@ c:set_strict_mode(true)
 
 require("keys").apply_to_config(c)
 
--- c.default_prog = { "/bin/zsh" }
+-- behavior
 
 -- nix builds report a commit hash as the version, which the update check
 -- compares against release tags as strings
 c.check_for_updates = false
+c.exit_behavior = "Close"
 
 c.skip_close_confirmation_for_processes_named = {
     "bash",
@@ -27,15 +28,38 @@ c.skip_close_confirmation_for_processes_named = {
     "conhost.exe",
 }
 
+-- closing a tab returns to the one used before it, not its left neighbor
+c.switch_to_last_active_tab_when_closing_tab = true
+
+-- quick select greys out the screen's colors so its labels stand out
+c.quick_select_remove_styling = true
+
+-- no beep or flash, a bell only marks its tab (see bar.lua)
+c.audible_bell = "Disabled"
+
+-- domains
 c.unix_domains = {
     { name = "unix" },
 }
 c.ssh_domains = {
     { name = "narwhal", remote_address = "narwhal", multiplexing = "None" },
 }
+
+-- input
 c.send_composed_key_when_left_alt_is_pressed = false
+-- programs run directly in wezterm can tell Tab from Ctrl+I, Enter from Ctrl+M
+-- tmux gets the same through its own extended-keys setting
+c.enable_kitty_keyboard = true
+
+-- text
 c.font = wezterm.font("Hack Nerd Font")
 c.font_size = 12.0
+c.command_palette_font_size = 12.0
+c.window_frame = {
+    font_size = 12.0,
+}
+c.default_cursor_style = "SteadyBar"
+c.underline_thickness = 2.5
 
 -- window
 if wezterm.target_triple:find("linux") then
@@ -50,12 +74,14 @@ c.window_padding = {
     top = 0,
     bottom = 12,
 }
+c.window_content_alignment = {
+    horizontal = "Center",
+    vertical = "Center",
+}
+c.adjust_window_size_when_changing_font_size = false
 
--- scroll bar
-c.enable_scroll_bar = true
-c.min_scroll_bar_height = "4cell"
-c.scrollback_lines = 10000
-c.mouse_wheel_scrolls_tabs = false
+-- match the 120hz promotion display
+c.max_fps = 120
 
 -- dim unfocused panes
 c.inactive_pane_hsb = {
@@ -63,18 +89,13 @@ c.inactive_pane_hsb = {
     brightness = 0.6,
 }
 
--- c.window_close_confirmation = "NeverPrompt"
+-- scrollback
+c.enable_scroll_bar = true
+c.min_scroll_bar_height = "4cell"
+c.scrollback_lines = 10000
+c.mouse_wheel_scrolls_tabs = false
 
-c.adjust_window_size_when_changing_font_size = false
-c.exit_behavior = "Close"
-c.default_cursor_style = "SteadyBar"
-c.underline_thickness = 2.5
-c.command_palette_font_size = 12.0
-
-c.window_frame = {
-    font_size = 12.0,
-}
-
+-- colors
 local theme = wezterm.color.get_builtin_schemes()["Catppuccin Mocha"]
 
 theme.tab_bar.background = "rgba(0, 0, 0, 0)"
@@ -100,9 +121,6 @@ require("bar").apply_to_config(c, {
             active = "{tab_index}: {tab_title}{pane_count}",
             inactive = "{tab_index}: {tab_title}{pane_count}",
         },
-    },
-    clock = {
-        enabled = false,
     },
 })
 

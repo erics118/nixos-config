@@ -31,8 +31,8 @@
       );
     };
 
-    # enableScriptingAddition keys its sudoers rule to the store path, but yabairc
-    # calls `sudo yabai`, which resolves through PATH and never matches that rule.
+    # enableScriptingAddition keys its sudoers rule to the store binary and its hash
+    # `sudo yabai` in yabairc finds /usr/local/bin/yabai first, the re-signed copy from signedAgents
     # grant the PATH-resolved binaries too, or --load-sa silently asks for a password
     security.sudo.extraConfig = ''
       %admin ALL=(root) NOPASSWD: /usr/local/bin/yabai --load-sa

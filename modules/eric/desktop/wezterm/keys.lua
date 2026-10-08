@@ -18,13 +18,11 @@ local map = function(key, mods, action)
     end
 end
 
-wezterm.GLOBAL.enable_tab_bar = true
-
+-- each window flips its own override, so reloads and other windows can't desync it
 local toggleTabBar = wezterm.action_callback(function(window)
-    wezterm.GLOBAL.enable_tab_bar = not wezterm.GLOBAL.enable_tab_bar
-    window:set_config_overrides({
-        enable_tab_bar = wezterm.GLOBAL.enable_tab_bar,
-    })
+    local overrides = window:get_config_overrides() or {}
+    overrides.enable_tab_bar = overrides.enable_tab_bar == false
+    window:set_config_overrides(overrides)
 end)
 
 local openUrl = act.QuickSelectArgs({
@@ -36,8 +34,9 @@ local openUrl = act.QuickSelectArgs({
     end),
 })
 
+-- herdr shares tmux's C-b prefix and maps the same keys, so it counts as tmux here
 local function runs_tmux(info)
-    if info.executable:find("tmux$") or info.executable:find("mosh%-client$") then
+    if info.executable:find("tmux$") or info.executable:find("herdr$") or info.executable:find("mosh%-client$") then
         return true
     end
     -- rtmux over autossh runs a remote "tmux new ..." or "sesh-pick ..." command
@@ -58,6 +57,11 @@ end
 local function in_tmux(pane)
     local info = pane:get_foreground_process_info()
     return info ~= nil and runs_tmux(info)
+end
+
+local function in_herdr(pane)
+    local info = pane:get_foreground_process_info()
+    return info ~= nil and info.executable:find("herdr$") ~= nil
 end
 
 -- send the tmux prefix (default C-b) + keys when tmux (local, or remote via
@@ -94,34 +98,70 @@ map(
         end),
     })
 )
--- map 1-9 to switch to tab 1-9, 0 for the last tab. leader or MOD+alt digits
+-- 1-8 pick tabs 1-8 and 9 the last tab, like a browser. leader or ctrl digits
 -- pick wezterm tabs, the bare MOD digits pick tmux windows
+for i = 1, 8 do
+    map(tostring(i), { "LEADER", "CTRL" }, act.ActivateTab(i - 1))
+end
+map("9", { "LEADER", "CTRL" }, act.ActivateTab(-1))
 for i = 1, 9 do
-    map(tostring(i), { "LEADER", MOD .. "|ALT" }, act.ActivateTab(i - 1))
     map(tostring(i), MOD, to_tmux(tostring(i)))
 end
-map("0", { "LEADER" }, act.ActivateTab(-1))
 -- 'hjkl' to move between panes
 map("h", { "LEADER" }, act.ActivatePaneDirection("Left"))
 map("j", { "LEADER" }, act.ActivatePaneDirection("Down"))
 map("k", { "LEADER" }, act.ActivatePaneDirection("Up"))
 map("l", { "LEADER" }, act.ActivatePaneDirection("Right"))
 -- spawn & close
-map("c", "LEADER", act.SpawnTab("CurrentPaneDomain"))
+-- a wezterm tab is a project: leader c picks a local one, leader C a remote one.
+-- the trailing shell keeps the tab open after the picker is cancelled or tmux detaches
+map("c", "LEADER", act.SpawnCommandInNewTab({ domain = "DefaultDomain", args = { "zsh", "-lc", "t; exec zsh -l" } }))
+map(
+    "c",
+    "LEADER|SHIFT",
+    act.SpawnCommandInNewTab({ domain = "DefaultDomain", args = { "zsh", "-lc", "rtmux; exec zsh -l" } })
+)
 map("x", "LEADER", act.CloseCurrentPane({ confirm = true }))
-map("w", { "LEADER", MOD .. "|ALT" }, act.CloseCurrentTab({ confirm = true }))
-map("t", MOD .. "|ALT", act.SpawnTab("CurrentPaneDomain"))
+map("w", "LEADER", act.CloseCurrentTab({ confirm = true }))
+if is_mac then
+    map("w", "CTRL|SHIFT", act.CloseCurrentTab({ confirm = true }))
+    map("t", "CTRL|SHIFT", act.SpawnTab("CurrentPaneDomain"))
+end
 -- native tab keys drive tmux windows
 map("t", { MOD }, to_tmux("c"))
 map("w", { MOD }, to_tmux("&"))
+-- scratch shell and yazi popups.
+-- herdr's scratch popup takes every key, so cmd-j sends ctrl+\, which herdr opens it on and dtach closes it on
+map(
+    "j",
+    { MOD },
+    wezterm.action_callback(function(window, pane)
+        if in_herdr(pane) then
+            window:perform_action(act.SendString("\x1c"), pane)
+        elseif in_tmux(pane) then
+            window:perform_action(act.SendString("\x02t"), pane)
+        end
+    end)
+)
+map("e", { MOD }, to_tmux("y"))
 map("n", { SMOD }, act.SpawnWindow)
 -- prev/next window, same keys as wezterm's default tab switching
 map("[", SMOD, to_tmux("p"))
 map("{", { MOD, SMOD }, to_tmux("p"))
 map("]", SMOD, to_tmux("n"))
 map("}", { MOD, SMOD }, to_tmux("n"))
--- sesh picker
-map("k", { MOD }, to_tmux("s"))
+-- sesh picker, which herdr has on prefix f since its prefix s is settings
+map(
+    "k",
+    { MOD },
+    wezterm.action_callback(function(window, pane)
+        if in_herdr(pane) then
+            window:perform_action(act.SendString("\x02f"), pane)
+        elseif in_tmux(pane) then
+            window:perform_action(act.SendString("\x02s"), pane)
+        end
+    end)
+)
 -- tmux prefix, sent unchecked so it also reaches tmux over plain ssh
 map("s", { MOD }, act.SendString("\x02"))
 -- the linux leader is ctrl-a, so pressing it twice sends a real ctrl-a

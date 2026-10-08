@@ -30,6 +30,6 @@ macOS 14.4+ hides SSIDs from processes without Location Services access.
 ## Popup actions
 
 - Join a known network: `networksetup -setairportnetwork en0 '<ssid>'`. It blocks until joined, so show `progress.indicator` on the row meanwhile.
-- Wi-Fi on and off: `networksetup -setairportpower en0 on|off`. CoreWiFi also has `setPower:error:` and `associateWithParameters:`.
+- Not wired yet, Wi-Fi on and off: `networksetup -setairportpower en0 on|off`. CoreWiFi also has `setPower:error:` and `associateWithParameters:`.
 - Wi-Fi Settings: `open "x-apple.systempreferences:com.apple.wifi-settings-extension"` (`/System/Library/ExtensionKit/Extensions/Wi-Fi.appex`).
 - Control Center's own menu bar items cannot be mirrored with a sketchybar alias here. Only third-party status items show up in `sketchybar --query default_menu_items`.

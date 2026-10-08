@@ -1,6 +1,7 @@
 // urlbar-enter-tabs.uc.js
 // Cmd+Enter opens a background tab, Cmd+Shift+Enter a background child tab
 // relatedToCurrent sets the opener so Sidebery nests it as a child
+// karabiner swaps the two for firefox, so the physical keys are reversed
 
 (function () {
   let tries = 0;

@@ -1,6 +1,6 @@
 local map = require("user.utils.map")
 
-map("n", "<leader>te", "<Cmd>NvimTreeToggle<CR>", "Toggle file tree")
+map("n", "<leader>e", "<Cmd>NvimTreeToggle<CR>", "Toggle file tree")
 
 local group = vim.api.nvim_create_augroup("UserNvimTree", { clear = true })
 
@@ -59,8 +59,33 @@ vim.api.nvim_create_autocmd("WinResized", {
         for _, win in ipairs(vim.v.event.windows) do
             local buf = vim.api.nvim_win_get_buf(win)
             if vim.bo[buf].filetype == "NvimTree" then
+                if vim.api.nvim_win_get_width(win) < 20 then
+                    vim.api.nvim_win_set_width(win, 20)
+                end
                 vim.g.nvim_tree_width = vim.api.nvim_win_get_width(win)
             end
+        end
+    end,
+})
+
+vim.api.nvim_create_autocmd("SessionLoadPost", {
+    desc = "Replace the dead nvim-tree buffer a session restores with a live tree",
+    group = group,
+    callback = function()
+        local stale = false
+        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+            if vim.api.nvim_buf_get_name(buf):match("NvimTree_%d+$") and vim.bo[buf].filetype ~= "NvimTree" then
+                local win = vim.fn.bufwinid(buf)
+                if win ~= -1 then
+                    vim.g.nvim_tree_width = vim.api.nvim_win_get_width(win)
+                end
+                vim.api.nvim_buf_delete(buf, { force = true })
+                stale = true
+            end
+        end
+        if stale then
+            vim.cmd("NvimTreeOpen")
+            vim.cmd("wincmd p")
         end
     end,
 })

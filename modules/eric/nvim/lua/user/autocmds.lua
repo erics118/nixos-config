@@ -45,7 +45,8 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 })
 
 -- smarter relative numbers
-vim.api.nvim_create_autocmd({ "InsertEnter", "BufLeave", "WinLeave", "FocusLost" }, {
+-- not on focus changes, whose redraw makes tmux mark the window as having new output
+vim.api.nvim_create_autocmd({ "InsertEnter", "BufLeave", "WinLeave" }, {
     desc = "Disable rnu when leaving active window",
     group = numbertoggle,
     callback = function()
@@ -55,7 +56,7 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "BufLeave", "WinLeave", "FocusLost"
     end,
 })
 
-vim.api.nvim_create_autocmd({ "InsertLeave", "BufEnter", "WinEnter", "FocusGained" }, {
+vim.api.nvim_create_autocmd({ "InsertLeave", "BufEnter", "WinEnter" }, {
     desc = "Enable rnu when entering active window",
     group = numbertoggle,
     callback = function()

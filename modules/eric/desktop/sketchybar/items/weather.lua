@@ -68,17 +68,9 @@ end)
 -- used for temp, feelslike
 local temperature_unit = "c"
 
--- must be one of: km miles
--- used for vis
-local visibility_unit = "miles"
-
 -- must be one of: mph kph
 -- used for wind_speed
 local wind_speed_unit = "mph"
-
--- must be one of: mb in
--- used for pressure
-local pressure_unit = "mb"
 
 local function degrees_to_direction(degrees)
     -- Handle degrees greater than 360

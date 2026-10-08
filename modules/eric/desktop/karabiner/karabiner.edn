@@ -40,7 +40,6 @@
  ;;  :templates {:front "front -n '%s'"
  ;;              :front-p "front -p '%s'"
  ;;              :front-b "front -b '%s'"
- ;;             ;;  :mode "%s && sketchybar --trigger skhd_mode_changed INFO=%s"
  ;;              }
 
  ;;  :simlayers {:a-mode {:key :a}}

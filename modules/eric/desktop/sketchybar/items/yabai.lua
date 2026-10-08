@@ -1,4 +1,4 @@
--- event triggered by yabai on window focus of the same app, as sketchybar doesn't handle this
+-- event triggered by yabai on every window focus, since front_app_switched misses focus changes within one app
 sbar.add_event("window_focused")
 
 -- manually trigger yabai update

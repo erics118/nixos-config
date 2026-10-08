@@ -1,5 +1,5 @@
 /* userChrome.css - Sidebery + Arc-like chrome for Firefox Dev Edition.
-   Targets FF153 with sidebar.revamp: true. Companion author sheet (needs
+   Needs sidebar.revamp: true. Companion author sheet (needs
    shadow-DOM ::part selectors this file can't reach): resources/userChrome.au.css */
 
 /* Hide the panel header above webextension sidebars. The id lives in
@@ -157,7 +157,7 @@
 
 /* ===== Address bar =====
    Fully rounded (semicircle ends) + extra right inner padding.
-   Note: in FF153 the painted box is div.urlbar-background (class, not id). */
+   Note: the painted box is div.urlbar-background (class, not id). */
 
 /* Half the idle urlbar height = a perfect pill when closed. When the results
    panel expands the box the radius stays ~16px, so no giant ellipse. */
@@ -172,7 +172,7 @@
 
 /* Inner padding of the whole bar: space between the pill edges and the
    first/last elements (search switcher on the left, page actions on the
-   right). urlbar-input-container is a class in FF153, not an id. */
+   right). urlbar-input-container is a class, not an id. */
 #urlbar .urlbar-input-container {
   padding-inline: 3px 3px !important;
 }

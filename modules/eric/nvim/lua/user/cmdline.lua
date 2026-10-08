@@ -18,6 +18,14 @@ api.nvim_create_autocmd("FileType", {
     end,
 })
 
+-- the message float has no fill either, only its border
+api.nvim_create_autocmd("FileType", {
+    pattern = "msg",
+    callback = function()
+        vim.wo.winhighlight = vim.wo.winhighlight .. ",NormalFloat:MsgArea,FloatBorder:MsgBorder"
+    end,
+})
+
 -- the cmdline and messages get their own windows, so statusline redraws can't cover them
 -- the bottom output row would sit on the statusline, so list and :! output opens in the pager above it
 -- every other message times out in a float

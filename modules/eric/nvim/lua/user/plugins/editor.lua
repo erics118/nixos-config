@@ -53,7 +53,7 @@ return {
                 code = { border = "thick" },
                 sign = { enabled = false },
                 latex = { enabled = false },
-                -- lsp hover floats are nofile markdown, styled by user/autocmds.lua instead
+                -- lsp hover floats are nofile markdown, styled by user/lsp.lua instead
                 overrides = { buftype = { nofile = { enabled = false } } },
             })
         end,

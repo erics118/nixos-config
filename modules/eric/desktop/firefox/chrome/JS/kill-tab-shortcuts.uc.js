@@ -1,5 +1,5 @@
 // kill-tab-shortcuts.uc.js
-// strip Firefox's native tab-switching keys (Ctrl+Tab, Ctrl+1-9, show-all-tabs)
+// strip Firefox's native tab-switching keys (Ctrl+Tab, Cmd+1-9, show-all-tabs)
 // so Sidebery owns them; keep Alt+PgUp/PgDn tab nav in the chrome
 
 (function () {
