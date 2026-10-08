@@ -27,7 +27,7 @@ in
       firewall.allowedTCPPorts = [ 22 ];
     };
 
-    # host-specific key, on top of the shared base key
+    # host-specific key ~/.ssh/id_ed25519_oracle_turtle on orca, on top of the shared base key
     users.users.eric.openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEueqORxrYmEGwiC+DerpbNP0BUC8Byeetkq4M0ZPEUZ eric@orca"
     ];
@@ -48,12 +48,12 @@ in
     sops.secrets."cloudflared/turtle-tunnel" = { };
 
     # outbound tunnel, no inbound ports opened. public services fan out here:
-    # add "<name>.eriz.cc".service = "http://localhost:<port>" and a matching CNAME
+    # add ingress."<name>.eriz.cc".service = "http://localhost:<port>" and a matching CNAME
     services.cloudflared.enable = true;
     services.cloudflared.tunnels."91d785c6-c697-495c-a0aa-3e01037a3de2" = {
       credentialsFile = config.sops.secrets."cloudflared/turtle-tunnel".path;
       default = "http_status:404";
-      ingress."ntfy.eriz.cc".service = "http://localhost:2586";
+      ingress.${config.ntfyHost}.service = "http://${config.services.ntfy-sh.settings.listen-http}";
     };
   };
 }

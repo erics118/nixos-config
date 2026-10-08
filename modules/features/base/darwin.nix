@@ -15,6 +15,7 @@
       # hide /nix from Finder
       chflags hidden /nix
       # disable duetexpertd, app-prediction daemon that pins a cpu core, unused with siri off
+      # resetting its store does not hold, since the store rebuilds within hours
       duetuid=$(id -u eric)
       launchctl bootout gui/"$duetuid"/com.apple.duetexpertd 2>/dev/null || true
       launchctl disable gui/"$duetuid"/com.apple.duetexpertd 2>/dev/null || true
@@ -168,6 +169,8 @@
       auth sufficient pam_tid.so.2
     '';
 
+    # callers: modules/eric/cli/scripts/darwin/keepawake.sh and the sketchybar sleep and battery items
+    # sudoers matches arguments exactly, so a caller's pmset arguments must match a rule here verbatim
     security.sudo.extraConfig = ''
       %admin ALL=(root) NOPASSWD: /usr/bin/pmset -a disablesleep 1, /usr/bin/pmset -a disablesleep 0
       %admin ALL=(root) NOPASSWD: /usr/bin/pmset -a powermode 0, /usr/bin/pmset -a powermode 1, /usr/bin/pmset -a powermode 2

@@ -27,6 +27,8 @@
       boot.loader.systemd-boot.bootCounting.enable = true;
 
       systemd.services.nixos-upgrade = {
+        # the upgrade runs as root but builds from eric's checkout
+        # nix's libgit2 fetches the git+file flake as root and refuses a repo owned by another user unless the owner matches $SUDO_UID
         environment.SUDO_UID = "1000";
         # sync checkout
         preStart = ''

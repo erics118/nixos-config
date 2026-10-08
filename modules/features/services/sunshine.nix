@@ -26,7 +26,7 @@
 
         # wlr screencopy needs no drm/kms grab, but this is the only switch that
         # routes ExecStart through security.wrappers, so we can grant cap_sys_nice
-        # below instead. sunshine wants it for a high-priority egl context and to
+        # above instead. sunshine wants it for a high-priority egl context and to
         # renice its capture/encode threads, both of which affect frame pacing
         capSysAdmin = true;
 
@@ -43,7 +43,7 @@
 
           # web ui is only reached over tailscale, which csrf rejects as a non-default origin
           # magicdns name only, the tailnet address can change
-          csrf_allowed_origins = "https://narwhal.${config.tailnetDomain}:47990";
+          csrf_allowed_origins = "https://${config.networking.hostName}.${config.tailnetDomain}:47990";
         };
       };
     };

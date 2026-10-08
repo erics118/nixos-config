@@ -16,7 +16,7 @@
       enable = true;
 
       # caddy with cloudflare DNS provider plugin for DNS-01 ACME challenges
-      # we need to manually specify the plugin and hash
+      # on a plugin bump, set hash = lib.fakeHash and copy the hash the build reports
       package = pkgs.caddy.withPlugins {
         plugins = [ "github.com/caddy-dns/cloudflare@v0.2.4" ];
         hash = "sha256-xRJ5evsAJ2akg47j3Bt6YDXJOgX88B/rKNP50KSVyNY=";

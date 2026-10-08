@@ -1,5 +1,5 @@
 {
-  # homepageTiles and homelabDomain are declared in base, see homelab-options.nix
+  # tile options and domains are declared in base, see homelab-options.nix
   flake.modules.nixos.homepage = { config, lib, ... }: {
     config =
       let
@@ -31,8 +31,9 @@
             "localhost:${toString port}"
             "127.0.0.1:${toString port}"
             "${config.networking.hostName}:${toString port}"
+            # narwhal's LAN address
             "192.168.68.150:${toString port}"
-            "narwhal.${tailnetDomain}:${toString port}"
+            "${config.networking.hostName}.${tailnetDomain}:${toString port}"
             homelabDomain
           ];
 
@@ -82,7 +83,7 @@
 
         # the dashboard is the home root
         # services live at <service>.<homelabDomain>
-        # proxied to host:port from the registry
+        # proxied to host:port from homepageTiles
         services.caddy.virtualHosts = lib.mkMerge (
           [ { ${homelabDomain}.extraConfig = "reverse_proxy localhost:${toString port}"; } ]
           ++ map (t: {

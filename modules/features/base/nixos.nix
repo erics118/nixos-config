@@ -7,6 +7,7 @@
     ];
 
     catppuccin = {
+      # same reason as catppuccin.sources in hm.nix
       sources = (import "${inputs.catppuccin}/default.nix" { inherit pkgs; }).packages;
       enable = true;
       autoEnable = false;
@@ -65,7 +66,7 @@
       ];
       shell = pkgs.zsh;
 
-      # shared base key
+      # shared base key: ~/.ssh/id_ed25519 on orca
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKYegGpRKtmZCW3UNYOym55wAyRqi2JiVLgUUmbiWCf1 eric@orca"
       ];

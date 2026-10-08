@@ -5,9 +5,11 @@
         repoRoot = ../../..;
       in
       rec {
+        # out-of-store symlink into the live checkout, so edits apply with no switch
         repoFile =
           relPath: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.flake/${relPath}";
 
+        # one repoFile link per file present at eval time, so a new file needs a switch
         repoFileAll =
           relPath: targetPath:
           let

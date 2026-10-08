@@ -15,7 +15,7 @@
       darwin.base = ntfyHostOption;
 
       # declared in base rather than in homepage.nix so a host can import any tile
-      # producer (adguardhome, gatus, scrutiny, immich, media) without also importing
+      # producer (adguardhome, gatus, scrutiny, immich, homepage-media) without also importing
       # homepage, and so caddy and homepage agree on one domain
       nixos.base = { lib, ... }: {
         imports = [ ntfyHostOption ];
@@ -23,7 +23,7 @@
         options.homelabDomain = lib.mkOption {
           type = lib.types.str;
           default = "h.eriz.cc";
-          description = "Base domain for homelab services, served by the caddy wildcard vhost";
+          description = "Base domain for homelab services; homepage.nix gives each tile a <subdomain>.<homelabDomain> vhost and caddy.nix 404s the rest";
         };
 
         options.tailnetDomain = lib.mkOption {
@@ -51,27 +51,27 @@
                   subdomain = lib.mkOption {
                     type = lib.types.str;
                     default = lib.toLower config.name;
-                    description = "Link target, defaults to name; expands to https://<subdomain>.<homelabDomain>";
+                    description = "Link target, defaults to the lowercased name; expands to https://<subdomain>.<homelabDomain>";
                   };
                   port = lib.mkOption {
                     type = lib.types.nullOr lib.types.port;
                     default = null;
-                    description = "Service port, used for the uptime monitor and widget";
+                    description = "Service port, used for the uptime monitor, widget, and Caddy upstream";
                   };
                   href = lib.mkOption {
                     type = lib.types.nullOr lib.types.str;
                     default = null;
-                    description = "Override the link and uptime monitor with an explicit URL, for services not under homelabDomain";
+                    description = "Override the homepage link and siteMonitor with an explicit URL, for services not under homelabDomain; gatus ignores it";
                   };
                   host = lib.mkOption {
                     type = lib.types.str;
                     default = "127.0.0.1";
-                    description = "IP used for the uptime monitor and widget; defaults to localhost";
+                    description = "IP used for the uptime monitor, widget, and Caddy upstream; defaults to localhost";
                   };
                   proxy = lib.mkOption {
                     type = lib.types.bool;
                     default = true;
-                    description = "Generate a Caddy reverse-proxy vhost <subdomain>.<homelabDomain>";
+                    description = "Generate a Caddy reverse-proxy vhost <subdomain>.<homelabDomain> to host:port; set false for port-less tiles";
                   };
                   description = lib.mkOption {
                     type = lib.types.nullOr lib.types.str;

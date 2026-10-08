@@ -1,11 +1,8 @@
 {
-  flake.modules.nixos.nvidia = { pkgs, ... }: {
+  flake.modules.nixos.nvidia = {
     services.xserver.videoDrivers = [ "nvidia" ];
 
-    hardware.graphics = {
-      enable = true;
-      extraPackages = [ pkgs.nvidia-vaapi-driver ];
-    };
+    hardware.graphics.enable = true;
 
     hardware.nvidia = {
       modesetting.enable = true;

@@ -9,7 +9,6 @@ set default-list
 [private]
 ntfy msg status:
     #!/usr/bin/env zsh
-    (( $+commands[capsled] )) && capsled on --until-input
     # read here, not as a just variable, so `just --evaluate` and curl's argv never show it
     token=$(cat /run/secrets/ntfy/token 2>/dev/null) || exit 0
     [[ -n "$token" ]] || exit 0
@@ -30,7 +29,7 @@ update-all:
 update input:
     nix flake update {{ input }}
 
-# format nix files
+# format all files with treefmt
 [group('flake')]
 fmt:
     nix fmt -- --no-cache
@@ -66,7 +65,23 @@ dev:
     trap 'just ntfy dev $?' EXIT
     nh {{ system_target }} switch . -- --override-input nixos-config-private git+file:../nixos-config-private
 
-# test the NixOS configuration (Linux only)
+# build a signed agent from a local checkout and install it, `just switch` restores the flake build
+[group('system')]
+[macos]
+[script]
+install-local agent src:
+    tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"; just ntfy install-local $?' EXIT
+    cfg=".#darwinConfigurations.$(scutil --get LocalHostName).config"
+    pkg=$(nix build --no-link --print-out-paths --override-input {{ agent }}-src "path:$(realpath {{ src }})" "$cfg.signedAgents.{{ agent }}")
+    read cert label <<< "$(nix eval --raw "$cfg" --apply 'c: "${c.signedAgentsCert} ${c.launchd.user.agents.{{ agent }}.serviceConfig.Label}"')"
+    cp "$pkg/bin/{{ agent }}" "$tmp/bin" && chmod u+w "$tmp/bin" && codesign -fs "$cert" "$tmp/bin"
+    sudo install -o root -g wheel -m 755 "$tmp/bin" /usr/local/bin/{{ agent }}
+    # the next switch sees a different source and reinstalls the flake build
+    echo "$pkg/bin/{{ agent }}" | sudo tee /usr/local/bin/{{ agent }}.source >/dev/null
+    launchctl kickstart -k "gui/$(id -u)/$label"
+
+# test the NixOS configuration
 [group('system')]
 [linux]
 [script]

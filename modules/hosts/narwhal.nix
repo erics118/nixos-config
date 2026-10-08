@@ -39,7 +39,7 @@ in
       {
         name = "ntfy";
         group = "Infrastructure";
-        href = "https://ntfy.eriz.cc";
+        href = "https://${config.ntfyHost}";
         proxy = false;
         description = "Push notifications";
         icon = "ntfy.svg";
@@ -78,6 +78,8 @@ in
       loader = {
         systemd-boot = {
           enable = true;
+          # the OEM ESP is only 200M and can't grow without repartitioning
+          # each generation's kernel plus initrd is about 42M, so recompute before raising this
           configurationLimit = 3;
           consoleMode = "max";
         };

@@ -11,7 +11,6 @@
       # its eval "$(brew shellenv)" costs a brew process at every shell start
       enableZshIntegration = false;
 
-      # we need to trust taps before we can use them
       trust = {
         formulae = [ ];
         casks = [ ];
@@ -39,7 +38,8 @@
       enable = true;
       onActivation = {
         autoUpdate = false;
-        cleanup = "zap"; # or "none"
+        # every activation uninstalls any brew or cask not listed here
+        cleanup = "zap";
         upgrade = false;
       };
       global = {
@@ -49,7 +49,9 @@
       taps = [ ];
 
       brews = [
+        # jellyfin desktop's bundled libcrypto reads /opt/homebrew/etc/openssl@3/cert.pem
         "openssl"
+        # used by hand
         "cliclick"
       ];
 

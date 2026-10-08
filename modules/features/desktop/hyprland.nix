@@ -95,7 +95,6 @@
       qt5.qtwayland # Qt5 Wayland plugin
       qt6.qtwayland # Qt6 Wayland plugin
       pkgs.inputs.hyprland-contrib.grimblast # screenshot helper (hyprwm/contrib)
-      pkgs.inputs.hyprland-contrib.hdrop # dropdown-app toggler (hyprwm/contrib)
     ];
 
     environment.sessionVariables.NIXOS_OZONE_WL = "1";

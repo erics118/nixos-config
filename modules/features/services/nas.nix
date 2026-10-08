@@ -5,8 +5,9 @@
     # so the setting has no effect. If Load_Cycle_Count climbs, use hd-idle instead.
 
     # TODO: make the Samba password declarative via sops instead of the
-    # one-time `smbpasswd -a eric`. Add secret "smb/eric" in sops.nix + secrets.yaml,
-    # then a oneshot that re-asserts it (inner fn needs { config, pkgs, ... }):
+    # one-time `smbpasswd -a eric`. Add secret "smb/eric" in nixos-config-private
+    # (modules/features/sops.nix + secrets/secrets.yaml), then a oneshot that
+    # re-asserts it (inner fn also needs pkgs):
     #   systemd.services.samba-passwd = {
     #     after = [ "samba-smbd.service" ]; wantedBy = [ "multi-user.target" ];
     #     serviceConfig.Type = "oneshot";

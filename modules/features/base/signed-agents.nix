@@ -5,14 +5,22 @@
     { config, lib, ... }:
     let
       cfg = config.signedAgents;
-      # sha-1 of the usable yabai-cert, since an expired one shares the name
-      cert = "E9CAB0F318EDCA0C217DA5AAB7893EBBFF51CD59";
+      cert = config.signedAgentsCert;
     in
     {
       options.signedAgents = lib.mkOption {
         type = lib.types.attrsOf lib.types.package;
         default = { };
         description = "launchd user agents whose binary <package>/bin/<name> runs as a copy at /usr/local/bin/<name> signed with yabai-cert";
+      };
+
+      # read by `just install-local` too
+      options.signedAgentsCert = lib.mkOption {
+        type = lib.types.str;
+        readOnly = true;
+        # sha-1 of the usable yabai-cert, since an expired one shares the name
+        default = "E9CAB0F318EDCA0C217DA5AAB7893EBBFF51CD59";
+        description = "codesign identity for signedAgents";
       };
 
       config = {
