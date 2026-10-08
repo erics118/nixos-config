@@ -53,27 +53,6 @@
               touch $out
             '';
 
-          # source the host's generated tmux.conf, plugins included
-          # nested conf errors keep exit code 0, so any output fails
-          tmuxStartup =
-            c:
-            let
-              hm = c.config.home-manager.users.eric;
-            in
-            # the plugin scripts call tmux from PATH
-            pkgs.runCommand "tmux-startup" { nativeBuildInputs = [ hm.programs.tmux.package ]; } ''
-              export HOME=$TMPDIR
-              mkdir -p $HOME/.config
-              ln -s ${../modules/eric/cli/tmux} $HOME/.config/tmux
-              tmux -S $TMPDIR/sock -f /dev/null start-server \; \
-                source-file ${hm.home-files}/.config/tmux/tmux.conf > log 2>&1
-              if [ -s log ]; then
-                cat log
-                exit 1
-              fi
-              touch $out
-            '';
-
           # one lua-<dir> check per lua project, which a .luarc.json marks
           luaDirs = map dirOf (
             lib.filter (f: baseNameOf f == ".luarc.json") (lib.filesystem.listFilesRecursive ./.)
@@ -98,12 +77,19 @@
           (forSystem "nvim" config.flake.darwinConfigurations nvimStartup)
           (forSystem "zsh" config.flake.nixosConfigurations zshParse)
           (forSystem "zsh" config.flake.darwinConfigurations zshParse)
-          (forSystem "tmux" config.flake.nixosConfigurations tmuxStartup)
-          (forSystem "tmux" config.flake.darwinConfigurations tmuxStartup)
           (lib.listToAttrs (map (dir: lib.nameValuePair "lua-${baseNameOf dir}" (luaCheck dir)) luaDirs))
           # flake check only evaluates devShells, so build it here to catch a broken HYPR_STUBS
           { devShell = self'.devShells.default; }
           {
+            # sourcing runs every command, so an option a newer tmux dropped fails too
+            tmux = pkgs.runCommand "tmux-config" { } ''
+              export HOME=$TMPDIR
+              cd ${../modules/eric/cli/tmux}
+              ${lib.getExe pkgs.tmux} -S $TMPDIR/sock -f /dev/null start-server \; \
+                source-file main.conf keys.conf tabline.conf
+              touch $out
+            '';
+
             firefox-js = pkgs.runCommand "firefox-js" { } ''
               for f in ${../modules/eric/desktop/firefox/chrome/JS}/*.js; do
                 ${lib.getExe pkgs.nodejs} --check "$f"
