@@ -94,4 +94,5 @@ Wait by polling a condition with a bound, and print the screen when the bound ru
 - codex: start it with `-c check_for_update_on_startup=false` to skip the update prompt, in a folder that is already trusted. Trusting a new folder writes to `~/.codex/config.toml`, which is repo-managed.
 - Any TUI can open a first-run dialog (login, trust, changelog). Capture the first screen and handle the dialog before asserting anything.
 - tmux 3.5+ sets `COLORTERM=truecolor` in the pane, so nvim enables `termguicolors`. To test the fallback, run `env -u COLORTERM nvim -n` as the pane command.
+- When a test pane runs an agent, unset the outer agent's variables (`CLAUDECODE`, `CLAUDE_CODE_*`, `HERDR_*`), never `TMUX` or `TMUX_PANE`. The test server sets those for the pane, and tmux-aware tools refuse without them.
 - The pane's TERM is `tmux-256color`. Behavior that depends on the user's real terminal (wezterm or kitty key protocols, graphics) does not reproduce here.

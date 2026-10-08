@@ -1,0 +1,6 @@
+interface:
+  short_description: "Red-team the diff with the auditor and the other model"
+  default_prompt: "Use $review to attack my uncommitted changes and find what breaks."
+
+policy:
+  allow_implicit_invocation: false

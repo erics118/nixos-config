@@ -75,6 +75,7 @@
       }
       // links ".claude" "claude" [
         "agents"
+        "keybindings.json"
         "settings.json"
         "statusline.sh"
       ]
@@ -94,21 +95,23 @@
       // repoFileAll "${base}/pi/extensions" ".pi/agent/extensions"
       // repoFileAll "${base}/pi/lib" ".pi/agent/lib"
       // repoFileAll "${base}/pi/themes" ".pi/agent/themes"
-      // repoFileAll "${base}/pi/packages/pi-web-activation" ".pi/agent/packages/pi-web-activation"
       # claude reads ~/.claude/skills, codex and pi read ~/.agents/skills
       // skillDirectories ".claude/skills" "shared"
       // skillDirectories ".claude/skills" "claude"
       // skillDirectories ".agents/skills" "shared"
       // skillDirectories ".agents/skills" "codex";
 
-      # nix owns the pi binary lifecycle, so stop its update-check nag
-      home.sessionVariables.PI_SKIP_VERSION_CHECK = "1";
       # pi's default agent dir, set explicitly so pi-subagents saves new agents to the
       # repo-linked ~/.pi/agent/agents instead of ~/.agents, which it picks whenever that exists
       home.sessionVariables.PI_CODING_AGENT_DIR = "$HOME/.pi/agent";
       # pi's better-sqlite3 runs node-gyp on install
       # gyp needs ctypes, which python3Minimal lacks
       home.sessionVariables.npm_config_python = lib.getExe pkgs.python3;
+
+      # agent shells pass unmatched globs and words starting with = through like bash
+      programs.zsh.envExtra = ''
+        [[ -n $CLAUDECODE || -n $CODEX_SHELL ]] && setopt no_nomatch no_equals
+      '';
 
       home.packages = with pkgs; [
         ccusage

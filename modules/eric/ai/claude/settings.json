@@ -11,37 +11,22 @@
   },
   "permissions": {
     "allow": [
-      "Bash(cat *)",
       "Bash(cut *)",
       "Bash(df *)",
-      "Bash(du *)",
       "Bash(dune:*)",
       "Bash(fd *)",
       "Bash(file *)",
-      "Bash(find:*)",
-      "Bash(git diff *)",
-      "Bash(git log *)",
-      "Bash(git show *)",
-      "Bash(git status *)",
-      "Bash(grep *)",
-      "Bash(head *)",
       "Bash(jq *)",
       "Bash(less *)",
-      "Bash(ls *)",
-      "Bash(nix develop:*)",
       "Bash(ocamlfind:*)",
       "Bash(ocamlmerlin:*)",
       "Bash(pwd *)",
       "Bash(rg *)",
       "Bash(scc *)",
       "Bash(sort *)",
-      "Bash(stat *)",
-      "Bash(tail *)",
       "Bash(tr *)",
       "Bash(tree *)",
       "Bash(uniq *)",
-      "Bash(wc *)",
-      "Bash(which:*)",
       "Bash(xargs cat *)",
       "Bash(xargs ls *)",
       "Bash(npm run build:*)",
@@ -49,14 +34,12 @@
       "Bash(npm run start:*)",
       "mcp__ide__getDiagnostics",
       "mcp__context7__*",
-      "mcp__plugin_context7_context7__*",
       "Bash(nix-store -q *)",
       "Bash(nix path-info *)",
       "Bash(nix flake metadata *)",
       "Bash(nix flake show *)",
       "Bash(nix eval *)",
       "Bash(nix search *)",
-      "Bash(direnv exec *)",
       "Bash(direnv allow *)",
       "Bash(git add *)",
       "Bash(just build*)",
@@ -167,7 +150,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.agents/hooks/caps-led.sh\""
+            "command": "\"$HOME/.agents/hooks/tmux-bell.sh\""
           }
         ]
       }
@@ -177,7 +160,31 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.agents/hooks/caps-led.sh\""
+            "command": "\"$HOME/.agents/hooks/tmux-bell.sh\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/tmux-agent-resume.sh\" claude"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'm=$(jq -r \".hooks[][].hooks[].command\" \"$HOME/.claude/settings.json\" | grep -o \"\\$HOME/\\.agents/hooks/[^\\\" ]*\" | sort -u | while read -r p; do f=$HOME${p#\\$HOME}; [ -x \"$f\" ] || printf \"%s \" \"$f\"; done); [ -z \"$m\" ] || jq -n --arg m \"guard hooks missing, so they do not run: $m\" \"{systemMessage:\\$m,hookSpecificOutput:{hookEventName:\\\"SessionStart\\\",additionalContext:\\$m}}\"'"
+          }
+        ]
+      },
+      {
+        "matcher": "^(startup|resume|clear|compact|fork)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/eric/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
           }
         ]
       }
@@ -208,7 +215,6 @@
     "security-guidance@claude-plugins-official": false,
     "lua-lsp@claude-plugins-official": false,
     "remember@claude-plugins-official": false,
-    "context7@claude-plugins-official": false,
     "railway@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {

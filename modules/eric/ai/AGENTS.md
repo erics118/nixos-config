@@ -11,13 +11,14 @@ These rules cover chat replies. Long-form work I ask for (drafts, scripts, posts
 - Plain ASCII punctuation, no em dashes anywhere (replies, code comments, strings, commit messages)
 - When you truncate, summarize, or show a subset, say what was cut and how to get the rest. Never drop it silently
 - While working, speak up only for a real finding or a change of direction
-- Completion reports: **Done** (the files you touched, commit or PR, then one `Checked: <command> -> <result>` line for what you ran and one `Not checked: <what> (needs your eyes: <how>)` line only for what no command here can exercise. Output a terminal program draws (a TUI, an editor, a shell prompt, colors) counts as exercisable: run the program with the tmux skill and capture the pane. Before writing any unverified, not-checked, or "I'll verify later" claim anywhere in a reply, run the command that would settle it. Write the claim only if none exists, and then name why no command can), **Remaining** (unfinished work or real risks), **Needs your decision** (only items that pass the check under Decisions). Drop any section that would be empty
+- Completion reports: **Done** (the files you touched, commit or PR, then one `Checked: <command> -> <result>` line for what you ran and one `Not checked: <what> (needs your eyes: <how>)` line only for what no command here can exercise. Output a terminal program draws (a TUI, an editor, a shell prompt, colors) counts as exercisable: run the program with the tmux skill and capture the pane. Before writing any unverified, not-checked, or "I'll verify later" claim, or handing me a check to run, settle it yourself: a real run, real input, a capture, or the program's source for the exact path the behavior takes. A stand-in check (another entry point, synthetic events, generated output) counts only after you confirm it runs the same path as the real behavior. An attempt that fails, is blocked, or comes back inconclusive settles nothing: try the next way. Write the claim only when no way is left, and list each way you tried and why it fell short), **Remaining** (unfinished work or real risks), **Needs your decision** (only items that pass the check under Decisions). Drop any section that would be empty
 
 ## Execution policy
 
-- Edit, write, or switch only after I explicitly tell you to make the change, or answer yes when you ask whether to make that exact change. Before the first edit, write, or state-changing command of a change, find the message that granted it, and if none qualifies, stop and ask whether to make it. These are not grants: a question (how hard, can it, why, is it), a problem report, agreement with a proposal or verdict ("sounds good", "that's right"), and an answer to a question about how or which way to do something. When proposing a change I have not granted, ask whether to make it, never which way to make it. Reading, searching, and local inspection need no permission.
+- Edit, write, or switch only after I explicitly tell you to make the change, or answer yes when you ask whether to make that exact change. Before the first edit, write, or state-changing command of a change, find the message that granted it, and if none qualifies, stop and ask whether to make it. These are not grants: a question (how hard, can it, why, is it), a problem report, agreement with a proposal or verdict ("sounds good", "that's right"), an answer to a question about how or which way to do something, and a skill or slash-command invocation, which names the method to use when the work happens, not permission to do it now, unless its arguments themselves name the change. When proposing a change I have not granted, ask whether to make it, never which way to make it. Reading, searching, and local inspection need no permission.
 - In an approved task or plan, continue through every routine task and its checks. Do not stop after a task, check, finding, or progress report.
 - A correction, side note, or intermediate result does not pause the active task unless it explicitly changes, pauses, or cancels it. A question inside it is answered first, then the task continues.
+- An interrupted or declined tool call usually means I want to steer, not that the tool or action is off limits. Read my next message as the new direction and carry on. Treat it as a refusal of that action only when the message says so ("stop", "what are you doing", "don't do that")
 - Keep stricter safeguards for non-interactive subagents and irreversible operations.
 
 ## Scope
@@ -29,7 +30,7 @@ These rules cover chat replies. Long-form work I ask for (drafts, scripts, posts
 
 ## Questions
 
-- When I push back on a judgment, re-check it against a source. Change the answer only for a fact you name, and if you change it without one, say the first answer wasn't checked
+- When I push back on a judgment or ask whether a part is needed, first name what that part guarantees, then check a source. Keep the part unless the source shows the guarantee is unnecessary, or holds without it by design. Holding today by coincidence (current order, current data, one passing case) does not count. If you change the answer without such a fact, say the first answer wasn't checked
 
 ## Decisions
 
@@ -49,6 +50,7 @@ These rules cover work I asked you to do.
 - Before writing code, work out what the change must not touch
 - Prefer existing utilities, helpers, and abstractions over new ones that duplicate them
 - KISS. Write the shortest, simplest code that solves the issue, and if it could be half the size, cut it
+- Before changing a numeric constant (a padding, an offset, a timeout), say why the current value is what it is and why the new one is right
 - Prefer boring, idiomatic constructs a mid-level reader knows on sight. Don't reach for an exotic language feature or a new wrapper to satisfy a linter or a micro-optimization. Suppress or leave the lint instead
 
 ## Comments
@@ -57,6 +59,7 @@ These rules cover work I asked you to do.
 - One line is best, but two or three are fine when the point needs it. Each line states one thought. Never merge two thoughts with a semicolon or comma splice. Trimming a comment means fewer words, not more thoughts per line
 - No summary or rationale block atop a file, function, namespace, or section
 - Put a comment on its own line, not trailing after code. Lowercase, minimal punctuation, no trailing period
+- In comments and docs, point instead of copy. Never restate what code or config already lists (files, checks, ports, keys, versions, line numbers): name the file that owns it. Stay specific about why and where to look
 
 ## Matching and checking
 
@@ -74,18 +77,19 @@ These rules cover work I asked you to do.
 - Verify any fact you state from the source of truth: the actual config, code, or live system, never memory or a generic prior. This includes summaries and asides. If you cannot verify it now, hedge it or leave it out
 - When a tool's output, a file, or an explicit rule contradicts your expectation or a generic prior, the evidence wins. Re-read it and make your answer match it. Do not explain the disproof away. A value from memory or an earlier session (a path, a status, a number) is a prior too: re-fetch it rather than reuse it
 - Before fixing a bug, restate the exact reported symptom and confirm it against evidence. Fix the symptom the user reported, not the one you assumed
-- Say "I couldn't find X", not "X doesn't exist". One failed search is weak evidence of absence
-- Never write that behavior is "verified", "fixed", or "works" unless a check this turn exercised that behavior: a real run, test, install, screenshot, or status/log read. A build, an edit, or a simulated proxy alone is not verification. Say "built, untested" instead
+- Before asking me for a fact, or saying a record lacks it, read in full the section of the record where it would live. A keyword search that comes back empty settles nothing, since the record may use another word. Say "I couldn't find X", not "X doesn't exist"
+- Never write that behavior is "verified", "fixed", or "works" unless a check this turn exercised that behavior: a real run, test, install, screenshot, or status/log read of the end result I need (the record stored, the form accepted). A build, an edit, a simulated proxy, or an intermediate signal (a request sent, a 2xx status) is not verification. Say "built, untested" instead
 - A passing build, type-check, lint, test, or hook verifies only what that tool checks. Green tests are not evidence for behavior they do not exercise (visual result, concurrency, comment accuracy). Name what was actually checked
 
 ## Subagents
 
 - When delegation is available, fan out parallel subagents for the same operation across many independent targets, or for bulky research with a small conclusion
 - Don't delegate a lookup you could do directly. A subagent starts cold, so the round-trip costs more than it saves when you already know the file or symbol
+- Pick a named agent when one fits: `researcher` for cited web or docs research, `auditor` for a read-only review, `recall` for past sessions. Use a general-purpose agent only when none fits
 
 ## Git
 
-- `git config --get eric-agent.commit` sets whether you commit in a repo. `on`: commit as work lands. `branch`: commit as work lands, but only on a branch other than `main` or `master`. `ask`: commit as work lands, and I approve each commit. Unset or `off`: don't commit. Tell me when the work is ready and I commit
+- `git config --get eric-agent.commit` sets whether you commit in a repo. `on`: commit as work lands. `branch`: commit as work lands, but only on a branch other than `main` or `master` (a detached HEAD, as mid-rebase, counts as `main`). `ask`: commit as work lands, and I approve each commit (a Codex hook cannot ask for approval, so there `ask` means `off`). Unset or `off`: don't commit. Tell me when the work is ready and I commit
 - `git config --get eric-agent.push` sets whether you push in a repo. `on`: push. `ask`: I approve each push. Unset or `off`: don't push. Tell me when the work is ready and I push. Codex never pushes: its rules forbid `git push`
 - Never open, change, or merge a pull request. I do those. Tell me when the work is ready
 - Use `gh` only to read: `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, `run watch`, and `gh api` GETs
@@ -95,6 +99,7 @@ These rules cover work I asked you to do.
 ## Where guidance lives
 
 - Put style, workflow, and convention guidance in the relevant skill or project instruction file, never in auto-memory. When a correction concerns a skill's task, edit that skill
+- The project instruction file is `AGENTS.md` at the repo root. Claude Code, Codex, and pi all read it, so never create a project `CLAUDE.md` or a symlink to one. A repo that still has a `CLAUDE.md` should move it to `AGENTS.md`
 
 ## Environment
 
@@ -103,11 +108,11 @@ These rules cover work I asked you to do.
 - For a Python library, use a nix `python3.withPackages`. If nixpkgs lacks it or marks it unsupported on this platform, use `nix shell nixpkgs#uv --command uv run --with <pkg> python ...`
 - For a host on the tailnet, use `tailscale ssh <user>@<host>`, not plain `ssh`. It resolves the name inside tailscaled, so macOS DNS bugs can't break it
 - On macOS, sudo works via TouchID. Run `sudo <cmd>` directly and let it prompt. Don't hand it to me. Never probe with `sudo -n`: it refuses to prompt and gives a false negative
-- GNU sed, date, awk, and coreutils come first on PATH: use GNU flags. Claude Code and Codex run zsh, and pi runs bash: quote expansions and globs meant for the command (`-g '*.cpp'`), since zsh aborts on an unmatched glob. Search with `rg`, adding `--no-ignore` for an exhaustive search. Find files with `fd`, adding `-HI` to include hidden and ignored files. In Claude Code, grep is a shell function running ugrep with ignore rules: use `command grep` only when you need the real grep
-- Parts of `~/.claude`, `~/.codex`, `~/.config`, `~/.pi`, `~/.flake` are symlinks into `~/nixos-config`. Everything else there is runtime state
-- Managed files use `repoFile` or `repoFileAll` from `modules/features/base/flake-link.nix`. `repoFile path` is `mkOutOfStoreSymlink "~/.flake/<path>"`, and `~/.flake` is a symlink to `~/nixos-config`. So the chain is target -> `/nix/store/...-home-manager-files/<target>` -> `/nix/store/...-hm_<name>` -> `~/.flake/<path>` -> the repo file. `repoFileAll dir target` makes one such symlink per file that existed in `dir` at eval time
+- GNU sed, date, awk, and coreutils come first on PATH: use GNU flags. Claude Code and Codex run zsh with `nonomatch` and `noequals`, and pi runs bash. Quote expansions and globs meant for the command (`-g '*.cpp'`). Search with `rg`, adding `--no-ignore` for an exhaustive search. Find files with `fd`, adding `-HI` to include hidden and ignored files. In Claude Code, grep is a shell function running ugrep with ignore rules: use `command grep` only when you need the real grep
+- `.eric/` is in the global git ignore (`modules/eric/git.nix`), in every repo. Write there without checking ignore rules
+- Parts of `~/.agents`, `~/.claude`, `~/.codex`, `~/.config`, `~/.pi`, `~/.flake` are symlinks into `~/nixos-config`. Everything else there is runtime state
 - To resolve a managed file's real path, `realpath` it. `ls -l` stops at a `/nix/store` hop that is itself a symlink to the repo
-- A change is live the moment you edit a file whose `realpath` lands in `~/nixos-config`. A new file is live only inside a directory linked whole with `repoFile`. `just switch` is only for a target that does not yet resolve into the repo: a brand-new managed file, a new file inside a `repoFileAll` directory, or nix-generated content.
+- A change is live the moment you edit a file whose `realpath` lands in `~/nixos-config`. A new file is live only inside a directory linked whole. `just switch` is only for a target that does not yet resolve into the repo: a brand-new managed file, a new file inside a directory linked per file, or nix-generated content. `~/nixos-config/AGENTS.md` says how the links are built
 - A switch takes about a minute, so batch changes and never switch per edit. `nix eval` or a one-derivation build checks the config, not the behavior. When the request is behavior I will use, the task ends with a run that shows it live. If the target needs a switch under the rule above, run the justfile's switch recipe first and say in one line why it is needed. Restart or close anything started before the change (a daemon, a reused connection, a shell) before the run
 - Before any Nix evaluation, build, or switch (`just switch`, `just build`, `nix flake check`), stage every created, moved, or deleted Nix-managed source path with `git add` or `git rm`. This makes the path visible to the flake
 - Inspect `git diff --cached -- <paths>` and stage no unrelated paths. Staging is required local build preparation, not permission to commit. If the path is already staged, continue without asking.

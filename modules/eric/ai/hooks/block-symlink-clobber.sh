@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# block Bash mv/cp/redirect/tee that would overwrite a path that is currently a symlink:
-# mv/redirect replace the symlink itself instead of writing through it, silently
-# detaching nix-managed config (out-of-store symlinks) from its real source.
+# block Bash writes onto a path that is currently a symlink
+# mv and in-place sed/perl replace the link, detaching nix-managed config from its source
+# cp, tee, truncate, and redirects write through the link, outside the edit tool
 set -u
 # shellcheck source-path=SCRIPTDIR source=lib.sh
 source "$(dirname "$0")/lib.sh"
@@ -21,7 +21,7 @@ while IFS= read -r candidate; do
   [ -L "$candidate" ] || continue
 
   real=$(realpath "$candidate" 2>/dev/null)
-  hook_deny "$candidate is a symlink (-> $real). mv/cp/redirect would replace the link itself, detaching it from its real source. Edit $real directly instead."
+  hook_deny "$candidate is a symlink (-> $real). mv or in-place sed/perl would replace the link itself, and cp, tee, truncate, or a redirect would write through it. Edit $real directly instead."
 done < <(hook_each '
   writes,
   (select(tool | IN("mv", "cp")) | .argv[1:] | select(length > 1) | .[-1]),

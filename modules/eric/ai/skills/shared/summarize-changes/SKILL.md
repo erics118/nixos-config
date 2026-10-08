@@ -15,9 +15,9 @@ Summarize the current changes so I can glance before committing or opening a PR.
    - One-line headline of the overall change.
    - A short bullet per logical change: what changed and why, referencing `file:line` where useful. Group related edits; do not enumerate every hunk.
    - Call out anything risky, incomplete, or unrelated that slipped in (debug leftovers, TODOs, formatting-only churn).
-   - For each changed prose file (docs, instructions, skills), with `<file>` relative to the repo root, run `git show <base>:<file> | ~/.claude/skills/rewrite/scripts/specifics.sh - <file>` (Codex and pi: `~/.agents/skills/rewrite/scripts/specifics.sh`). List the `missing:` lines. Skip files the diff adds.
-     - `<base>` is `HEAD` for working-tree changes, or `git merge-base <start> <end>` for a range.
-     - For a range, feed the new side with `<(git show <end>:<file>)` in place of `<file>`.
+   - For each changed prose file (docs, instructions, skills), with `<file>` relative to the repo root, run `git show <base>:<file> | <skill dir>/../rewrite/scripts/specifics.sh - <file>`, where `<skill dir>` is this skill's base directory. List the `missing:` lines. Skip files the diff adds.
+     - `<base>` is `HEAD` for working-tree changes, the ref itself for a single ref or `A..B`, and `git merge-base A B` for `A...B`.
+     - The new side is `<file>` in the working tree for working-tree changes or a single ref. For `A..B` or `A...B`, feed it with `<(git show B:<file>)` in place of `<file>`.
      - For a renamed file, use the old path on the base side.
      - If `git show` fails, report that. Never report the file as clean.
 4. Do NOT commit, stage, or modify anything. Read-only summary.

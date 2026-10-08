@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # flag comment blocks longer than 3 lines in the text an edit introduced.
-# the rule lives in CLAUDE.md but prose does not fire at edit time; this does.
+# the rule lives in AGENTS.md but prose does not fire at edit time; this does.
 # scans only newly written text so pre-existing blocks in an edited file stay quiet.
 set -u
 # shellcheck source-path=SCRIPTDIR source=lib.sh
@@ -28,7 +28,11 @@ added=$(printf '%s' "$HOOK_INPUT" | jq -r '
   else empty end')
 [ -n "$added" ] || exit 0
 
-out=$(printf '%s\n' "$added" | awk -v mode="$mode" '
+# a block that opens the file is a header (license, userscript metadata), not an essay
+attop=0
+[ "$(head -n1 "$file")" = "$(printf '%s\n' "$added" | head -n1)" ] && attop=1
+
+out=$(printf '%s\n' "$added" | awk -v mode="$mode" -v attop="$attop" '
 {
   line=$0; c=0
   if(mode=="hash"){
@@ -39,7 +43,9 @@ out=$(printf '%s\n' "$added" | awk -v mode="$mode" '
     else if(mode=="slash" && line ~ /^[[:space:]]*\/\//) c=1
     else if(line ~ /^[[:space:]]*\/\*/){ c=1; if(line !~ /\*\//) inblock=1 }
   }
-  if(c){ run++; if(run>max){max=run; endline=line} } else run=0
+  if(c && !run) header=(attop && (NR==1 || (NR==2 && first ~ /^#!/)))
+  if(NR==1) first=line
+  if(c){ run++; if(!header && run>max){max=run; endline=line} } else run=0
 }
 END{ print max+0; print endline }')
 max=$(printf '%s\n' "$out" | sed -n '1p')

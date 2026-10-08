@@ -58,8 +58,9 @@ git -C "$repo" add tracked.txt
 git -C "$repo" -c user.name=test -c user.email=test@example.invalid commit -qm initial
 printf 'flake\n' >"$repo/flake.nix"
 printf 'module\n' >"$repo/untracked.nix"
-printf '// one\n// two\n// three\n// four\n' >"$repo/comments.ts"
-# deny-symlink-path.sh only denies links that resolve under $HOME/nixos-config
+printf 'code\n// one\n// two\n// three\n// four\n' >"$repo/comments.ts"
+printf '#!/usr/bin/env bash\n# one\n# two\n# three\n# four\ncode\n' >"$repo/header.sh"
+# deny-symlink-path.sh only denies links that resolve under its approved roots, such as $HOME/nixos-config
 # realpath because macOS temp dirs resolve through /private
 fake_home=$(realpath "$repo")/home
 mkdir -p "$fake_home/nixos-config"
@@ -95,6 +96,16 @@ for cmd in 'just switch' 'nh darwin switch' 'nix flake check'; do
   expect_json "git-add-before-nix: $cmd" git-add-before-nix.sh '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
+# a just recipe is judged by what its dry run calls, not by its name
+mkdir "$repo/jb"
+git -C "$repo/jb" init -q
+printf 'flake\n' >"$repo/jb/flake.nix"
+printf 'build:\n    latexmk -pdf resume.tex\n\nswitch: build\n    nix build .\n' >"$repo/jb/justfile"
+git -C "$repo/jb" add flake.nix justfile
+printf 'new\n' >"$repo/jb/new.tex"
+expect_allow git-add-before-nix-just-not-nix git-add-before-nix.sh "$(json "$repo/jb" 'just build')"
+expect_json git-add-before-nix-just-nix git-add-before-nix.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  "$(json "$repo/jb" 'just switch')"
 mkdir "$repo/sub"
 git -C "$repo/sub" init -q
 printf 'flake\n' >"$repo/sub/flake.nix"
@@ -295,18 +306,56 @@ expect_exit_2 warn-comment-block warn-comment-block.sh \
   "$(jq -cn --arg file_path "$repo/comments.ts" --arg text $'// one\n// two\n// three\n// four' '{tool_input:{file_path:$file_path,edits:[{new_string:$text}]}}')"
 expect_allow warn-comment-block-short warn-comment-block.sh \
   "$(jq -cn --arg file_path "$repo/comments.ts" --arg text $'// one\n// two\ncode' '{tool_input:{file_path:$file_path,edits:[{new_string:$text}]}}')"
+expect_allow warn-comment-block-file-header warn-comment-block.sh \
+  "$(jq -cn --arg file_path "$repo/header.sh" --arg content "$(cat "$repo/header.sh")" '{tool_input:{file_path:$file_path,content:$content}}')"
+expect_exit_2 warn-comment-block-after-header warn-comment-block.sh \
+  "$(jq -cn --arg file_path "$repo/header.sh" --arg content $'#!/usr/bin/env bash\n# one\n# two\n# three\n# four\ncode\n# a\n# b\n# c\n# d' '{tool_input:{file_path:$file_path,content:$content}}')"
 
-# a stub capsled records its args so the test never touches the real led
-mkdir "$repo/capsled-bin"
-printf '#!/bin/sh\necho "$@" >"%s/capsled-args"\n' "$repo" >"$repo/capsled-bin/capsled"
-chmod +x "$repo/capsled-bin/capsled"
-PATH=$repo/capsled-bin:$PATH expect_allow caps-led caps-led.sh '{}'
-[ "$(cat "$repo/capsled-args")" = "on --until-input" ] || {
-  printf 'FAIL caps-led did not run capsled on --until-input\n'
+# a stub tmux names a plain file as the pane's tty, so the test never rings a real bell
+mkdir "$repo/tmux-bin"
+printf '#!/bin/sh\necho "%s/pane-tty"\n' "$repo" >"$repo/tmux-bin/tmux"
+chmod +x "$repo/tmux-bin/tmux"
+: >"$repo/pane-tty"
+TMUX_PANE='' expect_allow tmux-bell-outside-tmux tmux-bell.sh '{}'
+[ ! -s "$repo/pane-tty" ] || {
+  printf 'FAIL tmux-bell rang outside tmux\n'
+  exit 1
+}
+PATH=$repo/tmux-bin:$PATH TMUX_PANE=%1 expect_allow tmux-bell tmux-bell.sh '{}'
+[ "$(cat "$repo/pane-tty")" = $'\a' ] || {
+  printf 'FAIL tmux-bell did not ring the pane tty\n'
   exit 1
 }
 
-configured=$(jq -r '.hooks | to_entries[] | .value[] | .hooks[] | .command' "$settings" | sed -E 's#.*/##; s/"//g' | sort -u)
+tested+=(tmux-agent-resume.sh)
+# a private tmux server, with timeout standing in for an agent the pane's shell starts
+if command -v tmux >/dev/null; then
+  resume_tmux() { tmux -L "agent-resume-test-$$" -f /dev/null "$@"; }
+  # each pane signals once its hook has run, then stays open so its options can be read
+  resume_tmux new -d -s direct "timeout 5 '$hooks/tmux-agent-resume.sh' claude <<<'{\"session_id\":\"abc\"}'; tmux wait-for -S direct; sleep 5"
+  resume_tmux new -d -s nested "timeout 5 timeout 5 '$hooks/tmux-agent-resume.sh' claude <<<'{\"session_id\":\"abc\"}'; tmux wait-for -S nested; sleep 5"
+  resume_tmux wait-for direct
+  resume_tmux wait-for nested
+  top=$(resume_tmux show -pqv -t =direct: @agent_resume)
+  nested=$(resume_tmux show -pqv -t =nested: @agent_resume)
+  resume_tmux kill-server
+  [ "$top" = 'claude --resume abc' ] || {
+    printf 'FAIL tmux-agent-resume recorded %q\n' "$top"
+    exit 1
+  }
+  printf 'ok tmux-agent-resume\n'
+  [ -z "$nested" ] || {
+    printf 'FAIL tmux-agent-resume recorded a nested agent: %q\n' "$nested"
+    exit 1
+  }
+  printf 'ok tmux-agent-resume-nested\n'
+else
+  printf 'skip tmux-agent-resume: tmux is not on PATH\n'
+fi
+
+# only hooks from this directory count, since herdr installs its own by absolute path.
+# SessionStart commands may pass arguments after the script path, since pi does not run them
+configured=$(jq -r '.hooks | to_entries[] | .value[] | .hooks[] | .command | select(startswith("\"$HOME/.agents/hooks/"))' "$settings" | sed -E 's#.*/##; s/"//g; s/ .*//' | sort -u)
 covered=$(printf '%s\n' "${tested[@]}" | sort -u)
 [ "$configured" = "$covered" ] || {
   printf 'configured hook coverage mismatch\nexpected:\n%s\ncovered:\n%s\n' "$configured" "$covered" >&2
@@ -314,7 +363,34 @@ covered=$(printf '%s\n' "${tested[@]}" | sort -u)
 }
 printf 'all configured hooks covered\n'
 
-codex_configured=$(jq -r '.hooks | to_entries[] | .value[] | .hooks[] | .command' "$root/modules/eric/ai/codex/hooks.json" | sed -E 's#.*/##; s/"//g' | sort -u)
+# claude and pi agents need different frontmatter but must share one body
+for pi_agent in "$root"/modules/eric/ai/pi/agents/*.md; do
+  name=$(basename "$pi_agent")
+  diff <(awk 'f >= 2; /^---$/ { f++ }' "$root/modules/eric/ai/claude/agents/$name") <(awk 'f >= 2; /^---$/ { f++ }' "$pi_agent") >/dev/null || {
+    printf 'FAIL agent body: claude/agents/%s and pi/agents/%s differ\n' "$name" "$name"
+    exit 1
+  }
+  printf 'ok agent body: %s\n' "$name"
+done
+
+# the inline SessionStart check stays quiet while every hook exists, and names one that is gone
+startup_check=$(jq -r '.hooks.SessionStart[].hooks[].command | select(contains("guard hooks missing"))' "$settings")
+check_home=$repo/check-home
+mkdir -p "$check_home/.claude" "$check_home/.agents"
+cp "$settings" "$check_home/.claude/settings.json"
+ln -s "$hooks" "$check_home/.agents/hooks"
+[ -n "$startup_check" ] && [ -z "$(HOME=$check_home bash -c "$startup_check")" ] || {
+  printf 'FAIL session-start-hook-check: missing, or warned with every hook present\n'
+  exit 1
+}
+rm "$check_home/.agents/hooks"
+HOME=$check_home bash -c "$startup_check" | jq -e '.systemMessage | contains("block-sudo-probe.sh")' >/dev/null || {
+  printf 'FAIL session-start-hook-check: did not name a missing hook\n'
+  exit 1
+}
+printf 'ok session-start-hook-check\n'
+
+codex_configured=$(jq -r '.hooks | to_entries[] | .value[] | .hooks[] | .command | select(startswith("\"$HOME/.agents/hooks/"))' "$root/modules/eric/ai/codex/hooks.json" | sed -E 's#.*/##; s/"//g; s/ .*//' | sort -u)
 for script in $codex_configured; do
   if [ ! -x "$hooks/$script" ] || ! printf '%s\n' "$covered" | grep -qxF "$script"; then
     printf 'codex hook %s is missing or untested\n' "$script" >&2

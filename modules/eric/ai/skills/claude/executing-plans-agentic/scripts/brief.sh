@@ -11,7 +11,6 @@ plan=$1 n=$2
 }
 dir="$(git rev-parse --show-toplevel)/.eric/plans/$(basename "$plan" .md)"
 mkdir -p "$dir"
-printf '*\n' >"$dir/.gitignore"
 out="$dir/task-$n-brief.md"
 awk -v n="$n" '
   /^```/ { fence = !fence }

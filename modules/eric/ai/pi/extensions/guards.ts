@@ -9,6 +9,7 @@ type HookGroup = { matcher?: string; hooks?: { command?: string }[] };
 
 // the hook scripts Claude Code's settings.json runs for this tool, so both agents share one list.
 // read on every call so edits apply at once. a failed read throws, and pi then blocks the tool
+// pi spawns each command without a shell, so an entry must be a bare quoted script path with no arguments
 function hooksFor(
   event: "PreToolUse" | "PostToolUse" | "Stop",
   toolName: string,

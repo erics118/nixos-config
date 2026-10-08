@@ -1,7 +1,8 @@
 ---
 name: new-project
-description: Scaffold a new dev project from ~/dev/templates (flake + direnv + language init). Use when the user wants to start or create a new project.
+description: Scaffold a new dev project from ~/dev/templates (flake + direnv + language init)
 argument-hint: "<name> [language]"
+disable-model-invocation: true
 ---
 
 Treat the first value supplied with the invocation as the project name and an optional
@@ -16,6 +17,8 @@ Create the project under `~/dev` using this templates-first workflow:
    - go: `go mod init`
    - ocaml: `dune init`
    - node: the suitable framework init (`npm create vite`, `npm init`, etc.)
+   - python: `uv init`
+   - rust: `cargo init`
 
    Two templates ship source and skip the init tool:
    - cpp: cpp doesn't have a super nice tooling framework, so its template ships CMakeLists.txt, src/ and tests/
@@ -24,4 +27,4 @@ Create the project under `~/dev` using this templates-first workflow:
 5. `git add` the nix files before any nix command, because flakes ignore untracked files. Then run `nix flake update` so the project starts on current inputs, not the template's pins. `git add` the updated `flake.lock`.
 6. Write `.envrc` containing `use flake` (no template ships one), then run `direnv allow`.
 7. Run the language init tool (step 4) inside the devShell, then verify: `nix flake check` (or `nix develop -c <build cmd>`) passes.
-8. Do NOT git commit (neither in the new project nor in templates). Report: template used or created, init tool run, verify results.
+8. Report: template used or created, init tool run, verify results.

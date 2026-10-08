@@ -139,7 +139,7 @@ test("adds PostToolUse hook warnings to the tool result", async () => {
     '"$HOME/.agents/hooks/warn-comment-block.sh"',
   ]);
   const file = path.join(repo, "comments.ts");
-  const text = "// one\n// two\n// three\n// four\n";
+  const text = "code\n// one\n// two\n// three\n// four\n";
   writeFileSync(file, text);
   const result = (await handlers.get("tool_result")!(
     {

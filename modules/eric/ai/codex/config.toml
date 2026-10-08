@@ -83,8 +83,8 @@ NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = ""
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = ""
 NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = ""
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.928.20755"
-NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/eric/.codex/plugins/cache/openai-bundled/browser/26.928.20755/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
+BROWSER_USE_CODEX_APP_VERSION = "26.928.31416"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/eric/.codex/plugins/cache/openai-bundled/browser/26.928.31416/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
 SKY_CUA_SERVICE_PATH = "/Users/eric/.codex/computer-use/Codex Computer Use.app"
 CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex"
 
@@ -373,6 +373,7 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [shell_environment_policy.set]
+CODEX_SHELL = "1"
 NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "028a14b6eaa6d98dac2aae00764345ab9f244801ed8493d42b9af3be5575006e,f204d340535055781952b10ed396de20b842f00a19e430852f7e121ad1ce91f6"
 
 [tui]
@@ -392,7 +393,7 @@ screen_reader_detection_done = true
 "gpt-5.5" = 4
 "gpt-5.6-sol" = 4
 gpt-6-astra = 4
-"gpt-6.1-sol" = 3
+"gpt-6.1-sol" = 4
 
 [hooks.state]
 
@@ -421,4 +422,10 @@ trusted_hash = "sha256:118987d2419aaf15d66bf228cd186ca66f6aba992b956996119465f25
 trusted_hash = "sha256:0dc608aac4f81cc0a450eaf587585d68ec200c9e8121fff12953360466806362"
 
 [hooks.state."/Users/eric/.codex/hooks.json:stop:0:0"]
-trusted_hash = "sha256:16a54e1172e11b55bd4909607a9f0f7a873381e713af9d0fac9388fc67db944d"
+trusted_hash = "sha256:f27a4fda937303a82b584fd3a3acbbb561b32c64d5a09ea51ffe7177fd640ee0"
+
+[hooks.state."/Users/eric/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:fdcc0e8ab137e94aed9979e34df6b07780dced7150df9eba5c3bccd3855152e7"
+
+[hooks.state."/Users/eric/.codex/hooks.json:session_start:0:1"]
+trusted_hash = "sha256:7fe63c42973ca988a5758d5295fb0dc0a24afb6c970d412f11c71b6e91a48abb"

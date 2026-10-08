@@ -7,7 +7,7 @@ description: Use when you want an independent second opinion from a different mo
 
 Codex is a **different model**, so its value is disagreement. Ask it to judge, not to fetch. Never reconcile away its verdict when reporting back -- quote it, then say where you disagree.
 
-Pin `-m gpt-5.6-sol -c model_reasoning_effort="high"` on every call. `~/.codex/config.toml` sets the same values today, so pinning is what stops a later edit there from silently swapping the model mid-review.
+Pin `-m gpt-5.6-sol -c model_reasoning_effort="high"` on every call. Pinning stops a later edit to `~/.codex/config.toml` from silently swapping the model mid-review.
 
 Runs take minutes. Launch with `run_in_background: true` and wait for the completion notification. Never poll with `pgrep -f`, whose pattern matches the polling loop itself and never exits. The answer is whatever lands in `-o`; write it to the scratchpad and read it from there.
 

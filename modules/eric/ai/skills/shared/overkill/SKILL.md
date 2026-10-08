@@ -4,7 +4,7 @@ description: Use when a proposal, plan, or change might be more than the job nee
 argument-hint: "[empty for the current proposal | file | plan]"
 ---
 
-Follow [ask](../ask/SKILL.md) on this question: is the current proposal, or the target given, overkill? Change no files.
+Answer one question: is the current proposal, or the target given, overkill? It is a question, not a build order, so change no files. Judge on the merits and put the verdict up front.
 
 1. Job. State the job in one line, as the outcome the user asked for.
 2. Parts. List every part of the proposal: each file, setting, skill, step, check, or abstraction.

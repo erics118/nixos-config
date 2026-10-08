@@ -6,6 +6,7 @@ type Resolution =
   | { kind: "regular" | "missing"; path: string }
   | { kind: "redirect" | "blocked"; path: string; target: string };
 
+// hooks/deny-symlink-path.sh keeps the same list
 function approvedRoots(home: string): string[] {
   return [
     path.join(home, "nixos-config"),
@@ -83,8 +84,6 @@ export default function managedPaths(pi: ExtensionAPI): void {
       return { block: true, reason: "Pi mutation path is missing or invalid." };
 
     const resolved = resolveManagedPath(input, process.env.HOME, ctx.cwd);
-    if (resolved.kind === "redirect")
-      return { input: { ...event.input, path: resolved.target } };
     if (resolved.kind === "blocked") {
       return {
         block: true,

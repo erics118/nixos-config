@@ -25,7 +25,7 @@ import {
   type OverlayHandle,
   type TUI,
 } from "@earendil-works/pi-tui";
-import { buildTmuxLaunch, SIDE_SYSTEM_PROMPT } from "../lib/side-session.ts";
+import { parseSideArgs, SIDE_SYSTEM_PROMPT } from "../lib/side-session.ts";
 
 const BTW_SYSTEM_PROMPT = [
   "You are having a private side conversation with the user.",
@@ -370,38 +370,17 @@ export default function (pi: ExtensionAPI) {
     };
   };
 
-  const launchTmuxSide = async (
-    sessionPath: string | undefined,
-    effectivePrompt: string,
-    name: string,
-    ctx: ExtensionContext,
-  ) => {
-    if (!process.env.TMUX) {
-      throw new Error("/side requires an active tmux session");
-    }
-    if (!sessionPath) {
-      throw new Error(
-        "/side needs a saved Pi session before tmux can resume it",
-      );
-    }
-
-    const launch = buildTmuxLaunch({
+  // agent-side owns the tmux check and the split, and prints one "side: ..." line either way
+  const runAgentSide = async (args: string[], ctx: ExtensionContext) => {
+    const result = await pi.exec("agent-side", ["pi", ...args], {
       cwd: ctx.cwd,
-      sessionPath,
-      name,
-      prompt: effectivePrompt,
-    });
-    const result = await pi.exec(launch.command, launch.args, {
       timeout: 10_000,
     });
+    const line = result.stdout.trim() || result.stderr.trim();
     if (result.code !== 0) {
-      throw new Error(
-        result.stderr.trim() ||
-          result.stdout.trim() ||
-          "tmux could not open the side pane",
-      );
+      throw new Error(line || "agent-side could not open the side pane");
     }
-    return name;
+    return line;
   };
 
   const launchSide = async (
@@ -418,14 +397,18 @@ export default function (pi: ExtensionAPI) {
     try {
       const sideSession = createSideSession(prompt, name, ctx, seedTurns);
       sessionPath = sideSession.sessionPath;
-      const opened = await launchTmuxSide(
-        sessionPath,
-        sideSession.effectivePrompt,
-        name,
+      if (!sessionPath) {
+        throw new Error(
+          "/side needs a saved Pi session before tmux can resume it",
+        );
+      }
+      const forkPrompt = sideSession.effectivePrompt;
+      const line = await runAgentSide(
+        ["fork", sessionPath, ...(forkPrompt ? [forkPrompt] : [])],
         ctx,
       );
 
-      ctx.ui.notify(`Opened ${opened} in tmux`, "info");
+      ctx.ui.notify(line, "info");
       return true;
     } catch (error) {
       if (sessionPath) await unlink(sessionPath).catch(() => undefined);
@@ -669,9 +652,35 @@ export default function (pi: ExtensionAPI) {
   });
 
   pi.registerCommand("side", {
-    description: "Open a context-aware Pi side session",
+    description:
+      "Open a fork, handoff, or fresh Pi session in a tmux split: /side [fork [question] | handoff <task> | new]",
     handler: async (args, ctx) => {
-      await launchSide(args.trim(), ctx);
+      const { mode, text } = parseSideArgs(args);
+      if (mode === "fork") {
+        await launchSide(text, ctx);
+        return;
+      }
+      // the model writes the handoff document, so it also runs agent-side once that exists
+      if (mode === "handoff" && text) {
+        pi.sendUserMessage(
+          [
+            `Write a handoff document as ~/.agents/skills/handoff/SKILL.md describes, focused on this task: ${text}`,
+            "Then run `agent-side pi handoff <doc path> '<task>'` with the task single-quoted, and reply with the line it prints.",
+          ].join("\n\n"),
+        );
+        return;
+      }
+      try {
+        ctx.ui.notify(
+          await runAgentSide([mode, ...(text ? [text] : [])], ctx),
+          "info",
+        );
+      } catch (error) {
+        ctx.ui.notify(
+          error instanceof Error ? error.message : String(error),
+          "error",
+        );
+      }
     },
   });
 

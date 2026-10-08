@@ -15,7 +15,6 @@ git merge-base --is-ancestor "$base" "$head" || {
 }
 dir="$(git rev-parse --show-toplevel)/.eric/plans/$(basename "$plan" .md)"
 mkdir -p "$dir"
-printf '*\n' >"$dir/.gitignore"
 out="$dir/review-$(git rev-parse --short "$base")..$(git rev-parse --short "$head").diff"
 {
   echo "## Commits"

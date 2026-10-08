@@ -1,0 +1,6 @@
+interface:
+  short_description: "Implement an approved plan inline, task by task"
+  default_prompt: "Use $executing-plans to implement the approved plan task by task."
+
+policy:
+  allow_implicit_invocation: false

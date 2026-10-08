@@ -1,6 +1,7 @@
 ---
 name: writing-plans
 description: Use when a multi-step change needs a written implementation plan before any work, or when asked for a plan.
+effort: high
 ---
 
 # Writing Plans
@@ -9,7 +10,7 @@ Write a plan that an engineer with zero context on this codebase can execute tas
 
 ## 1. Settle the requirements
 
-Read the request and the code or files it touches first, so you never ask for a fact you could look up. For each mechanism choice, cite a verdict from `.eric/approach/`. Without one, follow [approach](../approach/SKILL.md) steps 1-5 here. Record a verdict as a decided choice. Pass it to grilling only if it is `Verdict: hold`. Then run the grilling skill on what only the user can decide: purpose, scope, constraints, and choices between valid options.
+Read the request and the code or files it touches first, so you never ask for a fact you could look up. For each mechanism choice, cite a verdict from `.eric/approach/`. Without one, work the steps in [survey.md](../approach/survey.md) here. Record a verdict as a decided choice. Then run the grilling skill on what only the user can decide: purpose, scope, constraints, and choices between valid options.
 
 Done when: the user confirms the shared understanding, and every requirement has an exact value or a decision.
 

@@ -3,7 +3,6 @@ name: overview
 description: High-level overview of this session's work and the plan to continue, or of the whole project
 argument-hint: "[empty for this session | project]"
 disable-model-invocation: true
-disallowed-tools: Edit, Write, NotebookEdit
 ---
 
 Give a high-level overview. Read the actual files and `git status` rather than recalling them. Change no files.

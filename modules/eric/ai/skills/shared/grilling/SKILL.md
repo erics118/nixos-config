@@ -3,7 +3,7 @@ name: grilling
 description: Use when a plan, design, or decision needs its open requirements settled one question at a time, each with a recommended answer; writing-plans runs it first.
 ---
 
-Settle every open decision until we reach a shared understanding. Read the code or files the questions are about before the first question. Ask me every real fork with no best answer, however many there are. Walk down each branch of the decision tree, resolving dependencies between decisions one by one. For each question, give your recommended answer.
+Settle every open decision until we reach a shared understanding. Read the code or files the questions are about before the first question. Walk down each branch of the decision tree, resolving dependencies between decisions one by one. For each question, give your recommended answer.
 
 Ask the questions one at a time, waiting for feedback on each question before continuing. Asking multiple questions at once is bewildering.
 

@@ -2,39 +2,54 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
         "hooks": [
           {
-            "type": "command",
-            "command": "\"$HOME/.agents/hooks/git-add-before-nix.sh\""
+            "command": "\"$HOME/.agents/hooks/git-add-before-nix.sh\"",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "\"$HOME/.agents/hooks/block-global-search.sh\""
+            "command": "\"$HOME/.agents/hooks/block-global-search.sh\"",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "\"$HOME/.agents/hooks/block-symlink-clobber.sh\""
+            "command": "\"$HOME/.agents/hooks/block-symlink-clobber.sh\"",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "\"$HOME/.agents/hooks/block-agent-commit.sh\""
+            "command": "\"$HOME/.agents/hooks/block-agent-commit.sh\"",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "\"$HOME/.agents/hooks/block-agent-push.sh\""
+            "command": "\"$HOME/.agents/hooks/block-agent-push.sh\"",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "\"$HOME/.agents/hooks/block-git-config-edit.sh\""
+            "command": "\"$HOME/.agents/hooks/block-git-config-edit.sh\"",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "\"$HOME/.agents/hooks/block-shell-edit.sh\""
+            "command": "\"$HOME/.agents/hooks/block-shell-edit.sh\"",
+            "type": "command"
           },
           {
-            "type": "command",
-            "command": "\"$HOME/.agents/hooks/block-sudo-probe.sh\""
+            "command": "\"$HOME/.agents/hooks/block-sudo-probe.sh\"",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "\"$HOME/.agents/hooks/tmux-agent-resume.sh\" codex",
+            "type": "command"
+          },
+          {
+            "command": "bash '/Users/eric/.codex/herdr-agent-state.sh' session",
+            "timeout": 10,
+            "type": "command"
           }
         ]
       }
@@ -43,8 +58,8 @@
       {
         "hooks": [
           {
-            "type": "command",
-            "command": "\"$HOME/.agents/hooks/caps-led.sh\""
+            "command": "\"$HOME/.agents/hooks/tmux-bell.sh\"",
+            "type": "command"
           }
         ]
       }

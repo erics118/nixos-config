@@ -17,8 +17,8 @@ permissions:
 
 jobs:
   flake-check:
-    # these runner labels are baked into the check names the branch ruleset
-    # requires (`flake-check (ubuntu-26.04)` etc). renaming one here makes the
+    # the job ids and these runner labels are baked into the check names the branch ruleset
+    # requires (`flake-check (ubuntu-26.04)`, `ai-agent-tests`). renaming one makes the
     # ruleset wait forever on a context that never reports, which hangs the
     # `gh pr merge --auto` in update-flake-lock.yml. update the ruleset too
     strategy:
@@ -39,10 +39,12 @@ jobs:
           persist-credentials: false
 
       # the nixos-config-private input is a private git+ssh flake, so we need to set up ssh access for it
+      # the same key is also a dependabot secret, so rotate both
       - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:
           ssh-private-key: ${{ secrets.PRIVATE_FLAKE_DEPLOY_KEY }}
 
+      # the cache list and keys live in modules/features/base/nix-common.nix
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
         with:
           extra_nix_config: |

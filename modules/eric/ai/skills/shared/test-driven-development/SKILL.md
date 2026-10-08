@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing a feature or fixing a bug, before writing the implementation. Write the failing test first, watch it fail, then make it pass.
+description: Use when implementing a feature or fixing a bug in code with a test harness, before writing the implementation. Not for config or docs. Write the failing test first, watch it fail, then make it pass.
 ---
 
 # Test-Driven Development

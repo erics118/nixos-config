@@ -1,7 +1,8 @@
 ---
 name: audit
-description: Use when asked to audit, review, or sweep existing code or config for anything worth fixing. Read-only sweep across every lens, ranked by what to fix first, then applies accepted fixes on confirm
+description: Use when asked to audit or sweep existing code or config for anything worth fixing.
 argument-hint: "[empty for whole repo | area | 'diff' for uncommitted changes] [+ a lens to narrow: cleanup|quality|debt|modernize|structure|correctness|robustness|concurrency|security|contract|performance|tests|operability|docs]"
+effort: high
 ---
 
 Survey existing code and report what is worth fixing, then apply the accepted fixes once
@@ -18,18 +19,15 @@ By default the sweep is complete: hunt everything a careful senior would flag as
 any way. The lenses below are a checklist to force that breadth, not a fence -- a genuine
 problem that fits no named lens still counts. Reach for the list to check you have missed no
 dimension, never to bound what you look for. Narrow to a single lens, or to `cleanup` /
-`quality` for the debt+structure+modernize group, only when the ask names one. `cleanup` also
-means a light pass.
+`quality` for the debt+structure+modernize group, only when the ask names one.
 
 Match depth to the ask too. A light ask is one of "surface", "quick", "cleanup", "tidy", or a
 small named target. It gets a single direct pass for the obvious, high-confidence wins: read,
 report, and apply on confirm. Skip the coordinated apparatus below. A wide ask is the whole
-repo, or "thorough" / "deep" / "everything". It earns the full sweep in Survey the scope.
+repo, or "thorough" / "deep" / "everything". It earns the full sweep in Survey the scope. A
+named area larger than a few files also gets the full sweep, bounded to that area.
 
-## Survey the scope (wide audits)
-
-The full coordinated sweep, for a wide ask; a light or single-target ask skips it for the
-direct pass above.
+## Survey the scope (full sweep)
 
 You are the coordinator. Run until the whole scope is reviewed and the findings are validated.
 Read-only throughout: edit no files, run no fixes, change nothing. Read-only inspection commands
@@ -44,8 +42,7 @@ catch-all row does not prove coverage. Do not skip the unglamorous corners: scri
 build and deploy config, and vendored assets are subsystems too.
 
 Dispatch fresh read-only subagents in parallel, one distinct subsystem each with a
-non-overlapping boundary. Under Claude use Explore or general-purpose agents via the Agent
-tool; under Codex use its native subagents; under pi use pi-subagents; only where no subagent mechanism exists, run
+non-overlapping boundary. Use the `auditor` agent: the Agent tool under Claude, native subagents under Codex, pi-subagents under pi. Only where no subagent mechanism exists, run
 each subsystem review yourself in sequence. Keep every worker read-only, bound concurrency
 to the lanes you can coordinate, wait on the batch together, and harvest each result. Brief
 each worker to apply every lens (or the single focused lens) within its boundary. For each
@@ -105,8 +102,8 @@ Security and contract
 - **security** -- authn/authz on every path; CSRF and origin checks; XSS and injection, with
   escaping correct for the context it lands in, not just some context; sandbox and CSP; secret
   handling and exposure; info leakage in errors; SSRF and open-redirect; supply-chain
-  (vendored, pinned, integrity-checked). For a deeper dedicated pass, the user can run `adversarial-review`
-  (Claude Code also has the built-in `security-review`); this lens is the broad net that finds where to aim them.
+  (vendored, pinned, integrity-checked). For a deeper dedicated pass, Claude Code has the built-in
+  `security-review`; this lens is the broad net that finds where to aim it.
 - **contract** -- http/api semantics (status codes, headers, conditional and range requests,
   redirects and their cache stickiness); caching and invalidation (stale-on-mutate, and
   read-your-write on an eventually-consistent store); platform and runtime limits (memory, cpu,
@@ -142,8 +139,6 @@ Cross-cutting
   being behind another layer.
 - Unverified platform behavior on a public surface stays in the fix list as "verify, then
   fix", not note-only. Probe the live system read-only when a probe can settle it.
-- When asked to "fix everything", apply the fix list only and ask before touching
-  note-only items.
 - Leave formatting and whitespace to the formatter; do not flag those.
 - A fix that would break a deliberate, tested behavior is not a fix. When a finding collides
   with an existing decision the code or tests encode, surface the collision instead of
@@ -161,5 +156,3 @@ Present the ranked list and change nothing yet. On confirmation, apply the accep
 in priority order, highest-impact first. Every edit traces to a listed finding; make no change
 beyond the list, and leave note-only or risky items untouched unless explicitly approved. After
 applying, re-run the relevant tests or checks.
-
-Read-only until you confirm. Never auto-apply.

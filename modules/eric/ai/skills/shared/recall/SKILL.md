@@ -5,6 +5,8 @@ description: Last resort for an earlier session, past decision, or work already 
 
 Transcripts are the last resort. First check the written record: loaded memory, the repo's notes and docs (plans, designs, a personal notes dir such as `.eric/`), and `git log`. Search transcripts only if those don't settle it, and before asking the user to repeat themselves. Say which records you checked.
 
+Transcripts are large, so hand the search to the `recall` agent with the question and what the written record already ruled out: the Agent tool under Claude, native subagents under Codex, pi-subagents under pi. Search yourself, as below, only when you are the `recall` agent or no subagent mechanism exists.
+
 Each agent stores sessions as JSONL:
 
 - Claude Code:

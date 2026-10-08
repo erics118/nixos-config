@@ -1,6 +1,7 @@
 ---
 name: executing-plans
-description: Use when implementing an approved plan from writing-plans inline, task by task.
+description: Implement an approved plan from writing-plans inline, task by task
+disable-model-invocation: true
 ---
 
 # Executing Plans
@@ -9,18 +10,17 @@ The plan already did the thinking. Execute it exactly and prove every task with 
 
 ## Rules for the whole run
 
-- Continuous. Never pause between tasks. The user's approval of the plan covers every task.
 - Rulings, not stalls. Decide every conflict, plan defect, or choice the plan left open that you can derive from the requirements, the code, or the user's rules. Record it as `Ruling: <what you decided> - <why> - <cost if wrong>` and keep going.
-- Stop and ask only for a requirement the plan does not settle and only the user can, an irreversible or destructive action, or anything leaving this repo.
+- Stop and ask only for a requirement the plan does not settle and only the user can, or an action the Decisions and Git rules of the global instructions reserve for the user.
 - Read the task, not your memory of it. The plan has the exact values.
 
 ## Setup
 
 1. Read the plan once.
-2. Run `git config --get eric-agent.commit`. If it prints `on`, or `branch` and the current branch is not `main` or `master` (a detached HEAD counts as `main`), or `ask` and you are not Codex, commit as work lands. Otherwise tell the user once that the work will stay uncommitted, and that `git config eric-agent.commit on` (or `branch` or `ask`) in this repo lets you commit as work lands. Do not wait for an answer.
+2. If the Git rules don't let you commit here, tell the user once that the work will stay uncommitted, and that setting `eric-agent.commit` in this repo to a committing level from the Git rules lets you commit as work lands. Do not wait for an answer.
 3. The progress file is `.eric/plans/<plan-basename>/progress.md`, where `<plan-basename>` is the plan file name without `.md`.
    - If the progress file exists, every task with a `Task N: done` line is finished. Resume at the first task without one.
-   - Otherwise run `mkdir -p .eric/plans/<plan-basename> && printf '*\n' > .eric/plans/<plan-basename>/.gitignore` and create the file with the first line `# progress - plan: <plan path>`.
+   - Otherwise run `mkdir -p .eric/plans/<plan-basename>` and create the file with the first line `# progress - plan: <plan path>`.
 4. On a fresh start, snapshot the working tree without touching the index or history, and record it as `Start: <sha>` in the progress file:
    ```bash
    t=$(mktemp); cp "$(git rev-parse --git-dir)/index" "$t"; GIT_INDEX_FILE=$t git add -A; GIT_INDEX_FILE=$t git write-tree; rm "$t"

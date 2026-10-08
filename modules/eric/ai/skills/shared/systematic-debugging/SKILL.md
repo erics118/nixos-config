@@ -44,7 +44,7 @@ Done when: a single hypothesis is confirmed by a minimal test.
 
 ## Phase 4: fix the cause
 
-- Write the failing case first: the smallest reproduction, automated if the project has a harness, a one-off script otherwise.
+- Write the failing case first, per the bug fixes section of test-driven-development: the smallest reproduction, or a one-off script where there is no harness.
 - Make one change addressing the root cause. No "while I'm here" edits, no bundled refactor.
 - Verify: the case passes, nothing else broke, the original issue is actually gone.
 

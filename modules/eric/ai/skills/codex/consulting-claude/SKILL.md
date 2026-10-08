@@ -1,6 +1,6 @@
 ---
 name: consulting-claude
-description: Use from Codex or pi when you want an independent second opinion from Claude Opus 5.5 on code, a plan, or a review, or when you need to follow up on an answer Claude already gave.
+description: Use from Codex or pi when you want an independent second opinion from Claude on code, a plan, or a review, or when you need to follow up on an answer Claude already gave.
 ---
 
 # Consulting Claude
@@ -39,7 +39,8 @@ cd /path/to/repo && claude --print \
   event stream.
 - Redirect stdout to the temp dir; do not mix it with progress output.
 - `echo "$d"` prints the temp dir path. Shell variables do not persist between
-  tool calls. Paste that literal path in place of `$d` in every later call.
+  tool calls. In every later call, write that literal path where the examples
+  show `<dir>`.
 
 ## Follow-up turns
 
@@ -56,10 +57,10 @@ cd /path/to/repo && claude --print \
   --no-session-persistence \
   "Here is Claude's prior answer:
 
-$(cat "$d/claude-1.md")
+$(cat "<dir>/claude-1.md")
 
 <follow-up prompt>" \
-  > "$d/claude-2.md" < /dev/null
+  > "<dir>/claude-2.md" < /dev/null
 ```
 
 Do not ask Claude to commit, modify files, or make the verdict agree with

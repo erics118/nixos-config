@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# block NEWLY introduced smart punctuation in written content; CLAUDE.md wants plain ASCII.
+# block NEWLY introduced smart punctuation in written content; AGENTS.md wants plain ASCII.
 # only denies when an edit adds more smart chars than it removes, so edits that merely
 # preserve existing ones are not blocked.
 set -u
