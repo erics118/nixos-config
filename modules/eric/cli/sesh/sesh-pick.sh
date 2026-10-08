@@ -11,11 +11,30 @@ connect() {
   local zsh
   zsh=$(command -v zsh)
   local vars=(HOME="$HOME" USER="$USER" SHELL="$zsh" TERM="${TERM:-}" LANG="${LANG:-}")
+  # tmux's update-environment copies TERM_PROGRAM from the client, and yazi needs it to send images
+  [[ -n ${TERM_PROGRAM:-} ]] && vars+=(TERM_PROGRAM="$TERM_PROGRAM")
+  # a login zsh fills an unset LOGNAME from getlogin(), which can be root
+  [[ -n ${LOGNAME:-} ]] && vars+=(LOGNAME="$LOGNAME")
+  # launchd sets these per user session, and no shell startup file restores them
+  [[ -n ${SSH_AUTH_SOCK:-} ]] && vars+=(SSH_AUTH_SOCK="$SSH_AUTH_SOCK")
+  [[ -n ${TMPDIR:-} ]] && vars+=(TMPDIR="$TMPDIR")
   [[ -n ${SSH_CONNECTION:-} ]] && vars+=(SSH_CONNECTION="$SSH_CONNECTION")
   [[ -n ${XDG_RUNTIME_DIR:-} ]] && vars+=(XDG_RUNTIME_DIR="$XDG_RUNTIME_DIR")
   # shellcheck disable=SC2016
   exec env -i "${vars[@]}" "$zsh" -lc 'exec sesh connect "$1"' _ "$1"
 }
+
+case ${1-} in
+-h | --help)
+  cat <<EOF
+Usage: sesh-pick [TARGET]
+
+  (none)    pick in fzf: ^a all ^t tmux ^g configs ^x zoxide ^d kill
+  TARGET    connect to a sesh session, config entry, dir, or zoxide match
+EOF
+  exit
+  ;;
+esac
 
 if (($# > 0)); then
   connect "$1"

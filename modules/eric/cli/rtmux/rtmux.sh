@@ -32,6 +32,20 @@ hosts() {
   esac
 }
 
+case ${1:-} in
+-h | --help)
+  cat <<EOF
+Usage: rtmux [-a] [HOST] [SESSION | --ls]
+
+  -a, --autossh   use autossh even when mosh is available
+  HOST            ssh config alias or tailnet host, picked in fzf if omitted
+  SESSION         session to open on HOST (default: the remote sesh-pick, else main)
+  --ls            list tmux sessions on HOST
+EOF
+  exit
+  ;;
+esac
+
 use_autossh=0
 if [[ ${1:-} == -a || ${1:-} == --autossh ]]; then
   use_autossh=1

@@ -41,6 +41,7 @@ if ! /usr/bin/lockf -s -t 0 9; then
 fi
 
 sleep_pid=
+# sudo pmset needs no password through the NOPASSWD rules in modules/features/base/darwin.nix
 cleanup() {
   trap - EXIT INT TERM HUP
   kill "$sleep_pid" 2>/dev/null || true

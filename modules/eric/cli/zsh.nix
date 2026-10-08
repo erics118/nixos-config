@@ -110,42 +110,39 @@
         autosuggestion.enable = true;
         syntaxHighlighting.enable = true;
 
-        plugins = [
-          {
-            name = "fzf-tab";
-            src = pkgs.zsh-fzf-tab;
-            file = "share/fzf-tab/fzf-tab.plugin.zsh";
-          }
-        ];
-
         defaultKeymap = "emacs";
 
         history.path = "$HOME/.cache/zsh/history";
 
-        initContent = ''
-          source "$ZDOTDIR/init.zsh"
+        initContent = lib.mkMerge [
+          # sourced at home-manager's plugin slot (900), after compinit and autosuggestions.
+          # programs.zsh.plugins would also put the plugin's dir on PATH
+          (lib.mkOrder 900 "source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.plugin.zsh")
+          ''
+            source "$ZDOTDIR/init.zsh"
 
-          # pre-computed tool inits
-          source ${zoxideInit}
-          source ${direnvInit}
-          source ${starshipInit}
-          source ${nixYourShellInit}
+            # pre-computed tool inits
+            source ${zoxideInit}
+            source ${direnvInit}
+            source ${starshipInit}
+            source ${nixYourShellInit}
 
-          if [[ $options[zle] = on ]]; then
-            source ${fzfInit}
-            # atuin's init runs `atuin uuid` unless this shell level already has a session
-            # a UUIDv7 built here in the same 32-hex format skips that process
-            if [[ -z $ATUIN_SESSION || $ATUIN_SHLVL != $SHLVL ]]; then
-              zmodload zsh/datetime
-              typeset -i _atuin_ms=$(( EPOCHREALTIME * 1000 ))
-              printf -v ATUIN_SESSION '%012x7%03x%x%03x%04x%04x%04x' $_atuin_ms \
-                $(( RANDOM & 4095 )) $(( 8 + (RANDOM & 3) )) $(( RANDOM & 4095 )) $RANDOM $RANDOM $RANDOM
-              export ATUIN_SESSION ATUIN_SHLVL=$SHLVL
-              unset _atuin_ms
+            if [[ $options[zle] = on ]]; then
+              source ${fzfInit}
+              # atuin's init runs `atuin uuid` unless this shell level already has a session
+              # a UUIDv7 built here in the same 32-hex format skips that process
+              if [[ -z $ATUIN_SESSION || $ATUIN_SHLVL != $SHLVL ]]; then
+                zmodload zsh/datetime
+                typeset -i _atuin_ms=$(( EPOCHREALTIME * 1000 ))
+                printf -v ATUIN_SESSION '%012x7%03x%x%03x%04x%04x%04x' $_atuin_ms \
+                  $(( RANDOM & 4095 )) $(( 8 + (RANDOM & 3) )) $(( RANDOM & 4095 )) $RANDOM $RANDOM $RANDOM
+                export ATUIN_SESSION ATUIN_SHLVL=$SHLVL
+                unset _atuin_ms
+              fi
+              source ${atuinInit}
             fi
-            source ${atuinInit}
-          fi
-        '';
+          ''
+        ];
 
         localVariables = {
           WORDCHARS = "*?_-.~";

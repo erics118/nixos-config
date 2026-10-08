@@ -160,6 +160,37 @@ precmd_cursor() {
   print -n '\e[6 q'
 }
 
+# OSC 133 marks each prompt and command, so tmux sees when a command ends and its exit status.
+# tmux colours the tab from that (see tmux/tabline.conf)
+preexec_osc133() {
+  _osc133_ran=1
+  print -n '\e]133;C\a'
+}
+precmd_osc133() {
+  local ret=$?
+  ((_osc133_ran)) && print -n "\e]133;D;$ret\a"
+  _osc133_ran=0
+  print -n '\e]133;A\a'
+}
+
+# outside tmux, ring the bell after a command that ran 10s or more, so wezterm marks its tab
+zmodload zsh/datetime
+preexec_bell() {
+  _cmd_start=$EPOCHSECONDS
+}
+precmd_bell() {
+  [[ -z $TMUX ]] && ((_cmd_start && EPOCHSECONDS - _cmd_start >= 10)) && print -n '\a'
+  _cmd_start=0
+}
+
+add-zsh-hook preexec preexec_osc133
+add-zsh-hook precmd precmd_osc133
+add-zsh-hook preexec preexec_bell
+add-zsh-hook precmd precmd_bell
 add-zsh-hook preexec preexec_title
 add-zsh-hook precmd precmd_title
 add-zsh-hook precmd precmd_cursor
+
+# herdr-automatic-rename names the herdr tab after each command as it starts.
+# herdr runs it from the local clone linked with `herdr plugin link`
+[[ -r ~/dev/herdr-automatic-rename/shell/hook.zsh ]] && source ~/dev/herdr-automatic-rename/shell/hook.zsh

@@ -1,0 +1,30 @@
+[mgr]
+show_hidden = true
+linemode = "mtime"
+
+[[plugin.prepend_previewers]]
+url = "*.md"
+run = 'piper -- CLICOLOR_FORCE=1 glow -w=$w -s=dark "$1"'
+
+[[plugin.prepend_previewers]]
+mime = "application/{*zip,tar,bzip2,7z*,rar,xz,zstd,java-archive}"
+run = "ouch"
+
+[[plugin.prepend_fetchers]]
+url = "*"
+run = "git"
+group = "git"
+
+[[plugin.prepend_fetchers]]
+url = "*/"
+run = "git"
+group = "git"
+
+[preview]
+max_width = 2000
+max_height = 2400
+
+[opener]
+edit = [
+  { run = "${EDITOR:-vim} %s", desc = "edit", for = "unix", block = true },
+]

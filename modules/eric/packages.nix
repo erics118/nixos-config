@@ -36,10 +36,8 @@
           hyperfine
           onefetch
           yq-go
-          yazi
           scc
           railway
-          docker-sbx
           screen
           poppler # pdf rendering
 

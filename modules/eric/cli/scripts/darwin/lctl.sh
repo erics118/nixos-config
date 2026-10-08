@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# start/stop/restart launchd user agents by short name
+# start/stop/restart/status launchd user agents by short name
 # resolves, in order:
 #   ~/Library/LaunchAgents/<name>
 #   ~/Library/LaunchAgents/com.erics118.<name>

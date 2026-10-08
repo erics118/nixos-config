@@ -1,0 +1,20 @@
+[mgr]
+prepend_keymap = [
+  { on = "e", run = "open", desc = "Edit or open selected files" },
+  { on = "o", run = 'shell -- open -R %h', desc = "Reveal in Finder", for = "macos" },
+  # toggles like finder's space: closes an open quick look instead of stacking another window
+  { on = "i", run = 'shell --orphan -- pkill -x qlmanage || qlmanage -p %h >/dev/null 2>&1', desc = "Quick Look", for = "macos" },
+  { on = "<Enter>", run = "plugin smart-enter", desc = "Enter the child directory, or open the file" },
+  # in herdr's and tmux's prefix y popup, keys reach yazi, so C-b y (wezterm's cmd-e) quits it to close the popup
+  { on = [
+    "<C-b>",
+    "y",
+  ], run = "quit", desc = "Close the popup" },
+  # the output's extension picks the format, zip by default
+  { on = "C", run = "plugin ouch", desc = "Compress with ouch" },
+  # numeric steps stop at the ends, where prev and next wrap around
+  { on = "k", run = "arrow -1", desc = "Previous file" },
+  { on = "j", run = "arrow 1", desc = "Next file" },
+  { on = "<Up>", run = "arrow -1", desc = "Previous file" },
+  { on = "<Down>", run = "arrow 1", desc = "Next file" },
+]

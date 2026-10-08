@@ -29,7 +29,7 @@ enc() {
 # splits argv into ARGS (the positionals) and FLAG (1 when the command's single
 # optional flag was given). a flag spelled with a trailing '=' takes a value,
 # which lands in VALUE; that is the whole difference, so the other commands pass
-# their bare flag as before. an unknown flag or the wrong number of positionals
+# a bare flag. an unknown flag or the wrong number of positionals
 # is a usage error rather than something to drop silently.
 parse_args() {
   local flag=$1 min=$2 max=$3 use=$4

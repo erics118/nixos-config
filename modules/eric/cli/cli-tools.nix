@@ -15,6 +15,7 @@
       enableZshIntegration = false; # pre-computed in zsh.nix
       # a script keeps the preview's own quoting out of FZF_DEFAULT_OPTS, which
       # home-manager exports inside unescaped double quotes
+      # zsh/init.zsh copies this preview for fzf-tab
       defaultOptions = [
         "--preview='${pkgs.writeShellScript "fzf-preview" ''
           if [ -f "$1" ]; then

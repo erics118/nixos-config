@@ -7,13 +7,9 @@
 
     programs.tmux = {
       enable = true;
-      # socket under /run instead of /tmp; darwin has no XDG_RUNTIME_DIR so
-      # scope to linux, else tmux points at a nonexistent /run/user dir
-      secureSocket = pkgs.stdenv.hostPlatform.isLinux;
       extraConfig = ''
         source-file -q ~/.config/tmux/main.conf
-        # load after main.conf so continuum's status-right autosave hook is not
-        # clobbered by tabline.conf, and after its @options are set there.
+        # plugins load after main.conf, see its resurrect/continuum block
         # resurrect must load before continuum, which depends on it
         # drop scratch-* lines from each save so scratch sessions never restore
         set -g @resurrect-hook-post-save-layout '${pkgs.gnused}/bin/sed -i "/^[a-z_]*\tscratch-/d"'

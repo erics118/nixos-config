@@ -34,6 +34,26 @@
             filterMode = "fuzzy";
             showRandomTip = false;
             showNumstatInFilesView = true;
+            # catppuccin mocha mauve, inlined because catppuccin's lazygit port still puts
+            # authorColors under gui, and lazygit exits when it can't migrate that read-only file
+            theme = {
+              activeBorderColor = [
+                "#cba6f7"
+                "bold"
+              ];
+              inactiveBorderColor = [ "#a6adc8" ];
+              searchingActiveBorderColor = [ "#f9e2af" ];
+              optionsTextColor = [ "#89b4fa" ];
+              selectedLineBgColor = [ "#313244" ];
+              inactiveViewSelectedLineBgColor = [ "#6c7086" ];
+              cherryPickedCommitFgColor = [ "#cba6f7" ];
+              cherryPickedCommitBgColor = [ "#45475a" ];
+              markedBaseCommitFgColor = [ "#89b4fa" ];
+              markedBaseCommitBgColor = [ "#f9e2af" ];
+              unstagedChangesColor = [ "#f38ba8" ];
+              defaultFgColor = [ "#cdd6f4" ];
+              authorColors."*" = "#b4befe";
+            };
           };
           git = {
             autoFetch = false;
@@ -52,6 +72,8 @@
       };
 
       # lazygit on macOS reads ~/Library/Application Support/lazygit/config.yml, but home-manager writes to ~/.config/lazygit/config.yml
+      # XDG_CONFIG_HOME is set only in interactive zsh, so GUI and login launches need this mirror
+      # keep the direction: Application Support links to the home-manager file, never the reverse
       home.file."Library/Application Support/lazygit/config.yml" =
         lib.mkIf pkgs.stdenv.hostPlatform.isDarwin
           { inherit (config.home.file."${config.xdg.configHome}/lazygit/config.yml") source enable; };

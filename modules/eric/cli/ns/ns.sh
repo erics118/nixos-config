@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# based on nix-search-tv's nixpkgs.sh, customized (keybinds, copy, nix-shell display)
+# based on nix-search-tv's nixpkgs.sh, customized (keybinds, copy, nix shell display)
 
 case "$(basename "$SHELL")" in
 bash | zsh | sh)
@@ -26,7 +26,7 @@ declare -a INDEXES=(
 
 OPEN_SOURCE_KEY="ctrl-s"
 OPEN_HOMEPAGE_KEY="ctrl-o"
-NIX_SHELL_KEY="ctrl-i"
+NIX_SHELL_KEY="ctrl-x"
 PRINT_PREVIEW_KEY="ctrl-p"
 COPY_KEY="ctrl-y"
 
@@ -83,8 +83,8 @@ save_state() {
 
 HEADER="$OPEN_HOMEPAGE_KEY - open homepage
 $OPEN_SOURCE_KEY - open source
-$COPY_KEY - copy package name
-$NIX_SHELL_KEY - nix-shell
+$COPY_KEY - copy nixpkgs#name
+$NIX_SHELL_KEY - nix shell
 $PRINT_PREVIEW_KEY - print preview
 "
 

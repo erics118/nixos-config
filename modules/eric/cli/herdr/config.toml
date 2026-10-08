@@ -1,0 +1,104 @@
+onboarding = false
+
+[ui]
+agent_panel_scope = "current"
+show_agent_labels_on_pane_borders = true
+
+status_indicators = "symbols"
+prompt_new_tab_name = false
+# frame a lone pane too, so the first split doesn't change the layout's look
+pane_borders = "always"
+tab_bar_position = "bottom"
+# the second row is the agent's terminal title, where claude code puts a short task summary
+[ui.sidebar.agents]
+rows = [["state_icon", "workspace", "agent"], ["terminal_title_stripped"]]
+
+[ui.toast]
+delivery = "herdr"
+
+[ui.sound]
+enabled = false
+
+[experimental]
+switch_ascii_input_source_in_prefix = false
+pane_history = false
+
+[keys]
+# prefix stays the default ctrl+b, which wezterm's cmd-s sends
+
+# \ splits side by side, = stacks
+split_vertical = "prefix+backslash"
+split_horizontal = "prefix+="
+
+# tmux's rename-window key
+rename_tab = "prefix+comma"
+previous_tab = ["prefix+p", "prefix+ctrl+p"]
+next_tab = ["prefix+n", "prefix+ctrl+n"]
+
+# brackets reorder tabs, so copy mode moves to enter
+move_tab_previous = "prefix+["
+move_tab_next = "prefix+]"
+copy_mode = "prefix+enter"
+
+# shifted hjkl resizes, so swapping panes is unbound
+resize_pane_left = "prefix+shift+h"
+resize_pane_down = "prefix+shift+j"
+resize_pane_up = "prefix+shift+k"
+resize_pane_right = "prefix+shift+l"
+swap_pane_left = ""
+swap_pane_down = ""
+swap_pane_up = ""
+swap_pane_right = ""
+
+close_tab = ["prefix+shift+x", "prefix+ampersand"]
+switch_workspace = "prefix+shift+1..9"
+focus_agent = "prefix+ctrl+1..9"
+toggle_sidebar = ["prefix+b", "prefix+shift+z"]
+
+# navigate mode moves between spaces on j/k, so its pane moves go to shifted j/k
+navigate_workspace_up = "k"
+navigate_workspace_down = "j"
+navigate_pane_up = "shift+k"
+navigate_pane_down = "shift+j"
+
+# one scratch shell per space that survives closing the popup.
+# ctrl+\ (wezterm's cmd-j) opens it, and inside it detaches dtach, which closes the popup
+[[keys.command]]
+key = ["prefix+t", "ctrl+backslash"]
+type = "popup"
+command = "exec dtach -A \"${TMPDIR:-/tmp}/herdr-scratch-$HERDR_ACTIVE_WORKSPACE_ID\" -r winch \"${SHELL:-sh}\""
+description = "scratch shell"
+width = "80%"
+height = "40%"
+
+[[keys.command]]
+key = "prefix+y"
+type = "popup"
+command = "cd \"$HERDR_ACTIVE_PANE_CWD\" && exec yazi"
+description = "yazi"
+width = "90%"
+height = "90%"
+
+[[keys.command]]
+key = "prefix+d"
+type = "plugin_action"
+command = "persiyanov.reviewr.toggle"
+description = "review the diff"
+
+# the sesh plugin's picker in a popup, since its own action opens it over the tab.
+# wezterm's cmd-k sends prefix+f. the plugin dir is hashed, so glob for its binary
+[[keys.command]]
+key = "prefix+f"
+type = "popup"
+command = "export HERDR_PLUGIN_CONFIG_DIR=\"$HOME/.config/herdr/plugins/config/fullerzz.sesh\" HERDR_PLUGIN_STATE_DIR=\"$HOME/.local/state/herdr/plugins/fullerzz.sesh\"; exec \"$HOME\"/.config/herdr/plugins/github/fullerzz.sesh-*/bin/herdr-sesh picker"
+description = "sesh picker"
+width = "80%"
+height = "80%"
+
+[theme]
+name = "catppuccin"
+auto_switch = false
+
+[theme.custom]
+# the active space and focused agent rows, which catppuccin leaves at the background colour
+active_row_bg = "#313244"

@@ -45,14 +45,14 @@ ask - Query AI models via OpenRouter API
 Usage: ask [OPTIONS] [PROMPT]
 
 Options:
-  -s          Use a smarter, slower model when the default gets it wrong
-  -m MODEL    Use a specific model
-  -r          Disable system prompt (raw model behavior)
-  --stream    Enable streaming output
-  --system    Set system prompt for the conversation
-  --metadata  Show metadata
-  --provider  Comma-separated list of providers for routing
-  -h, --help  Show this help message
+  -s                 Use a smarter, slower model when the default gets it wrong
+  -m MODEL           Use a specific model
+  -r                 Disable system prompt (raw model behavior), ignored with --system
+  --stream           Enable streaming output
+  --system PROMPT    Set system prompt for the conversation
+  --metadata         Show metadata
+  --provider LIST    Comma-separated list of providers for routing
+  -h, --help         Show this help message
 
 Examples:
   ask "Write a hello world in Python"

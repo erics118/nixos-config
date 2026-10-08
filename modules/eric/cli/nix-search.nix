@@ -1,5 +1,5 @@
 {
-  # interactive fuzzy search over nixpkgs / NixOS / home-manager
+  # interactive fuzzy search over nixpkgs / home-manager / darwin
   flake.modules.homeManager.base = { pkgs, ... }: {
     home.packages = [
       pkgs.nix-search-tv

@@ -12,7 +12,7 @@ _rtmux() {
   local -a line
 
   _arguments -C \
-    '(-a --autossh)'{-a,--autossh}'[fall back to autossh]' \
+    '(-a --autossh)'{-a,--autossh}'[force autossh]' \
     '1:host:->host' \
     '2:session:->session'
 
