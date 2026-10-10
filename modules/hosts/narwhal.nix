@@ -80,6 +80,8 @@ in
         "x-systemd.device-timeout=10s"
       ];
     };
+    # root-owned, since tmpfiles refuses an owner change below a dir owned by a regular user
+    systemd.tmpfiles.rules = [ "d /mnt/external 0755 root root -" ];
 
     boot = {
       loader = {
