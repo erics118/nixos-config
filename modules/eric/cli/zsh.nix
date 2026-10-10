@@ -173,10 +173,6 @@
           # flake refs can carry glob characters, like ? in github:owner/repo?ref=main
           nix = "noglob nix";
         }
-        // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
-          # gtimeout comes from coreutils-prefixed, darwin-only
-          timeout = "gtimeout";
-        }
         // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
           reboot-windows = "sudo systemctl reboot --boot-loader-entry=auto-windows";
         };

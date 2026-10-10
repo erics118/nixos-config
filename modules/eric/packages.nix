@@ -45,8 +45,10 @@
           nerd-fonts.hack
         ]
         ++ lib.optionals stdenv.hostPlatform.isDarwin [
-          # gnu coreutils with g-prefix (gls, gdate, ...) since macOS ships BSD coreutils
-          coreutils-prefixed
+          # gnu tools under their plain names, ahead of the BSD ones macOS ships
+          coreutils
+          gnused
+          gawk
 
           # cli tools
           mosh

@@ -20,6 +20,7 @@ These rules cover chat replies. Long-form work I ask for (drafts, scripts, posts
 - A correction, side note, or intermediate result does not pause the active task unless it explicitly changes, pauses, or cancels it. A question inside it is answered first, then the task continues.
 - An interrupted or declined tool call usually means I want to steer, not that the tool or action is off limits. Read my next message as the new direction and carry on. Treat it as a refusal of that action only when the message says so ("stop", "what are you doing", "don't do that")
 - Keep stricter safeguards for non-interactive subagents and irreversible operations.
+- Run every experiment (a new or changed script, a trial input, a guess about how a system behaves) on a fixture: a scratch copy, test account, or page whose state you can throw away. Before the first experimental action, name the fixture and confirm three things: it holds no work in progress, it feeds nothing real (a submission, a saved draft, a message, a production record), and it is not where the real action will run. The real target gets only what already passed on the fixture, starting from a fresh state.
 
 ## Scope
 
@@ -108,7 +109,7 @@ These rules cover work I asked you to do.
 - For a Python library, use a nix `python3.withPackages`. If nixpkgs lacks it or marks it unsupported on this platform, use `nix shell nixpkgs#uv --command uv run --with <pkg> python ...`
 - For a host on the tailnet, use `tailscale ssh <user>@<host>`, not plain `ssh`. It resolves the name inside tailscaled, so macOS DNS bugs can't break it
 - On macOS, sudo works via TouchID. Run `sudo <cmd>` directly and let it prompt. Don't hand it to me. Never probe with `sudo -n`: it refuses to prompt and gives a false negative
-- GNU sed, date, awk, and coreutils come first on PATH: use GNU flags. Claude Code and Codex run zsh with `nonomatch` and `noequals`, and pi runs bash. Quote expansions and globs meant for the command (`-g '*.cpp'`). Search with `rg`, adding `--no-ignore` for an exhaustive search. Find files with `fd`, adding `-HI` to include hidden and ignored files. In Claude Code, grep is a shell function running ugrep with ignore rules: use `command grep` only when you need the real grep
+- GNU sed, date, awk, and coreutils come first on PATH on every host, macOS included: use GNU flags (`sed -i`, `date -d`, `stat -c`, `timeout`), never BSD ones (`sed -i ''`, `date -j`, `stat -f`). GNU `cp -r src/ dest` copies the folder itself into an existing `dest`: use `src/.` to copy only its contents. Claude Code and Codex run zsh with `nonomatch` and `noequals`, and pi runs bash. Quote expansions and globs meant for the command (`-g '*.cpp'`). Search with `rg`, adding `--no-ignore` for an exhaustive search. Find files with `fd`, adding `-HI` to include hidden and ignored files. In Claude Code, grep is a shell function running ugrep with ignore rules: use `command grep` only when you need the real grep
 - `.eric/` is in the global git ignore (`modules/eric/git.nix`), in every repo. Write there without checking ignore rules
 - Parts of `~/.agents`, `~/.claude`, `~/.codex`, `~/.config`, `~/.pi`, `~/.flake` are symlinks into `~/nixos-config`. Everything else there is runtime state
 - To resolve a managed file's real path, `realpath` it. `ls -l` stops at a `/nix/store` hop that is itself a symlink to the repo
