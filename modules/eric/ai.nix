@@ -110,7 +110,7 @@
 
       # agent shells pass unmatched globs and words starting with = through like bash
       programs.zsh.envExtra = ''
-        [[ -n $CLAUDECODE || -n $CODEX_SHELL ]] && setopt no_nomatch no_equals
+        [[ -n ''${CLAUDECODE-} || -n ''${CODEX_SHELL-} ]] && setopt no_nomatch no_equals
       '';
 
       home.packages = with pkgs; [
