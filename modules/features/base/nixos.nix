@@ -55,6 +55,10 @@
 
     programs.nix-ld.enable = true;
 
+    # nix-index in hm.nix handles unknown commands
+    # the channel tarball ships programs.sqlite, which would turn this on by default
+    programs.command-not-found.enable = false;
+
     security.sudo.wheelNeedsPassword = false;
 
     users.users.eric = {

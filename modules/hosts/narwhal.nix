@@ -1,4 +1,4 @@
-{ config, ... }:
+{ inputs, config, ... }:
 let
   m = config.flake.modules;
 in
@@ -25,7 +25,9 @@ in
       m.nixos.nvidia
       m.nixos.caddy
       m.nixos.nas
+      inputs.disko.nixosModules.disko
       ./_hardware/x86_64-narwhal.nix
+      ./_hardware/x86_64-narwhal-disko.nix
     ];
 
     home-manager.users.eric.imports = [ m.homeManager.hyprland ];
@@ -83,9 +85,7 @@ in
       loader = {
         systemd-boot = {
           enable = true;
-          # the OEM ESP is only 200M and can't grow without repartitioning
-          # each generation's kernel plus initrd is about 42M, so recompute before raising this
-          configurationLimit = 3;
+          configurationLimit = 10;
           consoleMode = "max";
         };
         efi.canTouchEfiVariables = true;

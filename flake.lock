@@ -353,11 +353,11 @@
         "vpn-confinement": "vpn-confinement"
       },
       "locked": {
-        "lastModified": 1791603831,
-        "narHash": "sha256-zvN/6m1vi+a3JKAwecvieK0hYEElTsgbBiekNsT6D7g=",
+        "lastModified": 1791660433,
+        "narHash": "sha256-CarPVFBC3yKaS5GcBoUIpU47hYcEtkzpRV2SWF6BzCM=",
         "ref": "refs/heads/main",
-        "rev": "079637ef92f3b403389e124b627fc07d9b21bec1",
-        "revCount": 61,
+        "rev": "e5c0876e131f5421448116bfb4a5743615b511c6",
+        "revCount": 62,
         "type": "git",
         "url": "ssh://git@github.com/erics118/nixos-config-private.git"
       },
@@ -369,17 +369,14 @@
     "nixpkgs": {
       "locked": {
         "lastModified": 1791456040,
-        "narHash": "sha256-H83yz/do+hjOO0uujHyH8RgtIQP2v7Mw+cLwcZK/xKc=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
+        "narHash": "sha256-gRZ/s8WQJ2CsXdhcDVQH34qxuL0MuMCOs3aBiK1Prsw=",
         "rev": "e7439b6b14ad3cc35d05608ebca9bce01a25f5f8",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://releases.nixos.org/nixos/unstable/nixos-26.11pre1087755.e7439b6b14ad/nixexprs.tar.zst"
       },
       "original": {
-        "owner": "NixOS",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://channels.nixos.org/nixos-unstable/nixexprs.tar.zst"
       }
     },
     "root": {
