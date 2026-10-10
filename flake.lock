@@ -353,11 +353,11 @@
         "vpn-confinement": "vpn-confinement"
       },
       "locked": {
-        "lastModified": 1791660433,
-        "narHash": "sha256-CarPVFBC3yKaS5GcBoUIpU47hYcEtkzpRV2SWF6BzCM=",
+        "lastModified": 1791663723,
+        "narHash": "sha256-3vbJ/VRCT1b+3c4tYv8Yu98eoDFHyzMMGDUHzYAxseI=",
         "ref": "refs/heads/main",
-        "rev": "e5c0876e131f5421448116bfb4a5743615b511c6",
-        "revCount": 62,
+        "rev": "10a3e46d2aa1ad9c16948e19fa528ffc95291b50",
+        "revCount": 63,
         "type": "git",
         "url": "ssh://git@github.com/erics118/nixos-config-private.git"
       },
@@ -542,10 +542,10 @@
       },
       "locked": {
         "dir": "nix",
-        "lastModified": 1790708119,
-        "narHash": "sha256-PIZlhfLmrIia/Zjpt9aATxltYSGE+jlPMzhEhTtBBmA=",
+        "lastModified": 1791661871,
+        "narHash": "sha256-NwVwEh+zTpjeKl3cR3u3B4ZyvkPt3eI8ybeK9TRBVUk=",
         "ref": "eric",
-        "rev": "febefaf2ddc1d277100b7c5c74fc2dfe40dab09b",
+        "rev": "270608fb78b3963506b8a63cfb4ad97ea978a2aa",
         "shallow": true,
         "type": "git",
         "url": "https://github.com/erics118/wezterm"
