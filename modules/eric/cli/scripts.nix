@@ -31,6 +31,11 @@ in
         bc
         coreutils
       ];
+      mvproj = with pkgs; [
+        gnused
+        gnugrep
+        lsof
+      ];
     };
   };
 

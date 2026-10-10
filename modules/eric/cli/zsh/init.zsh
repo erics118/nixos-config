@@ -191,6 +191,32 @@ add-zsh-hook preexec preexec_title
 add-zsh-hook precmd precmd_title
 add-zsh-hook precmd precmd_cursor
 
+# cd into a fresh ~/dev/scratch folder, which mvproj NAME promotes to ~/dev/NAME.
+# not mktemp: agents key sessions by folder, and macOS cleans /var/folders, which would break resuming them
+scratch() {
+  if (($#)); then
+    local usage='Usage: scratch
+
+  Make ~/dev/scratch/<date-time> and cd into it.
+  From its top folder, mvproj NAME keeps it as ~/dev/NAME.'
+    if [[ $1 == -h || $1 == --help ]]; then
+      print -r -- $usage
+      return
+    fi
+    print -ru2 -- $usage
+    return 1
+  fi
+  local dir=~/dev/scratch/$(date +%Y-%m-%d-%H%M%S)
+  mkdir -p "$dir" && cd "$dir" && print -r -- "scratch: created ${dir/#$HOME/~}"
+}
+
+# the mvproj script can't move this shell, so follow the shell's folder when the move took it along
+mvproj() {
+  local here=$(pwd -P)
+  command mvproj "$@" || return
+  [[ $(pwd -P) == "$here" ]] || cd "$(pwd -P)"
+}
+
 # herdr-automatic-rename names the herdr tab after each command as it starts.
 # herdr runs it from the local clone linked with `herdr plugin link`
 [[ -r ~/dev/herdr-automatic-rename/shell/hook.zsh ]] && source ~/dev/herdr-automatic-rename/shell/hook.zsh
