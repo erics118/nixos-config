@@ -44,6 +44,7 @@
         lfs = {
           enable = true;
         };
+        attributes = [ "*.pdf diff=pdf" ];
         settings = {
           user = {
             name = "erics118";
@@ -66,6 +67,8 @@
           rebase.autoStash = true;
           diff.colorMoved = "zebra";
           diff.tool = "nvimdiff";
+          # pdfs diff as their extracted text
+          diff.pdf.textconv = "${pkgs.writeShellScript "pdf-textconv" ''exec ${pkgs.poppler-utils}/bin/pdftotext -layout "$1" -''}";
           commit.gpgsign = true;
           gpg = {
             format = "ssh";
