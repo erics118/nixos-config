@@ -31,8 +31,9 @@ else
   exit 0
 fi
 
-# only an agent started from the pane's shell owns the pane, not one another agent runs there
+# only an agent started from the pane's shell owns the pane, not one another agent runs there.
+# agent-side's split runs the agent as the pane's own process
 pane_pid=$(tmux display -p -t "$TMUX_PANE" '#{pane_pid}' 2>/dev/null) || exit 0
-[[ $(ps -o ppid= -p "$agent" | tr -d ' ') == "$pane_pid" ]] || exit 0
+[[ $agent == "$pane_pid" || $(ps -o ppid= -p "$agent" | tr -d ' ') == "$pane_pid" ]] || exit 0
 tmux set -p -t "$TMUX_PANE" @agent_pid "$agent" \; set -p -t "$TMUX_PANE" @agent_resume "$cmd" 2>/dev/null
 exit 0

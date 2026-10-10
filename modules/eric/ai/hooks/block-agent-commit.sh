@@ -12,7 +12,7 @@ hook_command_dir
 
 # each config command naming an eric-agent key, an alias, or an include must itself be a read
 hook_any 'git | .[0] == "config" and any(.[]; ascii_downcase | test("eric-agent|^(alias|include|includeif)\\.|^(-e|--edit|edit)$")) and
-  (any(.[]; IN("--get", "--get-regexp", "get")) | not)' &&
+  ((any(.[]; IN("--get", "--get-all", "--get-regexp", "--get-urlmatch", "-l", "--list")) or (.[1] | IN("get", "list"))) | not)' &&
   hook_deny 'Only the user sets eric-agent keys, git aliases, and git includes, since an alias or include can wrap push or commit.'
 
 # a -c alias can run commit under another name

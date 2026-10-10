@@ -188,14 +188,17 @@ hook_deny_git_env() {
 hook_gate_dirs() {
   HOOK_GATE_DIRS=
   hook_any "$1" || return 0
-  # hook_command_dir follows only a leading `cd DIR`
-  printf '%s' "$HOOK_CALLS" | jq -s -e '(.[1:] | any(.argv[0] // "" | IN("cd", "pushd"))) or
+  HOOK_GATE_DIRS=$(hook_each "select($1) | git_dir" | while IFS= read -r d; do printf '%s\n' "$(hook_resolve "$d")"; done | sort -u)
+  [[ $HOOK_GATE_DIRS != *'$'* ]] ||
+    hook_deny 'A git commit or push here names its repo with a shell variable or command substitution, which the guard cannot resolve. Name the repo with a literal path in git -C or a leading cd.'
+  # hook_command_dir follows only a leading `cd DIR`. an absolute or ~ -C ignores any cd
+  hook_any "($1) and (git_dir | test(\"^[/~]\") | not)" &&
+    printf '%s' "$HOOK_CALLS" | jq -s -e '(.[1:] | any(.argv[0] // "" | IN("cd", "pushd"))) or
     (.[0].argv // [] | .[0] == "pushd" or (.[0] == "cd" and length != 2))' >/dev/null &&
-    hook_deny 'A git commit or push here follows a cd other than a leading `cd DIR`. Put a plain cd first, or name the repo with git -C.'
+    hook_deny 'A git commit or push here follows a cd other than a leading `cd DIR`. Put a plain cd first, or name the repo with an absolute git -C.'
   hook_any "($1) and git_elsewhere" &&
     hook_deny 'A git commit or push here names its repo with --git-dir, --work-tree, core.worktree, a second -C, or a wrapper that changes directory. Name the repo with one git -C.'
-  # shellcheck disable=SC2034
-  HOOK_GATE_DIRS=$(hook_each "select($1) | git_dir" | while IFS= read -r d; do printf '%s\n' "$(hook_resolve "$d")"; done | sort -u)
+  return 0
 }
 
 # print the jq filter's raw output for each $HOOK_CALLS line, with the $HOOK_JQ helpers available

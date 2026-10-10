@@ -186,7 +186,8 @@ for cmd in 'direnv exec . git commit -m x' 'bash -c "git commit -m x"' "git -c '
   'git subtree add --prefix=x r main' 'git -c include.path=/tmp/x c' 'git --config-env=alias.c=X c' 'git --config-env alias.c=X c' \
   'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=alias.c GIT_CONFIG_VALUE_0=commit git c' 'env GIT_DIR=sub/.git git commit -m x' \
   'export GIT_CONFIG_GLOBAL=/tmp/x' 'git config alias.c commit' 'git config include.path /tmp/x' 'git config --edit' \
-  'git commit -m --abort' 'git commit -m --dry-run' 'git commit -- --dry-run' 'git commit --author --dry-run -m x'; do
+  'git commit -m --abort' 'git commit -m --dry-run' 'git commit -- --dry-run' 'git commit --author --dry-run -m x' \
+  'git config include.path get' 'git config set eric-agent.commit list'; do
   expect_json "block-agent-commit: $cmd" block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
@@ -196,11 +197,19 @@ for cmd in 'git merge --abort' 'git cherry-pick --quit' 'git pull --ff-only' 'gi
 done
 expect_json block-agent-commit-config-write block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git config eric-agent.commit on')"
-expect_allow block-agent-commit-config-read block-agent-commit.sh "$(json "$repo" 'git config --get eric-agent.commit')"
+for cmd in 'git config --get eric-agent.commit' 'git -C . config --show-origin --get-all eric-agent.commit' \
+  'git config --show-scope --list' 'git config -l' 'git config get --all eric-agent.commit' 'git config list --show-origin'; do
+  expect_allow "block-agent-commit-config-read: $cmd" block-agent-commit.sh "$(json "$repo" "$cmd")"
+done
 git -C "$repo" config eric-agent.commit on
 for cmd in 'git commit -m x' 'git pull' 'git commit-tree HEAD^{tree} -m x' 'git subtree add --prefix=x r main' 'git commit -C HEAD' \
-  'direnv exec . git commit -C HEAD' 'env FOO=1 git commit -m x'; do
+  'direnv exec . git commit -C HEAD' 'env FOO=1 git commit -m x' "git -C $repo commit -m x; cd sub"; do
   expect_allow "block-agent-commit-on: $cmd" block-agent-commit.sh "$(json "$repo" "$cmd")"
+done
+# a repo named by a shell expansion cannot be resolved, so the denial says that, not that commits are off
+for cmd in "T=$repo; git -C \$T commit -m x" 'cd $T && git commit -m x' 'git -C "$(pwd)" commit -m x'; do
+  expect_json "block-agent-commit-dynamic-dir: $cmd" block-agent-commit.sh \
+    '.hookSpecificOutput.permissionDecisionReason | test("shell variable")' "$(json "$repo" "$cmd")"
 done
 # every repo a command commits in must allow it, in either order, and a later cd or --git-dir cannot hide one
 for cmd in 'git commit -m x; git -C sub commit -m x' 'git -C sub commit -m x; git commit -m x' \
@@ -400,10 +409,14 @@ if command -v tmux >/dev/null; then
   # each pane signals once its hook has run, then stays open so its options can be read
   resume_tmux new -d -s direct "timeout 5 '$hooks/tmux-agent-resume.sh' claude <<<'{\"session_id\":\"abc\"}'; tmux wait-for -S direct; sleep 5"
   resume_tmux new -d -s nested "timeout 5 timeout 5 '$hooks/tmux-agent-resume.sh' claude <<<'{\"session_id\":\"abc\"}'; tmux wait-for -S nested; sleep 5"
+  # the agent is the pane's own process, as in an agent-side split
+  resume_tmux new -d -s side "exec timeout 5 bash -c \"'$hooks/tmux-agent-resume.sh' claude <<<'{\\\"session_id\\\":\\\"abc\\\"}'; tmux wait-for -S side; sleep 5\""
   resume_tmux wait-for direct
   resume_tmux wait-for nested
+  resume_tmux wait-for side
   top=$(resume_tmux show -pqv -t =direct: @agent_resume)
   nested=$(resume_tmux show -pqv -t =nested: @agent_resume)
+  side=$(resume_tmux show -pqv -t =side: @agent_resume)
   resume_tmux kill-server
   [ "$top" = 'claude --resume abc' ] || {
     printf 'FAIL tmux-agent-resume recorded %q\n' "$top"
@@ -415,6 +428,11 @@ if command -v tmux >/dev/null; then
     exit 1
   }
   printf 'ok tmux-agent-resume-nested\n'
+  [ "$side" = 'claude --resume abc' ] || {
+    printf 'FAIL tmux-agent-resume recorded %q for an agent-side pane\n' "$side"
+    exit 1
+  }
+  printf 'ok tmux-agent-resume-side\n'
 else
   printf 'skip tmux-agent-resume: tmux is not on PATH\n'
 fi
