@@ -58,6 +58,7 @@ Extensions in `pi/extensions/`, linked per file into `~/.pi/agent/extensions` by
 - `side-conversations.ts`: `/side` opens a side session, `/btw` a tool-free parallel conversation
 - `reflect.ts`: `/reflect` reviews the session for durable learning
 - `time.ts`: a `time` tool
+- `git-signing.ts`: signs agent commits with `ssh-keygen` instead of 1Password, like the `GIT_CONFIG_*` env in `claude/settings.json`
 - `image-attachments.ts`: attaches image files whose paths appear in a prompt
 - `tmux-agent-resume.ts`: runs `hooks/tmux-agent-resume.sh pi` at session start, since `guards.ts` does not run `SessionStart` hooks
 - `statusline.ts`, `minimal-startup.ts`, `fullscreen-tweaks.ts`: UI

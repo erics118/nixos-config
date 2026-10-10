@@ -90,7 +90,8 @@ These rules cover work I asked you to do.
 
 ## Git
 
-- `git config --get eric-agent.commit` sets whether you commit in a repo. `on`: commit as work lands. `branch`: commit as work lands, but only on a branch other than `main` or `master` (a detached HEAD, as mid-rebase, counts as `main`). `ask`: commit as work lands, and I approve each commit (a Codex hook cannot ask for approval, so there `ask` means `off`). Unset or `off`: don't commit. Tell me when the work is ready and I commit
+- `git config --get eric-agent.commit` sets whether you commit in a repo. `on`: commit as work lands. `branch`: commit as work lands, but only on a branch other than `main` or `master` (a detached HEAD, as mid-rebase, counts as `main`). `ask`: commit as work lands, and the commit hook asks me to approve each one, so run the commit without asking in chat first (a Codex hook cannot ask for approval, so there `ask` means `off`). Unset or `off`: don't commit. Tell me when the work is ready and I commit
+- Make one commit per finished feature or fix, not one per edit, with a message that says what changed
 - `git config --get eric-agent.push` sets whether you push in a repo. `on`: push. `ask`: I approve each push. Unset or `off`: don't push. Tell me when the work is ready and I push. Codex never pushes: its rules forbid `git push`
 - Never open, change, or merge a pull request. I do those. Tell me when the work is ready
 - Use `gh` only to read: `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, `run watch`, and `gh api` GETs

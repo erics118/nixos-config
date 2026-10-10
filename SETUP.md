@@ -2,8 +2,7 @@
 
 ## Install Nix
 
-- desktop: use the standard graphical installer
-- cloud vm: see later
+- desktop and cloud vm: see [Install with nixos-anywhere](#install-with-nixos-anywhere)
 - macOS: use the official installer from nixos.org. nix-darwin manages nix here, and it aborts activation when Determinate Nix is installed
 
 Enable flakes and nix-command for the bootstrap shell:
@@ -91,6 +90,7 @@ On an existing machine, in the private repo:
 - Add `&host_HOSTNAME age1...` with the age key that you just derived
 - Add `&eric_HOSTNAME ssh-ed25519 ...` with the contents of `~/.ssh/id_ed25519.pub`
 - Reference the anchors in `key_groups`
+- On a reinstall, replace the host's existing `host_HOSTNAME` and `eric_HOSTNAME` keys instead of adding new ones
 - Run `sops updatekeys secrets/secrets.yaml`
 - Commit and push: `git add .sops.yaml secrets/secrets.yaml && git commit -m "add keys for HOSTNAME" && git push`
 
@@ -105,9 +105,21 @@ sudo nix run nix-darwin -- switch --flake .#HOSTNAME # macOS
 
 ---
 
-## Cloud VMs
+## Install with nixos-anywhere
 
-We use [nixos-anywhere](https://github.com/nix-community/nixos-anywhere) to install NixOS on an existing cloud VM.
+We use [nixos-anywhere](https://github.com/nix-community/nixos-anywhere) to install NixOS on an existing cloud VM, or on a desktop booted from the installer.
+
+For a desktop, boot the minimal x86_64 ISO from <https://nixos.org/download> (pick the UEFI boot entry) and unplug any disk you want to keep. Then, on its console:
+
+```sh
+sudo -i
+nmtui # wifi only
+mkdir -p ~/.ssh && curl -L https://github.com/erics118.keys > ~/.ssh/authorized_keys
+systemctl start sshd # the installer doesn't start it
+ip -4 addr
+```
+
+Use `root@<that address>` as `USERNAME@HOST` and `id_ed25519_github_erics118` as `KEY` below. For a desktop disk, set the disko `device` to its `/dev/disk/by-id/` path.
 
 <details>
 <summary>
@@ -187,6 +199,17 @@ in
 
 And, a stub containing `{ }` at `modules/hosts/_hardware/ARCH-HOSTNAME.nix`.
 
+Make the host's ssh key ahead of time, so sops-nix can decrypt secrets on the first boot:
+
+```sh
+extra=$(mktemp -d) # outside the repo, so the private key can't be committed
+mkdir -p "$extra/etc/ssh"
+ssh-keygen -t ed25519 -N '' -C root@HOSTNAME -f "$extra/etc/ssh/ssh_host_ed25519_key"
+nix run nixpkgs#ssh-to-age -- < "$extra/etc/ssh/ssh_host_ed25519_key.pub"
+```
+
+Add that age key as `host_HOSTNAME` per [Set up sops](#set-up-sops), push the private repo, and run `nix flake update nixos-config-private`.
+
 Run nixos-anywhere from an existing nix machine: (`KEY` = the existing ssh key for the target machine)
 
 ```sh
@@ -194,23 +217,26 @@ nix run github:nix-community/nixos-anywhere -- \
   --generate-hardware-config nixos-generate-config ./modules/hosts/_hardware/ARCH-HOSTNAME.nix \
   --flake .#HOSTNAME \
   --build-on-remote \
+  --extra-files "$extra" \
   --target-host USERNAME@HOST \
   -i ~/.ssh/KEY --ssh-option IdentitiesOnly=yes
 ```
+
+Delete `$extra` afterwards. The key now lives on the host.
 
 `HOST` is the VM's address (IP or DNS), not the nix hostname. Run
 `ssh-keygen -R HOST` to refresh the host key, as it has changed.
 
 Make sure to `git add` and `git commit` the generated hardware file.
 
-Now, ssh into the new machine and follow [GitHub SSH Access](#github-ssh-access), [Clone the repository](#clone-the-repository), and [Set up sops](#set-up-sops).
+Now, ssh into the new machine and follow [GitHub SSH Access](#github-ssh-access), [Clone the repository](#clone-the-repository), and the `eric_HOSTNAME` part of [Set up sops](#set-up-sops).
 
 ---
 
 ## Post setup
 
 - AdGuard Home: set up `eric` admin account via the wizard on port 3000. blocklists are declarative, but login and other configs are not
-- Tailscale: run `sudo tailscale up --advertise-exit-node` the first time manually, and authenticate. Also, from admin console, you have to manually approve the exit node
+- Tailscale: run `sudo tailscale up --advertise-exit-node` the first time manually, and authenticate. Also, from admin console, you have to manually approve the exit node. On a reinstall, delete the old machine in the admin console first, or the new one registers as `HOSTNAME-1`
 - `gh` cli: `gh auth login`
 - install `claude`, `codex`, and `pi` by using their own installers so they are auto-updated faster than it would be via nix
 - auto-upgrade hosts (those importing `m.nixos.auto-upgrade`): root needs `/root/.ssh/id_deploy`, with its `.pub` added as a read-only deploy key on nixos-config-private. Upgrades refuse a checkout that is off `main`, dirty, or ahead of `origin/main`, so a local `flake.lock` bump blocks them. See `modules/features/system/auto-upgrade.nix`

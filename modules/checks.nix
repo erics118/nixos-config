@@ -101,7 +101,8 @@
           # every system has the same wezterm and config
           (lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
             wezterm = pkgs.runCommand "wezterm-config" { } ''
-              export HOME=$TMPDIR
+              # the sandbox sets neither, and the config reads both as the gui session would have them
+              export HOME=$TMPDIR USER=nixbld
               mkdir -p $HOME/.config
               ln -s ${../modules/eric/desktop/wezterm} $HOME/.config/wezterm
               ${lib.getExe pkgs.wezterm} ls-fonts > /dev/null 2> log

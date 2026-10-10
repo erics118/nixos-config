@@ -24,7 +24,27 @@ connect() {
   exec env -i "${vars[@]}" "$zsh" -lc 'exec sesh connect "$1"' _ "$1"
 }
 
-sessions_only=0 popup=0
+# sesh's rows for the given list flags, with each running session's name in its alert colour,
+# from @session-alert in tmux/tabline.conf
+list() {
+  local -A color=([fail]=$'\e[1;38;2;243;139;168m' [bell]=$'\e[1;38;2;250;179;135m' [ok]=$'\e[1;38;2;166;227;161m' [activity]=$'\e[1;38;2;137;180;250m')
+  local -A alert=()
+  local name a row
+  while IFS=$'\t' read -r name a; do
+    alert[$name]=$a
+  done < <(tmux list-sessions -F $'#{session_name}\t#{E:@session-alert}' 2>/dev/null)
+  sesh list -i"$1" | while IFS= read -r row; do
+    name=${row#* }
+    a=${alert[$name]:-}
+    if [[ $row == *"$tmux"* && -n $a ]]; then
+      printf '%s %s%s\e[0m\n' "${row%% *}" "${color[$a]}" "$name"
+    else
+      printf '%s\n' "$row"
+    fi
+  done
+}
+
+sessions_only=0 popup=0 list_flags=''
 while (($# > 0)); do
   case $1 in
   -h | --help)
@@ -35,9 +55,15 @@ Usage: sesh-pick [--sessions] [--popup] [TARGET]
               ^n, or enter on text that matches nothing, creates ~/dev/<text> and opens it
   --sessions  start on running tmux sessions only, as ^t does
   --popup     run fzf in the current terminal, as tmux-popup does inside its popup
+  --list F    print sesh list -iF with session names in their alert colours, as the picker shows them
   TARGET      connect to a sesh session, config entry, dir, or zoxide match
 EOF
     exit
+    ;;
+  --list)
+    # set popup too, so a reload inside tmux prints rows here instead of opening a popup
+    list_flags=$2 popup=1
+    shift
     ;;
   --sessions) sessions_only=1 ;;
   --popup) popup=1 ;;
@@ -53,6 +79,11 @@ fi
 
 # nerd font prompts: bolt for all, then the same glyphs sesh puts on tmux, config, and zoxide rows
 all=$'' tmux=$'' config=$'' dir=$''
+
+if [[ -n $list_flags ]]; then
+  list "$list_flags"
+  exit
+fi
 
 # the popup draws the border, so fzf fills it. outside tmux fzf draws its own, below the prompt line
 look=(--height 60% --border --border-label ' sesh ')
@@ -78,14 +109,14 @@ unhide() {
 # it shows only in the full view, and the sessions view hides it
 help=$'^a all ^t tmux ^g configs ^x zoxide ^d kill\n^n, or enter on no match: create ~/dev/<name>'
 shown='up,2,border-bottom,noinfo'
-start_prompt=$all start_list='sesh list -id' start_window=$shown
+start_prompt=$all start_flags=d start_window=$shown
 if ((sessions_only)); then
-  start_prompt=$tmux start_list='sesh list -it' start_window=hidden
+  start_prompt=$tmux start_flags=t start_window=hidden
 fi
 
 # the actions that switch to a view: its prompt icon, the help pane's window, and its list
 show() {
-  printf 'change-prompt(%s  )+change-preview-window(%s)+reload(sesh list -i%s)' "$1" "$2" "$3"
+  printf 'change-prompt(%s  )+change-preview-window(%s)+reload(%q --list %s)' "$1" "$2" "$0" "$3"
 }
 
 # cmd-k and cmd-p reach an open picker as ctrl-alt-k and ctrl-alt-p (see scripts/tmux-popup.sh).
@@ -100,7 +131,7 @@ toggles=(--bind "$(toggle ctrl-alt-k "$tmux" hidden t)" --bind "$(toggle ctrl-al
 # enter on a match prints that row, which starts with a sesh icon.
 # enter with no match, or ^n always, prints the typed text instead, which names a new project.
 # ^n is needed since most short names fuzzy-match some zoxide dir
-sel=$($start_list | fzf "${look[@]}" \
+sel=$(list "$start_flags" | fzf "${look[@]}" \
   --no-sort --ansi --prompt "$start_prompt  " \
   --preview "printf %s $(printf %q "$help")" --preview-window "$start_window" --color 'preview-fg:#f38ba8' \
   --bind "tab:down,btab:up,enter:${hide}accept-or-print-query,ctrl-n:${hide}print-query" \

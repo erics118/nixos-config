@@ -237,6 +237,7 @@ map("Enter", "CMD", act.SendString("\x1b[13;9u"))
 local M = {}
 
 M.runs_tmux = runs_tmux
+M.in_tmux = in_tmux
 
 M.apply_to_config = function(c)
     c.leader = {
