@@ -51,6 +51,21 @@ sbar.add_item = function(name, options)
     return item
 end
 
+sbar.add_popup_row = function(parent, name, text, color)
+    return sbar.add_item(name, {
+        position = "popup." .. parent.name,
+        padding_left = 12,
+        icon = { drawing = false },
+        label = {
+            string = text,
+            color = color,
+            padding_left = 0,
+            padding_right = 12,
+        },
+        background = { drawing = false },
+    })
+end
+
 sbar.add_graph = function(name, width, options)
     local graph = sbar.add("graph", name, width, options)
     return graph

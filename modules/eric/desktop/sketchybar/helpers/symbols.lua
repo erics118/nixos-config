@@ -1,4 +1,6 @@
-local dir = os.getenv("HOME") .. "/.config/sketchybar/helpers/symbol_image/bin/"
+local renderer = settings.helpers_dir .. "symbol_image"
+local dir = os.getenv("HOME") .. "/.cache/sketchybar/symbols/"
+os.execute("mkdir -p '" .. dir .. "'")
 
 -- point width of a 2x png, read from the ihdr chunk
 local function png_width(path)
@@ -20,16 +22,7 @@ return function(symbol, color, size, value, callback)
     local path = string.format("%s%s.%s.%g%s.png", dir, symbol, color_arg, size, value and "." .. value_arg or "")
 
     sbar.exec(
-        string.format(
-            "[ -f '%s' ] || '%ssymbol_image' %s %s %g '%s' %s",
-            path,
-            dir,
-            symbol,
-            color_arg,
-            size,
-            path,
-            value_arg
-        ),
+        string.format("[ -f '%s' ] || '%s' %s %s %g '%s' %s", path, renderer, symbol, color_arg, size, path, value_arg),
         function()
             callback(path, png_width(path))
         end

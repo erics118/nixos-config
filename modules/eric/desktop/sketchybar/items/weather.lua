@@ -19,30 +19,12 @@ local weather = sbar.add_item("weather", {
 
 local weather_key_path = "/run/secrets/api/weatherapi"
 
-local dim = colors.with_alpha(colors.text, 0.6)
-
-local function add_row(name, color, text)
-    return sbar.add_item("weather_" .. name, {
-        position = "popup." .. weather.name,
-        padding_left = 12,
-        icon = { drawing = false },
-        label = {
-            string = text,
-            color = color,
-            padding_left = 0,
-            padding_right = 12,
-        },
-        background = { drawing = false },
-    })
-end
-
-local weather_title = add_row("title", colors.text)
-local weather_feels_like = add_row("feels_like", colors.text)
-local weather_humidity = add_row("humidity", colors.text)
-local weather_wind = add_row("wind", colors.text)
-add_row("today_header", dim, "Today")
-local weather_range = add_row("range", colors.text)
-local weather_sun = add_row("sun", colors.text)
+local weather_title = sbar.add_popup_row(weather, "weather_title", nil, colors.text)
+local weather_feels_like = sbar.add_popup_row(weather, "weather_feels_like", nil, colors.text)
+local weather_humidity = sbar.add_popup_row(weather, "weather_humidity", nil, colors.text)
+local weather_wind = sbar.add_popup_row(weather, "weather_wind", nil, colors.text)
+local weather_range = sbar.add_popup_row(weather, "weather_range", nil, colors.text)
+local weather_sun = sbar.add_popup_row(weather, "weather_sun", nil, colors.text)
 
 -- aqi in the icon and uv in the label so each gets its own color
 local weather_air = sbar.add_item("weather_air", {
@@ -306,6 +288,7 @@ end
 
 local key_retries = 0
 local fetch_retries = 0
+local retry_pending = false
 
 local function update_weather()
     local api_key = read_weather_api_key()
@@ -335,7 +318,12 @@ local function update_weather()
                 -- dns is often not up yet right after wake, so keep the last data and retry
                 if fetch_retries < 5 then
                     fetch_retries = fetch_retries + 1
-                    sbar.delay(10, update_weather)
+                    retry_pending = true
+                    -- backs off 10, 20, 40, 80, 160 seconds
+                    sbar.delay(10 * 2 ^ (fetch_retries - 1), function()
+                        retry_pending = false
+                        update_weather()
+                    end)
                 else
                     set_weather_unavailable("Unavailable")
                 end
@@ -389,7 +377,11 @@ end
 
 -- wifi_change fires on any primary ipv4 change, so a reconnect refreshes too
 -- each event starts a fresh retry budget, or one failed chain would leave it spent
+-- an event during a pending retry is dropped, so only one chain runs at a time
 weather:subscribe({ "forced", "routine", "system_woke", "wifi_change" }, function()
+    if retry_pending then
+        return
+    end
     fetch_retries = 0
     update_weather()
 end)

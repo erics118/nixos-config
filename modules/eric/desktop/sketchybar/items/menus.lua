@@ -55,14 +55,14 @@ local function place_menus(entries)
             drawing = true,
             padding_left = shift,
             width = next_entry and next_entry.x - entry.x or entry.width,
-            click_script = "$CONFIG_DIR/helpers/menus/bin/menus -s " .. entry.index,
+            click_script = settings.helpers_dir .. "menus -s " .. entry.index,
         })
     end
 end
 
 local function read_menus(generation, attempt, on_done)
     local app = current_app and (" '" .. current_app:gsub("'", "'\\''") .. "'") or ""
-    sbar.exec("$CONFIG_DIR/helpers/menus/bin/menus -l" .. app, function(menus)
+    sbar.exec(settings.helpers_dir .. "menus -l" .. app, function(menus)
         -- the mode can change while the menus are read
         if generation ~= menu_generation or sbar.get_mode() ~= "menu" then
             return

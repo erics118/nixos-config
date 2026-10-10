@@ -37,7 +37,7 @@ local function toggle_zen()
 
         sbar.set("/space\\..*/", { background = { drawing = switch }, label = { drawing = switch } })
     else
-        sbar.exec("$CONFIG_DIR/helpers/menus/bin/menus -s 0")
+        sbar.exec(settings.helpers_dir .. "menus -s 0")
     end
 end
 

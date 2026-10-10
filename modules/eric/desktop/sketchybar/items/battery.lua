@@ -18,23 +18,8 @@ local battery = sbar.add_item("battery", {
 
 local dim = colors.with_alpha(colors.text, 0.6)
 
-local function add_text_row(name, text, color)
-    return sbar.add_item(name, {
-        position = "popup." .. battery.name,
-        padding_left = 12,
-        icon = { drawing = false },
-        label = {
-            string = text,
-            color = color,
-            padding_left = 0,
-            padding_right = 12,
-        },
-        background = { drawing = false },
-    })
-end
-
-local power_source = add_text_row("power_source", "Power Source: ?", dim)
-local remaining_time = add_text_row("remaining_time", "", dim)
+local power_source = sbar.add_popup_row(battery, "power_source", "Power Source: ?", dim)
+local remaining_time = sbar.add_popup_row(battery, "remaining_time", "", dim)
 
 -- index - 1 is the pmset powermode value
 local energy_modes = {

@@ -1,6 +1,6 @@
 -- Execute the event provider binary which provides the event "cpu_update" for
 -- the cpu load data, which is fired every 2.0 seconds.
-sbar.exec("killall cpu_load > /dev/null 2>&1; $CONFIG_DIR/helpers/event_providers/cpu_load/bin/cpu_load cpu_update 2.0")
+sbar.exec("killall cpu_load > /dev/null 2>&1; " .. settings.helpers_dir .. "cpu_load cpu_update 2.0")
 
 local function merge(base, extra)
     local t = {}
