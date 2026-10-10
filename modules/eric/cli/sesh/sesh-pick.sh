@@ -133,7 +133,7 @@ toggles=(--bind "$(toggle ctrl-alt-k "$tmux" hidden t)" --bind "$(toggle ctrl-al
 # ^n is needed since most short names fuzzy-match some zoxide dir
 sel=$(list "$start_flags" | fzf "${look[@]}" \
   --no-sort --ansi --prompt "$start_prompt  " \
-  --preview "printf %s $(printf %q "$help")" --preview-window "$start_window" --color 'preview-fg:#f38ba8' \
+  --preview "printf %s $(printf %q "$help")" --preview-window "$start_window" --color 'preview-fg:#f38ba8,bg:-1' \
   --bind "tab:down,btab:up,enter:${hide}accept-or-print-query,ctrl-n:${hide}print-query" \
   --bind "esc:${hide}abort,ctrl-c:${hide}abort" "${toggles[@]}" \
   --bind "ctrl-a:$(show "$all" "$shown" d)" \

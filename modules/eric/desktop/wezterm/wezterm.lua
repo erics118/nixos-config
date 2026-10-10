@@ -73,9 +73,8 @@ c.default_cursor_style = "SteadyBar"
 c.underline_thickness = 2.5
 
 -- window
-if wezterm.target_triple:find("linux") then
-    c.window_decorations = "NONE"
-else
+-- linux keeps the default title bar
+if wezterm.target_triple:find("darwin") then
     c.window_decorations = "RESIZE | TITLE | MACOS_FORCE_ENABLE_SHADOW | MACOS_USE_BACKGROUND_COLOR_AS_TITLEBAR_COLOR"
 end
 

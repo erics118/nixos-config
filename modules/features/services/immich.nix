@@ -14,6 +14,10 @@
 
     systemd.tmpfiles.rules = [ "d /mnt/external/immich 0700 immich immich -" ];
 
+    # the data on the usb disk outlives reinstalls, so keep the ids it is owned by
+    users.users.immich.uid = 996;
+    users.groups.immich.gid = 996;
+
     # /mnt/external is nofail, so without the disk uploads would land on the root fs
     systemd.services.immich-server.unitConfig.RequiresMountsFor = [ "/mnt/external" ];
 

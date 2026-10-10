@@ -388,7 +388,7 @@ expect_exit_2 warn-comment-block-after-header warn-comment-block.sh \
 
 # a stub tmux names a plain file as the pane's tty, so the test never rings a real bell
 mkdir "$repo/tmux-bin"
-printf '#!/bin/sh\necho "%s/pane-tty"\n' "$repo" >"$repo/tmux-bin/tmux"
+printf '#!/bin/sh\ncase "$*" in *pane_tty*) echo "%s/pane-tty" ;; esac\n' "$repo" >"$repo/tmux-bin/tmux"
 chmod +x "$repo/tmux-bin/tmux"
 : >"$repo/pane-tty"
 TMUX_PANE='' expect_allow tmux-bell-outside-tmux tmux-bell.sh '{}'

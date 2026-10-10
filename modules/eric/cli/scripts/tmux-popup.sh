@@ -74,7 +74,7 @@ open() {
   esac
   # display-popup waits for the popup to close, so it runs in the background, and the popup outlives it.
   # -d expands against the pane, and falls back to the session's directory when tmux cannot read the pane's
-  tmux display-popup -c "$client" -t "$pane" -E -d '#{pane_current_path}' -s 'bg=#1e1e2e' -S 'fg=#6c7086' \
+  tmux display-popup -c "$client" -t "$pane" -E -d '#{pane_current_path}' -s 'bg=default' -S 'fg=#6c7086' \
     "${args[@]}" &
   local popup=''
   for _ in $(seq 50); do
