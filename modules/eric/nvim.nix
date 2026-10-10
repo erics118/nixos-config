@@ -13,8 +13,12 @@
 
       # vim.loader trusts a cached chunk while the file's size and mtime match
       # every store file has mtime 1, so a rebuilt plugin behind the same pack/hm path keeps its old bytecode
+      # keep the luac dir itself, since a running nvim asserts when it writes a cache file into a missing dir
       home.activation.clearNvimLuaCache = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        $DRY_RUN_CMD rm -rf "${config.xdg.cacheHome}/nvim/luac"
+        pack=home-files/.local/share/nvim/site/pack/hm
+        if [[ "$(readlink "''${oldGenPath:-}/$pack" 2>/dev/null)" != "$(readlink "$newGenPath/$pack")" ]]; then
+          $DRY_RUN_CMD find "${config.xdg.cacheHome}/nvim/luac" -type f -delete 2>/dev/null || true
+        fi
       '';
 
       programs.neovim = {

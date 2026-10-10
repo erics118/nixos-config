@@ -1,5 +1,5 @@
 {
-  # tmux master for the dim= style, and past 3.8, which draws pane output over an open menu.
+  # tmux master, since 3.8 draws pane output over an open menu and its display-popup gives no pane to style.
   # version matches what tmux -V prints, since nixpkgs checks it after the build.
   # drop once nixpkgs ships a release past 3.8
   flake.overlays.tmux = _final: prev: {

@@ -51,7 +51,8 @@ shift || true
 case $mode in
 fork)
   if [[ $agent == claude ]]; then
-    fork="claude --resume ${CLAUDE_CODE_SESSION_ID:?} --fork-session"
+    [[ -n ${CLAUDE_CODE_SESSION_ID-} ]] || die "claude fork needs CLAUDE_CODE_SESSION_ID, which claude sets"
+    fork="claude --resume $CLAUDE_CODE_SESSION_ID --fork-session"
   else
     (($#)) || die "pi fork needs the branched session file"
     fork="pi --session $(printf %q "$1")"

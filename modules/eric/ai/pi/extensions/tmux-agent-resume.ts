@@ -5,9 +5,9 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 // record on the tmux pane how to resume this session, through the hook claude and codex run
 export default function (pi: ExtensionAPI) {
   pi.on("session_start", (_event, ctx) => {
-    if (!process.env.TMUX_PANE) return;
-    const session =
-      ctx.sessionManager.getSessionFile() ?? ctx.sessionManager.getSessionId();
+    // a --no-session run has no file, so there is nothing to resume
+    const session = ctx.sessionManager.getSessionFile();
+    if (!process.env.TMUX_PANE || !session) return;
     const hook = execFile(
       `${homedir()}/.agents/hooks/tmux-agent-resume.sh`,
       ["pi"],

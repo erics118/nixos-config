@@ -31,6 +31,19 @@ c.skip_close_confirmation_for_processes_named = {
 -- closing a tab returns to the one used before it, not its left neighbor
 c.switch_to_last_active_tab_when_closing_tab = true
 
+-- yabai doesn't focus on hover, so the click that focuses a window also reaches the pane
+c.swallow_mouse_click_on_window_focus = false
+
+-- double-click stops at punctuation and tmux pane borders
+c.selection_word_boundary = " \t\n{[}]()\"'`,;:│"
+
+-- super+click opens owner/repo#123 as a github issue or pr
+c.hyperlink_rules = wezterm.default_hyperlink_rules()
+table.insert(c.hyperlink_rules, {
+    regex = [[\b([\w.-]+/[\w.-]+)#(\d+)\b]],
+    format = "https://github.com/$1/issues/$2",
+})
+
 -- quick select greys out the screen's colors so its labels stand out
 c.quick_select_remove_styling = true
 
@@ -55,9 +68,7 @@ c.enable_kitty_keyboard = true
 c.font = wezterm.font("Hack Nerd Font")
 c.font_size = 12.0
 c.command_palette_font_size = 12.0
-c.window_frame = {
-    font_size = 12.0,
-}
+c.freetype_load_target = "Light"
 c.default_cursor_style = "SteadyBar"
 c.underline_thickness = 2.5
 
@@ -79,6 +90,11 @@ c.window_content_alignment = {
     vertical = "Center",
 }
 c.adjust_window_size_when_changing_font_size = false
+c.window_background_opacity = 0.95
+c.macos_window_background_blur = 20
+
+-- metal on macos and vulkan on linux, instead of opengl
+c.front_end = "WebGpu"
 
 -- match the 120hz promotion display
 c.max_fps = 120
@@ -90,8 +106,6 @@ c.inactive_pane_hsb = {
 }
 
 -- scrollback
-c.enable_scroll_bar = true
-c.min_scroll_bar_height = "4cell"
 c.scrollback_lines = 10000
 c.mouse_wheel_scrolls_tabs = false
 

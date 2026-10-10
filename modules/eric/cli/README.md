@@ -12,7 +12,8 @@
 | `rv-debug`      | debug in the same container, with core dumps on                       | `scripts/rv-debug.sh`               |
 | `scratch`       | cd into a fresh `~/dev/scratch/<date-time>` folder                    | `zsh/init.zsh`                      |
 | `t`             | open or pick a local tmux session through sesh                        | `scripts/t.sh`                      |
-| `sesh-pick`     | the fzf session picker behind `t`                                     | `sesh/sesh-pick.sh`                 |
+| `sesh-pick`     | the fzf picker behind `t`, creating `~/dev/<name>` on no match        | `sesh/sesh-pick.sh`                 |
+| `tmux-popup`    | open, switch, or close the tmux popups: picker, scratch shell, yazi   | `scripts/tmux-popup.sh`             |
 | `rtmux`, `r`    | attach to a persistent session on a remote host over mosh or autossh  | `rtmux/rtmux.sh`                    |
 | `ns`            | fuzzy search nixpkgs packages and home-manager and nix-darwin options | `ns/ns.sh`                          |
 | `eriz`          | client for the eriz.cc API                                            | `eriz/eriz.sh`                      |

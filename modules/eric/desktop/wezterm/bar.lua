@@ -1,4 +1,5 @@
 local wezterm = require("wezterm")
+local keys = require("keys")
 
 local M = {}
 
@@ -170,7 +171,6 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
 
     -- replace placeholders
     title = title:gsub("{tab_index}", index_i)
-    title = title:gsub("{pane_count}", pane_count)
     -- function replacements, since a "%" in a title is special in a gsub replacement string
     title = title:gsub("{workspace}", function()
         return workspace
@@ -189,6 +189,16 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
         end
     end
 
+    -- then tmux's window count as [N] when it has more than one, shown in place of the pane count
+    local tmux_windows = tab_title:match("^%[(%d+)%] ")
+    if tmux_windows then
+        tab_title = tab_title:sub(#tmux_windows + 4)
+        if config.tabs.pane_count then
+            pane_count = " (" .. tmux_windows .. ")"
+        end
+    end
+    title = title:gsub("{pane_count}", pane_count)
+
     -- a background tab's number turns bold red after a failed command, peach after a bell,
     -- green after a successful command, or blue after new output, like tmux's tabline.
     -- tmux's flags last until that tmux window is visited, so the colour survives switching tabs
@@ -205,9 +215,13 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
     elseif tmux_alert == "activity" then
         alert_fg = "#89b4fa"
     else
+        -- tmux marks its own new output in the title, while this check counts a spinner redraw too
         for _, p in ipairs(wezterm.mux.get_tab(tab.tab_id):panes()) do
             if p:has_unseen_output() then
-                alert_fg = "#89b4fa"
+                local info = p:get_foreground_process_info()
+                if not (info and keys.runs_tmux(info)) then
+                    alert_fg = "#89b4fa"
+                end
             end
         end
     end
@@ -215,6 +229,10 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
     -- columns besides the title: the format minus the 11 of "{tab_title}",
     -- plus 3 for the 2 padding spaces and the divider
     local filler_width = wezterm.column_width(title) - 11 + 3
+    -- the first tab also draws the leader pill's divider, see below
+    if config.indicator.leader.enabled and tab.tab_index == 0 then
+        filler_width = filler_width + wezterm.column_width(div)
+    end
     if (wezterm.column_width(tab_title) + filler_width) > max_width then
         -- 1 for ellipsis
         -- floored at 0, since truncate_right errors on a negative width when a tab is narrower than its fixed parts

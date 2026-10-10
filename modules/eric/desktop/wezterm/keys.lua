@@ -59,9 +59,13 @@ local function in_tmux(pane)
     return info ~= nil and runs_tmux(info)
 end
 
+local function runs_herdr(info)
+    return info.executable:find("herdr$") ~= nil
+end
+
 local function in_herdr(pane)
     local info = pane:get_foreground_process_info()
-    return info ~= nil and info.executable:find("herdr$") ~= nil
+    return info ~= nil and runs_herdr(info)
 end
 
 -- send the tmux prefix (default C-b) + keys when tmux (local, or remote via
@@ -73,8 +77,6 @@ local function to_tmux(keys)
         end
     end)
 end
-
-map("a", "LEADER", act.AttachDomain("unix"))
 
 -- use 'Backslash' to split horizontally
 map("\\", "LEADER", act.SplitHorizontal({ domain = "CurrentPaneDomain" }))
@@ -130,38 +132,63 @@ end
 -- native tab keys drive tmux windows
 map("t", { MOD }, to_tmux("c"))
 map("w", { MOD }, to_tmux("&"))
--- scratch shell and yazi popups.
--- herdr's scratch popup takes every key, so cmd-j sends ctrl+\, which herdr opens it on and dtach closes it on
-map(
-    "j",
-    { MOD },
-    wezterm.action_callback(function(window, pane)
-        if in_herdr(pane) then
-            window:perform_action(act.SendString("\x1c"), pane)
-        elseif in_tmux(pane) then
-            window:perform_action(act.SendString("\x02t"), pane)
-        end
-    end)
-)
-map("e", { MOD }, to_tmux("y"))
 map("n", { SMOD }, act.SpawnWindow)
 -- prev/next window, same keys as wezterm's default tab switching
 map("[", SMOD, to_tmux("p"))
 map("{", { MOD, SMOD }, to_tmux("p"))
 map("]", SMOD, to_tmux("n"))
 map("}", { MOD, SMOD }, to_tmux("n"))
--- sesh picker, which herdr has on prefix f since its prefix s is settings
-map(
-    "k",
-    { MOD },
-    wezterm.action_callback(function(window, pane)
-        if in_herdr(pane) then
-            window:perform_action(act.SendString("\x02f"), pane)
-        elseif in_tmux(pane) then
-            window:perform_action(act.SendString("\x02s"), pane)
+-- a tmux client of this machine runs in the pane, as opposed to one over mosh or ssh
+local function runs_local_tmux(info)
+    if info.executable:match("[^/]+$") == "tmux" then
+        return true
+    end
+    for _, child in pairs(info.children) do
+        if runs_local_tmux(child) then
+            return true
+        end
+    end
+    return false
+end
+
+-- tmux first draws a new popup's cursor at its top-left corner, so the cursor stays invisible while a popup opens.
+-- the cursor takes the background colour through OSC 12 written straight into wezterm's terminal, then OSC 112 resets it.
+-- a config override would re-apply the whole config and stall the popup's first frame.
+-- tmux sends no OSC 12 of its own while its cursor-colour option is unset.
+-- 0.15s covers the 15-40ms a popup takes to open
+local function hide_cursor_briefly(pane)
+    pane:inject_output("\x1b]12;#1e1e2e\x1b\\")
+    wezterm.time.call_after(0.15, function()
+        pane:inject_output("\x1b]112\x1b\\")
+    end)
+end
+
+-- an open popup takes every key, so a local tmux gets its popups from tmux-popup (see cli/scripts), run directly.
+-- a remote tmux gets the keys its own bindings take (see cli/tmux/keys.conf), and herdr its own popup keys
+local tmux_popup = "/etc/profiles/per-user/" .. os.getenv("USER") .. "/bin/tmux-popup"
+local function popup_key(kind, tmux_keys, herdr_keys)
+    return wezterm.action_callback(function(window, pane)
+        local info = pane:get_foreground_process_info()
+        if not info then
+            return
+        elseif runs_herdr(info) then
+            window:perform_action(act.SendString(herdr_keys), pane)
+        elseif runs_tmux(info) then
+            hide_cursor_briefly(pane)
+            if runs_local_tmux(info) then
+                wezterm.background_child_process({ tmux_popup, kind, pane:get_tty_name() })
+            else
+                window:perform_action(act.SendString(tmux_keys), pane)
+            end
         end
     end)
-)
+end
+-- herdr's scratch popup takes every key, so cmd-j sends ctrl+\, which herdr opens it on and dtach closes it on.
+-- herdr has its one picker on prefix f, since its prefix s is settings
+map("j", { MOD }, popup_key("scratch", "\x1b\x0a", "\x1c"))
+map("e", { MOD }, popup_key("files", "\x02y", "\x02y"))
+map("k", { MOD }, popup_key("sessions", "\x1b\x0b", "\x02f"))
+map("p", { MOD }, popup_key("projects", "\x1b\x10", "\x02f"))
 -- tmux prefix, sent unchecked so it also reaches tmux over plain ssh
 map("s", { MOD }, act.SendString("\x02"))
 -- the linux leader is ctrl-a, so pressing it twice sends a real ctrl-a
@@ -209,6 +236,8 @@ map("Enter", "CMD", act.SendString("\x1b[13;9u"))
 
 local M = {}
 
+M.runs_tmux = runs_tmux
+
 M.apply_to_config = function(c)
     c.leader = {
         key = "a",
@@ -218,16 +247,6 @@ M.apply_to_config = function(c)
     c.keys = shortcuts
     c.disable_default_key_bindings = true
     c.mouse_bindings = {
-        {
-            event = { Down = { streak = 1, button = { WheelUp = 1 } } },
-            mods = "NONE",
-            action = wezterm.action.ScrollByLine(-3),
-        },
-        {
-            event = { Down = { streak = 1, button = { WheelDown = 1 } } },
-            mods = "NONE",
-            action = wezterm.action.ScrollByLine(3),
-        },
         -- disable normal click to open link
         {
             event = { Up = { streak = 1, button = "Left" } },
