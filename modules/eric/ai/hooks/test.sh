@@ -174,25 +174,60 @@ done
 printf 'ok ask-dangerous-git-safe\n'
 expect_json block-agent-commit block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git status --short
-git commit --dry-run')"
-for cmd in 'direnv exec . git commit -m x' 'bash -c "git commit -m x"' "git -c 'alias.c=commit -m x' c" 'git -calias.c=commit c'; do
+git commit -m x')"
+# a -c script with a newline inside quotes parses whole, so a later line is still checked
+expect_allow block-agent-commit-multiline-script block-agent-commit.sh "$(json "$repo" $'bash -c \'echo "a\nb"\ngit status\'')"
+# a nested parse error names the script, not the calls parsed before it
+expect_json block-agent-commit-nested-parse-error block-agent-commit.sh \
+  '.hookSpecificOutput.permissionDecisionReason | test("nested script: echo \"x") and (contains("argv") | not)' \
+  "$(json "$repo" "echo hi; bash -c 'echo \"x'")"
+for cmd in 'direnv exec . git commit -m x' 'bash -c "git commit -m x"' "git -c 'alias.c=commit -m x' c" 'git -calias.c=commit c' \
+  $'bash -c \'echo "a\nb"\ngit commit -m x\'' 'git pull' 'git pull --rebase' 'git commit-tree HEAD^{tree} -m x' \
+  'git subtree add --prefix=x r main' 'git -c include.path=/tmp/x c' 'git --config-env=alias.c=X c' 'git --config-env alias.c=X c' \
+  'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=alias.c GIT_CONFIG_VALUE_0=commit git c' 'env GIT_DIR=sub/.git git commit -m x' \
+  'export GIT_CONFIG_GLOBAL=/tmp/x' 'git config alias.c commit' 'git config include.path /tmp/x' 'git config --edit' \
+  'git commit -m --abort' 'git commit -m --dry-run' 'git commit -- --dry-run' 'git commit --author --dry-run -m x'; do
   expect_json "block-agent-commit: $cmd" block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
+done
+for cmd in 'git merge --abort' 'git cherry-pick --quit' 'git pull --ff-only' 'git config --get alias.lg' \
+  'git commit --dry-run --short -- a b' 'git commit -m x --dry-run'; do
+  expect_allow "block-agent-commit: $cmd" block-agent-commit.sh "$(json "$repo" "$cmd")"
 done
 expect_json block-agent-commit-config-write block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git config eric-agent.commit on')"
 expect_allow block-agent-commit-config-read block-agent-commit.sh "$(json "$repo" 'git config --get eric-agent.commit')"
 git -C "$repo" config eric-agent.commit on
-expect_allow block-agent-commit-on block-agent-commit.sh "$(json "$repo" 'git commit -m x')"
+for cmd in 'git commit -m x' 'git pull' 'git commit-tree HEAD^{tree} -m x' 'git subtree add --prefix=x r main' 'git commit -C HEAD' \
+  'direnv exec . git commit -C HEAD' 'env FOO=1 git commit -m x'; do
+  expect_allow "block-agent-commit-on: $cmd" block-agent-commit.sh "$(json "$repo" "$cmd")"
+done
+# every repo a command commits in must allow it, in either order, and a later cd or --git-dir cannot hide one
+for cmd in 'git commit -m x; git -C sub commit -m x' 'git -C sub commit -m x; git commit -m x' \
+  'git status && cd sub && git commit -m x' 'git --git-dir=sub/.git commit -m x' 'git --work-tree=sub commit -m x' \
+  'pushd sub && git commit -m x' 'cd -P sub && git commit -m x' 'git -C . -C sub commit -m x' 'git -c core.worktree=sub commit -m x' \
+  'env -C sub git commit -m x' 'env --chdir=sub git commit -m x' 'sudo -D sub git commit -m x' \
+  'find sub/flake.nix -execdir git commit -m x \;'; do
+  expect_json "block-agent-commit-other-repo: $cmd" block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
 git -C "$repo" config eric-agent.commit branch
 git -C "$repo" checkout -q -b feat
-expect_allow block-agent-commit-branch-feature block-agent-commit.sh "$(json "$repo" 'git commit -m x')"
+for cmd in 'git commit -m x' 'git pull'; do
+  expect_allow "block-agent-commit-branch-feature: $cmd" block-agent-commit.sh "$(json "$repo" "$cmd")"
+done
 git -C "$repo" checkout -q -
-expect_json block-agent-commit-branch-default block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
-  "$(json "$repo" 'git commit -m x')"
+for cmd in 'git commit -m x' 'git pull' 'git commit-tree HEAD^{tree} -m x' 'git subtree add --prefix=x r main'; do
+  expect_json "block-agent-commit-branch-default: $cmd" block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
 git -C "$repo" config eric-agent.commit ask
 expect_json block-agent-commit-ask block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "ask"' \
   "$(json "$repo" 'git commit -m x')"
+git -C "$repo/sub" config eric-agent.commit on
+expect_json block-agent-commit-ask-and-on block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "ask"' \
+  "$(json "$repo" 'git -C sub commit -m x; git commit -m x')"
+git -C "$repo/sub" config --unset eric-agent.commit
 expect_json block-agent-commit-ask-codex block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git commit -m x' '' '' "$HOME/.codex/sessions/rollout.jsonl")"
 expect_json block-agent-commit-ask-codex-turn block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
@@ -205,13 +240,27 @@ expect_json block-agent-push-ask-codex block-agent-push.sh '.hookSpecificOutput.
   "$(json "$repo" 'git push' '' '' "$HOME/.codex/sessions/rollout.jsonl")"
 expect_json block-agent-push-ask-codex-turn block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(jq -cn --arg cwd "$repo" '{cwd:$cwd,transcript_path:null,turn_id:"t",tool_input:{command:"git push"}}')"
+expect_json block-agent-push-ask-gh block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  "$(json "$repo" 'git push; gh pr merge 1')"
 git -C "$repo" config --unset eric-agent.push
 expect_json block-agent-push-off block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git push')"
+for cmd in 'git push --dry-run' 'git push -n origin main'; do
+  expect_allow "block-agent-push-off: $cmd" block-agent-push.sh "$(json "$repo" "$cmd")"
+done
 # -C names the repo whose eric-agent.push applies
 git -C "$repo/sub" config eric-agent.push on
 expect_allow block-agent-push-dash-c block-agent-push.sh "$(json "$repo" 'git -C sub push')"
+# every repo a command pushes from must allow it
+expect_json block-agent-push-other-repo block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  "$(json "$repo" 'git -C sub push; git push')"
 git -C "$repo/sub" config --unset eric-agent.push
+for cmd in 'git send-pack origin main' 'git subtree push --prefix=x origin main' 'git lfs push origin main' \
+  'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=alias.p GIT_CONFIG_VALUE_0=push git p' 'git --config-env=alias.p=X p' \
+  'git push -o --dry-run origin main' 'git push origin -- -n'; do
+  expect_json "block-agent-push: $cmd" block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
 for cmd in 'direnv exec . git push' 'nix develop -c git push' 'xargs git push' 'find . -exec git push \;' 'timeout 10 git push' \
   'bash -c "git push origin main"' 'direnv exec . gh pr create' 'bash -c "gh pr create"' \
   "bash -l -c 'git push'" "bash -ec 'git push'" "sh -xc 'git push'" 'bash -c "echo \"a\"; git push"' \
@@ -236,19 +285,36 @@ tested+=(block-agent-push.sh)
 output=$(run_hook block-agent-push.sh "$(json "$repo" 'git push')")
 [ -z "$output" ]
 printf 'ok block-agent-push-on\n'
-for cmd in 'gh pr view 1' 'gh pr list' 'gh pr diff 1' 'gh run view 1' 'gh run watch 1' 'gh api repos/o/r/pulls' 'gh search code x'; do
+for cmd in 'git send-pack origin main' 'git subtree push --prefix=x origin main' 'git lfs push origin main'; do
+  expect_allow "block-agent-push-on: $cmd" block-agent-push.sh "$(json "$repo" "$cmd")"
+done
+# an allowed push does not skip the gh checks
+expect_json block-agent-push-on-gh block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  "$(json "$repo" 'git push; gh pr merge 1')"
+for cmd in 'gh pr view 1' 'gh pr list' 'gh pr diff 1' 'gh run view 1' 'gh run watch 1' 'gh api repos/o/r/pulls' 'gh search code x' \
+  "gh api -X GET search/code -f q='repo:o/r x' --jq '.items[].path'" 'gh api --method=get search/code -F q=x' 'gh api -XGET search/code -fq=x' \
+  "gh api graphql -f query='{search(query:\"repo:o/r x\", type:DISCUSSION, first:10){nodes{... on Discussion{number}}}}' --jq '.data'" \
+  "gh api graphql -f query='query { viewer { login } }'"; do
   expect_allow "block-agent-push: $cmd" block-agent-push.sh "$(json "$repo" "$cmd")"
 done
 for cmd in 'gh pr merge 1' 'gh api -X DELETE repos/o/r' 'gh api repos/o/r/issues -f title=x' 'gh auth status --show-token' \
-  'gh api repos/o/r/issues -ftitle=x' 'gh api repos/o/r/issues -Ftitle=x' 'gh api -XPOST repos/o/r' 'gh api --method=PATCH repos/o/r'; do
+  'gh api repos/o/r/issues -ftitle=x' 'gh api repos/o/r/issues -Ftitle=x' 'gh api -XPOST repos/o/r' 'gh api --method=PATCH repos/o/r' \
+  'gh api -X GET -X POST repos/o/r -f x=1' 'gh api --method PUT repos/o/r' 'gh api -X post repos/o/r' \
+  "gh api graphql -f query='mutation { x }'" "gh api graphql -f query='{ a } mutation { x }'" 'gh api graphql -F query=@q.graphql' \
+  "gh api graphql -f query='{ a }' --input q.json" 'gh api graphql -f query="$Q"' 'gh api graphql -f query="{ $(cat q) }"' \
+  "gh api graphql -f query='query(\$o: String!) { a(o: \$o) }' -f o=x" "gh api graphql -f query='{ a }' -f query='mutation { x }'" \
+  "gh api repos/o/r/issues -f query='{ a }' -f title=x" "gh api -X POST graphql -f query='{ a }'"; do
   expect_json "block-agent-push: $cmd" block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
-for cmd in 'echo x > .git/config' 'cp /tmp/x .git/config' 'sudo cp /tmp/x .git/config'; do
+expect_json block-git-config-edit-write-global block-git-config-edit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  "$(json "$repo" '' "$fake_home/.gitconfig")"
+for cmd in 'echo x > .git/config' 'cp /tmp/x .git/config' 'sudo cp /tmp/x .git/config' 'printf x > ~/.gitconfig' \
+  'cp /tmp/x ~/.config/git/config'; do
   expect_json "block-git-config-edit: $cmd" block-git-config-edit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
-for cmd in 'cat .git/config' 'sudo cat .git/config'; do
+for cmd in 'cat .git/config' 'sudo cat .git/config' 'cat ~/.gitconfig'; do
   expect_allow "block-git-config-edit: $cmd" block-git-config-edit.sh "$(json "$repo" "$cmd")"
 done
 expect_json block-shell-edit block-shell-edit.sh '.hookSpecificOutput.permissionDecision == "deny"' \

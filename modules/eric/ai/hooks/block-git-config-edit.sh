@@ -10,9 +10,9 @@ hook_require jq rg shfmt
 HOOK_INPUT=$(cat)
 reason='is a git config file. Change git config with `git config`, and read it with Read or `git config --list --show-origin`.'
 
-# .git/config, and config or config.worktree under .git/worktrees or .git/modules
+# .git/config, config or config.worktree under .git/worktrees or .git/modules, and the global ~/.gitconfig or ~/.config/git/config
 is_git_config() {
-  printf '%s' "$1" | rg -q '(?:^|[/=])\.git/(?:[^/\s]+/)*config(?:\.worktree)?$'
+  printf '%s' "$1" | rg -q '(?:^|[/=])(?:\.git/(?:[^/\s]+/)*config(?:\.worktree)?|\.gitconfig|\.config/git/config)$'
 }
 
 file=$(printf '%s' "$HOOK_INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
@@ -33,13 +33,13 @@ done < <(hook_each 'writes')
 # any other command naming a git config file, unless it only reads it
 f=$(hook_each '
   select((.wrapper | not) and (tool | IN("cat", "head", "tail", "less", "bat", "rg", "grep", "wc", "diff", "stat", "ls", "file", "git") | not)) |
-  .argv[1:][] | capture("(?:^|[^\\w.])(?<f>\\.git/(?:[^/\\s,()]+/)*config(?:\\.worktree)?)\\b").f
+  .argv[1:][] | capture("(?:^|[^\\w.])(?<f>\\.git/(?:[^/\\s,()]+/)*config(?:\\.worktree)?|\\.gitconfig|\\.config/git/config)\\b").f
 ' | head -n 1)
 [ -z "$f" ] || hook_deny "$f $reason"
 
 # a script, including a heredoc body, that names a git config file
 printf '%s' "$HOOK_COMMAND" | rg -q '\b(python3?|node|ruby|perl)\b' &&
-  printf '%s' "$HOOK_COMMAND" | rg -q '(?:^|[^\w.])\.git/(?:[^/\s,()]+/)*config(?:\.worktree)?\b' &&
+  printf '%s' "$HOOK_COMMAND" | rg -q '(?:^|[^\w.])(?:\.git/(?:[^/\s,()]+/)*config(?:\.worktree)?|\.gitconfig|\.config/git/config)\b' &&
   hook_deny 'This script names a git config file. Change git config with `git config`, and read it with Read or `git config --list --show-origin`.'
 
 exit 0

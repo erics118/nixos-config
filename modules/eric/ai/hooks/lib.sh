@@ -63,20 +63,26 @@ hook_parse_command() {
 }
 
 hook_calls_of() {
-  local ast calls script
+  local ast calls script sub
   ast=$(printf '%s' "$1" | shfmt -ln zsh --to-json 2>&1) || {
     printf '%s' "$ast"
+    [ "$2" -eq 0 ] || printf ' in the nested script: %s' "$1"
     return 1
   }
   calls=$(printf '%s' "$ast" | jq -c "$HOOK_CALLS_JQ") || return 1
+  # on failure print only the error, so nested calls are gathered first
+  if [ "$2" -lt 3 ]; then
+    # scripts stay json-encoded until here, so one with a newline is one line
+    while IFS= read -r script; do
+      script=$(printf '%s' "$script" | jq -r .)
+      sub=$(hook_calls_of "$script" $(($2 + 1))) || {
+        printf '%s' "$sub"
+        return 1
+      }
+      [ -z "$sub" ] || calls+=${calls:+$'\n'}$sub
+    done < <(printf '%s' "$calls" | jq -c '.script // empty')
+  fi
   [ -z "$calls" ] || printf '%s\n' "$calls"
-  [ "$2" -lt 3 ] || return 0
-  while IFS= read -r script; do
-    hook_calls_of "$script" $(($2 + 1)) || {
-      printf '%s' "$script"
-      return 1
-    }
-  done < <(printf '%s' "$calls" | jq -r '.script // empty | @json' | jq -r .)
 }
 
 HOOK_CALLS_JQ='
@@ -123,7 +129,7 @@ HOOK_CALLS_JQ='
   .. | objects | select(has("Cmd") and (.Cmd == null or .Cmd.Type == "CallExpr")) |
     {argv: [.Cmd.Args[]? | word], dyn: [.Cmd.Args[]? | dyn], redirs: [.Redirs[]? | {op: .Op, fd: (.N.Value // ""), word: (.Word | word)}]} |
     (.argv | off) as $n |
-    (if $n > 0 then .wrapper = true else . end), (select($n > 0) | .argv |= .[$n:] | .dyn |= .[$n:]) |
+    (if $n > 0 then .wrapper = true else . end), (select($n > 0) | .prefix = .argv[:$n] | .argv |= .[$n:] | .dyn |= .[$n:]) |
     (.argv | script) as $s | if $s then .script = $s else . end
 '
 
@@ -137,9 +143,28 @@ HOOK_JQ='
   # files a > or >> redirect or tee writes
   def writes: (.redirs[] | select(.op | IN(">", ">>", ">|", "&>", "&>>")) | .word),
     (select(tool == "tee") | .argv[1:][] | select(startswith("-") | not));
-  def git_dir: .argv as $a | [range(1; $a | length) | select($a[.] == "-C") | $a[. + 1] // empty][0] // "";
+  # the words from each global option on, since commit -C names a commit
+  def git_opts: .argv[1:] | recurse(if length > 0 and (.[0] | startswith("-")) then
+      (if .[0] | IN("-C", "-c", "--git-dir", "--work-tree", "--namespace", "--config-env") then .[2:] else .[1:] end) else empty end) |
+    select(length > 0 and (.[0] | startswith("-")));
+  def git_dir: [git_opts | select(.[0] == "-C") | .[1] // empty][0] // "";
+  # an alias, or an include that can define one, set with -c or --config-env
   def git_alias: tool == "git" and (.argv as $a | any(range(1; $a | length);
-    ($a[.] == "-c" and ($a[. + 1] // "" | ascii_downcase | startswith("alias."))) or ($a[.] | ascii_downcase | startswith("-calias."))));
+    (($a[.] | IN("-c", "--config-env")) and ($a[. + 1] // "" | ascii_downcase | test("^(alias|include|includeif)\\."))) or
+    ($a[.] | ascii_downcase | test("^(-c|--config-env=)(alias|include|includeif)\\."))));
+  # a repo named some way other than one -C, which git_dir cannot see.
+  # a wrapper can change directory too, with env -C or --chdir, sudo -D, or find -execdir
+  def git_elsewhere: tool == "git" and (([git_opts | select(.[0] == "-C")] | length > 1) or
+    any(git_opts; .[0] | test("^--(git-dir|work-tree)(=|$)")) or
+    any(git_opts; ((.[0] | IN("-c", "--config-env")) and (.[1] // "" | ascii_downcase | startswith("core.worktree"))) or
+      (.[0] | ascii_downcase | test("^(-c|--config-env=)core\\.worktree"))) or
+    any(.prefix[]?; test("^(-C|-D|--chdir|-execdir|-okdir)")));
+  # over git output: a --dry-run, or push -n, that git reads as an option.
+  # after -- it is a path, and after an option that takes a value it is that value, such as a -m message
+  def git_dry_run: . as $a | ($a | index(["--"]) // length) as $end | any(range(1; $end);
+    ($a[.] == "--dry-run" or ($a[0] == "push" and $a[.] == "-n")) and
+    ($a[. - 1] | IN("-m", "-F", "-C", "-c", "-t", "-o", "--message", "--file", "--reuse-message", "--reedit-message", "--author",
+      "--date", "--template", "--cleanup", "--fixup", "--squash", "--trailer", "--push-option", "--repo", "--receive-pack", "--exec") | not));
 '
 
 # true when any $HOOK_CALLS line meets the jq condition, which can use the $HOOK_JQ helpers
@@ -149,6 +174,28 @@ hook_any() {
   printf '%s' "$HOOK_CALLS" | jq -s -e "$HOOK_JQ any(.[]; $1)" >/dev/null || rc=$?
   [ "$rc" -le 1 ] || exit "$rc"
   return "$rc"
+}
+
+# deny a GIT_DIR, GIT_WORK_TREE, or GIT_CONFIG* assignment, which moves git to a repo or config the gates do not read
+hook_deny_git_env() {
+  [[ $HOOK_COMMAND =~ (^|[^A-Za-z0-9_])GIT_(CONFIG[A-Z0-9_]*|DIR|WORK_TREE)= ]] &&
+    hook_deny 'Agents never set GIT_DIR, GIT_WORK_TREE, or GIT_CONFIG* variables. Name the repo with git -C.'
+  return 0
+}
+
+# set $HOOK_GATE_DIRS to the repos, one per line, where a call meeting the jq filter runs
+# deny when a later cd or --git-dir could move such a call into a repo the gate does not read
+hook_gate_dirs() {
+  HOOK_GATE_DIRS=
+  hook_any "$1" || return 0
+  # hook_command_dir follows only a leading `cd DIR`
+  printf '%s' "$HOOK_CALLS" | jq -s -e '(.[1:] | any(.argv[0] // "" | IN("cd", "pushd"))) or
+    (.[0].argv // [] | .[0] == "pushd" or (.[0] == "cd" and length != 2))' >/dev/null &&
+    hook_deny 'A git commit or push here follows a cd other than a leading `cd DIR`. Put a plain cd first, or name the repo with git -C.'
+  hook_any "($1) and git_elsewhere" &&
+    hook_deny 'A git commit or push here names its repo with --git-dir, --work-tree, core.worktree, a second -C, or a wrapper that changes directory. Name the repo with one git -C.'
+  # shellcheck disable=SC2034
+  HOOK_GATE_DIRS=$(hook_each "select($1) | git_dir" | while IFS= read -r d; do printf '%s\n' "$(hook_resolve "$d")"; done | sort -u)
 }
 
 # print the jq filter's raw output for each $HOOK_CALLS line, with the $HOOK_JQ helpers available

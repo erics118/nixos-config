@@ -39,9 +39,9 @@ Before a shell command:
 - `block-global-search.sh`: no `find`, `fd`, `rg`, or `grep` rooted at `/`, `~`, `/nix`, or another filesystem-wide directory, and no search after a bare `cd` or an unquoted `cd $var` / `cd $(...)` that could land in `$HOME`
 - `block-symlink-clobber.sh`: no mv, cp, tee, redirect, in-place sed/perl, or truncate onto any symlink
 - `ask-dangerous-git.sh`: asks before rebase, reset, clean, and other history changes
-- `block-agent-push.sh`: agent pushes follow `git config eric-agent.push`: unset or `off` (default) denies, `ask` (approve each; Codex treats it as `off`), or `on` (Codex still forbids `git push` in `codex/rules/default.rules`). Agents use `gh` read-only: only `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, `run watch`, `gh status`, and `gh api` without write flags run. In Codex this hook is the allowlist, because a `forbidden` rule for `gh` would also block the reads
-- `block-agent-commit.sh`: agent commits, merges, reverts, cherry-picks, and `git am` follow `git config eric-agent.commit`: `off` (default), `ask` (approve each; Codex treats it as `off`), `branch` (never on `main` or `master`), or `on`. Only the user sets `eric-agent` keys
-- `block-git-config-edit.sh`: no redirect, tee, or other write onto a `.git` config file, so `eric-agent` keys change only through `git config`
+- `block-agent-push.sh`: agent pushes (`git push`, `send-pack`, `subtree push`, `lfs push`) follow `git config eric-agent.push` in every repo the command pushes from: unset or `off` (default) denies, `ask` (approve each; Codex treats it as `off`), or `on` (Codex still forbids `git push` in `codex/rules/default.rules`). Agents use `gh` read-only: only `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, `run watch`, `gh status`, and `gh api` GETs run (fields need an explicit `-X GET`, since gh otherwise sends them as a POST). In Codex this hook is the allowlist, because a `forbidden` rule for `gh` would also block the reads
+- `block-agent-commit.sh`: agent commits, merges, reverts, cherry-picks, `git am`, `commit-tree`, `subtree`, and any `pull` without `--ff-only` follow `git config eric-agent.commit` in every repo the command commits in: `off` (default), `ask` (approve each; Codex treats it as `off`), `branch` (never on `main` or `master`), or `on`. `--abort`, `--quit`, and `commit --dry-run` always run, as does `push --dry-run` or `-n` in `block-agent-push.sh`. Only the user sets `eric-agent`, `alias`, and `include` keys. Both gates deny `-c` or `--config-env` aliases and includes, `GIT_DIR`, `GIT_WORK_TREE`, and `GIT_CONFIG*` assignments, and a gated command after a non-leading `cd` or with `--git-dir`, since each can move git past the repo or config the gate reads. Rebase stays with `ask-dangerous-git.sh`
+- `block-git-config-edit.sh`: no redirect, tee, or other write onto a `.git` config file, `~/.gitconfig`, or `~/.config/git/config`, so `eric-agent` keys change only through `git config`
 - `block-shell-edit.sh`: no sed/perl in place, scripts that write, or redirects onto git-tracked files
 - `block-sudo-probe.sh`: no `sudo -n` on macOS, where Touch ID approves a plain `sudo`
 
@@ -62,7 +62,7 @@ Extensions in `pi/extensions/`, linked per file into `~/.pi/agent/extensions` by
 - `tmux-agent-resume.ts`: runs `hooks/tmux-agent-resume.sh pi` at session start, since `guards.ts` does not run `SessionStart` hooks
 - `statusline.ts`, `minimal-startup.ts`, `fullscreen-tweaks.ts`: UI
 
-`pi/lib/` holds helpers for extensions, since pi loads every `.ts` in `extensions/` as an extension. `mcp.json` starts the `context7-mcp` and `cornell-confluence-mcp` wrappers from `ai.nix`, plus `railway mcp`.
+`pi/lib/` holds helpers for extensions, since pi loads every `.ts` in `extensions/` as an extension. `mcp.json` starts the `context7-mcp` wrapper from `ai.nix`, plus `railway mcp`.
 
 ## Tests
 
