@@ -1,6 +1,6 @@
 ---
 name: tmux
-description: Use when a terminal program must run in a real terminal, either to verify what it draws (nvim rendering, a statusline, a dialog, colors, cursor position, a TUI like codex or claude) or to drive it step by step (a REPL, a debugger like lldb, a menu or picker). Runs it in a private tmux server
+description: Use before starting any tmux session or server, or when a terminal program must run in a real terminal, either to verify what it draws (nvim rendering, a statusline, a dialog, colors, cursor position, a TUI like codex or claude) or to drive it step by step (a REPL, a debugger like lldb, a menu or picker). Runs it in a private tmux server
 ---
 
 tmux gives the program a real terminal you read with `capture-pane` and type into with `send-keys`. Two uses:
@@ -51,6 +51,7 @@ A screen check is done when a capture shows the expected text, colors, or cursor
 - Every call goes through the `tmx` function with a fresh `-L` name per run. The agent often runs inside the user's own tmux (`$TMUX` is set), and a bare `tmux` command reaches the user's sessions.
 - Use `-L`, not `-S <path>`: socket paths have an OS length limit (about 104 bytes on macOS), and scratch paths are often longer.
 - `-f /dev/null` skips the user's tmux.conf. It takes effect on the call that starts the server.
+- To test the user's tmux config, `source-file` only the files under test into the `-f /dev/null` server. The full config restores the user's saved sessions and relaunches the agents in them.
 - Always pass `-x` and `-y`. Layout depends on size, and the default is 80x24.
 - Keep tmux in a function. `T="tmux -L $S"; $T ...` fails in zsh, which does not word-split.
 - Guard any `cd` or search root: `cd -- "${dir:?}"`.
