@@ -37,6 +37,8 @@
             SchemaStore-nvim
             nvim-treesitter.withAllGrammars
             rainbow-delimiters-nvim
+            # loads at startup so tmux sees @pane-is-vim before the first C-h/j/k/l
+            smart-splits-nvim
             vim-fugitive
           ]
           ++
@@ -78,6 +80,7 @@
                 telescope-ui-select-nvim
                 todo-comments-nvim
                 trouble-nvim
+                vimade
                 vimtex
                 which-key-nvim
               ];
