@@ -194,8 +194,13 @@
           n = "nvim";
           j = "just";
           lg = "lazygit";
+
+          # ai
           c = "claude";
           cr = "claude --resume";
+
+          p = "pi";
+          pr = "pi resume";
 
           # ls
           la = "ls -la";

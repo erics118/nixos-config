@@ -116,7 +116,9 @@ ZSH_HIGHLIGHT_STYLES[autodirectory_prefix]="fg=none"
 bindkey '^Xc' copy-command-line
 bindkey '^Xd' copy-working-directory
 bindkey '^Xe' edit-command-line
-bindkey '^Xl' clear-scrollback
+# tmux takes C-l for pane nav, so clearing lives here
+bindkey '^Xl' clear-screen
+bindkey '^XL' clear-scrollback
 bindkey '^Xs' sudo-command-line
 
 # explicit undo binding for terminals that send ^_
