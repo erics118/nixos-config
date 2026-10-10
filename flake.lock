@@ -353,11 +353,11 @@
         "vpn-confinement": "vpn-confinement"
       },
       "locked": {
-        "lastModified": 1791663723,
-        "narHash": "sha256-3vbJ/VRCT1b+3c4tYv8Yu98eoDFHyzMMGDUHzYAxseI=",
+        "lastModified": 1791664858,
+        "narHash": "sha256-nuEH5N3JpC0kzggmffcIlXfTH55QIbfgLWrGz9Dzta0=",
         "ref": "refs/heads/main",
-        "rev": "10a3e46d2aa1ad9c16948e19fa528ffc95291b50",
-        "revCount": 63,
+        "rev": "c11f9bcf460ed43ec94c9f67fe58e672c0cbb162",
+        "revCount": 64,
         "type": "git",
         "url": "ssh://git@github.com/erics118/nixos-config-private.git"
       },
