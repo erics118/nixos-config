@@ -1,8 +1,5 @@
 {
   "mcpServers": {
-    "cornell-confluence": {
-      "command": "cornell-confluence-mcp"
-    },
     "context7": {
       "command": "context7-mcp"
     },
