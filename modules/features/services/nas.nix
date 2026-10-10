@@ -25,6 +25,8 @@
 
     # /mnt/external is nofail, so without the disk backups would land on the root fs
     systemd.services.samba-smbd.unitConfig.RequiresMountsFor = [ "/mnt/external" ];
+    # start once the disk is mounted, also when it is plugged in after boot
+    systemd.services.samba-smbd.wantedBy = [ "mnt-external.mount" ];
 
     services.samba = {
       enable = true;

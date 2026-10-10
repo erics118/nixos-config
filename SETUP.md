@@ -20,7 +20,7 @@ ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -C "eric@HOSTNAME"
 ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_github_erics118 -C "eric@HOSTNAME"
 ```
 
-Add `id_ed25519_github_erics118` to GitHub at <https://github.com/settings/keys>.
+Add `id_ed25519_github_erics118` to GitHub at <https://github.com/settings/keys> twice, as an Authentication key and as a Signing key. `modules/eric/git.nix` signs every commit with it.
 
 Explicitly set the git cloning command with:
 
@@ -37,6 +37,12 @@ ln -sfn "$(realpath DIRECTORY)" ~/.flake
 ```
 
 The `~/.flake` link is required. Linked config files point through it, and home-manager activation aborts if `~/.flake/flake.nix` does not resolve. NixOS auto-upgrade also builds from `/home/eric/.flake`.
+
+On a NixOS host that booted before the clone, home-manager already failed, so run it again:
+
+```sh
+sudo systemctl restart home-manager-eric
+```
 
 ## Define the host
 
@@ -224,6 +230,8 @@ nix run github:nix-community/nixos-anywhere -- \
 
 Delete `$extra` afterwards. The key now lives on the host.
 
+Until the repo is cloned, home-manager has no config to link, so a desktop has no terminal. Log in at the console as eric, with the password from the `eric/password` hash in sops, and on wifi connect with `nmtui`.
+
 `HOST` is the VM's address (IP or DNS), not the nix hostname. Run
 `ssh-keygen -R HOST` to refresh the host key, as it has changed.
 
@@ -235,8 +243,15 @@ Now, ssh into the new machine and follow [GitHub SSH Access](#github-ssh-access)
 
 ## Post setup
 
-- AdGuard Home: set up `eric` admin account via the wizard on port 3000. blocklists are declarative, but login and other configs are not
-- Tailscale: run `sudo tailscale up --advertise-exit-node` the first time manually, and authenticate. Also, from admin console, you have to manually approve the exit node. On a reinstall, delete the old machine in the admin console first, or the new one registers as `HOSTNAME-1`
+- AdGuard Home: blocklists and the login are declarative (login from nixos-config-private); clients and other UI settings are not
+- Tailscale: run `sudo tailscale up --advertise-exit-node` the first time manually, and authenticate. Also, from admin console, you have to manually approve the exit node. On a reinstall, delete the old machine in the admin console first, or the new one registers as `HOSTNAME-1`. On narwhal, then point the Cloudflare `h` and `*.h` A records for `h.eriz.cc` at the new tailnet IP (`tailscale ip -4`)
 - `gh` cli: `gh auth login`
 - install `claude`, `codex`, and `pi` by using their own installers so they are auto-updated faster than it would be via nix
 - auto-upgrade hosts (those importing `m.nixos.auto-upgrade`): root needs `/root/.ssh/id_deploy`, with its `.pub` added as a read-only deploy key on nixos-config-private. Upgrades refuse a checkout that is off `main`, dirty, or ahead of `origin/main`, so a local `flake.lock` bump blocks them. See `modules/features/system/auto-upgrade.nix`
+
+## Reinstalling narwhal
+
+Its data lives on the USB disk at `/mnt/external` and survives a reinstall. Unplug it for the install. After the first boot, run `sudo systemctl mask --runtime immich-server` before plugging it back in, since mounting the disk starts the services that need it. Then:
+
+- Immich: restore the newest dump in `/mnt/external/immich/backups` while `immich-server` has never started, per <https://docs.immich.app/administration/backup-and-restore>, then `sudo systemctl unmask --runtime immich-server && sudo systemctl start immich-server`
+- Time Machine: on the Mac, remove the narwhal disk, delete its keychain entries, and add it back as `smb://eric@narwhal.dolphin-sailfin.ts.net/timemachine` with the `samba/eric` password from sops

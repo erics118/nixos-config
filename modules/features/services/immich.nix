@@ -20,6 +20,8 @@
 
     # /mnt/external is nofail, so without the disk uploads would land on the root fs
     systemd.services.immich-server.unitConfig.RequiresMountsFor = [ "/mnt/external" ];
+    # start once the disk is mounted, also when it is plugged in after boot
+    systemd.services.immich-server.wantedBy = [ "mnt-external.mount" ];
 
     homepageTiles = [
       {

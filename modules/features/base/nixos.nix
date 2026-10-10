@@ -1,5 +1,5 @@
 { inputs, ... }: {
-  flake.modules.nixos.base = { pkgs, ... }: {
+  flake.modules.nixos.base = { config, pkgs, ... }: {
     imports = [
       inputs.catppuccin.nixosModules.catppuccin
       inputs.home-manager.nixosModules.home-manager
@@ -61,9 +61,14 @@
 
     security.sudo.wheelNeedsPassword = false;
 
+    # a yescrypt hash from `mkpasswd`, decrypted before users are created
+    sops.secrets."eric/password".neededForUsers = true;
+
     users.users.eric = {
       isNormalUser = true;
       description = "eric";
+      # with mutableUsers this only applies when the user is first created, so a fresh install has a console login
+      hashedPasswordFile = config.sops.secrets."eric/password".path;
       extraGroups = [
         "networkmanager"
         "wheel"
