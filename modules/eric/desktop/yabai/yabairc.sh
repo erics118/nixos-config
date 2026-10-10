@@ -13,7 +13,7 @@ sudo yabai --load-sa
 printf 'loaded sa..\n'
 
 # set padding
-padding=0
+padding=8
 
 # events
 yabai -m signal --add event=window_focused action="sketchybar --trigger window_focused"
