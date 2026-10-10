@@ -83,14 +83,14 @@ hl.bind(mod .. " + Return", hl.dsp.exec_cmd(term))
 hl.bind(mod .. " + D", hl.dsp.exec_cmd(menu))
 hl.bind(mod .. " + E", hl.dsp.exec_cmd(files))
 hl.bind(mod .. " + B", hl.dsp.exec_cmd(web))
-hl.bind(mod .. " + L", hl.dsp.exec_cmd("hyprlock"))
+hl.bind(mod .. " + Escape", hl.dsp.exec_cmd("hyprlock"))
 
 -- window
 hl.bind(mod .. " + Q", hl.dsp.window.close())
 hl.bind(mod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mod .. " + F", hl.dsp.window.fullscreen())
 hl.bind(mod .. " + P", hl.dsp.window.pseudo()) -- inferred API
-hl.bind(mod .. " + J", hl.dsp.layout("togglesplit")) -- dwindle only
+hl.bind(mod .. " + T", hl.dsp.layout("togglesplit")) -- dwindle only
 hl.bind(mod .. " + SHIFT + Q", hl.dsp.exec_cmd("hyprshutdown"))
 hl.bind(mod .. " + SHIFT + E", hl.dsp.exit())
 

@@ -46,6 +46,11 @@ in
       }
     ];
 
+    # host-specific key ~/.ssh/id_ed25519_narwhal on orca, on top of the shared base key
+    users.users.eric.openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFi4z8EKPTUWxi0lI3voCfQVq8hIZJdtL/NAWzsG4+py eric@macb"
+    ];
+
     # wake-on-lan on the wired NIC
     networking.interfaces.enp5s0.wakeOnLan.enable = true;
 
@@ -93,11 +98,10 @@ in
 
     systemd.services.NetworkManager-wait-online.enable = false;
 
-    # narwhal no working public IPv6, so we prefer IPv4, and ignore the router advertisement on LAN
+    # narwhal has no working public IPv6, so prefer IPv4 addresses
     environment.etc."gai.conf".text = ''
       precedence ::ffff:0:0/96  100
     '';
-    boot.kernel.sysctl."net.ipv6.conf.wlo1.accept_ra" = 0;
 
     environment.systemPackages = [ config.boot.kernelPackages.perf ];
   };

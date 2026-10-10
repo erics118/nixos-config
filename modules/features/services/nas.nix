@@ -4,18 +4,27 @@
     # drive's USB-SATA bridge rejects those commands (SG_IO bad/missing sense data),
     # so the setting has no effect. If Load_Cycle_Count climbs, use hd-idle instead.
 
-    # TODO: make the Samba password declarative via sops instead of the
-    # one-time `smbpasswd -a eric`. Add secret "smb/eric" in nixos-config-private
-    # (modules/features/sops.nix + secrets/secrets.yaml), then a oneshot that
-    # re-asserts it (inner fn also needs pkgs):
-    #   systemd.services.samba-passwd = {
-    #     after = [ "samba-smbd.service" ]; wantedBy = [ "multi-user.target" ];
-    #     serviceConfig.Type = "oneshot";
-    #     script = "pw=$(cat <secret.path>); printf '%s\n%s\n' \"$pw\" \"$pw\" | smbpasswd -s -a eric";
-    #   };
-    # Trade-off: sops becomes source of truth and resets the password on every switch.
+    # sops is the source of truth, so a password set by hand with smbpasswd is reset on the next change
+    sops.secrets."samba/eric".restartUnits = [ "samba-passwd.service" ];
+
+    systemd.services.samba-passwd = {
+      description = "Set eric's samba password from sops";
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      path = [ config.services.samba.package ];
+      script = ''
+        pw=$(cat ${config.sops.secrets."samba/eric".path})
+        printf '%s\n%s\n' "$pw" "$pw" | smbpasswd -s -a eric
+      '';
+    };
 
     systemd.tmpfiles.rules = [ "d /mnt/external/timemachine 0750 eric users -" ];
+
+    # /mnt/external is nofail, so without the disk backups would land on the root fs
+    systemd.services.samba-smbd.unitConfig.RequiresMountsFor = [ "/mnt/external" ];
 
     services.samba = {
       enable = true;

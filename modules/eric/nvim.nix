@@ -80,7 +80,6 @@
                 telescope-ui-select-nvim
                 todo-comments-nvim
                 trouble-nvim
-                vimade
                 vimtex
                 which-key-nvim
               ];

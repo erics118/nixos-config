@@ -88,7 +88,7 @@
           [ { ${homelabDomain}.extraConfig = "reverse_proxy localhost:${toString port}"; } ]
           ++ map (t: {
             "${t.subdomain}.${homelabDomain}".extraConfig = "reverse_proxy ${t.host}:${toString t.port}";
-          }) (lib.filter (t: t.proxy) config.homepageTiles)
+          }) (lib.filter (t: t.proxy && t.port != null) config.homepageTiles)
         );
       };
   };

@@ -1,15 +1,13 @@
 {
   flake.modules.nixos.caddy = { pkgs, config, ... }: {
-    sops.secrets."api/cloudflare" = {
-      owner = "caddy";
-    };
+    sops.secrets."api/cloudflare" = { };
 
     # sops-nix template interpolates the raw token into an EnvironmentFile
     sops.templates."caddy-env" = {
       content = ''
         CF_API_TOKEN=${config.sops.placeholder."api/cloudflare"}
       '';
-      owner = "caddy";
+      restartUnits = [ "caddy.service" ];
     };
 
     services.caddy = {
