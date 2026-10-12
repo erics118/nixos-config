@@ -115,14 +115,6 @@ if [[ $NO_SYSTEM == false ]] && [[ -z $SYSTEM_PROMPT ]]; then
   SYSTEM_PROMPT="$DEFAULT_PROMPT"
 fi
 
-if [[ -n $SYSTEM_PROMPT ]]; then
-  MESSAGES=$(jq -n --arg sys "$SYSTEM_PROMPT" --arg u "$PROMPT" \
-    '[{"role":"system","content":$sys},{"role":"user","content":$u}]')
-else
-  MESSAGES=$(jq -n --arg u "$PROMPT" \
-    '[{"role":"user","content":$u}]')
-fi
-
 START_TIME=$(date +%s.%N)
 
 PROVIDER_JSON=""
@@ -133,12 +125,14 @@ if [[ -n $PROVIDER_ORDER ]]; then
   fi
 fi
 
+# the prompt reaches jq and curl on stdin, since a large piped prompt overflows the argument limit
 JSON_PAYLOAD=$(
-  jq -n \
+  printf '%s' "$PROMPT" | jq -Rs \
     --arg model "$MODEL" \
-    --argjson messages "$MESSAGES" \
+    --arg sys "$SYSTEM_PROMPT" \
     --argjson stream "$STREAMING" \
-    '{model: $model, messages: $messages, stream: $stream}'
+    '{model: $model, stream: $stream,
+      messages: ((if $sys == "" then [] else [{role: "system", content: $sys}] end) + [{role: "user", content: .}])}'
 )
 
 if [[ -n $PROVIDER_JSON ]]; then
@@ -173,7 +167,7 @@ if [[ $STREAMING == true ]]; then
   done < <(curl -sS -N --fail-with-body "$API_URL" \
     -H "Content-Type: application/json" \
     -H @<(printf 'Authorization: Bearer %s\n' "$OPENROUTER_API_KEY") \
-    -d "$JSON_PAYLOAD")
+    --data-binary @- <<<"$JSON_PAYLOAD")
   # the process substitution's exit status, so a stream that dies midway still fails
   curl_status=0
   wait $! || curl_status=$?
@@ -198,7 +192,7 @@ else
   response="$(curl -sS --fail-with-body "$API_URL" \
     -H "Content-Type: application/json" \
     -H @<(printf 'Authorization: Bearer %s\n' "$OPENROUTER_API_KEY") \
-    -d "$JSON_PAYLOAD")" || status=$?
+    --data-binary @- <<<"$JSON_PAYLOAD")" || status=$?
 
   if [[ $status -ne 0 ]]; then
     echo "Error: $(printf '%s' "$response" | jq -r '.error.message // .error // "Unknown error"')" >&2

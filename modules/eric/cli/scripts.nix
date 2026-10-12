@@ -31,6 +31,13 @@ in
         bc
         coreutils
       ];
+      # wezterm runs it straight from the gui, whose PATH lacks the user's tools
+      tmux-popup = [ pkgs.tmux ];
+      mvproj = with pkgs; [
+        gnused
+        gnugrep
+        lsof
+      ];
     };
   };
 

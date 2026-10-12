@@ -23,6 +23,11 @@
         };
       };
 
+      programs.direnv-instant = {
+        enable = true;
+        enableZshIntegration = false; # pre-computed in zsh.nix
+      };
+
       programs.lazygit = {
         enable = true;
         # its lg cd-on-exit wrapper never runs, since the lg abbr expands to lazygit first
@@ -72,7 +77,7 @@
       };
 
       # lazygit on macOS reads ~/Library/Application Support/lazygit/config.yml, but home-manager writes to ~/.config/lazygit/config.yml
-      # XDG_CONFIG_HOME is set only in interactive zsh, so GUI and login launches need this mirror
+      # XDG_CONFIG_HOME comes from zsh's zshenv, so GUI and launchd launches, which never start zsh, need this mirror
       # keep the direction: Application Support links to the home-manager file, never the reverse
       home.file."Library/Application Support/lazygit/config.yml" =
         lib.mkIf pkgs.stdenv.hostPlatform.isDarwin

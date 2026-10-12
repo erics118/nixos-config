@@ -5,7 +5,11 @@ prepend_keymap = [
   # toggles like finder's space: closes an open quick look instead of stacking another window
   { on = "i", run = 'shell --orphan -- pkill -x qlmanage || qlmanage -p %h >/dev/null 2>&1', desc = "Quick Look", for = "macos" },
   { on = "<Enter>", run = "plugin smart-enter", desc = "Enter the child directory, or open the file" },
-  # in herdr's and tmux's prefix y popup, keys reach yazi, so C-b y (wezterm's cmd-e) quits it to close the popup
+  # a remote tmux sends cmd-e/j/p into its popup as ctrl-alt-y/j/p, and tmux-popup swaps yazi for that popup
+  { on = "<C-A-y>", run = "quit", desc = "Close the popup" },
+  { on = "<C-A-j>", run = 'shell --orphan -- tmux-popup scratch "$TMUX_POPUP_CLIENT"', desc = "Switch to the scratch shell" },
+  { on = "<C-A-p>", run = 'shell --orphan -- tmux-popup projects "$TMUX_POPUP_CLIENT"', desc = "Switch to the project picker" },
+  # in herdr's and tmux's prefix y popup, keys reach yazi, so C-b y (wezterm's cmd-e in herdr) quits it to close the popup
   { on = [
     "<C-b>",
     "y",

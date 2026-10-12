@@ -14,6 +14,6 @@ Usage: t [SESSION | --ls]
   --ls      list tmux sessions
 EOF
   ;;
---ls) exec tmux ls ;;
+--ls) exec tmux ls -f '#{!:#{m:scratch-*,#{session_name}}}' ;;
 *) exec sesh-pick "$@" ;;
 esac

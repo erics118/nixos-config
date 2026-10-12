@@ -45,7 +45,7 @@
 
       zoxideInit = mkInit "zoxide" "${pkgs.zoxide}/bin/zoxide init zsh";
 
-      direnvInit = mkInit "direnv" "${pkgs.direnv}/bin/direnv hook zsh";
+      direnvInit = mkInit "direnv-instant" "${lib.getExe config.programs.direnv-instant.finalPackage} hook zsh";
 
       nixYourShellInit = mkInit "nix-your-shell" "${pkgs.nix-your-shell}/bin/nix-your-shell zsh";
 
@@ -194,8 +194,13 @@
           n = "nvim";
           j = "just";
           lg = "lazygit";
+
+          # ai
           c = "claude";
           cr = "claude --resume";
+
+          p = "pi";
+          pr = "pi --resume";
 
           # ls
           la = "ls -la";
@@ -224,8 +229,10 @@
           gmc = "git merge --continue";
           gma = "git merge --abort";
           gms = "git merge --squash";
+          gmff = "git merge --ff-only";
           # p = pull
           gp = "git pull";
+          gpff = "git pull --ff-only";
           # P = push
           gP = "git push";
           gPf = "git push -f";

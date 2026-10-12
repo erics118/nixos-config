@@ -1,10 +1,10 @@
 #compdef rtmux
 
 # hosts come from `rtmux --hosts`, the same list its picker shows. sessions come
-# from the remote tmux server, cheap because ssh multiplexing reuses the connection
+# from `rtmux HOST --ls`, cheap because ssh multiplexing reuses the connection
 
 _rtmux_sessions() {
-  ssh -o BatchMode=yes -o ConnectTimeout=2 "$1" tmux ls 2>/dev/null | cut -d: -f1 | grep -v '^scratch-'
+  rtmux "$1" --ls 2>/dev/null | cut -f1
 }
 
 _rtmux() {
@@ -26,7 +26,7 @@ _rtmux() {
     local -a sessions modes
     sessions=(${(f)"$(_rtmux_sessions "${line[1]}")"})
     (( $#sessions )) && _describe -t sessions 'session' sessions
-    modes=('--ls:list sessions on the host')
+    modes=('--ls:list sessions on the host' '--uninstall:remove the private tmux server and files rtmux installed')
     _describe -t modes 'mode' modes
     ;;
   esac

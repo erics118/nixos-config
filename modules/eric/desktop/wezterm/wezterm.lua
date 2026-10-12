@@ -31,19 +31,24 @@ c.skip_close_confirmation_for_processes_named = {
 -- closing a tab returns to the one used before it, not its left neighbor
 c.switch_to_last_active_tab_when_closing_tab = true
 
+-- yabai doesn't focus on hover, so the click that focuses a window also reaches the pane
+c.swallow_mouse_click_on_window_focus = false
+
+-- double-click stops at punctuation and tmux pane borders
+c.selection_word_boundary = " \t\n{[}]()\"'`,;:│"
+
+-- super+click opens owner/repo#123 as a github issue or pr
+c.hyperlink_rules = wezterm.default_hyperlink_rules()
+table.insert(c.hyperlink_rules, {
+    regex = [[\b([\w.-]+/[\w.-]+)#(\d+)\b]],
+    format = "https://github.com/$1/issues/$2",
+})
+
 -- quick select greys out the screen's colors so its labels stand out
 c.quick_select_remove_styling = true
 
 -- no beep or flash, a bell only marks its tab (see bar.lua)
 c.audible_bell = "Disabled"
-
--- domains
-c.unix_domains = {
-    { name = "unix" },
-}
-c.ssh_domains = {
-    { name = "narwhal", remote_address = "narwhal", multiplexing = "None" },
-}
 
 -- input
 c.send_composed_key_when_left_alt_is_pressed = false
@@ -55,16 +60,13 @@ c.enable_kitty_keyboard = true
 c.font = wezterm.font("Hack Nerd Font")
 c.font_size = 12.0
 c.command_palette_font_size = 12.0
-c.window_frame = {
-    font_size = 12.0,
-}
+c.freetype_load_target = "Light"
 c.default_cursor_style = "SteadyBar"
 c.underline_thickness = 2.5
 
 -- window
-if wezterm.target_triple:find("linux") then
-    c.window_decorations = "NONE"
-else
+-- linux keeps the default title bar
+if wezterm.target_triple:find("darwin") then
     c.window_decorations = "RESIZE | TITLE | MACOS_FORCE_ENABLE_SHADOW | MACOS_USE_BACKGROUND_COLOR_AS_TITLEBAR_COLOR"
 end
 
@@ -79,6 +81,13 @@ c.window_content_alignment = {
     vertical = "Center",
 }
 c.adjust_window_size_when_changing_font_size = false
+c.window_background_opacity = 0.97
+-- explicit cell backgrounds, such as tmux's dimmed panes and status segments, go as translucent as the window
+c.text_background_opacity = c.window_background_opacity
+c.macos_window_background_blur = 20
+
+-- metal on macos and vulkan on linux, instead of opengl
+c.front_end = "WebGpu"
 
 -- match the 120hz promotion display
 c.max_fps = 120
@@ -90,15 +99,25 @@ c.inactive_pane_hsb = {
 }
 
 -- scrollback
-c.enable_scroll_bar = true
-c.min_scroll_bar_height = "4cell"
 c.scrollback_lines = 10000
 c.mouse_wheel_scrolls_tabs = false
 
 -- colors
 local theme = wezterm.color.get_builtin_schemes()["Catppuccin Mocha"]
 
+-- a transparent window paints no background behind the tab bar, so it takes the panes' opacity itself
+local r, g, b = wezterm.color.parse(theme.background):srgba_u8()
+local bar_bg = string.format("rgba(%d, %d, %d, %s)", r, g, b, c.window_background_opacity)
+-- status text has no background of its own, so it sits on the bar
 theme.tab_bar.background = "rgba(0, 0, 0, 0)"
+-- the system UI font on macos, and noto sans on linux, where hyprland.nix installs it
+local ui_font = wezterm.target_triple:find("linux") and "Noto Sans" or "SF Pro"
+c.window_frame = {
+    font = wezterm.font(ui_font, { weight = "Regular", stretch = "Normal" }),
+    font_size = 13.0,
+    active_titlebar_bg = bar_bg,
+    inactive_titlebar_bg = bar_bg,
+}
 
 c.color_schemes = {
     ["Catppuccin Mocha"] = theme,
@@ -107,7 +126,8 @@ c.color_schemes = {
 c.color_scheme = "Catppuccin Mocha"
 
 require("bar").apply_to_config(c, {
-    dividers = "slant_right",
+    position = "top",
+    max_width = 35,
     indicator = {
         leader = {
             off = "",
@@ -118,8 +138,8 @@ require("bar").apply_to_config(c, {
         numerals = "arabic",
         pane_count = "superscript",
         tab_format = {
-            active = "{tab_index}: {tab_title}{pane_count}",
-            inactive = "{tab_index}: {tab_title}{pane_count}",
+            active = "{tab_title}{pane_count}",
+            inactive = "{tab_title}{pane_count}",
         },
     },
 })
@@ -127,7 +147,7 @@ require("bar").apply_to_config(c, {
 wezterm.on("format-window-title", function(tab)
     local workspace = wezterm.mux.get_active_workspace()
     local prefix = workspace ~= "default" and "[" .. workspace .. "] " or ""
-    return prefix .. tab.active_pane.title
+    return prefix .. require("bar").display_title(tab.active_pane.title)
 end)
 
 return c
