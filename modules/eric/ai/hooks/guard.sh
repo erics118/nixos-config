@@ -51,6 +51,8 @@ for c in "${checks[@]}"; do
   out=$(source "$hooks/checks/$c.sh" 2>/dev/null) ||
     hook_deny "The guard check $c failed with exit $?, so the command was not checked."
   [ -n "$out" ] || continue
+  printf '%s' "$out" | jq -e '.hookSpecificOutput' >/dev/null 2>&1 ||
+    hook_deny "The guard check $c printed output that is not a decision, so the command was not checked."
   reason=$(printf '%s' "$out" | jq -r '.hookSpecificOutput.permissionDecisionReason // empty')
   case $(printf '%s' "$out" | jq -r '.hookSpecificOutput.permissionDecision // empty') in
   deny) hook_deny "${reason:-$c blocked this.}" ;;

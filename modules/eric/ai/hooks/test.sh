@@ -404,6 +404,14 @@ for snippet in 'unset HOOK_CALLS; hook_any true' 'hook_any ".argv[0] + 1"'; do
   }
   printf 'ok lib fails closed: %s\n' "$snippet"
 done
+# a check that prints something other than a decision blocks, in a copy so the repo holds no fake check
+cp -r "$hooks/." "$repo/hooks-copy"
+printf 'echo nope\n' >"$repo/hooks-copy/checks/bad-output.sh"
+json "$repo" 'ls' | "$repo/hooks-copy/guard.sh" pre claude bad-output | jq -e '.hookSpecificOutput.permissionDecision == "deny"' >/dev/null || {
+  printf 'FAIL guard.sh let a check with non-decision output pass\n'
+  exit 1
+}
+printf 'ok guard fails closed on non-decision output\n'
 expect_allow treefmt-on-edit-no-envrc treefmt-on-edit.sh "$(json "$repo" '' "$repo/tracked.txt")"
 if command -v direnv >/dev/null 2>&1; then
   # a stub treefmt that rewrites the file and fails shows the hook ran it and still exits silently
