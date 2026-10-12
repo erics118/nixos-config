@@ -385,11 +385,11 @@
     "jankyborders-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1791825730,
-        "narHash": "sha256-dYJtrRcr0notBDAgnIfz+Oo/En3qb7K3rno8tQVQgEs=",
+        "lastModified": 1791836492,
+        "narHash": "sha256-Vscpj8c2/0vU97IwtI+w86RoOK0sKlFyBSWBrbEUev8=",
         "owner": "erics118",
         "repo": "JankyBorders",
-        "rev": "0209c7e52f2fceccd45637113d096e258399b5be",
+        "rev": "ff88c0564a96cf0fa2196529f666b00355b04042",
         "type": "github"
       },
       "original": {
