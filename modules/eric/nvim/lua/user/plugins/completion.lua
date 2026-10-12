@@ -89,7 +89,8 @@ return {
                 cmdline = {
                     -- the cmdline preset selects with <Left>/<Right>, so the cursor could not move while the menu shows
                     keymap = { preset = "cmdline", ["<Left>"] = false, ["<Right>"] = false },
-                    completion = { menu = { auto_show = true } },
+                    -- the cmdline source tags every item Property, so kind columns add nothing
+                    completion = { menu = { auto_show = true, draw = { columns = { { "label" } } } } },
                 },
             })
         end,

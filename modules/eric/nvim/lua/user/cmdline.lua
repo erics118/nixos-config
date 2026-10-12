@@ -97,7 +97,8 @@ api.nvim_create_autocmd("CmdlineEnter", {
         local col = math.floor((vim.o.columns - width - 2) / 2)
         api.nvim_win_set_config(win, { relative = "editor", row = row, col = col, width = width, border = "rounded" })
         -- blink.cmp anchors its cmdline menu here, (1, 0)-indexed
-        vim.g.ui_cmdline_pos = { row + 2, col + 1 }
+        -- one col left so the menu's border lines up with this window's border
+        vim.g.ui_cmdline_pos = { row + 2, col }
     end,
 })
 
