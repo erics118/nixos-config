@@ -11,13 +11,19 @@ trap 'rm -rf "$repo"' EXIT
 tested=()
 
 json() {
-  jq -cn --arg cwd "$1" --arg command "$2" --arg file_path "${3:-}" --arg content "${4:-}" --arg transcript_path "${5:-}" \
-    '{cwd:$cwd,transcript_path:$transcript_path,tool_input:({command:$command} + if $file_path == "" then {} else {file_path:$file_path,content:$content} end)}'
+  jq -cn --arg cwd "$1" --arg command "$2" --arg file_path "${3:-}" --arg content "${4:-}" \
+    '{cwd:$cwd,tool_input:({command:$command} + if $file_path == "" then {} else {file_path:$file_path,content:$content} end)}'
 }
 
+# a check runs alone through guard.sh, under $HARNESS (claude by default)
 run_hook() {
-  local script=$1 input=$2
-  (cd "$repo" && printf '%s' "$input" | "$hooks/$script")
+  local script=$1 input=$2 cmd
+  case $script in
+  tmux-*) cmd=("$hooks/$script") ;;
+  treefmt-on-edit.sh | warn-comment-block.sh) cmd=("$hooks/guard.sh" post claude "${script%.sh}") ;;
+  *) cmd=("$hooks/guard.sh" pre "${HARNESS:-claude}" "${script%.sh}") ;;
+  esac
+  (cd "$repo" && printf '%s' "$input" | "${cmd[@]}")
 }
 
 expect_json() {
@@ -262,18 +268,14 @@ git -C "$repo/sub" config eric-agent.commit on
 expect_json block-agent-commit-ask-and-on block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "ask"' \
   "$(json "$repo" 'git -C sub commit -m x; git commit -m x')"
 git -C "$repo/sub" config --unset eric-agent.commit
-expect_json block-agent-commit-ask-codex block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
-  "$(json "$repo" 'git commit -m x' '' '' "$HOME/.codex/sessions/rollout.jsonl")"
-expect_json block-agent-commit-ask-codex-turn block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
-  "$(jq -cn --arg cwd "$repo" '{cwd:$cwd,transcript_path:null,turn_id:"t",tool_input:{command:"git commit -m x"}}')"
+HARNESS=codex expect_json block-agent-commit-ask-codex block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  "$(json "$repo" 'git commit -m x')"
 git -C "$repo" config --unset eric-agent.commit
 git -C "$repo" config eric-agent.push ask
 expect_json block-agent-push-ask block-agent-push.sh '.hookSpecificOutput.permissionDecision == "ask"' \
   "$(json "$repo" 'git push')"
-expect_json block-agent-push-ask-codex block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
-  "$(json "$repo" 'git push' '' '' "$HOME/.codex/sessions/rollout.jsonl")"
-expect_json block-agent-push-ask-codex-turn block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
-  "$(jq -cn --arg cwd "$repo" '{cwd:$cwd,transcript_path:null,turn_id:"t",tool_input:{command:"git push"}}')"
+HARNESS=codex expect_json block-agent-push-ask-codex block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  "$(json "$repo" 'git push')"
 expect_json block-agent-push-ask-gh block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git push; gh pr merge 1')"
 git -C "$repo" config --unset eric-agent.push
@@ -487,10 +489,19 @@ else
   printf 'skip tmux-agent-resume: tmux is not on PATH\n'
 fi
 
-# only hooks from this directory count, since herdr installs its own by absolute path.
-# SessionStart commands may pass arguments after the script path, since pi does not run them
-configured=$(jq -r '.hooks | to_entries[] | .value[] | .hooks[] | .command | select(startswith("\"$HOME/.agents/hooks/"))' "$settings" | sed -E 's#.*/##; s/"//g; s/ .*//' | sort -u)
+# every check, and every other script settings.json runs from this directory, since herdr installs its own by absolute path
+configured=$({
+  ls "$hooks/checks"
+  jq -r '.hooks | to_entries[] | .value[] | .hooks[] | .command | select(startswith("\"$HOME/.agents/hooks/"))' "$settings" |
+    sed -E 's#.*/##; s/"//g; s/ .*//' | grep -vx guard.sh
+} | sort -u)
 covered=$(printf '%s\n' "${tested[@]}" | sort -u)
+for check in "$hooks"/checks/*.sh; do
+  grep -qw -- "$(basename "$check" .sh)" "$hooks/guard.sh" || {
+    printf 'FAIL guard.sh never runs %s\n' "$(basename "$check")"
+    exit 1
+  }
+done
 [ "$configured" = "$covered" ] || {
   printf 'configured hook coverage mismatch\nexpected:\n%s\ncovered:\n%s\n' "$configured" "$covered" >&2
   exit 1
@@ -506,6 +517,16 @@ for pi_agent in "$root"/modules/eric/ai/pi/agents/*.md; do
   }
   printf 'ok agent body: %s\n' "$name"
 done
+# codex agents hold the same body in developer_instructions, naming skills as $skill
+for codex_agent in "$root"/modules/eric/ai/codex/agents/*.toml; do
+  name=$(basename "$codex_agent" .toml)
+  diff <(awk 'f >= 2; /^---$/ { f++ }' "$root/modules/eric/ai/claude/agents/$name.md" | sed '/./,$!d') \
+    <(awk '/^"""$/ { f = 0 } f; /^developer_instructions = """$/ { f = 1 }' "$codex_agent" | sed -E 's/\$([a-z-]+)/\1/g') >/dev/null || {
+    printf 'FAIL agent body: claude/agents/%s.md and codex/agents/%s.toml differ\n' "$name" "$name"
+    exit 1
+  }
+  printf 'ok agent body: codex %s\n' "$name"
+done
 
 # the inline SessionStart check stays quiet while every hook exists, and names one that is gone
 startup_check=$(jq -r '.hooks.SessionStart[].hooks[].command | select(contains("guard hooks missing"))' "$settings")
@@ -518,20 +539,11 @@ ln -s "$hooks" "$check_home/.agents/hooks"
   exit 1
 }
 rm "$check_home/.agents/hooks"
-HOME=$check_home bash -c "$startup_check" | jq -e '.systemMessage | contains("block-sudo-probe.sh")' >/dev/null || {
+HOME=$check_home bash -c "$startup_check" | jq -e '.systemMessage | contains("guard.sh")' >/dev/null || {
   printf 'FAIL session-start-hook-check: did not name a missing hook\n'
   exit 1
 }
 printf 'ok session-start-hook-check\n'
-
-codex_configured=$(jq -r '.hooks | to_entries[] | .value[] | .hooks[] | .command | select(startswith("\"$HOME/.agents/hooks/"))' "$root/modules/eric/ai/codex/hooks.json" | sed -E 's#.*/##; s/"//g; s/ .*//' | sort -u)
-for script in $codex_configured; do
-  if [ ! -x "$hooks/$script" ] || ! printf '%s\n' "$covered" | grep -qxF "$script"; then
-    printf 'codex hook %s is missing or untested\n' "$script" >&2
-    exit 1
-  fi
-done
-printf 'all codex hooks covered\n'
 
 rules="$root/modules/eric/ai/codex/rules/default.rules"
 expect_rule() {
@@ -547,17 +559,11 @@ expect_rule() {
 if command -v codex >/dev/null 2>&1; then
   expect_rule forbidden git push origin main
   expect_rule forbidden gh pr create
-  expect_rule prompt git checkout -- .
-  expect_rule prompt git restore -- .
-  expect_rule prompt git reset --hard
   expect_rule allow git status
   expect_rule allow rg foo .
   # nix develop -c runs any command, so it goes through the sandbox like other commands
   expect_rule none nix develop -c true
   expect_rule none git checkout main
-  expect_rule prompt git checkout -- f
-  expect_rule prompt git restore f
-  expect_rule prompt git restore --staged f
 else
   printf 'skip codex-rules: codex is not on PATH\n'
 fi

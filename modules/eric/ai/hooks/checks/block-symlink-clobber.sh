@@ -1,14 +1,7 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash
 # block Bash writes onto a path that is currently a symlink
 # mv and in-place sed/perl replace the link, detaching nix-managed config from its source
 # cp, tee, truncate, and redirects write through the link, outside the edit tool
-set -u
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname "$0")/lib.sh"
-
-hook_require jq realpath shfmt
-hook_read_command
-hook_parse_command
 
 # every path this command would overwrite: the destination of mv/cp, the files tee writes,
 # the file of an in-place editor (sed -i, perl -i, truncate), and each > or >> target

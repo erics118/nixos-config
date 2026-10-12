@@ -1,14 +1,7 @@
-#!/usr/bin/env bash
-# shellcheck disable=SC2016
+# shellcheck shell=bash disable=SC2016,SC2154
 # deny agent pushes by default. `eric-agent.push=ask` requests confirmation.
 # `eric-agent.push=on` allows pushes. GitHub writes remain user-only
-set -u
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname "$0")/lib.sh"
 
-hook_require jq git shfmt
-hook_read_command
-hook_parse_command
 hook_command_dir
 
 # a -c alias can run push under another name
@@ -56,9 +49,5 @@ hook_any '
 ' &&
   hook_deny 'Agents never write to GitHub through gh api. Use read-only gh api calls, or tell the user what to run. A graphql read must pass one literal query with -f query=..., with values inlined and no $ variables.'
 
-if [ -n "$ask" ]; then
-  hook_is_codex &&
-    hook_deny 'Agent pushes need approval in this repo, and Codex cannot prompt. Tell the user the work is ready so they push it.'
-  hook_ask 'Agent pushes need approval in this repo. Approve this push, or push it yourself.'
-fi
+[ -z "$ask" ] || hook_ask 'Agent pushes need approval in this repo. Approve this push, or push it yourself.'
 exit 0

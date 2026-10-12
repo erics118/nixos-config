@@ -1,13 +1,7 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash disable=SC2154
 # flag comment blocks longer than 3 lines in the text an edit introduced.
 # the rule lives in AGENTS.md but prose does not fire at edit time; this does.
 # scans only newly written text so pre-existing blocks in an edited file stay quiet.
-set -u
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname "$0")/lib.sh"
-
-hook_require jq
-HOOK_INPUT=$(cat)
 
 file=$(printf '%s' "$HOOK_INPUT" | jq -r '.tool_input.file_path // empty')
 [ -n "$file" ] || exit 0

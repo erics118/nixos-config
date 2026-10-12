@@ -1,15 +1,8 @@
-#!/usr/bin/env bash
-# shellcheck disable=SC2016
+# shellcheck shell=bash disable=SC2016,SC2154
 # block flake-evaluating commands when untracked files exist: flakes only see
 # git-tracked files, so a new module, config file, or skill is silently invisible
 # and the change appears to do nothing. tells the model to git add them first.
-set -u
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname "$0")/lib.sh"
 
-hook_require jq git shfmt
-hook_read_command
-hook_parse_command
 hook_command_dir
 
 flake=0

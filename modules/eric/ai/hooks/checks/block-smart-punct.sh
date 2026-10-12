@@ -1,13 +1,7 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash disable=SC2154
 # block NEWLY introduced smart punctuation in written content; AGENTS.md wants plain ASCII.
 # only denies when an edit adds more smart chars than it removes, so edits that merely
 # preserve existing ones are not blocked.
-set -u
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname "$0")/lib.sh"
-
-hook_require rg jq
-HOOK_INPUT=$(cat)
 
 pat='[\x{2013}\x{2014}\x{2018}\x{2019}\x{201C}\x{201D}\x{2026}]'
 cnt() { printf '%s' "$1" | rg -oN "$pat" 2>/dev/null | wc -l | tr -d ' '; }

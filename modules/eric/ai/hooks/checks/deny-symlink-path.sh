@@ -1,14 +1,10 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash disable=SC2154
 # steer Claude to the real repo path for nix-managed dotfile symlinks.
 # deny the symlink path and hand back the resolved realpath, rather than silently
 # rewriting it: a rewrite desyncs the read-gate/receipt tracking (Read stays on the
 # symlink, Write moves to the target) and surfaces as "not read yet" / "modified
 # since read". deny-and-tell keeps Claude's read and write on the same real path.
-set -u
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname "$0")/lib.sh"
 
-hook_require jq realpath
 hook_read_file_path
 
 [ -L "$HOOK_FILE" ] || exit 0

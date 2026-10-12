@@ -1,13 +1,7 @@
-#!/usr/bin/env bash
-# shellcheck disable=SC2016
+# shellcheck shell=bash disable=SC2016,SC2154
 # block direct writes to a repo's git config files, so config changes go through `git config`,
 # where block-agent-commit.sh keeps agents from setting the eric-agent keys
-set -u
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname "$0")/lib.sh"
 
-hook_require jq rg shfmt
-HOOK_INPUT=$(cat)
 reason='is a git config file. Change git config with `git config`, and read it with Read or `git config --list --show-origin`.'
 
 # .git/config, config or config.worktree under .git/worktrees or .git/modules, and the global ~/.gitconfig or ~/.config/git/config
@@ -21,9 +15,7 @@ if [ -n "$file" ]; then
   exit 0
 fi
 
-HOOK_COMMAND=$(printf '%s' "$HOOK_INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
 [ -n "$HOOK_COMMAND" ] || exit 0
-hook_parse_command
 
 # ... > file, ... >> file, or tee file
 while IFS= read -r f; do

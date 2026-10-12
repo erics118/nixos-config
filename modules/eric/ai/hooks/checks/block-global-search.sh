@@ -1,15 +1,7 @@
-#!/usr/bin/env bash
-# shellcheck disable=SC2016
+# shellcheck shell=bash disable=SC2016,SC2154
 # block `find`, `fd`, `rg`, and `grep` commands rooted at / (or other filesystem-wide roots): scanning the
 # whole filesystem is slow, can hang on network/special mounts, and is never what's needed.
 # also block a search after a cd that can land in $HOME
-set -u
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname "$0")/lib.sh"
-
-hook_require jq shfmt
-hook_read_command
-hook_parse_command
 
 defs='
   def search: tool | IN("find", "fd", "rg", "grep");

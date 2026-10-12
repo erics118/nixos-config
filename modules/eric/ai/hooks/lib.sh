@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2016
-# shared helpers for PreToolUse/PostToolUse hooks. source, don't run directly:
-#   source "$(dirname "$0")/lib.sh"
+# shared helpers for guard.sh and the checks it sources
 
 # fail closed when a dependency is missing. these guards are the only gate under
 # defaultMode auto, so a hook that cannot run must block rather than silently allow.
@@ -17,17 +16,8 @@ hook_require() {
 # any other failure blocks too, since claude code and codex run the command on every exit code but 2
 trap 'rc=$?; [ "$rc" -eq 0 ] || [ "$rc" -eq 2 ] || { printf "guard hook failed with exit %s, so the command was not checked.\n" "$rc" >&2; exit 2; }' EXIT
 
-# reads stdin once. sets $HOOK_INPUT (raw json) and $HOOK_COMMAND (tool_input.command).
-# exits 0 (no-op) if there's no command to inspect.
-hook_read_command() {
-  HOOK_INPUT=$(cat)
-  HOOK_COMMAND=$(printf '%s' "$HOOK_INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null) || exit 0
-  [ -n "$HOOK_COMMAND" ] || exit 0
-}
-
-# same, for Write/Edit's tool_input.file_path. sets $HOOK_INPUT and $HOOK_FILE.
+# sets $HOOK_FILE to tool_input.file_path from $HOOK_INPUT. exits 0 (no-op) if there is none
 hook_read_file_path() {
-  HOOK_INPUT=$(cat)
   HOOK_FILE=$(printf '%s' "$HOOK_INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null) || exit 0
   [ -n "$HOOK_FILE" ] || exit 0
 }
@@ -52,14 +42,9 @@ hook_resolve() {
   printf '%s' "$p"
 }
 
-# true when the hook runs under codex, which runs a hook's ask as allow
-hook_is_codex() {
-  printf '%s' "$HOOK_INPUT" | jq -e 'has("turn_id") or (.transcript_path // "" | contains("/.codex/"))' >/dev/null
-}
-
 # set $HOOK_CALLS to one {argv, dyn, redirs} json line per simple command, wrapped commands also unwrapped
 # a command as written behind env, sudo, xargs, and the like has wrapper: true. dyn marks a bare unquoted $var or $(...), and `sh -c` and `eval` scripts are parsed too
-# a command shfmt cannot parse is denied (requires hook_read_command)
+# a command shfmt cannot parse is denied (requires $HOOK_COMMAND)
 hook_parse_command() {
   HOOK_CALLS=$(hook_calls_of "$HOOK_COMMAND" 0) ||
     hook_deny "The guard hooks could not parse this command, so they could not check it: $HOOK_CALLS. Rewrite it in plain bash syntax."
@@ -263,7 +248,7 @@ hook_ask() {
   exit 0
 }
 
-# print an updated tool_input.command (requires hook_read_command to have run first), then exit.
+# print an updated tool_input.command (requires $HOOK_INPUT), then exit.
 hook_update_command() {
   printf '%s' "$HOOK_INPUT" | jq -c --arg cmd "$1" \
     '{hookSpecificOutput:{hookEventName:"PreToolUse", updatedInput:(.tool_input | .command=$cmd)}}'

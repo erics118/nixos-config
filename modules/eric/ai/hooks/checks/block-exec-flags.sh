@@ -1,15 +1,7 @@
-#!/usr/bin/env bash
-# shellcheck disable=SC2016
+# shellcheck shell=bash disable=SC2016,SC2154
 # block the flags that turn an allowlisted read-only tool into a writer or a launcher.
 # the agents approve fd, rg, sort, tree, git diff, and git log without asking, so these
 # would run an arbitrary command or write a file with no prompt
-set -u
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname "$0")/lib.sh"
-
-hook_require jq shfmt
-hook_read_command
-hook_parse_command
 
 hook_any '
   (tool == "fd" and any(.argv[1:][]; IN("-x", "-X") or startswith("--exec"))) or

@@ -1,10 +1,7 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash disable=SC2154
 # format the edited file with the project's own treefmt, reached through the
 # direnv devShell (nix-direnv cached, no flake eval, no store copy).
 # silently no-ops for non-direnv projects or shells without treefmt.
-set -u
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname "$0")/lib.sh"
 
 # roots whose .envrc should not trigger formatting
 ignored_roots=("$HOME" "$HOME/dev" "$HOME/dev/other")

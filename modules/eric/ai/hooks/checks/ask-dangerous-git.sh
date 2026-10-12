@@ -1,14 +1,6 @@
-#!/usr/bin/env bash
-# shellcheck disable=SC2016
+# shellcheck shell=bash disable=SC2016,SC2154
 # prompt before git commands that rewrite history or discard uncommitted work.
 # asks rather than denies, so anything genuinely wanted is one confirmation away.
-set -u
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname "$0")/lib.sh"
-
-hook_require jq shfmt
-hook_read_command
-hook_parse_command
 
 hook_any '
   def has($xs): any(.[1:][]; IN($xs[]));

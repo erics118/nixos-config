@@ -1,34 +1,9 @@
 import { spawn } from "node:child_process";
-import fs from "node:fs";
 import path from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const home = process.env.HOME ?? "~";
-
-type HookGroup = { matcher?: string; hooks?: { command?: string }[] };
-
-// the hook scripts Claude Code's settings.json runs for this tool, so both agents share one list.
-// read on every call so edits apply at once. a failed read throws, and pi then blocks the tool
-// pi spawns each command without a shell, so an entry must be a bare quoted script path with no arguments
-function hooksFor(
-  event: "PreToolUse" | "PostToolUse" | "Stop",
-  toolName: string,
-): string[] {
-  const settings = JSON.parse(
-    fs.readFileSync(path.join(home, ".claude", "settings.json"), "utf8"),
-  );
-  const groups: HookGroup[] = settings.hooks?.[event] ?? [];
-  return groups
-    .filter(
-      (g) =>
-        !g.matcher ||
-        g.matcher === "*" ||
-        new RegExp(`^(?:${g.matcher})$`).test(toolName),
-    )
-    .flatMap((g) => g.hooks ?? [])
-    .map((h) => (h.command ?? "").replace(/^"|"$/g, "").replace("$HOME", home))
-    .filter(Boolean);
-}
+const hooks = path.join(home, ".agents", "hooks");
 
 type HookEvent = {
   cwd: string;
@@ -43,9 +18,13 @@ type Outcome = {
   context: string[];
 };
 
-function runHook(script: string, event: HookEvent): Promise<Run> {
+function runScript(
+  script: string,
+  args: string[],
+  event: HookEvent,
+): Promise<Run> {
   return new Promise((resolve) => {
-    const child = spawn(script, { cwd: event.cwd });
+    const child = spawn(script, args, { cwd: event.cwd });
     let stdout = "";
     let stderr = "";
     child.stdout.on("data", (d) => (stdout += d));
@@ -54,46 +33,45 @@ function runHook(script: string, event: HookEvent): Promise<Run> {
       resolve({ status: null, stdout, stderr: String(e) }),
     );
     child.on("close", (status) => resolve({ status, stdout, stderr }));
-    // a hook may exit without reading its input, and close still judges it
+    // a script may exit without reading its input, and close still judges it
     child.stdin.on("error", () => {});
     child.stdin.end(JSON.stringify(event));
   });
 }
 
-// run hooks in parallel and combine them as Claude Code does: a deny beats an ask.
-// before a tool runs, a hook that fails or prints bad output blocks the call
-async function runHooks(
-  names: string[],
-  event: HookEvent,
-  pre: boolean,
-): Promise<Outcome> {
-  const runs = await Promise.all(names.map((n) => runHook(n, event)));
+// guard.sh picks the checks for the tool and combines their decisions.
+// before a tool runs, a guard that fails or prints bad output blocks the call
+async function guard(when: "pre" | "post", event: HookEvent): Promise<Outcome> {
+  const run = await runScript(
+    path.join(hooks, "guard.sh"),
+    [when, "pi"],
+    event,
+  );
   const out: Outcome = { context: [] };
-  runs.forEach((run, i) => {
-    const name = path.basename(names[i]);
-    const problem = (msg: string) =>
-      pre ? (out.deny ??= msg) : out.context.push(msg);
-    if (run.status === 2) return problem(run.stderr.trim());
-    if (run.status !== 0)
-      return problem(`${name} failed, so the call was not checked`);
-    if (!run.stdout.trim()) return;
-    let d;
-    try {
-      d = JSON.parse(run.stdout)?.hookSpecificOutput ?? {};
-    } catch {
-      return problem(`${name} printed output that is not JSON`);
-    }
-    if (d.permissionDecision === "deny")
-      out.deny ??= d.permissionDecisionReason ?? `${name} blocked this`;
-    if (d.permissionDecision === "ask") out.ask ??= d.permissionDecisionReason;
-    if (typeof d.updatedInput?.command === "string")
-      out.command = d.updatedInput.command;
-    if (d.additionalContext) out.context.push(d.additionalContext);
-  });
+  const problem = (msg: string) => {
+    if (when === "pre") out.deny = msg;
+    else out.context.push(msg);
+    return out;
+  };
+  if (run.status === 2) return problem(run.stderr.trim());
+  if (run.status !== 0)
+    return problem("guard.sh failed, so the call was not checked");
+  if (!run.stdout.trim()) return out;
+  let d;
+  try {
+    d = JSON.parse(run.stdout)?.hookSpecificOutput ?? {};
+  } catch {
+    return problem("guard.sh printed output that is not JSON");
+  }
+  if (d.permissionDecision === "deny")
+    out.deny = d.permissionDecisionReason ?? "guard.sh blocked this";
+  if (d.permissionDecision === "ask") out.ask = d.permissionDecisionReason;
+  if (typeof d.updatedInput?.command === "string")
+    out.command = d.updatedInput.command;
   return out;
 }
 
-// pi's tool calls in the shape the hooks read (Claude Code's tool names and fields)
+// pi's tool calls in the shape guard.sh reads (Claude Code's tool names and fields)
 function toHookEvent(
   toolName: string,
   input: Record<string, unknown>,
@@ -141,11 +119,7 @@ export default function guards(pi: ExtensionAPI): void {
   pi.on("tool_call", async (event, ctx) => {
     const hookEvent = toHookEvent(event.toolName, event.input, ctx.cwd);
     if (!hookEvent) return undefined;
-    const out = await runHooks(
-      hooksFor("PreToolUse", hookEvent.tool_name),
-      hookEvent,
-      true,
-    );
+    const out = await guard("pre", hookEvent);
     if (out.deny !== undefined)
       return { block: true, reason: out.deny || "blocked by a guard hook" };
     if (out.ask !== undefined) {
@@ -160,11 +134,7 @@ export default function guards(pi: ExtensionAPI): void {
   pi.on("tool_result", async (event, ctx) => {
     const hookEvent = toHookEvent(event.toolName, event.input, ctx.cwd);
     if (!hookEvent) return undefined;
-    const out = await runHooks(
-      hooksFor("PostToolUse", hookEvent.tool_name),
-      hookEvent,
-      false,
-    );
+    const out = await guard("post", hookEvent);
     if (out.context.length === 0) return undefined;
     return {
       content: [
@@ -176,6 +146,6 @@ export default function guards(pi: ExtensionAPI): void {
 
   pi.on("agent_settled", async (_event, ctx) => {
     const event = { cwd: ctx.cwd, tool_name: "", tool_input: {} };
-    await Promise.all(hooksFor("Stop", "").map((n) => runHook(n, event)));
+    await runScript(path.join(hooks, "tmux-bell.sh"), [], event);
   });
 }

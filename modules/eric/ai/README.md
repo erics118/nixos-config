@@ -5,7 +5,7 @@ Claude Code, Codex, and pi share one instruction file and one set of skills.
 - `AGENTS.md` is linked as `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, and `~/.pi/agent/AGENTS.md`. pi-only rules live in `pi/APPEND_SYSTEM.md`.
 - `skills/shared/` goes to `~/.claude/skills` and `~/.agents/skills` (Codex and pi). `skills/claude/` is Claude-only. `skills/codex/` also goes to `~/.agents/skills`, so Codex and pi both get it.
 - Subagents live in `claude/agents/`, `codex/agents/`, and `pi/agents/`, linked as `~/.claude/agents`, `~/.codex/agents`, and `~/.pi/agent/agents`. Each tool has `auditor` and `recall`. Claude and Codex also have `researcher`, and pi uses its built-in one. Codex agents cannot be made read-only, so read-only is only an instruction there.
-- Guard hooks live in `hooks/`, linked as `~/.agents/hooks`. `claude/settings.json` is the one list of which guard hook (`PreToolUse`, `PostToolUse`, `Stop`) runs for which tool: Claude runs it, and pi's `pi/extensions/guards.ts` reads the same file. Codex runs the shell-command guards, `tmux-bell.sh`, and `tmux-agent-resume.sh` listed in `codex/hooks.json` (trust them once with `/hooks`).
+- Guard hooks live in `hooks/`, linked as `~/.agents/hooks`. `hooks/guard.sh` is the one list of which check in `hooks/checks/` runs for which tool. It parses a shell command once, runs each check, and prints one decision. Claude (`claude/settings.json`), Codex (`codex/hooks.json`), and pi (`pi/extensions/guards.ts`) each call it once per event, naming the harness. Codex also runs `tmux-bell.sh` and `tmux-agent-resume.sh` from `codex/hooks.json` (trust them once with `/hooks`, and again after an entry there changes).
 
 ## When to invoke what
 
@@ -30,7 +30,7 @@ Invoke with `/name` in Claude Code, `$name` in Codex, and `/skill:name` in pi.
 
 ## Guards
 
-All of these run in Claude and pi. Codex runs the shell-command guards except `strip-claude-attribution.sh` and `ask-dangerous-git.sh`: Codex has no "ask" decision, so `codex/rules/default.rules` prompts before those git commands instead. Its rules match by prefix, so a dangerous flag after another argument (`git switch main --discard-changes`) or a global option first (`git -C dir reset`) is not caught.
+All of these run in Claude and pi. Codex runs the shell-command checks, but it has no "ask" decision and applies a rewrite only with an allow, so under Codex `guard.sh` turns every ask into a deny and drops the attribution rewrite. `codex/rules/default.rules` still forbids `git push` and `gh pr` writes, which holds even while the hook is untrusted.
 
 Before a shell command:
 
@@ -39,8 +39,8 @@ Before a shell command:
 - `block-global-search.sh`: no `find`, `fd`, `rg`, or `grep` rooted at `/`, `~`, `/nix`, or another filesystem-wide directory, and no search after a bare `cd` or an unquoted `cd $var` / `cd $(...)` that could land in `$HOME`
 - `block-symlink-clobber.sh`: no mv, cp, tee, redirect, in-place sed/perl, or truncate onto any symlink
 - `ask-dangerous-git.sh`: asks before rebase, reset, clean, and other history changes
-- `block-agent-push.sh`: agent pushes (`git push`, `send-pack`, `subtree push`, `lfs push`) follow `git config eric-agent.push` in every repo the command pushes from: unset or `off` (default) denies, `ask` (approve each; Codex treats it as `off`), or `on` (Codex still forbids `git push` in `codex/rules/default.rules`). Agents use `gh` read-only: only `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, `run watch`, `gh status`, and `gh api` GETs run (fields need an explicit `-X GET`, since gh otherwise sends them as a POST). In Codex this hook is the allowlist, because a `forbidden` rule for `gh` would also block the reads
-- `block-agent-commit.sh`: agent commits, merges, reverts, cherry-picks, `git am`, `commit-tree`, `update-ref`, `subtree`, and any `pull` without `--ff-only` follow `git config eric-agent.commit` in every repo the command commits in: `off` (default), `ask` (approve each; Codex treats it as `off`), `branch` (never on `main` or `master`), or `on`. `--abort`, `--quit`, and `commit --dry-run` always run, as does `push --dry-run` or `-n` in `block-agent-push.sh`. Only the user sets `eric-agent`, `alias`, and `include` keys. Both gates deny `-c` or `--config-env` aliases and includes, `GIT_DIR`, `GIT_WORK_TREE`, and `GIT_CONFIG*` assignments, and a gated command after a non-leading `cd` or with `--git-dir`, since each can move git past the repo or config the gate reads. Rebase stays with `ask-dangerous-git.sh`
+- `block-agent-push.sh`: agent pushes (`git push`, `send-pack`, `subtree push`, `lfs push`) follow `git config eric-agent.push` in every repo the command pushes from: unset or `off` (default) denies, `ask` (approve each; Codex denies it), or `on` (Codex still forbids `git push` in `codex/rules/default.rules`). Agents use `gh` read-only: only `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, `run watch`, `gh status`, and `gh api` GETs run (fields need an explicit `-X GET`, since gh otherwise sends them as a POST). In Codex this hook is the allowlist, because a `forbidden` rule for `gh` would also block the reads
+- `block-agent-commit.sh`: agent commits, merges, reverts, cherry-picks, `git am`, `commit-tree`, `update-ref`, `subtree`, and any `pull` without `--ff-only` follow `git config eric-agent.commit` in every repo the command commits in: `off` (default), `ask` (approve each; Codex denies it), `branch` (never on `main` or `master`), or `on`. `--abort`, `--quit`, and `commit --dry-run` always run, as does `push --dry-run` or `-n` in `block-agent-push.sh`. Only the user sets `eric-agent`, `alias`, and `include` keys. Both gates deny `-c` or `--config-env` aliases and includes, `GIT_DIR`, `GIT_WORK_TREE`, and `GIT_CONFIG*` assignments, and a gated command after a non-leading `cd` or with `--git-dir`, since each can move git past the repo or config the gate reads. Rebase stays with `ask-dangerous-git.sh`
 - `block-git-config-edit.sh`: no redirect, tee, or other write onto a `.git` config file, `~/.gitconfig`, or `~/.config/git/config`, so `eric-agent` keys change only through `git config`
 - `block-shell-edit.sh`: no sed/perl in place, scripts that write, or redirects, cp, or mv onto git-tracked text files. Binary files, which the edit tool cannot change, are exempt
 - `block-sudo-probe.sh`: no `sudo -n` on macOS, where Touch ID approves a plain `sudo`
@@ -56,7 +56,7 @@ After an edit: `treefmt-on-edit.sh` (formats the file), `warn-comment-block.sh` 
 
 Extensions in `pi/extensions/`, linked per file into `~/.pi/agent/extensions` by `ai.nix`, so a new extension needs `just switch`:
 
-- `guards.ts`: runs the hooks from `claude/settings.json` for `PreToolUse`, `PostToolUse`, and `Stop` (on `agent_settled`). It does not run `Notification` hooks
+- `guards.ts`: runs `hooks/guard.sh` before and after each tool call, and `hooks/tmux-bell.sh` on `agent_settled`. It does not run `Notification` hooks
 - `managed-paths.ts`: a path that is itself a symlink is already denied by `deny-symlink-path.sh`, since `guards.ts` loads first. This blocks writes through a symlink that resolves outside `~/nixos-config`, `~/.flake`, or `~/.config`
 - `side-conversations.ts`: `/side` opens a side session, `/btw` a tool-free parallel conversation
 - `reflect.ts`: `/reflect` reviews the session for durable learning
@@ -70,4 +70,4 @@ Extensions in `pi/extensions/`, linked per file into `~/.pi/agent/extensions` by
 
 ## Tests
 
-CI runs `bash modules/eric/ai/hooks/test.sh` and `node --experimental-transform-types --test modules/eric/ai/pi/tests/*.test.ts`. `test.sh` fails if a hook in `claude/settings.json` or `codex/hooks.json` has no test, so a new hook needs one there.
+CI runs `bash modules/eric/ai/hooks/test.sh` and `node --experimental-transform-types --test modules/eric/ai/pi/tests/*.test.ts`. `test.sh` fails if a check in `hooks/checks/` or a script in `claude/settings.json` has no test, or if `guard.sh` never runs a check, so a new check needs both.

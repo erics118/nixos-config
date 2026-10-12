@@ -1,13 +1,7 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash disable=SC2154
 # gate agent commits on `git config eric-agent.commit`: off (default), ask, branch (not main or master), or on.
 # only the user sets eric-agent keys, so agents may not write them
-set -u
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname "$0")/lib.sh"
 
-hook_require jq git shfmt
-hook_read_command
-hook_parse_command
 hook_command_dir
 
 # each config command naming an eric-agent key, an alias, or an include must itself be a read
@@ -41,9 +35,5 @@ while IFS= read -r dir; do
   esac
 done <<<"$HOOK_GATE_DIRS"
 
-if [ -n "$ask" ]; then
-  hook_is_codex &&
-    hook_deny 'Agent commits need approval in this repo, and Codex cannot prompt. Tell the user the work is ready so they commit it.'
-  hook_ask 'Agent commits need approval in this repo. Approve this commit, or deny it and commit yourself.'
-fi
+[ -z "$ask" ] || hook_ask 'Agent commits need approval in this repo. Approve this commit, or deny it and commit yourself.'
 exit 0

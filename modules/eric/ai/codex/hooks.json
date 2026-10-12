@@ -4,39 +4,7 @@
       {
         "hooks": [
           {
-            "command": "\"$HOME/.agents/hooks/git-add-before-nix.sh\"",
-            "type": "command"
-          },
-          {
-            "command": "\"$HOME/.agents/hooks/block-global-search.sh\"",
-            "type": "command"
-          },
-          {
-            "command": "\"$HOME/.agents/hooks/block-symlink-clobber.sh\"",
-            "type": "command"
-          },
-          {
-            "command": "\"$HOME/.agents/hooks/block-agent-commit.sh\"",
-            "type": "command"
-          },
-          {
-            "command": "\"$HOME/.agents/hooks/block-agent-push.sh\"",
-            "type": "command"
-          },
-          {
-            "command": "\"$HOME/.agents/hooks/block-git-config-edit.sh\"",
-            "type": "command"
-          },
-          {
-            "command": "\"$HOME/.agents/hooks/block-shell-edit.sh\"",
-            "type": "command"
-          },
-          {
-            "command": "\"$HOME/.agents/hooks/block-sudo-probe.sh\"",
-            "type": "command"
-          },
-          {
-            "command": "\"$HOME/.agents/hooks/block-exec-flags.sh\"",
+            "command": "\"$HOME/.agents/hooks/guard.sh\" pre codex",
             "type": "command"
           }
         ],

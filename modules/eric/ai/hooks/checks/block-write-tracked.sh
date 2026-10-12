@@ -1,11 +1,7 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash disable=SC2154
 # block Write over an existing git-tracked file. a whole-file write hides what changed,
 # so edits to tracked files go through Edit, which shows a diff
-set -u
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname "$0")/lib.sh"
 
-hook_require jq git
 hook_read_file_path
 
 [ -f "$HOOK_FILE" ] || exit 0

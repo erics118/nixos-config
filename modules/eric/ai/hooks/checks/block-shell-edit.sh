@@ -1,14 +1,8 @@
-#!/usr/bin/env bash
+# shellcheck shell=bash disable=SC2154
 # block shell edits of git-tracked files: sed/perl in place, scripts that write files, and
 # redirects, tee, cp, or mv onto a tracked file. these skip the edit tool, so the change never
 # shows as a diff and /rewind cannot undo it
-set -u
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname "$0")/lib.sh"
 
-hook_require rg jq git shfmt
-hook_read_command
-hook_parse_command
 hook_command_dir
 reason='is tracked by git. Change it with the edit tool so the change shows as a reviewable diff.'
 
