@@ -153,8 +153,6 @@ case ${1:-} in
   ;;
 --sessions)
   shift
-  # the gui runs this, and its PATH lacks /usr/local/bin, where the macos tailscale cli lives
-  PATH=$PATH:/usr/local/bin
   # own hosts online on the tailnet, which leaves out this machine, then the named hosts
   online=$(tailscale status --json 2>/dev/null | jq -r '.Peer[] | select(.Online) | .DNSName | split(".")[0]' || true)
   for h in "${own_hosts[@]}"; do

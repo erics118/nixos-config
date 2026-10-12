@@ -276,8 +276,7 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
     return res
 end)
 
-local bin = "/etc/profiles/per-user/" .. os.getenv("USER") .. "/bin/"
-
+-- tools run by name, since the gui adopts the login shell's PATH (see the fork's adopt_login_shell_path)
 local function lines(args)
     local ok, out = wezterm.run_child_process(args)
     local result = {}
@@ -317,8 +316,21 @@ local function open_tabs()
     return open
 end
 
--- other hosts' sessions from the last cmd-k, as host, name and alert
+-- this machine's and other hosts' sessions from the last time the menu opened, as host, name and alert.
+-- a status update only reuses them, so it runs no process after the first
+local local_sessions
 local remote_sessions = {}
+
+local function fetch_local()
+    local rows = {}
+    for _, line in ipairs(lines({ "timeout", "1", "tmux-sessions" })) do
+        local name, alert = line:match("^(.-)\t(.*)$")
+        if name then
+            table.insert(rows, { name = name, alert = alert })
+        end
+    end
+    local_sessions = rows
+end
 
 local function fetch_remote(open)
     local hosts, seen = {}, {}
@@ -330,7 +342,7 @@ local function fetch_remote(open)
         end
     end
     local rows = {}
-    for _, line in ipairs(lines({ bin .. "rtmux", "--sessions", table.unpack(hosts) })) do
+    for _, line in ipairs(lines({ "rtmux", "--sessions", table.unpack(hosts) })) do
         local host, name, alert = line:match("^(.-)\t(.-)\t(.*)$")
         if host then
             table.insert(rows, { host = host, name = name, alert = alert })
@@ -380,11 +392,12 @@ local function update_label(window, pane)
     end
     -- each host is a section: its name as a header, and a separator before the next host
     table.insert(menu, { title = wezterm.hostname(), header = true })
-    for _, line in ipairs(lines({ bin .. "timeout", "1", bin .. "tmux-sessions" })) do
-        local name, alert = line:match("^(.-)\t(.*)$")
-        if name then
-            add(nil, name, alert)
-        end
+    -- the config loads where no process can run, so the first update fills the rows
+    if not local_sessions then
+        fetch_local()
+    end
+    for _, row in ipairs(local_sessions) do
+        add(nil, row.name, row.alert)
     end
     local last_host
     for _, row in ipairs(remote_sessions) do
@@ -441,12 +454,19 @@ wezterm.on("user-var-changed", function(window, pane, var, value)
     end
 end)
 
--- cmd-k: fetch the other hosts' sessions, then open the projects menu
+-- cmd-k or a press on the label: fetch every host's sessions, then open the projects menu
 function M.show_projects(window, pane)
+    fetch_local()
     fetch_remote(open_tabs())
     update_label(window, pane)
     window:show_toolbar_menu()
 end
+
+-- the fork's toolbar-label-pressed runs before the menu opens, and false keeps it from opening with stale rows
+wezterm.on("toolbar-label-pressed", function(window, pane)
+    M.show_projects(window, pane)
+    return false
+end)
 
 -- each native tab's status icon, by tab index.
 -- a tab whose pane is closing mid-update raises, and keeps an empty icon until the next update

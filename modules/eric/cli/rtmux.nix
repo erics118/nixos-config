@@ -25,7 +25,7 @@ in
             openssh
             fzf
             jq
-            # the wezterm gui runs --sessions with a bare PATH
+            # gnu awk's BEGINFILE and coreutils' timeout, which macos lacks
             coreutils
             gnugrep
             gawk

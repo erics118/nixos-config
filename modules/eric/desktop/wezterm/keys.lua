@@ -157,7 +157,6 @@ end
 
 -- an open popup takes every key, so a local tmux gets its popups from tmux-popup (see cli/scripts), run directly.
 -- a remote tmux gets the keys its own bindings take (see cli/tmux/keys.conf), and herdr its own popup keys
-local tmux_popup = "/etc/profiles/per-user/" .. os.getenv("USER") .. "/bin/tmux-popup"
 local function popup_key(kind, tmux_keys, herdr_keys)
     return wezterm.action_callback(function(window, pane)
         local info = pane:get_foreground_process_info()
@@ -169,7 +168,7 @@ local function popup_key(kind, tmux_keys, herdr_keys)
         else
             hide_cursor_briefly(pane)
             if owner == "local-tmux" then
-                wezterm.background_child_process({ tmux_popup, kind, pane:get_tty_name() })
+                wezterm.background_child_process({ "tmux-popup", kind, pane:get_tty_name() })
             else
                 window:perform_action(act.SendString(tmux_keys), pane)
             end

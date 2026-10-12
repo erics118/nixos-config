@@ -16,15 +16,10 @@ sessions | projects | scratch | files) kind=$1 ;;
 esac
 client=${2:-$(tmux display -p '#{client_tty}')}
 
-# a popup takes its PATH from what opened it, which from wezterm is the gui's and lacks the user's tools.
-# so it reruns inside the tmux server, whose environment the key bindings use too
-if [[ -z ${TMUX_POPUP_IN_SERVER:-} ]]; then
-  exec tmux run-shell -b "TMUX_POPUP_IN_SERVER=1 tmux-popup $(printf %q "$kind") $(printf %q "$client")"
-fi
-
 # every query targets the client's session, since a format without a target follows TMUX_PANE,
-# which can be the scratch shell's own pane. an unknown client ends here, where display -c would fall back to another
-session=$(tmux list-clients -F $'#{client_tty}\t#{client_session}' | awk -F '\t' -v c="$client" '$1 == c { print $2 }')
+# which can be the scratch shell's own pane. an unknown client ends here, where display -c would fall back to another.
+# -u keeps the tab, which tmux prints as _ without a utf-8 locale, as in the wezterm gui's environment
+session=$(tmux -u list-clients -F $'#{client_tty}\t#{client_session}' | awk -F '\t' -v c="$client" '$1 == c { print $2 }')
 [[ -n $session ]] || exit 0
 target="=$session:"
 
@@ -66,19 +61,19 @@ open() {
     title=scratch
     # -y is the popup's bottom edge, so the client's height puts it at the bottom of the window whatever its splits
     # shellcheck disable=SC2016
-    args=(-x 0 -y '#{client_height}' -w 100% -h 40% -e "SCRATCH=$session" -e "MAIN_SOCKET=${TMUX%%,*}"
-      'TMUX= tmux -L scratch -f "$HOME/.config/tmux/scratch.conf" new -A -s "$SCRATCH" \; set @popup-client "$TMUX_POPUP_CLIENT" \; set @main-socket "$MAIN_SOCKET"')
+    args=(-x 0 -y '#{client_height}' -w 100% -h 40% -e "SCRATCH=$session" -e "MAIN_SOCKET=$(tmux display -p '#{socket_path}')"
+    'TMUX= tmux -L scratch -f "$HOME/.config/tmux/scratch.conf" new -A -s "$SCRATCH" \; set @popup-client "$TMUX_POPUP_CLIENT" \; set @main-socket "$MAIN_SOCKET"')
     ;;
   files)
     title=yazi
     args=(-w 90% -h 90% yazi)
     ;;
   esac
-  # display-popup waits for the popup to close, so it runs in the background, and the popup outlives it.
+  # display-popup waits for the popup to close, so it runs in the background with its output gone, so a binding's run-shell never waits on it.
   # -d expands against the pane, and falls back to the session's directory when tmux cannot read the pane's.
   # an open popup takes every key, so the program in it passes a remote cmd key back here with TMUX_POPUP_CLIENT
   tmux display-popup -c "$client" -t "$pane" -E -d '#{pane_current_path}' -s 'bg=default' -S 'fg=#6c7086' \
-    -e "TMUX_POPUP_CLIENT=$client" "${args[@]}" &
+    -e "TMUX_POPUP_CLIENT=$client" "${args[@]}" >/dev/null 2>&1 &
   local popup=''
   for _ in $(seq 50); do
     popup=$(modal)
