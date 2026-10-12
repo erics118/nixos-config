@@ -66,9 +66,10 @@ hl.on("hyprland.start", function()
     hl.dispatch(hl.dsp.exec_cmd("uwsm app -- hyprpaper"))
 
     -- creating the output steals focus, so hand it back to the physical display
+    -- sunshine and wayvnc read the output at start, so they come after it
     hl.dispatch(
         hl.dsp.exec_cmd(
-            [[hyprctl output create headless agent && hyprctl dispatch 'hl.dsp.focus({ monitor = "HDMI-A-1" })']]
+            [[hyprctl output create headless agent && hyprctl dispatch 'hl.dsp.focus({ monitor = "HDMI-A-1" })' && systemctl --user start sunshine wayvnc]]
         )
     )
 end)

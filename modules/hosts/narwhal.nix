@@ -20,6 +20,8 @@ in
       m.nixos.ntfy-client
       m.nixos.eriz
       m.nixos.hyprland
+      m.nixos.sunshine
+      m.nixos.vnc
       m.nixos.hp-printer
       m.nixos.nvidia
       m.nixos.caddy
