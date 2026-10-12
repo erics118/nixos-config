@@ -86,7 +86,7 @@ command = "persiyanov.reviewr.toggle"
 description = "review the diff"
 
 # the sesh plugin's picker in a popup, since its own action opens it over the tab.
-# wezterm's cmd-k sends prefix+f. the plugin dir is hashed, so glob for its binary
+# wezterm's cmd-p sends prefix+f. the plugin dir is hashed, so glob for its binary
 [[keys.command]]
 key = "prefix+f"
 type = "popup"

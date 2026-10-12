@@ -107,15 +107,22 @@ local function strip_mosh(title)
     return (title:gsub("^%[mosh[^%]]*%]%s*", ""))
 end
 
--- tmux's title is [host:]session: window after its markers (see tmux/main.conf), and the markers hold no ":".
--- returns the session, the host or nil, and the window, or nil for a title tmux did not set
+-- this machine as tmux's #{host_short} names it
+local local_host = wezterm.hostname():match("^[^.]*")
+
+-- tmux's title is host:session: window after its markers (see tmux/main.conf), and the markers hold no ":".
+-- returns the session, the host or nil for this machine, the window, and whether tmux tagged it with a host.
+-- a title tmux did not set returns nil
 local function split_tmux_title(title)
     local head, window_name = title:match("^(.-): (.*)$")
     if not head then
         return nil
     end
     local host, session = head:match("^(.-):(.*)$")
-    return session or head, host, window_name
+    if not host then
+        return head, nil, window_name, false
+    end
+    return session, host ~= local_host and host or nil, window_name, true
 end
 
 -- a tmux title as host: session - window, the way it reads in the tabline
@@ -282,46 +289,25 @@ local function lines(args)
     return result
 end
 
--- each local tmux client's session, by the client's tty.
--- -u keeps the tab, which tmux prints as _ without a utf-8 locale
-local function client_sessions()
-    local sessions = {}
-    for _, line in
-        ipairs(
-            lines({ bin .. "timeout", "1", bin .. "tmux", "-u", "list-clients", "-F", "#{client_tty}\t#{session_name}" })
-        )
-    do
-        local tty, session = line:match("^(.-)\t(.*)$")
-        if tty then
-            sessions[tty] = session
-        end
-    end
-    return sessions
-end
-
 -- the session a pane shows and its host, nil for this machine, or nil outside tmux.
--- a local session comes from the tmux client on the pane's tty, a remote one from the title its tmux sets
-local function pane_session(pane, clients)
-    local local_session = clients[pane:get_tty_name()]
-    if local_session then
-        return local_session, nil
-    end
+-- it comes from the title tmux sets on every host, so no tmux process runs per update
+local function pane_session(pane)
     local _, title = title_marker(strip_mosh(pane:get_title()))
-    local session, host = split_tmux_title((title:gsub("^%[%d+%] ", "")))
-    if host then
+    local session, host, _, tagged = split_tmux_title((title:gsub("^%[%d+%] ", "")))
+    if tagged then
         return session, host
     end
 end
 
 -- every pane that shows a session, in any tab or window, keyed by "host:session" with an empty host for this machine.
 -- it checks every pane, as sesh-pick does before handing a pick here, so a session in an inactive split is still found
-local function open_tabs(clients)
+local function open_tabs()
     local open = {}
     for _, mux_window in ipairs(wezterm.mux.all_windows()) do
         for _, tab in ipairs(mux_window:tabs()) do
             for _, pane in ipairs(tab:panes()) do
                 -- a pane closing mid-update raises
-                local ok, session, host = pcall(pane_session, pane, clients)
+                local ok, session, host = pcall(pane_session, pane)
                 if ok and session then
                     open[(host or "") .. ":" .. session] = { pane = pane, window = mux_window }
                 end
@@ -372,10 +358,9 @@ end
 -- the native toolbar's label is the projects menu: the pane's session over its host, or outside tmux "Projects", dimmed, over this host.
 -- its menu lists this machine's sessions, then each other host's
 local function update_label(window, pane)
-    local clients = client_sessions()
-    local open = open_tabs(clients)
+    local open = open_tabs()
     -- a pane closing mid-update raises, and the next update fills the label
-    local ok, label, host = pcall(pane_session, pane, clients)
+    local ok, label, host = pcall(pane_session, pane)
     if not ok then
         return
     end
@@ -423,7 +408,7 @@ end
 -- a session goes to the tab that shows it, or opens in a new tab, so each tab keeps one session.
 -- host is nil for this machine, and target is what t connects to, the session's name unless given
 local function open_project(window, pane, host, name, target)
-    local found = open_tabs(client_sessions())[(host or "") .. ":" .. name]
+    local found = open_tabs()[(host or "") .. ":" .. name]
     if found then
         found.pane:activate()
         -- a window in another workspace has no gui window
@@ -458,7 +443,7 @@ end)
 
 -- cmd-k: fetch the other hosts' sessions, then open the projects menu
 function M.show_projects(window, pane)
-    fetch_remote(open_tabs(client_sessions()))
+    fetch_remote(open_tabs())
     update_label(window, pane)
     window:show_toolbar_menu()
 end

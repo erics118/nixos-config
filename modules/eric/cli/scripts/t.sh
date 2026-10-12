@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # no arg opens the sesh picker. an arg is resolved by sesh: a session, config
-# entry, dir, or zoxide match, so sessions are always named after their dir
+# entry, dir, or zoxide match, so a session is named after its config entry or dir
 
 set -euo pipefail
 
