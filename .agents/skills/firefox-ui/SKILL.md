@@ -5,9 +5,9 @@ description: Use when changing or debugging Firefox chrome (userChrome.css, .uc.
 
 The config lives in `~/nixos-config/modules/eric/desktop/firefox/`. Read its `README.md` first for how it loads, how to reload, and which extensions it depends on.
 
-1. Read the installed source. The answer to "which rule does this" is in the installed build, not in memory or searchfox. Extract the files you need from the browser jar into the scratchpad (a nonzero exit with "extra bytes" warnings is normal):
+1. Read the installed source. The answer to "which rule does this" is in the installed build, not in memory or searchfox. Extract the files you need from the browser jar into the task's scratch directory, `<scratch>` below (a nonzero exit with "extra bytes" warnings is normal):
    ```bash
-   unzip -o -d <scratchpad>/omni "/Applications/Firefox Developer Edition.app/Contents/Resources/browser/omni.ja" '<path>'
+   unzip -o -d <scratch>/omni "/Applications/Firefox Developer Edition.app/Contents/Resources/browser/omni.ja" '<path>'
    ```
    List paths with `unzip -l`. The browser jar holds the chrome (`chrome/browser/skin/classic/browser/` for CSS, `chrome/browser/content/browser/` for JS and `browser.xhtml`). `Contents/Resources/omni.ja` holds only toolkit.
    Done when: you have read every installed rule that touches the target element and property.

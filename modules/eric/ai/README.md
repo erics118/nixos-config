@@ -11,23 +11,22 @@ Claude Code, Codex, and pi share one instruction file and one set of skills.
 
 Invoke with `/name` in Claude Code, `$name` in Codex, and `/skill:name` in pi.
 
-| Moment                                         | Skill                                                                                             |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Small, clear change                            | none                                                                                              |
-| A question where an edit would be wrong        | `ask`                                                                                             |
-| Which mechanism should do a job, new or not    | `approach`                                                                                        |
-| Why I said or did one specific thing           | `why`                                                                                             |
-| Is this more than the job needs                | `overkill`                                                                                        |
-| Doubt a claim before acting on it              | `recheck`                                                                                         |
-| Where things stand, or what this project is    | `overview`                                                                                        |
-| What is left before ending the session         | `remaining`                                                                                       |
-| Many files, or code plus docs plus CI          | `writing-plans`, then `executing-plans` (or `executing-plans-agentic` in Claude)                  |
-| Before committing                              | `summarize-changes`                                                                               |
-| Review                                         | `audit` (repo, area, or diff), or `review` (two-model red-team of a diff, file, or plan, by hand) |
-| Is the code split the right way into parts     | `architecture-review` (a full `audit` runs it too)                                                |
-| An agent failed and it should not happen again | `fix-yourself`                                                                                    |
-| Hand the session, or one thread, to an agent   | `handoff`                                                                                         |
-| Start a new dev project                        | `new-project`                                                                                     |
+| Moment                                            | Skill                                                                                             |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Small, clear change                               | none                                                                                              |
+| A question where an edit would be wrong           | `ask`                                                                                             |
+| Which mechanism should do a job, new or not       | `approach`                                                                                        |
+| Why I said or did something, or what a line means | `why`                                                                                             |
+| Is this more than the job needs                   | `overkill`                                                                                        |
+| Doubt a claim before acting on it                 | `recheck`                                                                                         |
+| What is left before ending the session            | `remaining`                                                                                       |
+| Many files, or code plus docs plus CI             | `writing-plans`, then `executing-plans` (or `executing-plans-agentic` in Claude)                  |
+| Before committing                                 | `summarize-changes`                                                                               |
+| Review                                            | `audit` (repo, area, or diff), or `review` (two-model red-team of a diff, file, or plan, by hand) |
+| Is the code split the right way into parts        | `architecture-review` (a full `audit` runs it too)                                                |
+| An agent failed and it should not happen again    | `fix-yourself`                                                                                    |
+| Hand the session, or one thread, to an agent      | `handoff`                                                                                         |
+| Start a new dev project                           | `new-project`                                                                                     |
 
 ## Guards
 

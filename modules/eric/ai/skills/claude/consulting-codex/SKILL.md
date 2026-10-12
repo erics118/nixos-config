@@ -9,14 +9,14 @@ Codex is a **different model**, so its value is disagreement. Ask it to judge, n
 
 Pin `-m gpt-5.6-sol -c model_reasoning_effort="high"` on every call. Pinning stops a later edit to `~/.codex/config.toml` from silently swapping the model mid-review.
 
-Runs take minutes. Launch with `run_in_background: true` and wait for the completion notification. Never poll with `pgrep -f`, whose pattern matches the polling loop itself and never exits. The answer is whatever lands in `-o`; write it to the scratchpad and read it from there.
+Runs take minutes. Launch with `run_in_background: true` and wait for the completion notification. Never poll with `pgrep -f`, whose pattern matches the polling loop itself and never exits. The answer is whatever lands in `-o`; write it to the task's scratch directory (`<scratch>` below, see the Environment rules) and read it from there.
 
 ## First turn
 
 ```bash
 codex exec --sandbox read-only -m gpt-5.6-sol -c model_reasoning_effort="high" \
-  -C /path/to/repo --json -o <scratchpad>/codex-1.md "<prompt>" \
-  < /dev/null > <scratchpad>/codex-1.jsonl 2> <scratchpad>/codex-1.err
+  -C /path/to/repo --json -o <scratch>/codex-1.md "<prompt>" \
+  < /dev/null > <scratch>/codex-1.jsonl 2> <scratch>/codex-1.err
 ```
 
 - `-o` writes **only** the final message. Bare `codex exec` buries it in a huge trace.
@@ -32,8 +32,8 @@ codex exec --sandbox read-only -m gpt-5.6-sol -c model_reasoning_effort="high" \
 
 ```bash
 codex exec resume -m gpt-5.6-sol -c model_reasoning_effort="high" \
-  -c sandbox_mode="read-only" -o <scratchpad>/codex-2.md <thread_id> "<prompt>" \
-  < /dev/null > <scratchpad>/codex-2.out 2> <scratchpad>/codex-2.err
+  -c sandbox_mode="read-only" -o <scratch>/codex-2.md <thread_id> "<prompt>" \
+  < /dev/null > <scratch>/codex-2.out 2> <scratch>/codex-2.err
 ```
 
 - The same pipe trap applies: redirect stdout to a file, never pipe it to `head`/`grep`/`tee`, or codex panics with `Broken pipe` before `-o` is written.

@@ -35,7 +35,7 @@ Done when: every task has a deliverable and a check with an expected result, and
 
 ## 4. Write the plan
 
-Save it to `.eric/plans/YYYY-MM-DD-<topic>.md` at the repo root, in the format in [format.md](format.md).
+Save it to `.eric/plans/YYYY-MM-DD-<topic>.md` at the repo root, with the date from `date +%F`, in the format in [format.md](format.md).
 
 Every step carries its real content: the exact code, text, or config to write, and the exact command with its `Expected:` output. A plan is broken if it contains any of these:
 

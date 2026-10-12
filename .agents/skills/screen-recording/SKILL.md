@@ -9,7 +9,7 @@ Record with ScreenCaptureKit through `record.py` in this skill's folder, then me
 
 ## Record
 
-1. Start the recording in the background, in a directory you own (a `.eric/` dir in the repo under study works). The output path must be absolute. Pass a duration in seconds, or leave it out to record until stopped:
+1. Start the recording in the background, in the task's scratch directory (see the Environment rules). The output path must be absolute. Pass a duration in seconds, or leave it out to record until stopped:
 
    ```bash
    nohup nix shell nixpkgs#uv --command uv run --no-project \

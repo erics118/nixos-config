@@ -21,7 +21,7 @@ Prefer a headless recipe when one reaches the behavior.
 - Terminal output (nvim, tmux, a shell prompt, a statusline, a TUI, colors) counts as exercisable: the tmux skill. Start a fresh instance, since a running one keeps the old config. Capture the pane.
 - Code with tests: run the tests that cover the change, then one real run of the entry point the user uses.
 - A daemon or service: restart it, then read its status and its log since the restart (`launchctl print gui/$UID/<label>`, `systemctl status`, `journalctl -u <unit> --since`). On another host, use `tailscale ssh`.
-- A GUI on macOS (sketchybar, a window manager, an app): reload it (`sketchybar --reload`), then `screencapture -x <scratchpad>/shot.png` and read the image. Compare against a screenshot from before the change when the change is visual.
+- A GUI on macOS (sketchybar, a window manager, an app): reload it (`sketchybar --reload`), then `screencapture -x <scratch>/shot.png` into the task's scratch directory and read the image. Compare against a screenshot from before the change when the change is visual.
 - Firefox chrome: the firefox-ui skill in `~/nixos-config`.
 - A keyboard shortcut or a clipboard action: make the expected value unique (a URL or text that can't already be there), seed the clipboard with a different sentinel, send only the action under test (`cliclick kd:cmd,shift t:c ku:cmd,shift` for real key events), then read the clipboard. Inconsistent runs mean it does not work.
 - A remote host or root context: run it the way the real caller does. Use `sudo env -i <cmd>` for a systemd unit, since plain `sudo` leaks `SUDO_UID`.

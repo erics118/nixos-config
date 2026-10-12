@@ -35,8 +35,8 @@ Read-only throughout.
 
 Coverage contract: inventory every identifiable subsystem. Give each a stable ID and name,
 an exact ownership boundary, its key files and major interfaces, and a status (queued, in
-review, finding, skip). Keep one canonical inventory file outside the repo (Claude: the session
-scratchpad; Codex and pi: `$(mktemp -d)`) holding the inventory, confirmed
+review, finding, skip). Keep one canonical inventory file in the task's scratch directory
+(see the Environment rules) holding the inventory, confirmed
 findings, explicit skips, cross-cutting patterns, duplicates, and priorities. A broad
 catch-all row does not prove coverage. Do not skip the unglamorous corners: scripts, CLIs,
 build and deploy config, and vendored assets are subsystems too.
