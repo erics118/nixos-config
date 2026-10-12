@@ -35,6 +35,9 @@ hl.config({
     },
 })
 
+-- pinned so creating the agent output never pushes the physical display aside
+hl.monitor({ output = "HDMI-A-1", mode = "preferred", position = "0x0", scale = 1 })
+
 -- agent desktop: a virtual monitor parked far off to the side so the physical
 -- display never shows it, and agents have a screen when no monitor is plugged in
 hl.monitor({
