@@ -17,7 +17,7 @@ The plan already did the thinking. Execute it exactly and prove every task with 
 ## Setup
 
 1. Read the plan once.
-2. If the Git rules don't let you commit here, tell the user once that the work will stay uncommitted, and that setting `eric-agent.commit` in this repo to a committing level from the Git rules lets you commit as work lands. Do not wait for an answer.
+2. If the Git rules don't let you commit here, tell the user once that the work will stay uncommitted, and that setting `eric-agent.commit` in this repo to a committing level from the Git rules lets you commit each feature or fix once it is finished. Do not wait for an answer.
 3. The progress file is `.eric/plans/<plan-basename>/progress.md`, where `<plan-basename>` is the plan file name without `.md`.
    - If the progress file exists, every task with a `Task N: done` line is finished. Resume at the first task without one.
    - Otherwise run `mkdir -p .eric/plans/<plan-basename>` and create the file with the first line `# progress - plan: <plan path>`.
@@ -42,7 +42,7 @@ Done when: every `Expected:` line was compared against real output, the check pa
 
 ## Final review
 
-Take a second snapshot the same way, and run `git diff <start> <end> > .eric/plans/<plan-basename>/final.diff`. The diff includes new files. Send it to the other model: consulting-codex from Claude, consulting-claude from Codex or pi. Give it the plan path and its Review Focus section verbatim, and ask it to report where the diff misses a requirement, breaks on a Review Focus input, or does anything the plan did not ask for.
+Take a second snapshot the same way, and run `git diff <start> <end> > .eric/plans/<plan-basename>/final.diff`. The diff includes new files. Send it to the other model. Give it the plan path and its Review Focus section verbatim, and ask it to report where the diff misses a requirement, breaks on a Review Focus input, or does anything the plan did not ask for.
 
 Grade each finding by what a person using the result gets. Fix Critical and Important findings, each with its check re-run. Record a finding you decline as a ruling, and a minor one as `Final: minor (deferred): <one line>`.
 

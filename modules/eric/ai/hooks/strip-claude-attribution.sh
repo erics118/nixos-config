@@ -12,10 +12,13 @@ hook_parse_command
 hook_any 'git | .[0] == "commit"' || exit 0
 printf '%s' "$HOOK_COMMAND" | rg -qi '(co-authored-by|assisted-by):.*(claude|anthropic)|generated with.*claude|claude-session:' || exit 0
 
+# a trailer goes from its keyword, after any indent or robot emoji, to the end of its line or quote,
+# so a message on the same line stays
 stripped=$(printf '%s' "$HOOK_COMMAND" | jq -Rrs '
-  gsub("[^\n\"\u0027]*(co-authored-by|assisted-by):[^\n\"\u0027]*(claude|anthropic)[^\n\"\u0027]*\n?"; ""; "i")
-  | gsub("[^\n\"\u0027]*generated with[^\n\"\u0027]*claude[^\n\"\u0027]*\n?"; ""; "i")
-  | gsub("[^\n\"\u0027]*claude-session:[^\n\"\u0027]*\n?"; ""; "i")
+  "[ \t]*(\ud83e\udd16[ \t]*)?" as $lead |
+  gsub($lead + "(co-authored-by|assisted-by):[^\n\"\u0027]*(claude|anthropic)[^\n\"\u0027]*\n?"; ""; "i")
+  | gsub($lead + "generated with[^\n\"\u0027]*claude[^\n\"\u0027]*\n?"; ""; "i")
+  | gsub($lead + "claude-session:[^\n\"\u0027]*\n?"; ""; "i")
 ')
 
 hook_update_command "$stripped"

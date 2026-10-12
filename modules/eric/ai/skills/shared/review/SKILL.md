@@ -18,8 +18,8 @@ Done when: the brief file exists and names every path in scope.
 
 Give both the same brief, before reading anything yourself:
 
-- First start the `auditor` agent in the background: the Agent tool under Claude, native subagents under Codex, pi-subagents under pi.
-- Then run the other model as its consulting skill says: `consulting-codex` under Claude, `consulting-claude` under Codex or pi.
+- First start the `auditor` agent in the background.
+- Then run the other model as its consulting skill says.
 
 Read the target yourself while they run, or after if the other model's call blocks, so you can judge their findings.
 

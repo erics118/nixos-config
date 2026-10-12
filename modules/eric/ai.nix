@@ -46,25 +46,6 @@
           exec npx --yes @upstash/context7-mcp@4.0.2
         '';
       };
-      cornellConfluenceMcp = pkgs.writeShellApplication {
-        name = "cornell-confluence-mcp";
-        runtimeInputs = [ pkgs.uv ];
-        text = ''
-          KEY_FILE=/run/secrets/api/cornell-confluence
-          CONFLUENCE_PERSONAL_TOKEN="''${CONFLUENCE_PERSONAL_TOKEN:-}"
-          if [[ -z $CONFLUENCE_PERSONAL_TOKEN && -r $KEY_FILE ]]; then
-            CONFLUENCE_PERSONAL_TOKEN="$(<"$KEY_FILE")"
-          fi
-          if [[ -z $CONFLUENCE_PERSONAL_TOKEN ]]; then
-            printf >&2 'cornell-confluence-mcp: no token. export CONFLUENCE_PERSONAL_TOKEN or provision %s\n' "$KEY_FILE"
-            exit 1
-          fi
-          export CONFLUENCE_PERSONAL_TOKEN
-          export CONFLUENCE_URL=https://confluence.cornell.edu
-
-          exec uvx mcp-atlassian@0.23.1
-        '';
-      };
     in
     {
       home.file = {
@@ -78,6 +59,7 @@
         "keybindings.json"
         "settings.json"
         "statusline.sh"
+        "themes"
       ]
       // links ".codex" "codex" [
         "agents"
@@ -110,13 +92,12 @@
 
       # agent shells pass unmatched globs and words starting with = through like bash
       programs.zsh.envExtra = ''
-        [[ -n $CLAUDECODE || -n $CODEX_SHELL ]] && setopt no_nomatch no_equals
+        [[ -n ''${CLAUDECODE-} || -n ''${CODEX_SHELL-} ]] && setopt no_nomatch no_equals
       '';
 
       home.packages = with pkgs; [
         ccusage
         context7Mcp
-        cornellConfluenceMcp
       ];
     };
 }

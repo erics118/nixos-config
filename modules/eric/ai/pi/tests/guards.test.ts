@@ -97,6 +97,7 @@ test("applies a hook's rewritten command", async () => {
   );
   assert.equal(await result, undefined);
   assert.doesNotMatch(event.input.command, /Co-Authored-By/);
+  assert.match(event.input.command, /^git commit -m 'x\n/);
 });
 
 test("skips hooks whose matcher does not name the tool", async () => {

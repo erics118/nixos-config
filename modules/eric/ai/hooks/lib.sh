@@ -42,9 +42,12 @@ hook_command_dir() {
   [ -z "$to" ] || HOOK_DIR=$(hook_resolve "$to")
 }
 
-# a path with a leading ~ expanded and a relative path joined onto $HOOK_DIR. empty means $HOOK_DIR
+# a path with a leading ~, $HOME, or $PWD expanded and a relative path joined onto $HOOK_DIR. empty means $HOOK_DIR
+# the parser keeps $HOME and $PWD as literal text, and reads ${HOME} and ${PWD} the same way
 hook_resolve() {
   local p=${1/#\~/$HOME}
+  p=${p/#\$HOME/$HOME}
+  p=${p/#\$PWD/${HOOK_DIR:-$PWD}}
   case "$p" in '') p=$HOOK_DIR ;; /*) ;; *) p=$HOOK_DIR/$p ;; esac
   printf '%s' "$p"
 }
@@ -60,6 +63,9 @@ hook_is_codex() {
 hook_parse_command() {
   HOOK_CALLS=$(hook_calls_of "$HOOK_COMMAND" 0) ||
     hook_deny "The guard hooks could not parse this command, so they could not check it: $HOOK_CALLS. Rewrite it in plain bash syntax."
+  printf '%s' "$HOOK_CALLS" | jq -s -e 'any(.[]; .stdin)' >/dev/null &&
+    hook_deny 'A shell here reads its script from standard input, so the guard hooks cannot check it. Pass the script with bash -c, a here-string, or a heredoc.'
+  return 0
 }
 
 hook_calls_of() {
@@ -104,38 +110,67 @@ HOOK_CALLS_JQ='
       else $i end;
     go(1);
   def pos($xs): . as $a | ([range(length) | select($a[.] as $w | $xs | index([$w]))][0] // null) | if . then . + 1 else 0 end;
+  # index of the installable `nix run` starts. it runs as a command named after the part past the #
+  def installable: . as $a | def go($i):
+      if $i >= ($a | length) then 0
+      elif $a[$i] | IN("--override-input", "--option", "--arg", "--argstr") then go($i + 3)
+      elif $a[$i] | IN("-I", "--include", "--expr", "-f", "--file", "--inputs-from") then go($i + 2)
+      elif $a[$i] | startswith("-") then go($i + 1)
+      else $i end;
+    go(2);
   # how many leading words are wrappers around the real command
   def off: if length == 0 then 0 else
       (.[0] | sub(".*/"; "")) as $c |
       (if $c == "env" then opts(["-u", "-C", "-S"])
-       elif ["command", "builtin", "exec", "nohup", "eval", "time"] | index([$c]) then opts([])
+       elif $c == "command" and any(.[1:][]; IN("-v", "-V")) then 0
+       elif ["command", "builtin", "exec", "nohup", "eval", "time", "noglob", "nocorrect"] | index([$c]) then opts([])
+       elif $c == "caffeinate" then opts(["-w", "-t"])
+       elif $c == "stdbuf" then opts(["-i", "-o", "-e"])
+       elif $c == "xcrun" then opts(["--sdk", "--toolchain", "-sdk"])
+       elif $c == "flock" then opts(["-w", "-E", "--timeout", "--conflict-exit-code"]) + 1
        elif $c == "sudo" then opts(["-u", "-g", "-p", "-C", "-D", "-h", "-R", "-T", "-U"])
        elif $c == "nice" then opts(["-n"])
        elif $c == "timeout" or $c == "gtimeout" then opts(["-s", "-k"]) + 1
        elif $c == "xargs" then opts(["-I", "-n", "-P", "-L", "-d", "-E", "-s", "-a"])
        elif $c == "direnv" and .[1] == "exec" then 3
        elif $c == "nix" and (.[1] == "develop" or .[1] == "shell") then pos(["-c", "--command"])
+       elif $c == "nix" and .[1] == "run" then installable
        elif $c == "find" then pos(["-exec", "-execdir", "-ok", "-okdir"])
        else 0 end) as $n |
       if $n > 0 and $n < length then $n + (.[$n:] | off) else 0 end
     end;
-  # the script a shell runs with -c, or the words eval joins
+  def after($flags): . as $a | ([range(length) | select($a[.] | IN($flags[]))][0]) as $i | if $i then $a[$i + 1] else null end;
+  # the script a shell runs with -c, the words eval joins, or a script env -S, flock -c, or nix-shell --run runs
   def script: (.[0] // "" | sub(".*/"; "")) as $c |
     if $c == "eval" then .[1:] | join(" ")
+    elif $c == "env" then after(["-S", "--split-string"]) // ([.[] | select(startswith("--split-string=")) | sub("^[^=]*="; "")][0])
+    elif $c == "flock" then after(["-c", "--command"])
+    elif $c == "nix-shell" then after(["--run", "--command"])
     elif ["sh", "bash", "zsh", "dash"] | index([$c]) then
       . as $a | ([range(1; length) | select($a[.] | test("^-[A-Za-z]*c[A-Za-z]*$"))][0]) as $i |
       if $i then $a[$i + 1] else null end
     else null end;
+  # a shell with no -c and no script file, or with -s, reads its script from standard input
+  def stdin_shell: (.[0] // "" | sub(".*/"; "")) as $c | (["sh", "bash", "zsh", "dash"] | index([$c])) and
+    (any(.[1:][]; IN("--version", "--help")) | not) and
+    (index(["-s"]) or ([.[1:][] | select(test("^[-+]") | not)] | length == 0));
   .. | objects | select(has("Cmd") and (.Cmd == null or .Cmd.Type == "CallExpr")) |
-    {argv: [.Cmd.Args[]? | word], dyn: [.Cmd.Args[]? | dyn], redirs: [.Redirs[]? | {op: .Op, fd: (.N.Value // ""), word: (.Word | word)}]} |
+    {argv: [.Cmd.Args[]? | word], dyn: [.Cmd.Args[]? | dyn],
+      redirs: [.Redirs[]? | {op: .Op, fd: (.N.Value // ""), word: (.Word | word), hdoc: (if .Hdoc then .Hdoc | word else null end)}]} |
     (.argv | off) as $n |
     (if $n > 0 then .wrapper = true else . end), (select($n > 0) | .prefix = .argv[:$n] | .argv |= .[$n:] | .dyn |= .[$n:]) |
-    (.argv | script) as $s | if $s then .script = $s else . end
+    (.argv | script) as $s |
+    # a here-string or heredoc is checked as the script. a pipe hides it
+    if $s then .script = $s
+    elif .argv | stdin_shell then
+      ([.redirs[] | select(.op == "<<<") | .word] + [.redirs[] | select(.op | IN("<<", "<<-")) | .hdoc] | .[0]) as $in |
+      if $in then .script = $in else .stdin = true end
+    else . end
 '
 
 # jq helpers over one $HOOK_CALLS line. git yields the subcommand and its words after global options
 HOOK_JQ='
-  def tool: .argv[0] // "" | sub(".*/"; "");
+  def tool: .argv[0] // "" | sub(".*/"; "") | sub(".*#"; "");
   def git: select(tool == "git") | .argv[1:] |
     until(length == 0 or (.[0] | startswith("-") | not);
       if .[0] | IN("-C", "-c", "--git-dir", "--work-tree", "--namespace", "--config-env") then .[2:] else .[1:] end) |
@@ -188,14 +223,17 @@ hook_deny_git_env() {
 hook_gate_dirs() {
   HOOK_GATE_DIRS=
   hook_any "$1" || return 0
-  # hook_command_dir follows only a leading `cd DIR`
-  printf '%s' "$HOOK_CALLS" | jq -s -e '(.[1:] | any(.argv[0] // "" | IN("cd", "pushd"))) or
+  HOOK_GATE_DIRS=$(hook_each "select($1) | git_dir" | while IFS= read -r d; do printf '%s\n' "$(hook_resolve "$d")"; done | sort -u)
+  [[ $HOOK_GATE_DIRS != *'$'* ]] ||
+    hook_deny 'A git commit or push here names its repo with a shell variable or command substitution, which the guard cannot resolve. Name the repo with a literal path in git -C or a leading cd.'
+  # hook_command_dir follows only a leading `cd DIR`. an absolute or ~ -C ignores any cd
+  hook_any "($1) and (git_dir | test(\"^[/~]\") | not)" &&
+    printf '%s' "$HOOK_CALLS" | jq -s -e '(.[1:] | any(.argv[0] // "" | IN("cd", "pushd"))) or
     (.[0].argv // [] | .[0] == "pushd" or (.[0] == "cd" and length != 2))' >/dev/null &&
-    hook_deny 'A git commit or push here follows a cd other than a leading `cd DIR`. Put a plain cd first, or name the repo with git -C.'
+    hook_deny 'A git commit or push here follows a cd other than a leading `cd DIR`. Put a plain cd first, or name the repo with an absolute git -C.'
   hook_any "($1) and git_elsewhere" &&
     hook_deny 'A git commit or push here names its repo with --git-dir, --work-tree, core.worktree, a second -C, or a wrapper that changes directory. Name the repo with one git -C.'
-  # shellcheck disable=SC2034
-  HOOK_GATE_DIRS=$(hook_each "select($1) | git_dir" | while IFS= read -r d; do printf '%s\n' "$(hook_resolve "$d")"; done | sort -u)
+  return 0
 }
 
 # print the jq filter's raw output for each $HOOK_CALLS line, with the $HOOK_JQ helpers available

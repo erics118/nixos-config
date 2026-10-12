@@ -34,6 +34,10 @@
           {
             "command": "\"$HOME/.agents/hooks/block-sudo-probe.sh\"",
             "type": "command"
+          },
+          {
+            "command": "\"$HOME/.agents/hooks/block-exec-flags.sh\"",
+            "type": "command"
           }
         ],
         "matcher": "Bash"
@@ -47,7 +51,7 @@
             "type": "command"
           },
           {
-            "command": "bash '/Users/eric/.codex/herdr-agent-state.sh' session",
+            "command": "bash \"$HOME/.codex/herdr-agent-state.sh\" session",
             "timeout": 10,
             "type": "command"
           }

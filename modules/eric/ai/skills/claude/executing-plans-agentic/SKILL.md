@@ -10,8 +10,7 @@ A fresh implementer subagent per task, a fresh reviewer after it, and one final 
 
 ## Rules for the whole run
 
-- Rulings, not stalls. Decide every conflict, plan defect, or choice the plan left open that you can derive from the requirements, the code, or the user's rules. Record it as `Ruling: <what you decided> - <why> - <cost if wrong>` and keep going.
-- Stop and ask only for a requirement the plan does not settle and only the user can, or an action the Decisions and Git rules of the global instructions reserve for the user.
+- The rulings and stop-and-ask rules in [executing-plans](../executing-plans/SKILL.md) Rules for the whole run apply.
 - Commits. Invoking this skill is the instruction to commit, on the plan's branch only, one or more commits per task.
 - Hand artifacts over as files. Everything pasted into a dispatch or printed back stays in your context for the rest of the run.
 - Always pass the model explicitly, since an omitted model inherits the session's:

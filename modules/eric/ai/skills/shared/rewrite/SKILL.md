@@ -1,6 +1,6 @@
 ---
 name: rewrite
-description: Use when an edit would remove, condense, or restructure more than a few lines of existing prose (instructions, skills, docs, READMEs, resumes), so no detail is lost without approval
+description: Use when an edit would remove, condense, or restructure more than a few lines of existing prose (instructions, skills, docs, READMEs), so no detail is lost without approval
 argument-hint: "<file> <goal>"
 ---
 

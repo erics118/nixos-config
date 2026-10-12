@@ -17,6 +17,7 @@ case "$file" in
 *.c | *.cc | *.cpp | *.cxx | *.h | *.hpp | *.hh | *.js | *.jsx | *.ts | *.tsx | *.go | *.rs | *.java | *.kt | *.swift | *.cs | *.scala | *.php | *.json | *.jsonc | *.json5) mode=slash ;;
 *.css | *.scss | *.less) mode=block ;;
 *.sh | *.bash | *.zsh | *.py | *.nix | *.yaml | *.yml | *.toml | *.rb | *.pl) mode="hash" ;;
+*.lua) mode=dash ;;
 *) exit 0 ;;
 esac
 
@@ -38,6 +39,8 @@ out=$(printf '%s\n' "$added" | awk -v mode="$mode" -v attop="$attop" '
   if(mode=="hash"){
     if(line ~ /^[[:space:]]*#!/) c=0
     else if(line ~ /^[[:space:]]*#/) c=1
+  } else if(mode=="dash"){
+    if(line ~ /^[[:space:]]*--/) c=1
   } else {
     if(inblock){ c=1; if(line ~ /\*\//) inblock=0 }
     else if(mode=="slash" && line ~ /^[[:space:]]*\/\//) c=1

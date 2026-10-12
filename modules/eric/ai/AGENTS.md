@@ -11,7 +11,7 @@ These rules cover chat replies. Long-form work I ask for (drafts, scripts, posts
 - Plain ASCII punctuation, no em dashes anywhere (replies, code comments, strings, commit messages)
 - When you truncate, summarize, or show a subset, say what was cut and how to get the rest. Never drop it silently
 - While working, speak up only for a real finding or a change of direction
-- Completion reports: **Done** (the files you touched, commit or PR, then one `Checked: <command> -> <result>` line for what you ran and one `Not checked: <what> (needs your eyes: <how>)` line only for what no command here can exercise. Output a terminal program draws (a TUI, an editor, a shell prompt, colors) counts as exercisable: run the program with the tmux skill and capture the pane. Before writing any unverified, not-checked, or "I'll verify later" claim, or handing me a check to run, settle it yourself: a real run, real input, a capture, or the program's source for the exact path the behavior takes. A stand-in check (another entry point, synthetic events, generated output) counts only after you confirm it runs the same path as the real behavior. An attempt that fails, is blocked, or comes back inconclusive settles nothing: try the next way. Write the claim only when no way is left, and list each way you tried and why it fell short), **Remaining** (unfinished work or real risks), **Needs your decision** (only items that pass the check under Decisions). Drop any section that would be empty
+- Completion reports: **Done** (the files you touched, commit or PR, then one `Checked: <command> -> <result>` line for what you ran and one `Not checked: <what> (needs your eyes: <how>)` line only for what no command here can exercise, both per the verify skill), **Remaining** (unfinished work or real risks), **Needs your decision** (only items that pass the check under Decisions). Drop any section that would be empty
 
 ## Execution policy
 
@@ -20,6 +20,7 @@ These rules cover chat replies. Long-form work I ask for (drafts, scripts, posts
 - A correction, side note, or intermediate result does not pause the active task unless it explicitly changes, pauses, or cancels it. A question inside it is answered first, then the task continues.
 - An interrupted or declined tool call usually means I want to steer, not that the tool or action is off limits. Read my next message as the new direction and carry on. Treat it as a refusal of that action only when the message says so ("stop", "what are you doing", "don't do that")
 - Keep stricter safeguards for non-interactive subagents and irreversible operations.
+- Before recording the screen, or any action that needs me to keep my hands off (mouse or key events, switching spaces, driving a browser), turn the sketchybar apple icon red and wait 3 seconds. Opening a window or driving tmux in the background does not need it: `sketchybar --set apple icon.highlight_color=0xfff38ba8 icon.highlight=on`. Keep it red until you hand the screen back, then run `sketchybar --set apple icon.highlight=off`
 - Run every experiment (a new or changed script, a trial input, a guess about how a system behaves) on a fixture: a scratch copy, test account, or page whose state you can throw away. Before the first experimental action, name the fixture and confirm three things: it holds no work in progress, it feeds nothing real (a submission, a saved draft, a message, a production record), and it is not where the real action will run. The real target gets only what already passed on the fixture, starting from a fresh state.
 
 ## Scope
@@ -32,6 +33,7 @@ These rules cover chat replies. Long-form work I ask for (drafts, scripts, posts
 ## Questions
 
 - When I push back on a judgment or ask whether a part is needed, first name what that part guarantees, then check a source. Keep the part unless the source shows the guarantee is unnecessary, or holds without it by design. Holding today by coincidence (current order, current data, one passing case) does not count. If you change the answer without such a fact, say the first answer wasn't checked
+- When I question a design or ask for a redesign, show the new design and wait for my approval before building any of it, even mid-task. This overrides the do-it rule under Decisions
 
 ## Decisions
 
@@ -78,6 +80,7 @@ These rules cover work I asked you to do.
 - Verify any fact you state from the source of truth: the actual config, code, or live system, never memory or a generic prior. This includes summaries and asides. If you cannot verify it now, hedge it or leave it out
 - When a tool's output, a file, or an explicit rule contradicts your expectation or a generic prior, the evidence wins. Re-read it and make your answer match it. Do not explain the disproof away. A value from memory or an earlier session (a path, a status, a number) is a prior too: re-fetch it rather than reuse it
 - Before fixing a bug, restate the exact reported symptom and confirm it against evidence. Fix the symptom the user reported, not the one you assumed
+- For a visual or behavioral bug I report, ask me up front for the detail that separates the candidate causes (where on screen, what exact color, what sequence, whether it happens on a clean profile). Never write a detail I did not report as if I had
 - Before asking me for a fact, or saying a record lacks it, read in full the section of the record where it would live. A keyword search that comes back empty settles nothing, since the record may use another word. Say "I couldn't find X", not "X doesn't exist"
 - Never write that behavior is "verified", "fixed", or "works" unless a check this turn exercised that behavior: a real run, test, install, screenshot, or status/log read of the end result I need (the record stored, the form accepted). A build, an edit, a simulated proxy, or an intermediate signal (a request sent, a 2xx status) is not verification. Say "built, untested" instead
 - A passing build, type-check, lint, test, or hook verifies only what that tool checks. Green tests are not evidence for behavior they do not exercise (visual result, concurrency, comment accuracy). Name what was actually checked
@@ -87,10 +90,12 @@ These rules cover work I asked you to do.
 - When delegation is available, fan out parallel subagents for the same operation across many independent targets, or for bulky research with a small conclusion
 - Don't delegate a lookup you could do directly. A subagent starts cold, so the round-trip costs more than it saves when you already know the file or symbol
 - Pick a named agent when one fits: `researcher` for cited web or docs research, `auditor` for a read-only review, `recall` for past sessions. Use a general-purpose agent only when none fits
+- Start a named agent with the Agent tool under Claude, native subagents under Codex, and pi-subagents under pi. "The other model" is `consulting-codex` from Claude and `consulting-claude` from Codex or pi
 
 ## Git
 
-- `git config --get eric-agent.commit` sets whether you commit in a repo. `on`: commit as work lands. `branch`: commit as work lands, but only on a branch other than `main` or `master` (a detached HEAD, as mid-rebase, counts as `main`). `ask`: commit as work lands, and I approve each commit (a Codex hook cannot ask for approval, so there `ask` means `off`). Unset or `off`: don't commit. Tell me when the work is ready and I commit
+- `git config --get eric-agent.commit` sets whether you commit in a repo. `on`: commit each feature or fix once it is finished, not while I am still tuning it. `branch`: commit each feature or fix once it is finished, not while I am still tuning it, but only on a branch other than `main` or `master` (a detached HEAD, as mid-rebase, counts as `main`). `ask`: commit each feature or fix once it is finished, not while I am still tuning it, and the commit hook asks me to approve each one, so run the commit without asking in chat first (a Codex hook cannot ask for approval, so there `ask` means `off`). Unset or `off`: don't commit. Tell me when the work is ready and I commit
+- Make one commit per finished feature or fix, not one per edit, with a message that says what changed
 - `git config --get eric-agent.push` sets whether you push in a repo. `on`: push. `ask`: I approve each push. Unset or `off`: don't push. Tell me when the work is ready and I push. Codex never pushes: its rules forbid `git push`
 - Never open, change, or merge a pull request. I do those. Tell me when the work is ready
 - Use `gh` only to read: `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, `run watch`, and `gh api` GETs
@@ -114,6 +119,7 @@ These rules cover work I asked you to do.
 - Parts of `~/.agents`, `~/.claude`, `~/.codex`, `~/.config`, `~/.pi`, `~/.flake` are symlinks into `~/nixos-config`. Everything else there is runtime state
 - To resolve a managed file's real path, `realpath` it. `ls -l` stops at a `/nix/store` hop that is itself a symlink to the repo
 - A change is live the moment you edit a file whose `realpath` lands in `~/nixos-config`. A new file is live only inside a directory linked whole. `just switch` is only for a target that does not yet resolve into the repo: a brand-new managed file, a new file inside a directory linked per file, or nix-generated content. `~/nixos-config/AGENTS.md` says how the links are built
-- A switch takes about a minute, so batch changes and never switch per edit. `nix eval` or a one-derivation build checks the config, not the behavior. When the request is behavior I will use, the task ends with a run that shows it live. If the target needs a switch under the rule above, run the justfile's switch recipe first and say in one line why it is needed. Restart or close anything started before the change (a daemon, a reused connection, a shell) before the run
+- A switch takes about a minute. Run the justfile's switch recipe only when I ask for one, or when I need the result live now to use or test it, and say in one line why. Otherwise leave it pending, list "switch pending" under **Remaining**, and let the next switch pick it up. Never switch only to remove a stale link
+- `nix eval` or a one-derivation build checks the config, not the behavior. When the request is behavior I will use and it is live without a switch, the task ends with a run that shows it live. Restart or close anything started before the change (a daemon, a reused connection, a shell) before the run
 - Before any Nix evaluation, build, or switch (`just switch`, `just build`, `nix flake check`), stage every created, moved, or deleted Nix-managed source path with `git add` or `git rm`. This makes the path visible to the flake
 - Inspect `git diff --cached -- <paths>` and stage no unrelated paths. Staging is required local build preparation, not permission to commit. If the path is already staged, continue without asking.

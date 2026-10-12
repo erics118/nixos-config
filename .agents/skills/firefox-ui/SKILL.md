@@ -1,6 +1,6 @@
 ---
 name: firefox-ui
-description: Use when changing or debugging Firefox chrome (userChrome.css, userChrome.au.css, .uc.js scripts, user.js prefs) or the look and keys of the browser window.
+description: Use when changing or debugging Firefox chrome (userChrome.css, .uc.js scripts, user.js prefs) or the look and keys of the browser window.
 ---
 
 The config lives in `~/nixos-config/modules/eric/desktop/firefox/`. Read its `README.md` first for how it loads, how to reload, and which extensions it depends on.

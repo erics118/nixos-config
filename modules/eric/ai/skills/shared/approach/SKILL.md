@@ -13,4 +13,4 @@ Decide how a job should be done before any code changes.
 
 Write nothing but the survey file. Once the user asks for the change, make a direct edit for a small change or run `writing-plans` for a larger one.
 
-With `--adversary`, give only the job line to the other model through `consulting-codex` from Claude, or `consulting-claude` from Codex or pi, before writing the verdict, and quote its answer verbatim.
+With `--adversary`, give only the job line to the other model before writing the verdict, and quote its answer verbatim.

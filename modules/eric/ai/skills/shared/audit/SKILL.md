@@ -1,7 +1,7 @@
 ---
 name: audit
 description: Use when asked to audit or sweep existing code or config for anything worth fixing.
-argument-hint: "[empty for whole repo | area | 'diff' for uncommitted changes] [+ a lens to narrow: cleanup|quality|debt|modernize|structure|correctness|robustness|concurrency|security|contract|performance|tests|operability|docs]"
+argument-hint: "[empty for whole repo | area | 'diff' for uncommitted changes] [+ a lens to narrow: cleanup|quality|debt|modernize|structure|architecture|correctness|robustness|concurrency|security|contract|performance|tests|operability|docs]"
 effort: high
 ---
 
@@ -19,7 +19,8 @@ By default the sweep is complete: hunt everything a careful senior would flag as
 any way. The lenses below are a checklist to force that breadth, not a fence -- a genuine
 problem that fits no named lens still counts. Reach for the list to check you have missed no
 dimension, never to bound what you look for. Narrow to a single lens, or to `cleanup` /
-`quality` for the debt+structure+modernize group, only when the ask names one.
+`quality` for the debt+structure+modernize group, only when the ask names one. The
+`architecture` lens runs `architecture-review` alone, at any depth.
 
 Match depth to the ask too. A light ask is one of "surface", "quick", "cleanup", "tidy", or a
 small named target. It gets a single direct pass for the obvious, high-confidence wins: read,
@@ -30,8 +31,7 @@ named area larger than a few files also gets the full sweep, bounded to that are
 ## Survey the scope (full sweep)
 
 You are the coordinator. Run until the whole scope is reviewed and the findings are validated.
-Read-only throughout: edit no files, run no fixes, change nothing. Read-only inspection commands
-are fine.
+Read-only throughout.
 
 Coverage contract: inventory every identifiable subsystem. Give each a stable ID and name,
 an exact ownership boundary, its key files and major interfaces, and a status (queued, in
@@ -41,14 +41,19 @@ findings, explicit skips, cross-cutting patterns, duplicates, and priorities. A 
 catch-all row does not prove coverage. Do not skip the unglamorous corners: scripts, CLIs,
 build and deploy config, and vendored assets are subsystems too.
 
-Dispatch fresh read-only subagents in parallel, one distinct subsystem each with a
-non-overlapping boundary. Use the `auditor` agent: the Agent tool under Claude, native subagents under Codex, pi-subagents under pi. Only where no subagent mechanism exists, run
-each subsystem review yourself in sequence. Keep every worker read-only, bound concurrency
-to the lanes you can coordinate, wait on the batch together, and harvest each result. Brief
-each worker to apply every lens (or the single focused lens) within its boundary. For each
+Dispatch fresh `auditor` agents in parallel, one distinct subsystem each with a
+non-overlapping boundary. Only where no subagent mechanism exists, run
+each subsystem review yourself in sequence. Bound concurrency
+to the lanes you can coordinate, wait on the batch together, and harvest each result. Every
+worker brief opens with a `Lenses:` line naming each lens it applies within its boundary: all
+of them, or the one the ask names. A brief limited to defects is a narrowed audit. The brief
+points the worker at this file's Lenses and Rules sections by path. For each
 finding it returns: what and where (`file:line`), severity or effort, why it matters with a concrete
 failure scenario, the proposed fix, regression risk, and confidence. It may note
 cross-subsystem concerns but must not expand scope.
+
+Run `architecture-review` once over the same scope, alongside the subsystem lanes. Its
+findings span subsystems, so they keep their own section instead of one subsystem owner.
 
 Validate every finding against the current code before accepting it. Reject or demote
 findings that are vague, duplicate another, misread intentional semantics, or merely relocate
@@ -61,7 +66,8 @@ and ownership overlap; materiality and over-abstraction; severity and priority r
 omission gets its own subsystem row, audited; do not hide it by broadening a finished
 boundary.
 
-Done when every subsystem has a finding or explicit skip, each finding has complete evidence /
+Done when every subsystem has a finding or explicit skip, the `architecture-review` report is
+in, each finding has complete evidence /
 fix / severity / risk, duplicates and weak claims are removed, and the repository is unchanged.
 
 ## Lenses
@@ -130,6 +136,9 @@ Cross-cutting
   skip mere taste.
 - KISS/YAGNI: add no abstraction and rewrite no working code for fashion. If the code is
   already right, say so and move on.
+- A larger refactor earns its place when it removes a recurring cost: a fix that must land
+  twice, a boundary crossed per action, a workaround at every call site. Rank it by that cost
+  against its risk like any other item.
 - Materiality: a finding needs a failure someone would plausibly hit. On a public surface,
   that someone is any anonymous client sending hostile input. On an owner-only surface, it
   is the owner and their real clients, so guards against the owner's own malformed input or
@@ -150,9 +159,11 @@ Rank by what to fix first: correctness, security, and robustness defects by seve
 items by pain-to-effort. Lead with the highest-impact. For each: what and where (`file:line`),
 why it matters (a concrete failure scenario for a defect), and the fix with rough effort
 (small / medium / large). Group note-only items -- low value, or a design decision rather than
-a bug -- at the end with why they can wait.
+a bug -- at the end with why they can wait. Architecture findings keep the shape
+`architecture-review` gives them, ranked into the same list by impact.
 
 Present the ranked list and change nothing yet. On confirmation, apply the accepted findings
-in priority order, highest-impact first. Every edit traces to a listed finding; make no change
+in priority order, highest-impact first. This covers only fixes inside one subsystem. An
+accepted architecture finding follows `architecture-review`'s last line. Every edit traces to a listed finding; make no change
 beyond the list, and leave note-only or risky items untouched unless explicitly approved. After
 applying, re-run the relevant tests or checks.

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # block shell edits of git-tracked files: sed/perl in place, scripts that write files, and
-# redirects or tee onto a tracked file. these skip the edit tool, so the change never
+# redirects, tee, cp, or mv onto a tracked file. these skip the edit tool, so the change never
 # shows as a diff and /rewind cannot undo it
 set -u
 # shellcheck source-path=SCRIPTDIR source=lib.sh
@@ -44,10 +44,17 @@ if printf '%s' "$HOOK_COMMAND" | rg -q '\b(python3?|node|ruby)\b' &&
   done <<<"$candidates"
 fi
 
-# ... > file, ... >> file, or tee file
+# a file git stores as binary, which the edit tool cannot change either
+binary() {
+  local p
+  p=$(hook_resolve "$1")
+  git -C "$(dirname "$p")" ls-files --eol -- "$(basename "$p")" 2>/dev/null | rg -q '^i/-text'
+}
+
+# ... > file, ... >> file, tee file, or the destination of cp or mv
 while IFS= read -r f; do
   case "$f" in /dev/* | '') continue ;; esac
-  hook_tracked "$f" && hook_deny "$f $reason"
-done < <(hook_each 'writes')
+  hook_tracked "$f" && ! binary "$f" && hook_deny "$f $reason"
+done < <(hook_each 'writes, (select(tool | IN("mv", "cp")) | .argv[1:] | select(length > 1) | .[-1])')
 
 exit 0

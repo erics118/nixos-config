@@ -1,11 +1,13 @@
 ---
 name: ntfy
-description: Use whenever you notify the user - pinging them when a long task finishes, an unattended run needs attention, or they ask to be notified/texted/alerted.
+description: Use when you launch work that runs for minutes in the background (a subagent, workflow, build, or long command), to ping the user when it finishes, and when an unattended run needs attention or they ask to be notified/texted/alerted.
 ---
 
 # ntfy
 
 Push a notification to the user's phone through the self-hosted ntfy server. It reaches the phone whether or not the agent's terminal is open. Use `ntfy` for notifications in every agent. In Claude Code, the `PushNotification` tool also works.
+
+Decide at launch, not at completion. When you start background work, plan the ping then and send it when the completion notification arrives.
 
 Publish to the `claude` topic, which the user's phone subscribes to:
 

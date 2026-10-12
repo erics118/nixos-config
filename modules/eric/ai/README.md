@@ -11,22 +11,23 @@ Claude Code, Codex, and pi share one instruction file and one set of skills.
 
 Invoke with `/name` in Claude Code, `$name` in Codex, and `/skill:name` in pi.
 
-| Moment                                         | Skill                                                                                                |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Small, clear change                            | none                                                                                                 |
-| A question where an edit would be wrong        | `ask`                                                                                                |
-| Which mechanism should do a job, new or not    | `approach`                                                                                           |
-| Why I said or did one specific thing           | `why`                                                                                                |
-| Is this more than the job needs                | `overkill`                                                                                           |
-| Doubt a claim before acting on it              | `recheck`                                                                                            |
-| Where things stand, or what this project is    | `overview`                                                                                           |
-| What is left before ending the session         | `remaining`                                                                                          |
-| Many files, or code plus docs plus CI          | `writing-plans`, then `executing-plans` (or `executing-plans-agentic` in Claude)                     |
-| Before committing                              | `summarize-changes`                                                                                  |
-| Review                                         | `audit` (whole repo or area), or `review` (a diff, file, or plan, with auditor plus the other model) |
-| An agent failed and it should not happen again | `fix-yourself`                                                                                       |
-| Hand the session, or one thread, to an agent   | `handoff`                                                                                            |
-| Start a new dev project                        | `new-project`                                                                                        |
+| Moment                                         | Skill                                                                                             |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Small, clear change                            | none                                                                                              |
+| A question where an edit would be wrong        | `ask`                                                                                             |
+| Which mechanism should do a job, new or not    | `approach`                                                                                        |
+| Why I said or did one specific thing           | `why`                                                                                             |
+| Is this more than the job needs                | `overkill`                                                                                        |
+| Doubt a claim before acting on it              | `recheck`                                                                                         |
+| Where things stand, or what this project is    | `overview`                                                                                        |
+| What is left before ending the session         | `remaining`                                                                                       |
+| Many files, or code plus docs plus CI          | `writing-plans`, then `executing-plans` (or `executing-plans-agentic` in Claude)                  |
+| Before committing                              | `summarize-changes`                                                                               |
+| Review                                         | `audit` (repo, area, or diff), or `review` (two-model red-team of a diff, file, or plan, by hand) |
+| Is the code split the right way into parts     | `architecture-review` (a full `audit` runs it too)                                                |
+| An agent failed and it should not happen again | `fix-yourself`                                                                                    |
+| Hand the session, or one thread, to an agent   | `handoff`                                                                                         |
+| Start a new dev project                        | `new-project`                                                                                     |
 
 ## Guards
 
@@ -40,10 +41,13 @@ Before a shell command:
 - `block-symlink-clobber.sh`: no mv, cp, tee, redirect, in-place sed/perl, or truncate onto any symlink
 - `ask-dangerous-git.sh`: asks before rebase, reset, clean, and other history changes
 - `block-agent-push.sh`: agent pushes (`git push`, `send-pack`, `subtree push`, `lfs push`) follow `git config eric-agent.push` in every repo the command pushes from: unset or `off` (default) denies, `ask` (approve each; Codex treats it as `off`), or `on` (Codex still forbids `git push` in `codex/rules/default.rules`). Agents use `gh` read-only: only `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, `run watch`, `gh status`, and `gh api` GETs run (fields need an explicit `-X GET`, since gh otherwise sends them as a POST). In Codex this hook is the allowlist, because a `forbidden` rule for `gh` would also block the reads
-- `block-agent-commit.sh`: agent commits, merges, reverts, cherry-picks, `git am`, `commit-tree`, `subtree`, and any `pull` without `--ff-only` follow `git config eric-agent.commit` in every repo the command commits in: `off` (default), `ask` (approve each; Codex treats it as `off`), `branch` (never on `main` or `master`), or `on`. `--abort`, `--quit`, and `commit --dry-run` always run, as does `push --dry-run` or `-n` in `block-agent-push.sh`. Only the user sets `eric-agent`, `alias`, and `include` keys. Both gates deny `-c` or `--config-env` aliases and includes, `GIT_DIR`, `GIT_WORK_TREE`, and `GIT_CONFIG*` assignments, and a gated command after a non-leading `cd` or with `--git-dir`, since each can move git past the repo or config the gate reads. Rebase stays with `ask-dangerous-git.sh`
+- `block-agent-commit.sh`: agent commits, merges, reverts, cherry-picks, `git am`, `commit-tree`, `update-ref`, `subtree`, and any `pull` without `--ff-only` follow `git config eric-agent.commit` in every repo the command commits in: `off` (default), `ask` (approve each; Codex treats it as `off`), `branch` (never on `main` or `master`), or `on`. `--abort`, `--quit`, and `commit --dry-run` always run, as does `push --dry-run` or `-n` in `block-agent-push.sh`. Only the user sets `eric-agent`, `alias`, and `include` keys. Both gates deny `-c` or `--config-env` aliases and includes, `GIT_DIR`, `GIT_WORK_TREE`, and `GIT_CONFIG*` assignments, and a gated command after a non-leading `cd` or with `--git-dir`, since each can move git past the repo or config the gate reads. Rebase stays with `ask-dangerous-git.sh`
 - `block-git-config-edit.sh`: no redirect, tee, or other write onto a `.git` config file, `~/.gitconfig`, or `~/.config/git/config`, so `eric-agent` keys change only through `git config`
-- `block-shell-edit.sh`: no sed/perl in place, scripts that write, or redirects onto git-tracked files
+- `block-shell-edit.sh`: no sed/perl in place, scripts that write, or redirects, cp, or mv onto git-tracked text files. Binary files, which the edit tool cannot change, are exempt
 - `block-sudo-probe.sh`: no `sudo -n` on macOS, where Touch ID approves a plain `sudo`
+- `block-exec-flags.sh`: no `fd -x`, `rg --pre`, `sort -o`, `tree -o`, or `git diff`/`log`/`show --output`, which would run or write through tools the agents approve as read-only
+
+Every guard also denies a shell that reads its script from a pipe, since no guard can see that script. A here-string or heredoc is checked like a `bash -c` script.
 
 Before a file read or edit: `deny-symlink-path.sh` (use the real path, not a managed symlink), `block-smart-punct.sh` (no em dashes or curly quotes), `block-write-tracked.sh` (no whole-file Write over a git-tracked file), `block-git-config-edit.sh` (no Write or Edit of a `.git` config file).
 
@@ -58,6 +62,7 @@ Extensions in `pi/extensions/`, linked per file into `~/.pi/agent/extensions` by
 - `side-conversations.ts`: `/side` opens a side session, `/btw` a tool-free parallel conversation
 - `reflect.ts`: `/reflect` reviews the session for durable learning
 - `time.ts`: a `time` tool
+- `git-signing.ts`: signs agent commits with `ssh-keygen` instead of 1Password, like the `GIT_CONFIG_*` env in `claude/settings.json`
 - `image-attachments.ts`: attaches image files whose paths appear in a prompt
 - `tmux-agent-resume.ts`: runs `hooks/tmux-agent-resume.sh pi` at session start, since `guards.ts` does not run `SessionStart` hooks
 - `statusline.ts`, `minimal-startup.ts`, `fullscreen-tweaks.ts`: UI

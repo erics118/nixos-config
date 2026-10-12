@@ -2,7 +2,10 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "cleanupPeriodDays": 3560,
   "env": {
-    "ENABLE_TOOL_SEARCH": "auto"
+    "ENABLE_TOOL_SEARCH": "auto",
+    "GIT_CONFIG_COUNT": "1",
+    "GIT_CONFIG_KEY_0": "gpg.ssh.program",
+    "GIT_CONFIG_VALUE_0": "ssh-keygen"
   },
   "attribution": {
     "commit": "",
@@ -85,7 +88,7 @@
         ]
       },
       {
-        "matcher": "Bash",
+        "matcher": "Bash|Monitor",
         "hooks": [
           {
             "type": "command",
@@ -126,6 +129,10 @@
           {
             "type": "command",
             "command": "\"$HOME/.agents/hooks/block-sudo-probe.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/block-exec-flags.sh\""
           }
         ]
       }
@@ -183,13 +190,14 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash '/Users/eric/.claude/hooks/herdr-agent-state.sh' session",
+            "command": "bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
             "timeout": 10
           }
         ]
       }
     ]
   },
+  "theme": "custom:catppuccin-mocha",
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline.sh"

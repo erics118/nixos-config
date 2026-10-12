@@ -49,6 +49,7 @@ A screen check is done when a capture shows the expected text, colors, or cursor
 ## Isolation
 
 - Every call goes through the `tmx` function with a fresh `-L` name per run. The agent often runs inside the user's own tmux (`$TMUX` is set), and a bare `tmux` command reaches the user's sessions.
+- `TMUX_TMPDIR` does not isolate: with `$TMUX` set, tmux uses that socket and ignores it, so `TMUX_TMPDIR=... tmux kill-server` kills the user's server. To test a tool that calls bare `tmux` (sesh, a script), run it inside a pane of the `-L` server, where `$TMUX` points at that server.
 - Use `-L`, not `-S <path>`: socket paths have an OS length limit (about 104 bytes on macOS), and scratch paths are often longer.
 - `-f /dev/null` skips the user's tmux.conf. It takes effect on the call that starts the server.
 - To test the user's tmux config, `source-file` only the files under test into the `-f /dev/null` server. The full config restores the user's saved sessions and relaunches the agents in them.

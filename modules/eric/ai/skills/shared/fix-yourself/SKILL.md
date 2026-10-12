@@ -14,7 +14,7 @@ I hit a failure worth fixing durably, not just correcting in-session. Work the s
 1. **Locate the divergence, not the symptom.** Quote the actual request and the actual behavior, and trace to the earliest moment the process left the request. It is usually where the request was translated into an internal artifact (plan, script, spec, assumption) and something was lost in translation.
    Done when: you can name the exact step where behavior diverged. Stop and wait until I agree it is the root.
 
-2. **Find the instruction that should have fired.** Search the global AGENTS.md, the project instruction file, memory, and the skill list for an existing rule covering this case. On a hit, the fix is rewording that rule so it fires next time - bind it to a checkable action at a specific moment - never adding a sibling rule.
+2. **Find the instruction that should have fired.** Search the global AGENTS.md, the project instruction file, memory, and the skill bodies (not just their names) for an existing rule covering this case. On a hit, the fix is rewording that rule so it fires next time - bind it to a checkable action at a specific moment - never adding a sibling rule.
    Done when: you can name the rule that failed, or state that none exists.
 
 3. **Generalize.** Write the fix for the failure class, not the instance; no detail of the triggering incident may appear in the wording. Test it against two other plausible instances of the class.
@@ -22,7 +22,8 @@ I hit a failure worth fixing durably, not just correcting in-session. Work the s
 
 4. **Choose the layer**, lowest layer that fits:
    - must always/never happen and is mechanically checkable: a guard script in `~/nixos-config/modules/eric/ai/hooks/`. List it in `modules/eric/ai/claude/settings.json`, which pi reads too. For shell commands, also list it in `modules/eric/ai/codex/hooks.json`. For Codex, an ask-type guard goes in `modules/eric/ai/codex/rules/default.rules` instead. Add its tests to `modules/eric/ai/hooks/test.sh`: CI runs it and fails on any configured hook it does not test. Harness enforcement beats prose.
-   - judgment behavior spanning projects: global AGENTS.md
+   - judgment behavior one skill's task needs: that skill
+   - judgment behavior spanning projects and tasks: global AGENTS.md
    - project-specific fact or constraint: the project instruction file or its docs, never memory
    - repeatable multi-step process: new or amended skill, via writing-great-skills
 

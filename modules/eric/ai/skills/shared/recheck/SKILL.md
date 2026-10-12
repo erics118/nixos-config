@@ -1,6 +1,6 @@
 ---
 name: recheck
-description: Use when the user doubts or pushes back on claims in the last reply, to re-check them against sources before acting.
+description: Use when the user doubts or pushes back on factual claims in the last reply, to re-check them against sources before acting. Whether a part is needed goes to overkill.
 argument-hint: "[claim, file, or empty for the last reply]"
 effort: high
 ---

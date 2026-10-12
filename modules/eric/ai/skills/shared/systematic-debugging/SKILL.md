@@ -11,15 +11,16 @@ NO FIX WITHOUT A ROOT CAUSE FIRST. A fix aimed at the symptom is a failure, even
 
 This holds hardest exactly when it is tempting to skip: under time pressure, on an "obvious" one-liner, or after a previous fix did not stick.
 
-When the error message names the cause outright (a typo, a missing import, a wrong path), Phase 1 is done. Skip to Phase 4.
+When the error message names the cause outright (a typo, a missing import, a wrong path) and the failure happens in real use, not only in a test, check, CI job, or sandbox, Phase 1 is done. Skip to Phase 4.
 
 Work the phases in order. Each ends on a check.
 
 ## Phase 1: find the root cause
 
+- First decide whether the failure can happen in real use. When it shows only in a test, check, CI job, or sandbox, list how that setup differs from real use (environment variables, PATH, files, network, versions). A difference real use never has is a bug in the setup: fix the setup, not the code. The reverse holds for a test you write: a pass proves nothing until its setup matches real use.
 - Read the error in full. Stack traces, nix eval traces, line numbers, and codes usually name the cause outright. Do not skim past them.
 - Reproduce it. Know the exact trigger and whether it is every time. Not reproducible means gather more data, not guess.
-- Check what changed. `git diff`, recent commits, a flake input bump, a new import, an env difference.
+- Check what changed. `git diff`, recent commits, a flake input bump, a new import.
 - For a multi-step path (flake eval to build to activation, service to service), add evidence at each boundary and run once to see which boundary breaks before theorizing about any one of them.
 - Trace a bad value backward to where it originates, not where it surfaces. Fix at the source.
 

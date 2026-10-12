@@ -10,7 +10,12 @@
   "showHardwareCursor": true,
   "editorPaddingX": 2,
   "outputPad": 1,
-  "enabledModels": ["openai/*", "openai-codex/*", "openrouter/*"],
+  "enabledModels": [
+    "openai/*",
+    "openai-codex/*",
+    "openrouter/*",
+    "amazon-bedrock/*"
+  ],
   "packages": [
     "npm:pi-web-access@0.34.0",
     "git:github.com/erics118/pi-hermes-memory",
@@ -39,7 +44,8 @@
       },
       "researcher": {
         "inheritGlobalContext": true,
-        "inheritSkills": true
+        "inheritSkills": true,
+        "output": false
       },
       "evidence-auditor": {
         "inheritGlobalContext": true,

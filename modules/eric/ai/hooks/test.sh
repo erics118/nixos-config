@@ -53,12 +53,14 @@ expect_allow() {
 
 printf -v em_dash '\342\200\224'
 printf 'tracked\n' >"$repo/tracked.txt"
+printf 'a\000b' >"$repo/blob.png"
 git -C "$repo" init -q
-git -C "$repo" add tracked.txt
-git -C "$repo" -c user.name=test -c user.email=test@example.invalid commit -qm initial
+git -C "$repo" add tracked.txt blob.png
+git -C "$repo" -c commit.gpgsign=false -c user.name=test -c user.email=test@example.invalid commit -qm initial
 printf 'flake\n' >"$repo/flake.nix"
 printf 'module\n' >"$repo/untracked.nix"
 printf 'code\n// one\n// two\n// three\n// four\n' >"$repo/comments.ts"
+printf 'code\n-- one\n-- two\n-- three\n-- four\n' >"$repo/comments.lua"
 printf '#!/usr/bin/env bash\n# one\n# two\n# three\n# four\ncode\n' >"$repo/header.sh"
 # deny-symlink-path.sh only denies links that resolve under its approved roots, such as $HOME/nixos-config
 # realpath because macOS temp dirs resolve through /private
@@ -115,8 +117,16 @@ expect_json git-add-before-nix-non-nix git-add-before-nix.sh '.hookSpecificOutpu
   "$(json "$repo/sub" 'darwin-rebuild switch --flake .')"
 git -C "$repo/sub" add new.lua
 expect_allow git-add-before-nix-all-added git-add-before-nix.sh "$(json "$repo/sub" 'nix build')"
-expect_json strip-claude-attribution strip-claude-attribution.sh '(.hookSpecificOutput.updatedInput.command | test("Co-Authored-By"; "i") | not)' \
-  "$(json "$repo" "git commit -m 'x\nCo-Authored-By: Claude <noreply@anthropic.com>'")"
+# the trailer goes and the message stays, in a -m with real newlines, inline, and in a heredoc
+expect_json strip-claude-attribution strip-claude-attribution.sh \
+  '.hookSpecificOutput.updatedInput.command | (test("Co-Authored-By"; "i") | not) and contains("git commit -m '"'"'subject")' \
+  "$(json "$repo" $'git commit -m \'subject\n\nCo-Authored-By: Claude <noreply@anthropic.com>\'')"
+expect_json strip-claude-attribution-inline strip-claude-attribution.sh \
+  '.hookSpecificOutput.updatedInput.command | (test("Co-Authored-By"; "i") | not) and contains("fix parser.")' \
+  "$(json "$repo" 'git commit -m "fix parser. Co-Authored-By: Claude"')"
+expect_json strip-claude-attribution-heredoc strip-claude-attribution.sh \
+  '.hookSpecificOutput.updatedInput.command | (test("Co-Authored-By|Generated with|🤖"; "i") | not) and contains("add the thing\n\nbody line")' \
+  "$(json "$repo" $'git commit -F - <<\'EOF\'\nadd the thing\n\nbody line\n\n\xf0\x9f\xa4\x96 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF')"
 expect_allow strip-claude-attribution-plain strip-claude-attribution.sh "$(json "$repo" "git commit -m 'x'")"
 for cmd in 'find / -name nope' 'rg x /nix' 'rg x /nix/store/' 'fd x /nix/store/*' 'grep -r x /nix/var/nix' 'rg x $HOME' \
   'rg --files /' 'sudo find / -name x' 'cd -- $d && rg x .' 'echo "unterminated'; do
@@ -186,9 +196,25 @@ for cmd in 'direnv exec . git commit -m x' 'bash -c "git commit -m x"' "git -c '
   'git subtree add --prefix=x r main' 'git -c include.path=/tmp/x c' 'git --config-env=alias.c=X c' 'git --config-env alias.c=X c' \
   'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=alias.c GIT_CONFIG_VALUE_0=commit git c' 'env GIT_DIR=sub/.git git commit -m x' \
   'export GIT_CONFIG_GLOBAL=/tmp/x' 'git config alias.c commit' 'git config include.path /tmp/x' 'git config --edit' \
-  'git commit -m --abort' 'git commit -m --dry-run' 'git commit -- --dry-run' 'git commit --author --dry-run -m x'; do
+  'git commit -m --abort' 'git commit -m --dry-run' 'git commit -- --dry-run' 'git commit --author --dry-run -m x' \
+  'git config include.path get' 'git config set eric-agent.commit list'; do
   expect_json "block-agent-commit: $cmd" block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
+done
+# wrappers that run git as a later word, and shells that read their script from a here-string or heredoc
+for cmd in 'caffeinate git commit -m x' 'noglob git commit -m x' 'stdbuf -o0 git commit -m x' 'flock /tmp/l git commit -m x' \
+  "flock /tmp/l -c 'git commit -m x'" 'xcrun git commit -m x' "env -S 'git commit -m x'" "bash <<<'git commit -m x'" \
+  $'bash <<\'EOF\'\ngit commit -m x\nEOF' 'nix run nixpkgs#git -- commit -m x' "nix-shell -p git --run 'git commit -m x'" \
+  'git update-ref refs/heads/main HEAD'; do
+  expect_json "block-agent-commit-wrapped: $cmd" block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
+# a shell reading its script from a pipe hides it from every guard
+expect_json block-agent-commit-stdin-shell block-agent-commit.sh \
+  '.hookSpecificOutput.permissionDecisionReason | test("standard input")' "$(json "$repo" "echo 'git status' | bash")"
+for cmd in 'bash ./run.sh' 'caffeinate -i sleep 1' 'flock /tmp/l true' 'command -v bash' 'command -V zsh' \
+  'bash --version | head -1' '/bin/bash --help'; do
+  expect_allow "block-agent-commit: $cmd" block-agent-commit.sh "$(json "$repo" "$cmd")"
 done
 for cmd in 'git merge --abort' 'git cherry-pick --quit' 'git pull --ff-only' 'git config --get alias.lg' \
   'git commit --dry-run --short -- a b' 'git commit -m x --dry-run'; do
@@ -196,11 +222,19 @@ for cmd in 'git merge --abort' 'git cherry-pick --quit' 'git pull --ff-only' 'gi
 done
 expect_json block-agent-commit-config-write block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git config eric-agent.commit on')"
-expect_allow block-agent-commit-config-read block-agent-commit.sh "$(json "$repo" 'git config --get eric-agent.commit')"
+for cmd in 'git config --get eric-agent.commit' 'git -C . config --show-origin --get-all eric-agent.commit' \
+  'git config --show-scope --list' 'git config -l' 'git config get --all eric-agent.commit' 'git config list --show-origin'; do
+  expect_allow "block-agent-commit-config-read: $cmd" block-agent-commit.sh "$(json "$repo" "$cmd")"
+done
 git -C "$repo" config eric-agent.commit on
 for cmd in 'git commit -m x' 'git pull' 'git commit-tree HEAD^{tree} -m x' 'git subtree add --prefix=x r main' 'git commit -C HEAD' \
-  'direnv exec . git commit -C HEAD' 'env FOO=1 git commit -m x'; do
+  'direnv exec . git commit -C HEAD' 'env FOO=1 git commit -m x' "git -C $repo commit -m x; cd sub"; do
   expect_allow "block-agent-commit-on: $cmd" block-agent-commit.sh "$(json "$repo" "$cmd")"
+done
+# a repo named by a shell expansion cannot be resolved, so the denial says that, not that commits are off
+for cmd in "T=$repo; git -C \$T commit -m x" 'cd $T && git commit -m x' 'git -C "$(pwd)" commit -m x'; do
+  expect_json "block-agent-commit-dynamic-dir: $cmd" block-agent-commit.sh \
+    '.hookSpecificOutput.permissionDecisionReason | test("shell variable")' "$(json "$repo" "$cmd")"
 done
 # every repo a command commits in must allow it, in either order, and a later cd or --git-dir cannot hide one
 for cmd in 'git commit -m x; git -C sub commit -m x' 'git -C sub commit -m x; git commit -m x' \
@@ -245,6 +279,10 @@ expect_json block-agent-push-ask-gh block-agent-push.sh '.hookSpecificOutput.per
 git -C "$repo" config --unset eric-agent.push
 expect_json block-agent-push-off block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git push')"
+for cmd in 'caffeinate git push' 'noglob git push' 'nix run nixpkgs#git -- push' "bash <<<'git push'"; do
+  expect_json "block-agent-push-off: $cmd" block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
 for cmd in 'git push --dry-run' 'git push -n origin main'; do
   expect_allow "block-agent-push-off: $cmd" block-agent-push.sh "$(json "$repo" "$cmd")"
 done
@@ -320,11 +358,18 @@ done
 expect_json block-shell-edit block-shell-edit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'sed -i s/tracked/changed/ tracked.txt')"
 for cmd in 'echo x > tracked.txt' 'printf x | tee -a tracked.txt' "python3 -c \"open('tracked.txt', 'w').write('x')\"" \
-  'perl -pi -e s/a/b/ tracked.txt' 'printf x | tee new.txt tracked.txt' 'cd sub && sed -i s/a/b/ flake.nix'; do
+  'perl -pi -e s/a/b/ tracked.txt' 'printf x | tee new.txt tracked.txt' 'cd sub && sed -i s/a/b/ flake.nix' \
+  'echo x > "$PWD/tracked.txt"' 'echo x > ${PWD}/tracked.txt' 'cp /tmp/x tracked.txt' 'mv /tmp/x tracked.txt' \
+  'cp -f /tmp/x /tmp/y tracked.txt'; do
   expect_json "block-shell-edit: $cmd" block-shell-edit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
-for cmd in 'sed -n p tracked.txt' 'sed -i s/a/b/ untracked.nix' 'echo x > new.txt' 'cat tracked.txt > /dev/null'; do
+for cmd in 'echo x > "$HOME/tracked.txt"' 'echo x > ${HOME}/tracked.txt'; do
+  HOME=$repo expect_json "block-shell-edit: $cmd" block-shell-edit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
+for cmd in 'sed -n p tracked.txt' 'sed -i s/a/b/ untracked.nix' 'echo x > new.txt' 'cat tracked.txt > /dev/null' \
+  'cp tracked.txt /tmp/x' 'mv tracked.txt' 'cp /tmp/x.png blob.png' 'mv new.png blob.png'; do
   expect_allow "block-shell-edit: $cmd" block-shell-edit.sh "$(json "$repo" "$cmd")"
 done
 PATH="$repo/bin:$PATH" expect_json block-sudo-probe block-sudo-probe.sh '.hookSpecificOutput.permissionDecision == "deny"' \
@@ -335,6 +380,16 @@ for cmd in 'sudo --non-interactive true' 'sudo -u root -n true' 'sudo -nv'; do
     "$(json "$repo" "$cmd")"
 done
 PATH="$repo/bin:$PATH" expect_allow block-sudo-probe-value block-sudo-probe.sh "$(json "$repo" 'sudo -u nobody true')"
+for cmd in 'fd . -x rm' 'fd -e png -X convert' 'fd --exec rm' 'fd --exec-batch=rm' 'rg --pre sh x .' 'rg --pre=./p x' \
+  'sort -o out in' 'sort -oout in' 'sort --output=out in' 'sort --output out in' 'tree -o out' 'git diff --output=/tmp/x' \
+  'git log --output /tmp/x' 'git -C . show --output=/tmp/x' 'command fd -x rm'; do
+  expect_json "block-exec-flags: $cmd" block-exec-flags.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
+for cmd in 'fd -e nix .' 'fd -t x .' 'fd -tx .' 'rg -n foo .' 'rg --pretty foo' 'sort -u in' 'tree -L 2' 'git diff --stat' \
+  'git log --oneline' 'git diff -- --output'; do
+  expect_allow "block-exec-flags: $cmd" block-exec-flags.sh "$(json "$repo" "$cmd")"
+done
 # a hook that fails internally must exit 2, since claude code and codex run the command on any other code
 for snippet in 'unset HOOK_CALLS; hook_any true' 'hook_any ".argv[0] + 1"'; do
   set +e
@@ -370,6 +425,10 @@ else
 fi
 expect_exit_2 warn-comment-block warn-comment-block.sh \
   "$(jq -cn --arg file_path "$repo/comments.ts" --arg text $'// one\n// two\n// three\n// four' '{tool_input:{file_path:$file_path,edits:[{new_string:$text}]}}')"
+expect_exit_2 warn-comment-block-lua warn-comment-block.sh \
+  "$(jq -cn --arg file_path "$repo/comments.lua" --arg text $'-- one\n-- two\n-- three\n-- four' '{tool_input:{file_path:$file_path,edits:[{new_string:$text}]}}')"
+expect_allow warn-comment-block-lua-short warn-comment-block.sh \
+  "$(jq -cn --arg file_path "$repo/comments.lua" --arg text $'-- one\n-- two\nlocal x = 1' '{tool_input:{file_path:$file_path,edits:[{new_string:$text}]}}')"
 expect_allow warn-comment-block-short warn-comment-block.sh \
   "$(jq -cn --arg file_path "$repo/comments.ts" --arg text $'// one\n// two\ncode' '{tool_input:{file_path:$file_path,edits:[{new_string:$text}]}}')"
 expect_allow warn-comment-block-file-header warn-comment-block.sh \
@@ -379,7 +438,7 @@ expect_exit_2 warn-comment-block-after-header warn-comment-block.sh \
 
 # a stub tmux names a plain file as the pane's tty, so the test never rings a real bell
 mkdir "$repo/tmux-bin"
-printf '#!/bin/sh\necho "%s/pane-tty"\n' "$repo" >"$repo/tmux-bin/tmux"
+printf '#!/bin/sh\ncase "$*" in *pane_tty*) echo "%s/pane-tty" ;; esac\n' "$repo" >"$repo/tmux-bin/tmux"
 chmod +x "$repo/tmux-bin/tmux"
 : >"$repo/pane-tty"
 TMUX_PANE='' expect_allow tmux-bell-outside-tmux tmux-bell.sh '{}'
@@ -400,10 +459,14 @@ if command -v tmux >/dev/null; then
   # each pane signals once its hook has run, then stays open so its options can be read
   resume_tmux new -d -s direct "timeout 5 '$hooks/tmux-agent-resume.sh' claude <<<'{\"session_id\":\"abc\"}'; tmux wait-for -S direct; sleep 5"
   resume_tmux new -d -s nested "timeout 5 timeout 5 '$hooks/tmux-agent-resume.sh' claude <<<'{\"session_id\":\"abc\"}'; tmux wait-for -S nested; sleep 5"
+  # the agent is the pane's own process, as in an agent-side split
+  resume_tmux new -d -s side "exec timeout 5 bash -c \"'$hooks/tmux-agent-resume.sh' claude <<<'{\\\"session_id\\\":\\\"abc\\\"}'; tmux wait-for -S side; sleep 5\""
   resume_tmux wait-for direct
   resume_tmux wait-for nested
+  resume_tmux wait-for side
   top=$(resume_tmux show -pqv -t =direct: @agent_resume)
   nested=$(resume_tmux show -pqv -t =nested: @agent_resume)
+  side=$(resume_tmux show -pqv -t =side: @agent_resume)
   resume_tmux kill-server
   [ "$top" = 'claude --resume abc' ] || {
     printf 'FAIL tmux-agent-resume recorded %q\n' "$top"
@@ -415,6 +478,11 @@ if command -v tmux >/dev/null; then
     exit 1
   }
   printf 'ok tmux-agent-resume-nested\n'
+  [ "$side" = 'claude --resume abc' ] || {
+    printf 'FAIL tmux-agent-resume recorded %q for an agent-side pane\n' "$side"
+    exit 1
+  }
+  printf 'ok tmux-agent-resume-side\n'
 else
   printf 'skip tmux-agent-resume: tmux is not on PATH\n'
 fi
@@ -484,6 +552,8 @@ if command -v codex >/dev/null 2>&1; then
   expect_rule prompt git reset --hard
   expect_rule allow git status
   expect_rule allow rg foo .
+  # nix develop -c runs any command, so it goes through the sandbox like other commands
+  expect_rule none nix develop -c true
   expect_rule none git checkout main
   expect_rule prompt git checkout -- f
   expect_rule prompt git restore f
