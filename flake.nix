@@ -84,6 +84,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    apple-fonts = {
+      url = "github:Lyndeno/apple-fonts.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     fx-autoconfig-src = {
       url = "github:MrOtherGuy/fx-autoconfig";
       flake = false;

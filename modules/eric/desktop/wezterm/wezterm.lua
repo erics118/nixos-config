@@ -65,11 +65,6 @@ c.default_cursor_style = "SteadyBar"
 c.underline_thickness = 2.5
 
 -- window
--- linux keeps the default title bar
-if wezterm.target_triple:find("darwin") then
-    c.window_decorations = "RESIZE | TITLE | MACOS_FORCE_ENABLE_SHADOW | MACOS_USE_BACKGROUND_COLOR_AS_TITLEBAR_COLOR"
-end
-
 c.window_padding = {
     left = 12,
     right = 12,
@@ -110,10 +105,8 @@ local r, g, b = wezterm.color.parse(theme.background):srgba_u8()
 local bar_bg = string.format("rgba(%d, %d, %d, %s)", r, g, b, c.window_background_opacity)
 -- status text has no background of its own, so it sits on the bar
 theme.tab_bar.background = "rgba(0, 0, 0, 0)"
--- the system UI font on macos, and noto sans on linux, where hyprland.nix installs it
-local ui_font = wezterm.target_triple:find("linux") and "Noto Sans" or "SF Pro"
+-- the tab bar font is set per platform in platform.lua
 c.window_frame = {
-    font = wezterm.font(ui_font, { weight = "Regular", stretch = "Normal" }),
     font_size = 13.0,
     active_titlebar_bg = bar_bg,
     inactive_titlebar_bg = bar_bg,
@@ -149,5 +142,7 @@ wezterm.on("format-window-title", function(tab)
     local prefix = workspace ~= "default" and "[" .. workspace .. "] " or ""
     return prefix .. require("bar").display_title(tab.active_pane.title)
 end)
+
+require("platform").apply_to_config(c)
 
 return c

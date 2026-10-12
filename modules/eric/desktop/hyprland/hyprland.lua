@@ -14,8 +14,17 @@ hl.env("XCURSOR_SIZE", "24")
 -- Remap CapsLock -> Escape; require click to focus windows
 hl.config({ input = { kb_options = "caps:escape", follow_mouse = 0 } })
 
+-- Half-speed mouse wheel scrolling in every app
+hl.config({ input = { scroll_factor = 0.5 } })
+
 -- Drag window borders to resize (no modifier needed)
 hl.config({ general = { resize_on_border = true } })
+
+-- 8px gap on every side: gaps_in applies to each of two neighbors, so 4 + 4 between windows
+hl.config({ general = { gaps_in = 4, gaps_out = 8 } })
+
+-- New windows always split to the right or bottom, not toward the cursor
+hl.config({ dwindle = { force_split = 2 } })
 
 -- Suppress Hyprland's built-in default wallpaper/logo on login
 hl.config({ misc = { force_default_wallpaper = 0, disable_hyprland_logo = true } })
@@ -35,16 +44,17 @@ hl.config({
     },
 })
 
--- pinned so creating the agent output never pushes the physical display aside
-hl.monitor({ output = "HDMI-A-1", mode = "preferred", position = "0x0", scale = 1 })
+-- parked far off to the side so it never touches the agent output
+hl.monitor({ output = "HDMI-A-1", mode = "preferred", position = "9999x0", scale = 1 })
 
--- agent desktop: a virtual monitor parked far off to the side so the physical
--- display never shows it, and agents have a screen when no monitor is plugged in
+-- agent desktop: a virtual monitor so agents have a screen when no monitor is plugged in
+-- sunshine's absolute mouse assumes the desktop starts at 0x0, so it sits at the origin
+-- sized for the macbook moonlight client at retina 2x, so a config reload keeps it crisp
 hl.monitor({
     output = "agent",
-    mode = "1280x800@60",
-    position = "9999x0",
-    scale = 1,
+    mode = "3024x1890@60",
+    position = "0x0",
+    scale = 2,
 })
 hl.workspace_rule({ workspace = "11", monitor = "agent", persistent = true })
 
@@ -81,14 +91,13 @@ local mod = "SUPER"
 local term = "wezterm"
 local menu = "fuzzel"
 local files = "nautilus"
-local web = "firefox"
+local web = "firefox-devedition"
 
 -- apps
 hl.bind(mod .. " + Return", hl.dsp.exec_cmd(term))
 hl.bind(mod .. " + D", hl.dsp.exec_cmd(menu))
 hl.bind(mod .. " + E", hl.dsp.exec_cmd(files))
 hl.bind(mod .. " + B", hl.dsp.exec_cmd(web))
-hl.bind(mod .. " + Escape", hl.dsp.exec_cmd("hyprlock"))
 
 -- window
 hl.bind(mod .. " + Q", hl.dsp.window.close())
@@ -138,6 +147,9 @@ hl.bind(mod .. " + Tab", hl.dsp.focus({ workspace = "previous" }))
 
 hl.bind(mod .. " + S", hl.dsp.workspace.toggle_special("scratch"))
 hl.bind(mod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:scratch" }))
+-- scratchpad drops down from the top and leaves back up
+hl.animation({ leaf = "specialWorkspaceIn", enabled = true, speed = 8, bezier = "default", style = "slidevert top" })
+hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 8, bezier = "default", style = "slidevert bottom" })
 
 -- mouse
 hl.bind(mod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })

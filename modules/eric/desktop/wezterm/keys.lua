@@ -2,7 +2,7 @@ local wezterm = require("wezterm")
 
 local act = wezterm.action
 
-local is_mac = wezterm.target_triple:find("darwin") ~= nil
+local is_mac = require("platform").is_mac
 local MOD = is_mac and "CMD" or "CTRL|SHIFT"
 local SMOD = is_mac and "SHIFT|CMD" or "CTRL|ALT"
 
@@ -120,7 +120,7 @@ map("j", { "LEADER" }, act.ActivatePaneDirection("Down"))
 map("k", { "LEADER" }, act.ActivatePaneDirection("Up"))
 map("l", { "LEADER" }, act.ActivatePaneDirection("Right"))
 -- spawn & close
--- a wezterm tab is a project: leader c picks a local one, leader C a remote one.
+-- a wezterm tab is a project: leader c picks a local one, leader C a remote one, leader t opens a bare shell.
 -- the trailing shell keeps the tab open after the picker is cancelled or tmux detaches
 map("c", "LEADER", act.SpawnCommandInNewTab({ domain = "DefaultDomain", args = { "zsh", "-lc", "t; exec zsh -l" } }))
 map(
@@ -128,6 +128,7 @@ map(
     "LEADER|SHIFT",
     act.SpawnCommandInNewTab({ domain = "DefaultDomain", args = { "zsh", "-lc", "rtmux; exec zsh -l" } })
 )
+map("t", "LEADER", act.SpawnTab("CurrentPaneDomain"))
 map("x", "LEADER", act.CloseCurrentPane({ confirm = true }))
 map("w", "LEADER", act.CloseCurrentTab({ confirm = true }))
 if is_mac then

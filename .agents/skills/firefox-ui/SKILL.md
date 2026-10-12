@@ -9,6 +9,7 @@ The config lives in `~/nixos-config/modules/eric/desktop/firefox/`. Read its `RE
    ```bash
    unzip -o -d <scratch>/omni "/Applications/Firefox Developer Edition.app/Contents/Resources/browser/omni.ja" '<path>'
    ```
+   On Linux the browser jar is `"$(dirname "$(readlink -f "$(command -v firefox)")")/../lib/firefox/browser/omni.ja"`.
    List paths with `unzip -l`. The browser jar holds the chrome (`chrome/browser/skin/classic/browser/` for CSS, `chrome/browser/content/browser/` for JS and `browser.xhtml`). `Contents/Resources/omni.ja` holds only toolkit.
    Done when: you have read every installed rule that touches the target element and property.
 2. Override the winner. List every rule on the target, and whether each sets the property through a variable or a literal (plus any `overflow: clip`). Override the property itself with the value form that wins. A variable override only reaches rules that read the variable.

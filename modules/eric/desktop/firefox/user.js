@@ -18,8 +18,12 @@ user_pref("userChromeJS.experimental.enabled", true);
 user_pref("userChromeJS.persistent_domcontent_callback", true);
 user_pref("userChromeJS.firstRunShown", true);
 user_pref("userChromeJS.scriptsDisabled", "");
+// the sidebery fork is unsigned, and only developer edition honours this
+user_pref("xpinstall.signatures.required", false);
 // unload idle tabs under macOS memory pressure, non-nightly builds ship mask 0
 user_pref("browser.lowMemoryResponseMask", 3);
 user_pref("browser.lowMemoryResponseOnWarn", true);
+// pages that name no font get sans-serif, which fontconfig maps to SF Pro on linux
+user_pref("font.default.x-western", "sans-serif");
 // pinned tabs stay unloaded at startup until clicked
 user_pref("browser.sessionstore.restore_pinned_tabs_on_demand", true);

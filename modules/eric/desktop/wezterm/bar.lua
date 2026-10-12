@@ -3,12 +3,12 @@ local keys = require("keys")
 local act = wezterm.action
 
 -- each alert's colour, catppuccin mocha red, peach, green and blue as tmux's @session-alert has them
--- (see tmux/tabline.conf), and the SF Symbol the native toolbar shows it as
+-- (see tmux/tabline.conf), the SF Symbol the native toolbar shows it as, and the nerd font glyph the drawn tab bar shows
 local alerts = {
-    fail = { colour = "#f38ba8", symbol = "xmark.circle.fill" },
-    bell = { colour = "#fab387", symbol = "bell.fill" },
-    ok = { colour = "#a6e3a1", symbol = "checkmark.circle.fill" },
-    activity = { colour = "#89b4fa", symbol = "circle.fill" },
+    fail = { colour = "#f38ba8", symbol = "xmark.circle.fill", glyph = "\u{f057}" },
+    bell = { colour = "#fab387", symbol = "bell.fill", glyph = "\u{f0f3}" },
+    ok = { colour = "#a6e3a1", symbol = "checkmark.circle.fill", glyph = "\u{f058}" },
+    activity = { colour = "#89b4fa", symbol = "circle.fill", glyph = "\u{f111}" },
 }
 
 -- the native toolbar's status icon for an alert, or an empty one that keeps its slot
@@ -60,7 +60,7 @@ local function merge(base, over)
 end
 
 -- the native toolbar shows the tabs on macos (see apply_to_config)
-local native = wezterm.target_triple:find("darwin") ~= nil
+local native = require("platform").is_mac
 
 -- conforming to https://github.com/wez/wezterm/commit/e4ae8a844d8feaa43e1de34c5cc8b4f07ce525dd
 -- exporting an apply_to_config function, which sets the tab bar options on the config
@@ -199,7 +199,6 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
     local index_i = config.tabs.numerals == "roman" and roman_numerals[tab.tab_index + 1] or tab.tab_index + 1
 
     local title = tab.is_active and config.tabs.tab_format.active or config.tabs.tab_format.inactive
-    local shows_index = title:find("{tab_index}", 1, true) ~= nil
 
     local workspace = wezterm.mux.get_active_workspace()
 
@@ -223,13 +222,16 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
     tab_title = M.display_title(tab_title)
     title = title:gsub("{pane_count}", pane_count)
 
-    -- a background tab's number takes its alert's colour, like tmux's tabline.
-    -- the native toolbar shows the alert as a status icon instead (see update-status)
-    local alert_fg = not native and alert and alerts[alert].colour
+    -- a tab's alert shows as its glyph before the title, in the alert's colour.
+    -- the native toolbar shows it as a status icon instead (see update-status)
+    local icon = ""
+    if not native and alert and alerts[alert] then
+        icon = alerts[alert].glyph .. " "
+    end
 
-    -- columns besides the title: the format minus the 11 of "{tab_title}", plus 2 for the padding spaces.
+    -- columns besides the title: the format minus the 11 of "{tab_title}", plus 2 for the padding spaces and the icon.
     -- the native toolbar fades a long title itself, so it gets the whole title
-    local filler_width = wezterm.column_width(title) - 11 + 2
+    local filler_width = wezterm.column_width(title) - 11 + 2 + wezterm.column_width(icon)
     if not native and (wezterm.column_width(tab_title) + filler_width) > max_width then
         -- 1 for ellipsis
         -- floored at 0, since truncate_right errors on a negative width when a tab is narrower than its fixed parts
@@ -252,26 +254,13 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width
         table.insert(res, item)
     end
 
-    -- split the title around the number so only the number takes the alert colour.
-    -- a format without the number gives the whole title the alert colour instead
-    local i = alert_fg and shows_index and title:find(tostring(index_i), 1, true)
-    if alert_fg and not shows_index then
-        table.insert(res, { Foreground = { Color = alert_fg } })
-        table.insert(res, { Text = title })
-    elseif i then
-        local j = i + #tostring(index_i)
-        table.insert(res, { Text = title:sub(1, i - 1) })
-        table.insert(res, { Foreground = { Color = alert_fg } })
-        table.insert(res, { Attribute = { Intensity = "Bold" } })
-        table.insert(res, { Text = title:sub(i, j - 1) })
-        table.insert(res, "ResetAttributes")
-        for _, item in ipairs(base) do
-            table.insert(res, item)
-        end
-        table.insert(res, { Text = title:sub(j) })
-    else
-        table.insert(res, { Text = title })
+    if icon ~= "" then
+        table.insert(res, { Foreground = { Color = alerts[alert].colour } })
+        table.insert(res, { Text = " " .. icon })
+        table.insert(res, { Foreground = { Color = fg } })
+        title = title:sub(2)
     end
+    table.insert(res, { Text = title })
 
     return res
 end)
@@ -491,9 +480,14 @@ wezterm.on("update-status", function(window, pane)
     local active_kt = window:active_key_table() ~= nil
     local show = leader_cfg.enabled or (active_kt and mode_cfg.enabled)
 
-    -- the right side, since the traffic lights take the left of the bar
+    -- the right side on macos, since the traffic lights take the left of the bar.
+    -- a window keeps its status until it is replaced, so the other side is cleared
+    local function set_status(text)
+        window:set_right_status(native and text or "")
+        window:set_left_status(native and "" or text)
+    end
     if not show then
-        window:set_right_status("")
+        set_status("")
         return
     end
 
@@ -524,7 +518,8 @@ wezterm.on("update-status", function(window, pane)
         })
     end
 
-    window:set_right_status(mode .. leader)
+    -- the leader sits on the outer edge of the bar
+    set_status(native and mode .. leader or leader .. mode)
 end)
 
 return M

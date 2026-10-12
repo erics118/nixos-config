@@ -45,6 +45,23 @@
           # magicdns name only, the tailnet address can change
           csrf_allowed_origins = "https://${config.networking.hostName}.${config.tailnetDomain}:47990";
         };
+
+        # resize the agent output to the client's pixels on connect so a retina mac gets a hidpi desktop
+        applications.apps = [
+          {
+            name = "Desktop";
+            prep-cmd = [
+              {
+                do = toString (
+                  pkgs.writeShellScript "agent-fit-client" ''
+                    ${config.programs.hyprland.package}/bin/hyprctl eval "hl.monitor({ output = \"agent\", mode = \"''${SUNSHINE_CLIENT_WIDTH}x''${SUNSHINE_CLIENT_HEIGHT}@''${SUNSHINE_CLIENT_FPS}\", position = \"0x0\", scale = 2 })"
+                  ''
+                );
+                undo = "";
+              }
+            ];
+          }
+        ];
       };
     };
 }

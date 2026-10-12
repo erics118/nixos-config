@@ -1,25 +1,31 @@
-{
-  flake.modules.homeManager.darwin =
-    {
-      inputs,
-      lib,
-      repoFile,
-      ...
-    }:
+let
+  profileFiles =
+    profile:
+    { inputs, repoFile, ... }:
     let
       base = "modules/eric/desktop/firefox";
-      profile = "Library/Application Support/Firefox/Profiles/gcl3mics.dev-edition-default";
-      fxAutoconfig = inputs.fx-autoconfig-src;
     in
     {
       home.file = {
         "${profile}/chrome/JS".source = repoFile "${base}/chrome/JS";
         "${profile}/chrome/CSS".source = repoFile "${base}/chrome/CSS";
         "${profile}/chrome/resources".source = repoFile "${base}/chrome/resources";
-        "${profile}/chrome/utils".source = "${fxAutoconfig}/profile/chrome/utils";
+        "${profile}/chrome/utils".source = "${inputs.fx-autoconfig-src}/profile/chrome/utils";
         "${profile}/chrome/userChrome.css".source = repoFile "${base}/chrome/userChrome.css";
         "${profile}/user.js".source = repoFile "${base}/user.js";
       };
+    };
+in
+{
+  flake.modules.homeManager.darwin =
+    { inputs, lib, ... }:
+    let
+      fxAutoconfig = inputs.fx-autoconfig-src;
+    in
+    {
+      imports = [
+        (profileFiles "Library/Application Support/Firefox/Profiles/gcl3mics.dev-edition-default")
+      ];
 
       # a firefox update replaces the app bundle and drops these files
       home.activation.firefoxDeveloperEditionAutoconfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -44,4 +50,17 @@
         fi
       '';
     };
+
+  flake.modules.homeManager.hyprland = profileFiles ".config/mozilla/firefox/ob0g1466.dev-edition-default";
+
+  flake.modules.nixos.hyprland = { inputs, pkgs, ... }: {
+    programs.firefox = {
+      # developer edition, as on macos, since it installs the unsigned sidebery fork.
+      # the wrapper's autoconfig.js names mozilla.cfg but leaves the sandbox on
+      package = pkgs.firefox-devedition.override {
+        extraAutoConfig = ''pref("general.config.sandbox_enabled", false);'';
+      };
+      autoConfigFiles = [ "${inputs.fx-autoconfig-src}/program/config.js" ];
+    };
+  };
 }

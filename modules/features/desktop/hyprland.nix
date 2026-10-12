@@ -73,7 +73,13 @@
       noto-fonts
       noto-fonts-cjk-sans
       noto-fonts-color-emoji
+      pkgs.inputs.apple-fonts.sf-pro
     ];
+
+    fonts.fontconfig.defaultFonts = {
+      sansSerif = [ "SF Pro" ];
+      monospace = [ "Hack Nerd Font Mono" ];
+    };
 
     environment.systemPackages = with pkgs; [
       wezterm # terminal
