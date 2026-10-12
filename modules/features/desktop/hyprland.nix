@@ -79,7 +79,7 @@
       wezterm # terminal
       fuzzel # app launcher (SUPER+D)
       nautilus # file manager (SUPER+E)
-      hyprlock # screen lock (SUPER+L)
+      hyprlock # screen lock (SUPER+Escape)
       hypridle # idle daemon (autolock + dpms)
       hyprpaper # wallpaper daemon
       grim # backend for grimblast

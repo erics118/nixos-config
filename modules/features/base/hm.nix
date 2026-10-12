@@ -26,6 +26,8 @@ in
         programs.nix-index-database.comma.enable = true;
         programs.nix-index.enable = true;
       }
+
+      inputs.direnv-instant.homeModules.direnv-instant
     ];
 
     # skip evaluating home-manager's option docs for home-configuration.nix(5)

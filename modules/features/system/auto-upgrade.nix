@@ -1,8 +1,17 @@
 {
   flake.modules.nixos.auto-upgrade =
-    { config, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       checkout = "/home/eric/.flake";
+      bootCritical = {
+        requiredBy = [ "boot-complete.target" ];
+        before = [ "boot-complete.target" ];
+      };
     in
     {
       programs.ssh = {
@@ -25,6 +34,10 @@
 
       # a generation that fails to reach boot-complete.target 3 times falls back to the previous one
       boot.loader.systemd-boot.bootCounting.enable = true;
+
+      # a generation without ssh or tailscale is unreachable remotely, so it must not count as booted
+      systemd.services.sshd = bootCritical;
+      systemd.services.tailscaled = lib.mkIf config.services.tailscale.enable bootCritical;
 
       systemd.services.nixos-upgrade = {
         # the upgrade runs as root but builds from eric's checkout
@@ -60,8 +73,9 @@
         description = "notify that the unattended upgrade failed";
         serviceConfig.Type = "oneshot";
         # the token reaches curl through an fd, so it never shows in its argv
+        # --fail turns a rejected post into a failed unit, and the retries cover ntfy restarting in the same switch
         script = ''
-          ${pkgs.curl}/bin/curl -s -o /dev/null \
+          ${pkgs.curl}/bin/curl -s -o /dev/null --fail --retry 3 --retry-all-errors \
             -H @<(printf 'Authorization: Bearer %s\n' "$(cat ${config.sops.secrets."ntfy/token".path})") \
             -H "Title: nixos-upgrade failed on ${config.networking.hostName}" \
             -H "Tags: nix,x" \

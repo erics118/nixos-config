@@ -1,5 +1,5 @@
 { inputs, ... }: {
-  flake.modules.nixos.base = { pkgs, ... }: {
+  flake.modules.nixos.base = { config, pkgs, ... }: {
     imports = [
       inputs.catppuccin.nixosModules.catppuccin
       inputs.home-manager.nixosModules.home-manager
@@ -46,6 +46,25 @@
 
     fonts.packages = [ pkgs.nerd-fonts.hack ];
 
+    environment.systemPackages = with pkgs; [
+      # build tools
+      gcc
+      gnumake
+      pkg-config
+
+      # archives and file inspection
+      file
+      unzip
+      zip
+
+      # host inspection
+      lsof
+      openssl
+      pciutils
+      usbutils
+      dnsutils
+    ];
+
     environment.pathsToLink = [ "/share/zsh" ];
 
     networking = {
@@ -55,11 +74,22 @@
 
     programs.nix-ld.enable = true;
 
+    # nix-index in hm.nix handles unknown commands
+    # the channel tarball ships programs.sqlite, which would turn this on by default
+    programs.command-not-found.enable = false;
+
     security.sudo.wheelNeedsPassword = false;
+
+    # a yescrypt hash from `mkpasswd`, decrypted before users are created
+    sops.secrets."eric/password".neededForUsers = true;
 
     users.users.eric = {
       isNormalUser = true;
+      # nixos-anywhere --chown and auto-upgrade's SUDO_UID both use 1000
+      uid = 1000;
       description = "eric";
+      # with mutableUsers this only applies when the user is first created, so a fresh install has a console login
+      hashedPasswordFile = config.sops.secrets."eric/password".path;
       extraGroups = [
         "networkmanager"
         "wheel"

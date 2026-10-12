@@ -27,15 +27,17 @@
           listenPort = port;
 
           # tailscale is reached by its magicdns name, not its address, which can change
-          allowedHosts = lib.concatStringsSep "," [
-            "localhost:${toString port}"
-            "127.0.0.1:${toString port}"
-            "${config.networking.hostName}:${toString port}"
-            # narwhal's LAN address
-            "192.168.68.150:${toString port}"
-            "${config.networking.hostName}.${tailnetDomain}:${toString port}"
-            homelabDomain
-          ];
+          # the LAN reaches it by its mdns name, which follows dhcp address changes
+          allowedHosts = lib.concatStringsSep "," (
+            [
+              "localhost:${toString port}"
+              "127.0.0.1:${toString port}"
+              "${config.networking.hostName}:${toString port}"
+              "${config.networking.hostName}.${tailnetDomain}:${toString port}"
+              homelabDomain
+            ]
+            ++ lib.optional config.services.avahi.publish.enable "${config.networking.hostName}.local:${toString port}"
+          );
 
           settings = {
             title = config.networking.hostName;
@@ -88,7 +90,7 @@
           [ { ${homelabDomain}.extraConfig = "reverse_proxy localhost:${toString port}"; } ]
           ++ map (t: {
             "${t.subdomain}.${homelabDomain}".extraConfig = "reverse_proxy ${t.host}:${toString t.port}";
-          }) (lib.filter (t: t.proxy) config.homepageTiles)
+          }) (lib.filter (t: t.proxy && t.port != null) config.homepageTiles)
         );
       };
   };

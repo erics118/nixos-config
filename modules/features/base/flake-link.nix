@@ -9,7 +9,7 @@
         repoFile =
           relPath: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.flake/${relPath}";
 
-        # one repoFile link per file present at eval time, so a new file needs a switch
+        # one repoFile link per git-tracked file present at eval time, so a new file needs a git add and a switch
         repoFileAll =
           relPath: targetPath:
           let

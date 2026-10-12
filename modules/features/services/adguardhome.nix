@@ -14,8 +14,6 @@
         mutableSettings = true;
 
         settings = {
-          http.address = "0.0.0.0:${toString port}";
-
           dns = {
             # cloudflare DoH as primary, quad9 as fallback
             # no IPv6, as the router narwhal uses doesn't support it
