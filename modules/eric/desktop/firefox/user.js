@@ -27,3 +27,4 @@ user_pref("browser.lowMemoryResponseOnWarn", true);
 user_pref("font.default.x-western", "sans-serif");
 // pinned tabs stay unloaded at startup until clicked
 user_pref("browser.sessionstore.restore_pinned_tabs_on_demand", true);
+user_pref("browser.ml.chat.enabled", false);
