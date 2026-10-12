@@ -2,6 +2,7 @@
 # attach to a persistent session on a remote host, picking the host in fzf if none given.
 # a host of this config runs sesh-pick, any other a private tmux server, else a plain shell, over mosh on the tailnet if it has it, else autossh (-a forces it).
 # own_hosts and remote_dir come from rtmux.nix
+# shellcheck disable=SC2154
 
 # nerd font icons: bolt for all (as in sesh-pick), gear for ssh config, tailscale for the tailnet
 all=$'' config=$'' tailnet=$'\U000f15fc'
