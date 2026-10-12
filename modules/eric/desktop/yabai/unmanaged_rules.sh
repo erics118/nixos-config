@@ -32,7 +32,7 @@ apps=(
   "Siri" "Stickies" "System .*"
   "Tailscale"
 
-  "Microsoft Remote Desktop" "Parallels Desktop" "WorkSpaces"
+  "Microsoft Remote Desktop" "Moonlight" "Parallels Desktop" "WorkSpaces"
 
   "Main" "java" "Python" "knot"
 )

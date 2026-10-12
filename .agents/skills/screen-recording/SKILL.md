@@ -22,7 +22,7 @@ Record with ScreenCaptureKit through `record.py` in this skill's folder, then me
 
 2. Check that it captures. `record.log` shows `recording started <time>`. Done when that line is there.
 
-3. Stop with `pkill -INT -f screen-recording/record.py`. The file is only readable after `record.log` shows `recording finished`.
+3. Stop with `pkill -INT -f screen-recording/record.py`. The file is only readable after `record.log` shows `recording finished`. Stopping also turns the apple icon off. If the task still drives the mouse or keys after the recording, turn it red again right after `recording finished`.
 
 4. Pull a frame and look at it. Done when it shows the screen, not black:
 
@@ -35,6 +35,10 @@ ScreenCaptureKit sends a frame only when the screen changes, at true 120Hz spaci
 Other methods are worse. ffmpeg's avfoundation input caps out near 78 fps (11-12 ms spacing) even in High Power mode. `screencapture -v` paces frames to 60Hz.
 
 Delete the videos when the investigation ends.
+
+## Record a user action
+
+When the user has to do the action (open Mission Control, use a gesture), don't give them a fixed window like "within 5 seconds". They miss the prompt, since it shows only once the command starts. Send the prompt to their phone with `ntfy pub claude` (the ntfy skill) the moment the wait starts, and another when they can let go. Start the recording, then poll for the on-screen state the action creates, with a cap of about 60 seconds, and stop a few polls after it goes away. For Mission Control, poll the window list (see Check window state) for the WindowManager window named `ExposeShieldWindow`. Log the wall-clock time when the state appears and disappears, to find the frames afterwards.
 
 ## Align video time with logs
 
@@ -54,6 +58,12 @@ awk '/pts_time/{split($0,a,"pts_time:");t=a[2]} /YAVG/{split($0,b,"=");print t, 
 
 Crop coordinates are pixels: 2x the points that yabai or SkyLight report on a Retina display. A flicker shows as a jump that reverts one or two frames later. Measure two or three strips (top, left, right edges). Treat a jump as real only when they all move together.
 
+Set a change threshold from the size of the real change, not near zero. Compression noise reached 1.3 brightness units in the first frames of a recording, while a border switching between its two colors moved 52. A threshold of 1 reported flashes that were only noise.
+
+To time a lagging element, measure it against something the app itself draws in the same video, not against the time the command was sent: when the command took effect varied by 15 ms or more from run to run. Window traffic lights work well, since they turn from grey to colored the moment macOS focuses the window and vanish when it closes or minimizes. Log their color with `key=lavfi.signalstats.SATAVG` on a strip through them, in place of `YAVG`.
+
+Put strips where nothing else moves through them. A window animating across a strip changes it too. The minimize animation pulls the window toward the Dock, so its bottom edge moves first and its top edge last, and a strip under the window's path reads the window passing, not the element you are timing.
+
 ## Check exact colors
 
 Video is lossy. A recorded frame lands within about 2 per channel of the true color (border `0x7f849c` read back as `7f 84 9a`). That is fine for spotting changes, not for checking a hex value. For an exact color, take a still screenshot and convert it from Display P3 to sRGB, the space config hex values are written in:
@@ -68,9 +78,22 @@ The unconverted screenshot reads `80 84 9a` for the same pixel, so skipping `sip
 
 ## See an event
 
-Tile zoomed frames around it:
+Tile zoomed frames around it. Select frames by video time with `select` and label each with its milliseconds after the event at video time `K`. Seeking with `-ss` before `-i` shifts which frames you get and what the labels say.
 
 ```bash
-ffmpeg -hide_banner -loglevel error -y -ss 3.10 -t 0.08 -i screen.mov \
-  -vf "crop=240:120:700:30,scale=480:240:flags=neighbor,tile=1x6:padding=4:color=red" -frames:v 1 tile.png
+ffmpeg -hide_banner -loglevel error -y -i screen.mov \
+  -vf "select='between(t,K-0.1,K+0.5)',crop=240:240:1880:1080,drawtext=text='%{eif\:(t-K)*1000\:d} ms':x=4:y=4:fontsize=20:fontcolor=yellow,tile=8x4:padding=3:color=red" \
+  -frames:v 1 tile.png
 ```
+
+Replace each `K` with the number. Add `*not(mod(n,3))` to the `select` expression to keep every third frame over a longer span. `drawtext` prints `Fontconfig error: Cannot load default config file` and still draws the labels.
+
+## Check window state
+
+To see which windows are on screen, front to back, with owner, name, layer, and alpha:
+
+```bash
+osascript -l JavaScript -e 'ObjC.import("CoreGraphics"); const a=ObjC.deepUnwrap(ObjC.castRefToObject($.CGWindowListCopyWindowInfo(1,0))); JSON.stringify(a.map(w=>({id:w.kCGWindowNumber, o:w.kCGWindowOwnerName, n:w.kCGWindowName||"", l:w.kCGWindowLayer, a:w.kCGWindowAlpha, b:w.kCGWindowBounds})))'
+```
+
+A sample shows the settled state only, and its order does not prove what is visible: a border listed behind the Mission Control overlay still showed on screen during the zoom animation. Record the screen to see an animation.

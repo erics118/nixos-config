@@ -385,11 +385,11 @@
     "jankyborders-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1791780446,
-        "narHash": "sha256-KEtbS0jDgae6w4dVeUrCNX5UswwCCU36D31r3hk3bbs=",
+        "lastModified": 1791825730,
+        "narHash": "sha256-dYJtrRcr0notBDAgnIfz+Oo/En3qb7K3rno8tQVQgEs=",
         "owner": "erics118",
         "repo": "JankyBorders",
-        "rev": "f32f50c4df3b60f3117590fdaa73b0e4fc506bc1",
+        "rev": "0209c7e52f2fceccd45637113d096e258399b5be",
         "type": "github"
       },
       "original": {
@@ -852,11 +852,11 @@
     "yabai-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1791467054,
-        "narHash": "sha256-rvK+HRxaf/i1fs5jXN3QQSwL5IbSyUNOAReanwMKMNM=",
+        "lastModified": 1791825437,
+        "narHash": "sha256-+vXq2fib5RDKSWEEYo0QfiaWoFEEIPJZpgGKOX5NqNI=",
         "owner": "erics118",
         "repo": "yabai",
-        "rev": "9439ae42802141ff588033f6f735fd88c1cac1a2",
+        "rev": "2ec8fc97ee6d1847bf8f846be0972ef93e1979e6",
         "type": "github"
       },
       "original": {

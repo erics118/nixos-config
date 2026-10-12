@@ -1,6 +1,7 @@
 blacklist = [
     "Windows App"
     "WorkSpaces"
+    "Moonlight"
 ]
 
 sequence_command = "sketchybar --trigger smhkd_sequence SEQUENCE='{}'"

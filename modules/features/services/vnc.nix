@@ -5,11 +5,13 @@
       port = 5900;
       subdomain = "desktop";
       keyFile = "${config.users.users.eric.home}/.local/state/wayvnc/rsa_key.pem";
+      # relax_encryption adds apple dh, the only wayvnc login type novnc speaks
       configFile = pkgs.writeText "wayvnc.conf" ''
         address=ws:127.0.0.1
         port=${toString port}
         enable_auth=true
         enable_pam=true
+        relax_encryption=true
         rsa_private_key_file=${keyFile}
       '';
     in
@@ -44,11 +46,13 @@
       '';
 
       # proxy is off since the vhost above also serves files, gatus still checks the port
+      # href points homepage's status check at the novnc page, since the port only speaks websocket
       homepageTiles = [
         {
           name = "Desktop";
           group = "Apps";
           inherit port subdomain;
+          href = "https://${subdomain}.${config.homelabDomain}";
           proxy = false;
           description = "Remote desktop";
           icon = "novnc.svg";
