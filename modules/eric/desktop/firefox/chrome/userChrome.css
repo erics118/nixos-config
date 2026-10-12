@@ -1,6 +1,4 @@
-/* userChrome.css - Sidebery + Arc-like chrome for Firefox Dev Edition.
-   Needs sidebar.revamp: true. Companion author sheet (needs
-   shadow-DOM ::part selectors this file can't reach): resources/userChrome.au.css */
+/* userChrome.css - Sidebery chrome for Firefox Dev Edition. Needs sidebar.revamp: true */
 
 /* Hide the panel header above webextension sidebars. The id lives in
    webext-panels.xhtml (the doc that wraps Sidebery), not browser.xhtml. */
@@ -10,10 +8,8 @@
 
 /* ===== Design tokens ===== */
 :root {
-  /* ATBC owns --lwt-accent-color, but it's set by the extension's content
-     script after first paint, so it's briefly unset on startup - which makes
-     this whole var invalid and border/background fall back to white. Give it
-     a dark fallback matching ATBC's steady-state value to kill that flash. */
+  /* ATBC sets --lwt-accent-color through the theme API after first paint, so it is unset at startup.
+     the dark fallback matches ATBC's steady-state value, so the background doesn't flash white */
   --atbc-raised-surface: color-mix(
     in srgb,
     var(--lwt-accent-color, #2b2a33) 92%,
@@ -73,10 +69,12 @@
     justify-content: center !important;
   }
 
-  /* Show the window controls in the nav-bar */
-  #nav-bar > .titlebar-buttonbox-container,
-  #nav-bar > .titlebar-buttonbox-container > .titlebar-buttonbox {
-    display: flex !important;
+  /* Show the window controls in the nav-bar, except in fullscreen and mini windows, where Firefox hides them */
+  &[customtitlebar]:not([inFullscreen], [mini-window]) {
+    #nav-bar > .titlebar-buttonbox-container,
+    #nav-bar > .titlebar-buttonbox-container > .titlebar-buttonbox {
+      display: flex !important;
+    }
   }
 
   /* #browser is the positioning context for the bottom launcher, and must not
@@ -181,7 +179,9 @@
    still; the padding-inline override above drops that pad and contents slide
    re-add it here, keeping the same 3px inset */
 #urlbar[popover-open] > .urlbar-input-container {
-  padding-inline: calc(var(--urlbar-input-growth-open-inline) + 3px) !important;
+  padding-inline: calc(
+    var(--urlbar-input-growth-open-inline, 0px) + 3px
+  ) !important;
 }
 
 /* Round every pill/button inside the url bar: search engine switcher,
@@ -200,11 +200,11 @@
   border-radius: var(--chrome-pill-radius) !important;
 }
 
-/* the switcher's outer <button> wrapper renders 2px taller than its inner
-   .button-background pill; a 1px block margin insets it to line up with the
-   other 26px urlbar controls */
+/* Firefox fixes the switcher at 28px, so match the other 26px controls.
+   its shadow-DOM pill reads --button-border-radius, which inherits through the shadow boundary */
 #urlbar .searchmode-switcher {
-  margin-block: 1px !important;
+  height: var(--urlbar-control-size) !important;
+  --button-border-radius: var(--chrome-pill-radius) !important;
 }
 
 /* Compact circular hover targets for url bar icon buttons: fixed 26px height,
@@ -227,18 +227,25 @@
   justify-content: center !important;
 }
 
-/* go/revert are <image>s, not flex boxes, so pin width == height to force a
-   square (=> circle) instead of a pill */
+/* Firefox gives page actions a fixed width, so let min-width set the circle and a labeled action still grow */
+#urlbar .urlbar-page-action {
+  width: auto !important;
+}
+
+/* Firefox sizes go/revert by padding around the icon, so a fixed square needs padding that leaves it 16px */
 #urlbar .urlbar-go-button,
 #urlbar .urlbar-revert-button {
   width: var(--urlbar-control-size) !important;
+  padding: calc(
+    (var(--urlbar-control-size) - var(--urlbar-icon-size)) / 2
+  ) !important;
 }
 
 /* Chips that show a text label (e.g. "Extension (Sidebery)", "Not Secure",
    zoom "90%") get more inner left/right padding; icon-only states keep the
    tight padding above so they stay circular. */
 #urlbar .identity-box-button:has(label:not([collapsed])),
-#urlbar #trust-icon-container:not(.secure),
+#urlbar #trust-icon-container:is(.insecure, .has-blocked-trackers),
 #urlbar #urlbar-label-box,
 #urlbar #urlbar-zoom-button {
   padding-inline: 7px !important;
@@ -293,17 +300,11 @@ findbar {
   transition: none !important;
 }
 
-/* remove shadow/outline from web content */
-#tabbrowser-tabbox,
-.browserContainer {
+/* with a sidebar shown, Firefox rounds and outlines .browserContainer, by two rules, so set the radii outright.
+   the border lines reach only Nova. split view keeps its rounded panes and the focused pane's outline */
+#tabbrowser-tabpanels > :not(.split-view-panel) .browserContainer {
   box-shadow: none !important;
   outline: none !important;
-}
-
-/* Firefox rounds .browserContainer's chrome-facing corners and draws a 1px
-   separator there whenever a sidebar is shown (Sidebery counts).
-   Two rules round it, so force the radii flat outright, not via the var. */
-.browserContainer {
   --content-area-start-radius: 0 !important;
   border-start-start-radius: 0 !important;
   border-start-end-radius: 0 !important;

@@ -70,7 +70,7 @@ for i, mode in ipairs(energy_modes) do
     })
 
     item:subscribe("mouse.clicked", function(env)
-        sbar.exec("sudo pmset -a powermode " .. (i - 1), update_popup)
+        sbar.exec("/usr/bin/sudo /usr/bin/pmset -a powermode " .. (i - 1), update_popup)
     end)
 
     energy_mode_items[i] = item

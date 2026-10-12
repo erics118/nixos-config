@@ -105,7 +105,7 @@ local known_rows = add_rows("wifi_known", 6)
 local other_header = add_header("wifi_other_header", "Other Networks")
 local other_rows = add_rows("wifi_other", 6)
 
-local settings = sbar.add_item("wifi_settings", {
+local settings_row = sbar.add_item("wifi_settings", {
     position = "popup." .. wifi.name,
     padding_left = 12,
     icon = { drawing = false },
@@ -243,7 +243,7 @@ other_header:subscribe("mouse.clicked", function(env)
     update_popup()
 end)
 
-settings:subscribe("mouse.clicked", function(env)
+settings_row:subscribe("mouse.clicked", function(env)
     wifi:set({ popup = { drawing = false } })
     sbar.exec('open "x-apple.systempreferences:com.apple.wifi-settings-extension"')
 end)

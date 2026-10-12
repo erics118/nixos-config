@@ -6,7 +6,8 @@ Chrome customization for Firefox Developer Edition, installed from `/Application
 
 - `firefox.nix` links `chrome/` and `user.js` into the profile `gcl3mics.dev-edition-default`, so edits are live. It links each top-level entry under `chrome/` by name, so a new one needs its own line there.
 - `.uc.js` scripts in `chrome/JS/` run through [fx-autoconfig](https://github.com/MrOtherGuy/fx-autoconfig), from the `fx-autoconfig-src` flake input. Its two program files go into the app bundle on every home-manager activation, so a Firefox update that wipes them is fixed by the next switch.
-- `resources/userChrome.au.css` is an author sheet, loaded by `userChrome_au_css.uc.js`, for `::part` selectors that `userChrome.css` can't reach.
+- A shadow-DOM part that `userChrome.css` can't select is styled through a custom property the part reads, since custom properties inherit through the shadow boundary.
+- `chrome/resources/` is linked but empty. fx-autoconfig serves it as `chrome://userChrome/content/`, for an author sheet and the `.uc.js` that loads it when a variable can't reach a part.
 
 ## After an edit
 

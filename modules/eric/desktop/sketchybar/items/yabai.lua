@@ -51,7 +51,7 @@ local function render(window_data, space_data)
 
     yabai:set({
         drawing = sbar.get_mode() == "default" and icon ~= nil,
-        icon = { color = c, string = icon, width = icon and 18 or 0 },
+        icon = { color = c, string = icon, width = icon and 20 or 0 },
     })
 end
 

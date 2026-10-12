@@ -5,6 +5,8 @@ user_pref("sidebar.revamp", true);
 user_pref("browser.theme.native-theme", false);
 // keep tab and sidebar canvases opaque, see .agents/skills/firefox-ui/gotchas.md
 user_pref("browser.tabs.allow_transparent_browser", false);
+// userChrome.css targets the Proton markup, and Firefox 158 defaults Nova on
+user_pref("browser.nova.enabled", false);
 user_pref("widget.macos.titlebar-blend-mode.behind-window", false);
 user_pref("widget.macos.sidebar-blend-mode.behind-window", false);
 user_pref("svg.context-properties.content.enabled", true);
