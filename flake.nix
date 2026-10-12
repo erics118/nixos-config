@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "https://channels.nixos.org/nixos-unstable/nixexprs.tar.zst";
 
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
@@ -28,6 +28,13 @@
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    direnv-instant = {
+      url = "github:Mic92/direnv-instant";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.treefmt-nix.follows = "treefmt-nix";
     };
 
     darwin = {
@@ -61,9 +68,9 @@
     };
 
     wezterm-src = {
-      # we aren't using github: because dir= will result in unstable hashes
-      url = "git+https://github.com/erics118/wezterm?ref=eric&dir=nix&shallow=1";
-      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:erics118/wezterm/eric?dir=nix";
+      # keeps its own nixpkgs, so it builds the same derivation the fork's ci pushes to erics118-wezterm.
+      # flake-edit.toml stops the formatter adding a follows here
     };
 
     goku-src = {
@@ -99,6 +106,11 @@
 
     yabai-src = {
       url = "github:erics118/yabai";
+      flake = false;
+    };
+
+    jankyborders-src = {
+      url = "github:erics118/JankyBorders";
       flake = false;
     };
 

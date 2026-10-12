@@ -1,6 +1,6 @@
 # nixos-config
 
-- Managed files use `repoFile` or `repoFileAll` from `modules/features/base/flake-link.nix`. `repoFile path` is `mkOutOfStoreSymlink "~/.flake/<path>"`, and `~/.flake` is a symlink to `~/nixos-config`. So the chain is target -> `/nix/store/...-home-manager-files/<target>` -> `/nix/store/...-hm_<name>` -> `~/.flake/<path>` -> the repo file. `repoFileAll dir target` makes one such symlink per file that existed in `dir` at eval time
+- Managed files use `repoFile` or `repoFileAll` from `modules/features/base/flake-link.nix`. `repoFile path` is `mkOutOfStoreSymlink "~/.flake/<path>"`, and `~/.flake` is a symlink to `~/nixos-config`. So the chain is target -> `/nix/store/...-home-manager-files/<target>` -> `/nix/store/...-hm_<name>` -> `~/.flake/<path>` -> the repo file. `repoFileAll dir target` makes one such symlink per git-tracked file that existed in `dir` at eval time
 - Files read with `builtins.readFile` or `source = ./...` are copied into the store, so editing them needs `just switch`
 - A module that takes no arguments is a plain attrset, not a function that ignores them (`_: { ... }`)
 - Check the platform with `pkgs.stdenv.hostPlatform.isDarwin` or `.isLinux`, never by matching the `system` string

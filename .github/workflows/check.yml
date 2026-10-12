@@ -39,7 +39,7 @@ jobs:
           persist-credentials: false
 
       # the nixos-config-private input is a private git+ssh flake, so we need to set up ssh access for it
-      # the same key is also a dependabot secret, so rotate both
+      # dependabot runs use their own deploy key ("dependabot CI") in the dependabot secret of the same name
       - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:
           ssh-private-key: ${{ secrets.PRIVATE_FLAKE_DEPLOY_KEY }}
@@ -52,11 +52,16 @@ jobs:
             extra-trusted-public-keys = niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=
 
       # push to erics118.cachix.org, pull from the other cachix caches
+      # the cache is public, so skip the sops file and every path whose closure holds it
+      # (from `nix-store -q --referrers-closure` on it). cachix pushes each path's closure
       - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
         with:
           name: erics118
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          extraPullNames: nix-community,numtide,devenv,catppuccin
+          extraPullNames: nix-community,numtide,devenv,catppuccin,erics118-wezterm
+          # only main pushes, so a pr branch can't put unreviewed builds in front of every host
+          skipPush: ${{ github.event_name != 'push' }}
+          pushFilter: '-(secrets\.yaml|manifest(-for-users)?\.json|(dry-)?activate|launchd|org\.nixos\.sops-install-secrets\.plist)$|-(nixos|darwin)-system-'
 
       - run: nix flake check --print-build-logs
 

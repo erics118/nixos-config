@@ -71,7 +71,7 @@ dev:
 [script]
 install-local agent src:
     tmp=$(mktemp -d)
-    trap 'rm -rf "$tmp"; just ntfy install-local $?' EXIT
+    trap 'rc=$?; rm -rf "$tmp"; just ntfy install-local $rc' EXIT
     cfg=".#darwinConfigurations.$(scutil --get LocalHostName).config"
     pkg=$(nix build --no-link --print-out-paths --override-input {{ agent }}-src "path:$(realpath {{ src }})" "$cfg.signedAgents.{{ agent }}")
     read cert label <<< "$(nix eval --raw "$cfg" --apply 'c: "${c.signedAgentsCert} ${c.launchd.user.agents.{{ agent }}.serviceConfig.Label}"')"
