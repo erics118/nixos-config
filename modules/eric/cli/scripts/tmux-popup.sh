@@ -59,14 +59,15 @@ open() {
     args=(-w 40% -h 60% sesh-pick --popup)
     [[ $kind == sessions ]] && args+=(--sessions)
     ;;
-  # each session gets its own hidden scratch-<session>, which tmux/keys.conf gives its own key tables.
-  # the inner tmux drops TMUX, since a floating pane has it set and refuses a nested client
+  # each session's scratch shell is a session of the same name on the scratch server (see tmux/scratch.conf), so no session list sees it.
+  # the inner tmux drops TMUX, since a floating pane has it set and refuses a nested client.
+  # @main-socket lets its bindings reach this server (see tmux/keys.conf)
   scratch)
     title=scratch
-    # shellcheck disable=SC2016
     # -y is the popup's bottom edge, so the client's height puts it at the bottom of the window whatever its splits
-    args=(-x 0 -y '#{client_height}' -w 100% -h 40% -e "SCRATCH=scratch-$session" -e "SCRATCH_SOCKET=${TMUX%%,*}"
-      'TMUX= tmux -S "$SCRATCH_SOCKET" new -A -s "$SCRATCH" \; set status off \; set prefix None \; set key-table scratch \; set @popup-client "$TMUX_POPUP_CLIENT"')
+    # shellcheck disable=SC2016
+    args=(-x 0 -y '#{client_height}' -w 100% -h 40% -e "SCRATCH=$session" -e "MAIN_SOCKET=${TMUX%%,*}"
+      'TMUX= tmux -L scratch -f "$HOME/.config/tmux/scratch.conf" new -A -s "$SCRATCH" \; set @popup-client "$TMUX_POPUP_CLIENT" \; set @main-socket "$MAIN_SOCKET"')
     ;;
   files)
     title=yazi

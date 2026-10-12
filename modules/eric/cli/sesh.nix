@@ -5,8 +5,6 @@
       # sesh-pick replaces the module's alias and tmux binding
       enableAlias = false;
       enableTmuxIntegration = false;
-      # hidden per-session scratch popups from tmux-popup (see scripts/tmux-popup.sh)
-      settings.blacklist = [ "^scratch-" ];
       settings.session = [
         {
           name = "nixos-config";

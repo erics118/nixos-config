@@ -11,8 +11,6 @@
         source-file -q ~/.config/tmux/main.conf
         # plugins load after main.conf, see its resurrect/continuum block
         # resurrect must load before continuum, which depends on it
-        # drop scratch-* lines from each save so scratch sessions never restore
-        set -g @resurrect-hook-post-save-layout '${pkgs.gnused}/bin/sed -i "/^[a-z_]*\tscratch-/d"'
         run-shell ${pkgs.tmuxPlugins.resurrect.rtp}
         run-shell ${pkgs.tmuxPlugins.continuum.rtp}
       '';
