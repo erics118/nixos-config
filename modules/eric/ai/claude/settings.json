@@ -54,6 +54,12 @@
     "deny": ["EnterPlanMode", "ExitPlanMode"],
     "defaultMode": "auto"
   },
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "In /Users/eric/dev/resume, running the applying-to-jobs CLI (node .../applying-to-jobs/src/cli.ts) to submit job applications (submit, apply --submit, batch --submit) is authorized when Eric asked in this session to submit them, and so is reading the receipt folders it writes."
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
