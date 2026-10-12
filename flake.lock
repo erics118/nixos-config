@@ -382,22 +382,6 @@
         "type": "github"
       }
     },
-    "jankyborders-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1791836492,
-        "narHash": "sha256-Vscpj8c2/0vU97IwtI+w86RoOK0sKlFyBSWBrbEUev8=",
-        "owner": "erics118",
-        "repo": "JankyBorders",
-        "rev": "ff88c0564a96cf0fa2196529f666b00355b04042",
-        "type": "github"
-      },
-      "original": {
-        "owner": "erics118",
-        "repo": "JankyBorders",
-        "type": "github"
-      }
-    },
     "libpng": {
       "flake": false,
       "locked": {
@@ -599,7 +583,6 @@
         "home-manager": "home-manager",
         "hyprland-contrib": "hyprland-contrib",
         "import-tree": "import-tree",
-        "jankyborders-src": "jankyborders-src",
         "mosh-src": "mosh-src",
         "nix-homebrew": "nix-homebrew",
         "nix-index-database": "nix-index-database",

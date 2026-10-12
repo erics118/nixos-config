@@ -18,17 +18,6 @@
       enableScriptingAddition = true;
     };
 
-    services.jankyborders = {
-      enable = true;
-      width = 2.0;
-      style = "square";
-      order = "above";
-      # catppuccin mocha overlay1
-      active_color = "0xff7f849c";
-      # catppuccin mocha surface1
-      inactive_color = "0xff45475a";
-    };
-
     signedAgents.yabai = config.services.yabai.package;
 
     launchd.user.agents.yabai.serviceConfig = {

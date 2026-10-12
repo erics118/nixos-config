@@ -114,11 +114,6 @@
       flake = false;
     };
 
-    jankyborders-src = {
-      url = "github:erics118/JankyBorders";
-      flake = false;
-    };
-
     mosh-src = {
       url = "github:erics118/mosh/eric";
       flake = false;
