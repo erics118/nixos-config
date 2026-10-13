@@ -70,4 +70,4 @@ Extensions in `pi/extensions/`, linked per file into `~/.pi/agent/extensions` by
 
 ## Tests
 
-CI runs `bash modules/eric/ai/hooks/test.sh` and `node --experimental-transform-types --test modules/eric/ai/pi/tests/*.test.ts`. `test.sh` fails if a check in `hooks/checks/` or a script in `claude/settings.json` has no test, or if `guard.sh` never runs a check, so a new check needs both.
+CI's `ai-agent-tests` job in `.github/workflows/check.yml` runs `hooks/test.sh` and the `pi/tests` suite. To run them locally, run that job's steps from the repo root. `test.sh` fails if a check in `hooks/checks/` or a script in `claude/settings.json` has no test, or if `guard.sh` never runs a check, so a new check needs both.

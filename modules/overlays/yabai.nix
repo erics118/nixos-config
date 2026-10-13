@@ -10,8 +10,7 @@
 
       # the makefile's default target is a debug build (-O0 -g, asserts on)
       # install is its release target (-DNDEBUG -O3) and still only writes bin/
-      # src/osax/*_bin.c is gitignored, so leftovers only arrive from a local checkout via the justfile's install-local
-      # clean first, since nix's fixed mtimes make those leftovers look up to date
+      # clean first, since nix's fixed mtimes would make any built leftovers in the source look up to date
       buildFlags = [
         "clean"
         "install"

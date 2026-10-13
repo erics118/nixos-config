@@ -34,7 +34,7 @@ Run `just` for every recipe.
 
 - `just switch`: builds the system and activates it
 - `just build`: builds the system without activating
-- `just dev`: switches using a sibling checkout at `../nixos-config-private` instead of the pinned private input
+- `just dev`: switches using a sibling checkout at `../nixos-config-private` instead of the pinned private input. `just dev <input> <path>` does the same for another input, such as `just dev smhkd-src ~/dev/smhkd`
 - `just check`: runs `nix flake check`
 - `just gc`: manually trigger garbage collector
 

@@ -58,28 +58,12 @@ build:
     trap 'just ntfy build $?' EXIT
     nh {{ system_target }} build
 
-# switch with a local checkout of the private input
+# switch with one flake input from a local checkout, the private repo by default
 [group('system')]
 [script]
-dev:
+dev input="nixos-config-private" src="../nixos-config-private":
     trap 'just ntfy dev $?' EXIT
-    nh {{ system_target }} switch . -- --override-input nixos-config-private git+file:../nixos-config-private
-
-# build a signed agent from a local checkout and install it, `just switch` restores the flake build
-[group('system')]
-[macos]
-[script]
-install-local agent src:
-    tmp=$(mktemp -d)
-    trap 'rc=$?; rm -rf "$tmp"; just ntfy install-local $rc' EXIT
-    cfg=".#darwinConfigurations.$(scutil --get LocalHostName).config"
-    pkg=$(nix build --no-link --print-out-paths --override-input {{ agent }}-src "path:$(realpath {{ src }})" "$cfg.signedAgents.{{ agent }}")
-    read cert label <<< "$(nix eval --raw "$cfg" --apply 'c: "${c.signedAgentsCert} ${c.launchd.user.agents.{{ agent }}.serviceConfig.Label}"')"
-    cp "$pkg/bin/{{ agent }}" "$tmp/bin" && chmod u+w "$tmp/bin" && codesign -fs "$cert" "$tmp/bin"
-    sudo install -o root -g wheel -m 755 "$tmp/bin" /usr/local/bin/{{ agent }}
-    # the next switch sees a different source and reinstalls the flake build
-    echo "$pkg/bin/{{ agent }}" | sudo tee /usr/local/bin/{{ agent }}.source >/dev/null
-    launchctl kickstart -k "gui/$(id -u)/$label"
+    nh {{ system_target }} switch . -- --override-input {{ input }} "git+file:$(realpath {{ src }})"
 
 # test the NixOS configuration
 [group('system')]
