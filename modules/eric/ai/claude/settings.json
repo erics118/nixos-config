@@ -113,7 +113,7 @@
           },
           {
             "type": "command",
-            "command": "bash -c 'f=$HOME/.local/state/reminders.md; [ -s \"$f\" ] || exit 0; jq -n --rawfile r \"$f\" --arg h \"Open reminders for Eric, kept in $f. Tell him each one at the start of this conversation, soonest first, one line per item that starts with the item, never grouped by date. Remove an item from that file only when he says it is done.\" \"{hookSpecificOutput:{hookEventName:\\\"SessionStart\\\",additionalContext:(\\$h + \\\"\\\\n\\\\n\\\" + \\$r)}}\"'"
+            "command": "\"$HOME/.agents/hooks/reminders.sh\""
           }
         ]
       },
@@ -184,7 +184,7 @@
   "autoMode": {
     "allow": [
       "$defaults",
-      "In /Users/eric/dev/resume, running the applying-to-jobs CLI (node .../applying-to-jobs/src/cli.ts) to submit job applications (submit, apply --submit, batch --submit) is authorized when Eric asked in this session to submit them, and so is reading the receipt folders it writes."
+      "In /Users/eric/dev/resume, running the applying-to-jobs CLI (node .../applying-to-jobs/src/cli.ts) to submit job applications (submit, apply --submit, batch --submit) is authorized when the user asked in this session to submit them, and so is reading the receipt folders it writes."
     ]
   },
   "remoteControlAtStartup": true

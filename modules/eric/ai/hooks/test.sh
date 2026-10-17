@@ -497,6 +497,29 @@ else
   printf 'skip tmux-agent-resume: tmux is not on PATH\n'
 fi
 
+tested+=(reminders.sh)
+rem_home=$repo/reminders-home
+rem_repo=$repo/reminders-repo
+mkdir -p "$rem_home/.local/state/eric"
+git init -q "$rem_repo"
+git -C "$rem_repo" commit -q --allow-empty -m init
+[ -z "$(cd "$repo" && HOME=$rem_home "$hooks/reminders.sh" <<<'{}')" ] || {
+  printf 'FAIL reminders printed with no lists\n'
+  exit 1
+}
+printf 'ok reminders-empty\n'
+printf -- '- global item\n' >"$rem_home/.local/state/eric/reminders.md"
+mkdir "$rem_repo/.eric"
+printf -- '- repo item\n' >"$rem_repo/.eric/reminders.md"
+# a worktree reads its main repo's list
+git -C "$rem_repo" worktree add -q "$repo/reminders-wt"
+HOME=$rem_home "$hooks/reminders.sh" <<<"{\"cwd\":\"$repo/reminders-wt\"}" |
+  jq -e --arg f "$rem_repo/.eric/reminders.md" '.hookSpecificOutput.additionalContext | contains("- global item") and contains("- repo item") and contains($f)' >/dev/null || {
+  printf 'FAIL reminders did not show both lists from a worktree\n'
+  exit 1
+}
+printf 'ok reminders-both\n'
+
 # every check, and every other script settings.json runs from this directory, since herdr installs its own by absolute path
 configured=$({
   ls "$hooks/checks"
