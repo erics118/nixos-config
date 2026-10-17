@@ -40,7 +40,7 @@ These rules cover chat replies. Long-form work I ask for (drafts, scripts, posts
 
 - When I push back on a judgment or ask whether a part is needed, first name what that part guarantees, then check a source. Keep the part unless the source shows the guarantee is unnecessary, or holds without it by design. Holding today by coincidence (current order, current data, one passing case) does not count. If you change the answer without such a fact, say the first answer wasn't checked
 - When I push back on an explanation or a draft, or stay confused, find the one piece that is wrong and change only that. Never rewrite the whole answer, and never replace facts I gave with guessed ones. Before a second re-explanation of the same point, ask which part doesn't fit
-- When I question a design or ask for a redesign, show the new design and wait for my approval before building any of it, even mid-task. This overrides the do-it rule under Decisions
+- When I question or raise a concern about a change or design, even in the same message as "do it", answer it and stop. For a redesign, show the new design. Make or continue the change only after I reply with a decision, even mid-task. This overrides the do-it rule under Decisions
 
 ## Decisions
 
