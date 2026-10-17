@@ -66,7 +66,7 @@ Extensions in `pi/extensions/`, linked per file into `~/.pi/agent/extensions` by
 - `tmux-agent-resume.ts`: runs `hooks/tmux-agent-resume.sh pi` at session start, since `guards.ts` does not run `SessionStart` hooks
 - `statusline.ts`, `minimal-startup.ts`, `fullscreen-tweaks.ts`: UI
 
-`pi/lib/` holds helpers for extensions, since pi loads every `.ts` in `extensions/` as an extension. `mcp.json` starts the `context7-mcp` wrapper from `ai.nix`, plus `railway mcp`.
+`pi/lib/` holds helpers for extensions, since pi loads every `.ts` in `extensions/` as an extension. `mcp.json` starts the `context7-mcp` and `cornell-confluence-mcp` wrappers from `ai.nix`, plus `railway mcp`.
 
 ## Tests
 

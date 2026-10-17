@@ -62,6 +62,7 @@
           };
           pull.ff = "only";
           push.autoSetupRemote = true;
+          branch.autoSetupMerge = "simple";
           fetch.prune = true;
           rerere.enabled = true;
           rebase.autoStash = true;

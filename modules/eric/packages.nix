@@ -38,6 +38,7 @@
           yq-go
           scc
           railway
+          docker-sbx
           screen
           poppler # pdf rendering
 
