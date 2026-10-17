@@ -2,7 +2,7 @@
 
 Claude Code, Codex, and pi share one instruction file and one set of skills.
 
-- `AGENTS.md` is linked as `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, and `~/.pi/agent/AGENTS.md`. pi-only rules live in `pi/APPEND_SYSTEM.md`.
+- `AGENTS-global.md` is linked as `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, and `~/.pi/agent/AGENTS.md`. pi-only rules live in `pi/APPEND_SYSTEM.md`.
 - `skills/shared/` goes to `~/.claude/skills` and `~/.agents/skills` (Codex and pi). `skills/claude/` is Claude-only. `skills/codex/` also goes to `~/.agents/skills`, so Codex and pi both get it.
 - Subagents live in `claude/agents/`, `codex/agents/`, and `pi/agents/`, linked as `~/.claude/agents`, `~/.codex/agents`, and `~/.pi/agent/agents`. Each tool has `auditor` and `recall`. Claude and Codex also have `researcher`, and pi uses its built-in one. Codex agents cannot be made read-only, so read-only is only an instruction there.
 - Guard hooks live in `hooks/`, linked as `~/.agents/hooks`. `hooks/guard.sh` is the one list of which check in `hooks/checks/` runs for which tool. It parses a shell command once, runs each check, and prints one decision. Claude (`claude/settings.json`), Codex (`codex/hooks.json`), and pi (`pi/extensions/guards.ts`) each call it once per event, naming the harness. Codex also runs `tmux-bell.sh` and `tmux-agent-resume.sh` from `codex/hooks.json` (trust them once with `/hooks`, and again after an entry there changes).
@@ -46,7 +46,7 @@ Before a shell command:
 - `block-sudo-probe.sh`: no `sudo -n` on macOS, where Touch ID approves a plain `sudo`
 - `block-exec-flags.sh`: no `fd -x`, `rg --pre`, `sort -o`, `tree -o`, or `git diff`/`log`/`show --output`, which would run or write through tools the agents approve as read-only
 
-Every guard also denies a shell that reads its script from a pipe, since no guard can see that script. A here-string or heredoc is checked like a `bash -c` script.
+`guard.sh` denies a command shfmt cannot parse, and a shell that reads its script from a pipe, since no check can see either. A here-string or heredoc is checked like a `bash -c` script.
 
 Before a file read or edit: `deny-symlink-path.sh` (use the real path, not a managed symlink), `block-smart-punct.sh` (no em dashes or curly quotes), `block-write-tracked.sh` (no whole-file Write over a git-tracked file), `block-git-config-edit.sh` (no Write or Edit of a `.git` config file).
 

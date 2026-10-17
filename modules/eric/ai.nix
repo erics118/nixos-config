@@ -9,7 +9,7 @@
     }:
     let
       base = "modules/eric/ai";
-      globalInstructions = repoFile "${base}/AGENTS.md";
+      globalInstructions = repoFile "${base}/AGENTS-global.md";
       # links each named path under ~/<target> to the same path under <base>/<source>
       links =
         target: source: names:
@@ -88,7 +88,8 @@
       home.sessionVariables.PI_CODING_AGENT_DIR = "$HOME/.pi/agent";
       # pi's better-sqlite3 runs node-gyp on install
       # gyp needs ctypes, which python3Minimal lacks
-      home.sessionVariables.npm_config_python = lib.getExe pkgs.python3;
+      # npm 11 warns on npm_config_python as an unknown config, so point node-gyp at python directly
+      home.sessionVariables.NODE_GYP_FORCE_PYTHON = lib.getExe pkgs.python3;
 
       # agent shells pass unmatched globs and words starting with = through like bash
       programs.zsh.envExtra = ''

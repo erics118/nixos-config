@@ -21,6 +21,7 @@ followUpQueueMode = "queue"
 show-context-window-usage = false
 avatar-overlay-pet-visible = false
 hotkey-window-projectless-default-enabled = true
+confirm-before-close = "never"
 
 [desktop.appearanceDarkChromeTheme]
 accent = "#339cff"
@@ -80,8 +81,8 @@ NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = ""
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = ""
 NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = ""
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.928.31416"
-NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/eric/.codex/plugins/cache/openai-bundled/browser/26.928.31416/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
+BROWSER_USE_CODEX_APP_VERSION = "26.1007.30912"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/eric/.codex/plugins/cache/openai-bundled/browser/26.1007.30912/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
 SKY_CUA_SERVICE_PATH = "/Users/eric/.codex/computer-use/Codex Computer Use.app"
 CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex"
 
@@ -401,4 +402,7 @@ trusted_hash = "sha256:f27a4fda937303a82b584fd3a3acbbb561b32c64d5a09ea51ffe7177f
 trusted_hash = "sha256:fdcc0e8ab137e94aed9979e34df6b07780dced7150df9eba5c3bccd3855152e7"
 
 [hooks.state."/Users/eric/.codex/hooks.json:session_start:0:1"]
-trusted_hash = "sha256:7fe63c42973ca988a5758d5295fb0dc0a24afb6c970d412f11c71b6e91a48abb"
+trusted_hash = "sha256:341f095eb06db5b52fa3c919f6e3ba2ada4c63883b73a18707a760623a7fc589"
+
+[hooks.state."/Users/eric/.codex/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:d06868730b61f05db3f56714b5e7499632bd731c1905525d29d402477834ed44"

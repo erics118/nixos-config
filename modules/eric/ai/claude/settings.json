@@ -2,10 +2,13 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "cleanupPeriodDays": 3560,
   "env": {
+    "BASH_DEFAULT_TIMEOUT_MS": "10000",
     "ENABLE_TOOL_SEARCH": "auto",
-    "GIT_CONFIG_COUNT": "1",
+    "GIT_CONFIG_COUNT": "2",
     "GIT_CONFIG_KEY_0": "gpg.ssh.program",
-    "GIT_CONFIG_VALUE_0": "ssh-keygen"
+    "GIT_CONFIG_VALUE_0": "ssh-keygen",
+    "GIT_CONFIG_KEY_1": "core.sshCommand",
+    "GIT_CONFIG_VALUE_1": "ssh -o IdentityAgent=none -i ~/.ssh/id_ed25519_github_erics118 -i ~/.ssh/id_ed25519_cornell"
   },
   "attribution": {
     "commit": "",
@@ -53,12 +56,6 @@
     ],
     "deny": ["EnterPlanMode", "ExitPlanMode"],
     "defaultMode": "auto"
-  },
-  "autoMode": {
-    "allow": [
-      "$defaults",
-      "In /Users/eric/dev/resume, running the applying-to-jobs CLI (node .../applying-to-jobs/src/cli.ts) to submit job applications (submit, apply --submit, batch --submit) is authorized when Eric asked in this session to submit them, and so is reading the receipt folders it writes."
-    ]
   },
   "hooks": {
     "PreToolUse": [
@@ -113,6 +110,10 @@
           {
             "type": "command",
             "command": "bash -c 'm=$(jq -r \".hooks[][].hooks[].command\" \"$HOME/.claude/settings.json\" | grep -o \"\\$HOME/\\.agents/hooks/[^\\\" ]*\" | sort -u | while read -r p; do f=$HOME${p#\\$HOME}; [ -x \"$f\" ] || printf \"%s \" \"$f\"; done); [ -z \"$m\" ] || jq -n --arg m \"guard hooks missing, so they do not run: $m\" \"{systemMessage:\\$m,hookSpecificOutput:{hookEventName:\\\"SessionStart\\\",additionalContext:\\$m}}\"'"
+          },
+          {
+            "type": "command",
+            "command": "bash -c 'f=$HOME/.local/state/reminders.md; [ -s \"$f\" ] || exit 0; jq -n --rawfile r \"$f\" --arg h \"Open reminders for Eric, kept in $f. Tell him each one at the start of this conversation, soonest first, one line per item that starts with the item, never grouped by date. Remove an item from that file only when he says it is done.\" \"{hookSpecificOutput:{hookEventName:\\\"SessionStart\\\",additionalContext:(\\$h + \\\"\\\\n\\\\n\\\" + \\$r)}}\"'"
           }
         ]
       },
@@ -128,7 +129,6 @@
       }
     ]
   },
-  "theme": "custom:catppuccin-mocha",
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline.sh"
@@ -175,10 +175,17 @@
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
+  "theme": "custom:catppuccin-mocha",
   "editorMode": "normal",
   "verbose": true,
   "autoCompactEnabled": true,
-  "remoteControlAtStartup": false,
   "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "In /Users/eric/dev/resume, running the applying-to-jobs CLI (node .../applying-to-jobs/src/cli.ts) to submit job applications (submit, apply --submit, batch --submit) is authorized when Eric asked in this session to submit them, and so is reading the receipt folders it writes."
+    ]
+  },
+  "remoteControlAtStartup": true
 }

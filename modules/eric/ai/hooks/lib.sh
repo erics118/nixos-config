@@ -199,7 +199,7 @@ hook_any() {
 # deny a GIT_DIR, GIT_WORK_TREE, or GIT_CONFIG* assignment, which moves git to a repo or config the gates do not read
 hook_deny_git_env() {
   [[ $HOOK_COMMAND =~ (^|[^A-Za-z0-9_])GIT_(CONFIG[A-Z0-9_]*|DIR|WORK_TREE)= ]] &&
-    hook_deny 'Agents never set GIT_DIR, GIT_WORK_TREE, or GIT_CONFIG* variables. Name the repo with git -C.'
+    hook_deny 'Agents never set GIT_DIR, GIT_WORK_TREE, or GIT_CONFIG* variables. Name the repo with git -C, and pass a config value with git -c key=value.'
   return 0
 }
 

@@ -4,7 +4,7 @@
 # shows as a diff and /rewind cannot undo it
 
 hook_command_dir
-reason='is tracked by git. Change it with the edit tool so the change shows as a reviewable diff.'
+reason='is tracked by git. Use the edit tool so the change shows as a diff and /rewind can undo it.'
 
 # sed or perl in place: check that command's operands
 while IFS= read -r w; do
