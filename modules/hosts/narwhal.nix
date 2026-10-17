@@ -60,6 +60,22 @@ in
     # persistent machine-check, memory, pcie error log
     hardware.rasdaemon.enable = true;
 
+    # cyberpower CP850PFCLCD on usb, shuts narwhal down on low battery
+    # upsd listens on localhost only, so the password can sit in the store
+    power.ups = {
+      enable = true;
+      mode = "standalone";
+      ups.cyberpower = {
+        driver = "usbhid-ups";
+        port = "auto";
+      };
+      users.upsmon = {
+        passwordFile = "${pkgs.writeText "upsmon-password" "local-only"}";
+        upsmon = "primary";
+      };
+      upsmon.monitor.cyberpower.user = "upsmon";
+    };
+
     # dont sleep
     systemd.sleep.settings.Sleep = {
       AllowSuspend = "no";
