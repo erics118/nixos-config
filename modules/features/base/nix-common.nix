@@ -10,6 +10,8 @@ let
     };
 
     nix = {
+      # pkgs.nix lags a series behind, and 2.35.3 fixes the submodule fetcher-cache bug (NixOS/nix#16397)
+      package = pkgs.nixVersions.latest;
       extraOptions = ''
         !include ${config.sops.templates."nix-access-tokens".path}
       '';

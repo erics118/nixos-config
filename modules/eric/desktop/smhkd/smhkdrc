@@ -31,7 +31,7 @@ mod + e :
     front -p "/System/Library/CoreServices/Finder.app"
 
 mod + b :
-    front -n "Firefox Developer Edition"
+    front -p "/Applications/Nix Apps/Firefox Developer Edition.app"
 
 mod + ctrl + b :
     front -n "Orion RC"

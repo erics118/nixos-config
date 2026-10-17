@@ -86,7 +86,7 @@
                   "/Applications/Todoist.app"
                   "/Applications/Notion.app"
                   "/System/Applications/Messages.app"
-                  "/Applications/Firefox Developer Edition.app"
+                  "/Applications/Nix Apps/Firefox Developer Edition.app"
                   "/Applications/Nix Apps/WezTerm.app"
                   "/Applications/Slack.app"
                   "/Applications/Spotify.app"

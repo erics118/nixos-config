@@ -7,7 +7,7 @@ The config lives in `~/nixos-config/modules/eric/desktop/firefox/`. Read its `RE
 
 1. Read the installed source. The answer to "which rule does this" is in the installed build, not in memory or searchfox. Extract the files you need from the browser jar into the task's scratch directory, `<scratch>` below (a nonzero exit with "extra bytes" warnings is normal):
    ```bash
-   unzip -o -d <scratch>/omni "/Applications/Firefox Developer Edition.app/Contents/Resources/browser/omni.ja" '<path>'
+   unzip -o -d <scratch>/omni "/Applications/Nix Apps/Firefox Developer Edition.app/Contents/Resources/browser/omni.ja" '<path>'
    ```
    On Linux the browser jar is `"$(dirname "$(readlink -f "$(command -v firefox)")")/../lib/firefox/browser/omni.ja"`.
    List paths with `unzip -l`. The browser jar holds the chrome (`chrome/browser/skin/classic/browser/` for CSS, `chrome/browser/content/browser/` for JS and `browser.xhtml`). `Contents/Resources/omni.ja` holds only toolkit.
