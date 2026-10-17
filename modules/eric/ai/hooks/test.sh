@@ -502,7 +502,6 @@ rem_home=$repo/reminders-home
 rem_repo=$repo/reminders-repo
 mkdir -p "$rem_home/.local/state/eric"
 git init -q "$rem_repo"
-git -C "$rem_repo" commit -q --allow-empty -m init
 [ -z "$(cd "$repo" && HOME=$rem_home "$hooks/reminders.sh" <<<'{}')" ] || {
   printf 'FAIL reminders printed with no lists\n'
   exit 1
