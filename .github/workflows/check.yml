@@ -73,24 +73,21 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 24
-
-      # the extensions import these at runtime, pi provides them when installed
-      # unpinned, since the installed pi updates itself
-      - run: npm install --no-save --no-package-lock @earendil-works/pi-coding-agent @earendil-works/pi-tui @earendil-works/pi-ai # zizmor: ignore[adhoc-packages]
-
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
 
       # the guard hooks and the pi guards test need rg, jq and shfmt. direnv runs the treefmt-on-edit case
       # and just runs the git-add-before-nix recipe cases
       # from the flake's locked nixpkgs, so ci runs the same versions as the hosts
-      - run: nix profile install --inputs-from . nixpkgs#ripgrep nixpkgs#jq nixpkgs#shfmt nixpkgs#direnv nixpkgs#just
+      - run: nix profile install --inputs-from . nixpkgs#ripgrep nixpkgs#jq nixpkgs#shfmt nixpkgs#direnv nixpkgs#just nixpkgs#git nixpkgs#tmux nixpkgs#gawk nixpkgs#bash nixpkgs#coreutils nixpkgs#gnused nixpkgs#nodejs_24
+
+      # the extensions import these at runtime, pi provides them when installed
+      # unpinned, since the installed pi updates itself
+      - run: npm install --no-save --no-package-lock @earendil-works/pi-coding-agent @earendil-works/pi-tui @earendil-works/pi-ai # zizmor: ignore[adhoc-packages]
 
       # test.sh checks codex/rules/default.rules with `codex execpolicy check`
-      # unpinned, since the installed codex updates itself
-      - run: npm install -g @openai/codex # zizmor: ignore[adhoc-packages]
+      # unpinned standalone install, since the installed codex updates itself
+      - run: curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh
+      - run: echo "$HOME/.local/bin" >>"$GITHUB_PATH"
 
       - run: bash modules/eric/ai/hooks/test.sh
 
