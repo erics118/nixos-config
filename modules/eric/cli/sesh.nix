@@ -11,6 +11,14 @@
           path = "~/nixos-config";
         }
       ];
+      # course folders are unique without the latex repo and term prefix
+      settings.name_substitution = [
+        {
+          find = "^~/dev/latex/[^/]+/";
+          replace = "";
+          regex = true;
+        }
+      ];
     };
 
     # one picker for t, tmux-popup, and rtmux on remote hosts

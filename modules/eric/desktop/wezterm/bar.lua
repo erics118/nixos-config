@@ -125,13 +125,13 @@ local function split_tmux_title(title)
     return session, host ~= local_host and host or nil, window_name, true
 end
 
--- a tmux title as host: session - window, the way it reads in the tabline
+-- a tmux title as session@host: window, the way it reads in the tabline
 function M.display_title(title)
     local session, host, window_name = split_tmux_title(title)
     if not session then
         return title
     end
-    return (host and host .. ": " or "") .. session .. " - " .. window_name
+    return session .. (host and "@" .. host or "") .. ": " .. window_name
 end
 
 -- tmux's alert marker as an alert kind, or nil, and the title without it.

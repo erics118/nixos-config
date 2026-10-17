@@ -2,5 +2,31 @@
 // a project .markdownlint.* file replaces it, and a .markdownlint-cli2.* file merges with it
 {
   // long lines are fine, prose is soft-wrapped
-  "MD013": false
+  "MD013": false,
+  // no-multiple-blanks: more than one blank line in a row
+  "MD012": false,
+  // blanks-around-headings: a heading needs a blank line above and below
+  "MD022": false,
+  // no-duplicate-heading: two headings with the same text
+  "MD024": false,
+  // ol-prefix: ordered list numbers must count 1/2/3 or repeat 1/1/1
+  "MD029": false,
+  // blanks-around-fences: a code block needs a blank line above and below
+  "MD031": false,
+  // blanks-around-lists: a list needs a blank line above and below
+  "MD032": false,
+  // no-inline-html: any html tag such as <br> or <details>
+  "MD033": false,
+  // no-bare-urls: a url must be wrapped in <> or a link
+  "MD034": false,
+  // no-emphasis-as-heading: a line that is only bold or italic text
+  "MD036": false,
+  // fenced-code-language: a code block with no language after the backticks
+  "MD040": false,
+  // first-line-heading: the file must start with a top-level heading
+  "MD041": false,
+  // blanks-around-tables: a table needs a blank line above and below
+  "MD058": false,
+  // descriptive-link-text: link text like "here" or "link"
+  "MD059": false
 }
