@@ -70,7 +70,7 @@ go() {
 }
 
 # sesh's rows for the given list flags, with each running session's name in its alert colour,
-# from @session-alert in tmux/tabline.conf
+# from @session-alert in tmux/alerts.conf
 list() {
   local -A color=([fail]=$'\e[1;38;2;243;139;168m' [bell]=$'\e[1;38;2;250;179;135m' [ok]=$'\e[1;38;2;166;227;161m' [activity]=$'\e[1;38;2;137;180;250m')
   local -A alert=()

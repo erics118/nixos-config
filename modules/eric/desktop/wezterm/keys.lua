@@ -157,7 +157,7 @@ local function hide_cursor_briefly(pane)
 end
 
 -- an open popup takes every key, so a local tmux gets its popups from tmux-popup (see cli/scripts), run directly.
--- a remote tmux gets the keys its own bindings take (see cli/tmux/keys.conf), and herdr its own popup keys
+-- a remote tmux gets the keys its own bindings take (see cli/tmux/popups.conf and cli/rtmux/remote.conf), and herdr its own popup keys
 local function popup_key(kind, tmux_keys, herdr_keys)
     return wezterm.action_callback(function(window, pane)
         local info = pane:get_foreground_process_info()

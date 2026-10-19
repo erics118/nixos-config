@@ -18,6 +18,7 @@ c.skip_close_confirmation_for_processes_named = {
     "zsh",
     "fish",
     "nu",
+    "tmux",
     -- windows
     "cmd.exe",
     "pwsh.exe",
@@ -73,7 +74,7 @@ c.window_padding = {
 }
 c.window_content_alignment = {
     horizontal = "Center",
-    vertical = "Center",
+    vertical = "Top",
 }
 c.adjust_window_size_when_changing_font_size = false
 c.window_background_opacity = 0.97

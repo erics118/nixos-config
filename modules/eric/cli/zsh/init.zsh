@@ -163,7 +163,7 @@ precmd_cursor() {
 }
 
 # OSC 133 marks each prompt and command, so tmux sees when a command ends and its exit status.
-# tmux colours the tab from that (see tmux/tabline.conf)
+# tmux colours the tab from that (see tmux/alerts.conf)
 preexec_osc133() {
   _osc133_ran=1
   print -n '\e]133;C\a'

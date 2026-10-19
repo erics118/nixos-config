@@ -56,7 +56,7 @@ open() {
     ;;
   # each session's scratch shell is a session of the same name on the scratch server (see tmux/scratch.conf), so no session list sees it.
   # the inner tmux drops TMUX, since a floating pane has it set and refuses a nested client.
-  # @main-socket lets its bindings reach this server (see tmux/keys.conf)
+  # @main-socket lets its bindings reach this server (see tmux/popups.conf)
   scratch)
     title=scratch
     # -y is the popup's bottom edge, so the client's height puts it at the bottom of the window whatever its splits

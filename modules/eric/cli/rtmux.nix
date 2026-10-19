@@ -13,6 +13,9 @@ in
       remote = pkgs.runCommand "rtmux-remote" { } ''
         install -Dm555 ${./tmux-sessions/tmux-sessions.sh} $out/tmux-sessions
         install -Dm444 ${./rtmux/remote.conf} $out/tmux.conf
+        install -Dm444 ${./tmux/base.conf} $out/base.conf
+        install -Dm444 ${./tmux/keys.conf} $out/keys.conf
+        install -Dm444 ${./tmux/tabline.conf} $out/tabline.conf
       '';
     in
     {

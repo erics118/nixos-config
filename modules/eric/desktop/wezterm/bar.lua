@@ -3,7 +3,7 @@ local keys = require("keys")
 local act = wezterm.action
 
 -- each alert's colour, catppuccin mocha red, peach, green and blue as tmux's @session-alert has them
--- (see tmux/tabline.conf), the SF Symbol the native toolbar shows it as, and the nerd font glyph the drawn tab bar shows
+-- (see tmux/alerts.conf), the SF Symbol the native toolbar shows it as, and the nerd font glyph the drawn tab bar shows
 local alerts = {
     fail = { colour = "#f38ba8", symbol = "xmark.circle.fill", glyph = "\u{f057}" },
     bell = { colour = "#fab387", symbol = "bell.fill", glyph = "\u{f0f3}" },

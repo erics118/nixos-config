@@ -86,7 +86,7 @@
               export HOME=$TMPDIR
               cd ${../modules/eric/cli/tmux}
               ${lib.getExe pkgs.tmux} -S $TMPDIR/sock -f /dev/null start-server \; \
-                source-file main.conf keys.conf tabline.conf
+                source-file main.conf base.conf keys.conf popups.conf tabline.conf alerts.conf
               touch $out
             '';
 

@@ -3,7 +3,7 @@
 # always exit 0, since a Stop hook that exits 2 keeps the agent running
 [[ -n ${TMUX_PANE:-} ]] || exit 0
 tty=$(tmux display -p -t "$TMUX_PANE" '#{pane_tty}' 2>/dev/null) && printf '\a' >"$tty" 2>/dev/null
-# tmux flags no bell on a window a client shows, so mark it for @alert and @session-alert (see tmux/tabline.conf).
+# tmux flags no bell on a window a client shows, so mark it for @alert and @session-alert (see tmux/alerts.conf).
 # a focused client showing the window means it was seen
 win=$(tmux display -p -t "$TMUX_PANE" '#{window_id}' 2>/dev/null) &&
   ! tmux list-clients -F '#{client_flags} #{window_id}' 2>/dev/null | grep -q "focused.* $win\$" &&

@@ -65,25 +65,29 @@ own() {
   return 1
 }
 
-# a host outside this config gets tmux-sessions and a tmux config only in ~/.local/erics118, off its PATH, for a private tmux server.
-# each file is written beside its target and moved over it, so a half-copied file never runs.
+# a host outside this config gets tmux-sessions and the tmux confs only in ~/.local/erics118, off its PATH, for a private tmux server.
+# the set is written to a new folder that then replaces the old one, so a half-copied set never runs and no older file stays.
 # takes ssh options
 version=${remote_dir##*/}
 install_private() {
   has "$version" && return 0
+  local f n
   {
     echo 'set -e'
-    echo 'mkdir -p ~/.local/erics118'
-    echo "cat > ~/.local/erics118/tmux-sessions.new <<'RTMUX_EOF'"
-    cat "$remote_dir/tmux-sessions"
-    echo 'RTMUX_EOF'
-    echo 'chmod 755 ~/.local/erics118/tmux-sessions.new'
-    echo 'mv ~/.local/erics118/tmux-sessions.new ~/.local/erics118/tmux-sessions'
-    echo "cat > ~/.local/erics118/tmux.conf.new <<'RTMUX_EOF'"
-    cat "$remote_dir/tmux.conf"
-    echo 'RTMUX_EOF'
-    echo 'mv ~/.local/erics118/tmux.conf.new ~/.local/erics118/tmux.conf'
-    echo "echo $version > ~/.local/erics118/.version"
+    echo 'rm -rf ~/.local/erics118.new'
+    echo 'mkdir -p ~/.local/erics118.new'
+    for f in "$remote_dir"/*; do
+      n=${f##*/}
+      echo "cat > ~/.local/erics118.new/$n <<'RTMUX_EOF'"
+      cat "$f"
+      echo 'RTMUX_EOF'
+      if [[ -x $f ]]; then
+        echo "chmod 755 ~/.local/erics118.new/$n"
+      fi
+    done
+    echo "echo $version > ~/.local/erics118.new/.version"
+    echo 'rm -rf ~/.local/erics118'
+    echo 'mv ~/.local/erics118.new ~/.local/erics118'
   } | ssh "$@" "$host" sh
 }
 
@@ -153,10 +157,11 @@ case ${1:-} in
   ;;
 --sessions)
   shift
-  # own hosts online on the tailnet, which leaves out this machine, then the named hosts
-  online=$(tailscale status --json 2>/dev/null | jq -r '.Peer[] | select(.Online) | .DNSName | split(".")[0]' || true)
+  # every own host but this machine, then the named hosts.
+  # an unreachable one fails its probe within the 1s connect timeout, whichever tailnet this machine is on
+  self=$(hostname -s)
   for h in "${own_hosts[@]}"; do
-    if grep -qxF "$h" <<<"$online"; then
+    if [[ $h != "$self" ]]; then
       set -- "$@" "$h"
     fi
   done
@@ -205,10 +210,10 @@ if [[ $mode == --ls ]]; then
   exit 0
 fi
 
-# undoes install_private, ending the private server and its sessions first
+# undoes install_private, ending the private server, its scratch server (see remote.conf), and their sessions first
 if [[ $mode == --uninstall ]]; then
   # shellcheck disable=SC2016
-  exec ssh "$host" 'tmux -L erics118 kill-server 2>/dev/null; rm -rf "$HOME/.local/erics118"'
+  exec ssh "$host" 'tmux -L erics118 kill-server 2>/dev/null; tmux -L erics118-scratch kill-server 2>/dev/null; rm -rf "$HOME/.local/erics118" "$HOME/.local/erics118.new"'
 fi
 
 if ! probe; then
@@ -221,9 +226,10 @@ if own && has sesh-pick; then
 elif ! own && has tmux; then
   install_private
   # @host names the host as rtmux reaches it, for the window title remote.conf sets.
-  # it is per session, so a second alias to the same host relabels only the session it opens
+  # it is per session, so a second alias to the same host relabels only the session it opens.
+  # -u since the host's default locale may not be utf-8, and tmux would draw every non-ascii character as _
   # shellcheck disable=SC2016
-  remote=(sh -c 'exec tmux -L erics118 -f "$HOME/.local/erics118/tmux.conf" new -A -s "$1" \; set @host "$2"' _ "${target:-main}" "$host")
+  remote=(sh -c 'exec tmux -u -L erics118 -f "$HOME/.local/erics118/tmux.conf" new -A -s "$1" \; set @host "$2"' _ "${target:-main}" "$host")
 elif has tmux; then
   remote=(tmux new -A -s "${target:-main}")
 else
@@ -247,5 +253,7 @@ if ((use_autossh)) || ! has mosh-server || [[ $hostname != *.ts.net ]]; then
     -o ControlMaster=no -o ControlPath=none \
     "$host" -t "${cmd% }"
 else
-  exec mosh --predict-overwrite "$host" -- "${remote[@]}"
+  # mosh's default proxy resolves the bare alias itself, and ssh skips CanonicalDomains under a ProxyCommand.
+  # remote takes the address from the ssh session instead, which on the tailnet is the host's tailscale ip
+  exec mosh --experimental-remote-ip=remote --predict-overwrite "$host" -- "${remote[@]}"
 fi
