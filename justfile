@@ -19,15 +19,10 @@ ntfy msg status:
       -d "just {{ msg }}: {{ if status == "0" { "ok" } else { "failed" } }}" \
       "https://ntfy.eriz.cc/{{ ntfy_topic }}"
 
-# update all flake inputs
+# update the named flake inputs, or all of them when none are named
 [group('flake')]
-update-all:
-    nix flake update
-
-# update a single flake input
-[group('flake')]
-update input:
-    nix flake update {{ input }}
+update *inputs:
+    nix flake update {{ inputs }}
 
 # format all files with treefmt
 [group('flake')]
