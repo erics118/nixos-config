@@ -36,6 +36,8 @@ in
         gnugrep
         lsof
       ];
+      # macOS ships /usr/bin/trash
+      scratch = [ pkgs.lsof ] ++ lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.trash-cli;
     };
   };
 

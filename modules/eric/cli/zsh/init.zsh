@@ -193,23 +193,16 @@ add-zsh-hook preexec preexec_title
 add-zsh-hook precmd precmd_title
 add-zsh-hook precmd precmd_cursor
 
-# cd into a fresh ~/dev/scratch folder, which mvproj NAME promotes to ~/dev/NAME.
-# not mktemp: agents key sessions by folder, and macOS cleans /var/folders, which would break resuming them
+# the scratch script can't move this shell, so cd into the folder it makes, or out of the one it trashes
 scratch() {
   if (($#)); then
-    local usage='Usage: scratch
-
-  Make ~/dev/scratch/<date-time> and cd into it.
-  From its top folder, mvproj NAME keeps it as ~/dev/NAME.'
-    if [[ $1 == -h || $1 == --help ]]; then
-      print -r -- $usage
-      return
-    fi
-    print -ru2 -- $usage
-    return 1
+    local here=$PWD
+    command scratch "$@" || return
+    [[ -d $here ]] || cd ~
+    return
   fi
-  local dir=~/dev/scratch/$(date +%Y-%m-%d-%H%M%S)
-  mkdir -p "$dir" && cd "$dir" && print -r -- "scratch: created ${dir/#$HOME/~}"
+  local dir
+  dir=$(command scratch) && cd "$dir" && print -r -- "scratch: created ${dir/#$HOME/~}"
 }
 
 # the mvproj script can't move this shell, so follow the shell's folder when the move took it along

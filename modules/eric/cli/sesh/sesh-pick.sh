@@ -185,9 +185,9 @@ if [[ -n $client_tty ]]; then
   --bind "ctrl-alt-y:execute-silent(tmux-popup files $(printf %q "$client_tty"))")
 fi
 
-# ^n names a new project from the query, or on an empty one a dated scratch folder, as the scratch shell function makes (see zsh/init.zsh)
+# ^n names a new project from the query, or on an empty one prints scratch/, which makes a folder with the scratch script
 # shellcheck disable=SC2016
-new_bind=$(printf 'ctrl-n:transform:[[ -n $FZF_QUERY ]] && echo %q || echo "change-query(scratch/$(date +%%Y-%%m-%%d-%%H%%M%%S))+"%q' "${hide}print-query" "${hide}print-query")
+new_bind=$(printf 'ctrl-n:transform:[[ -n $FZF_QUERY ]] && echo %q || echo "change-query(scratch/)+"%q' "${hide}print-query" "${hide}print-query")
 
 # enter on a match prints that row, which starts with a sesh icon.
 # enter with no match, or ^n always, prints the typed text instead, which names a new project.
@@ -213,5 +213,9 @@ esac
 
 name=$(printf '%s' "$sel" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
 [[ -n $name ]] || exit 0
+if [[ $name == scratch/ ]]; then
+  dir=$(scratch)
+  go "$(session_at "$dir")" "$dir"
+fi
 mkdir -p "$HOME/dev/$name"
 go "$(session_at "$HOME/dev/$name")" "$HOME/dev/$name"

@@ -46,7 +46,7 @@ old=$(cd "$1" && pwd -P)
 dest=$2
 if [[ $dest != */* ]]; then
   parent=$(dirname "$old")
-  # scratch in zsh/init.zsh makes its folders here
+  # scripts/scratch.sh makes its folders here
   # naming one promotes it to a project in ~/dev
   [[ $parent != "$HOME/dev/scratch" ]] || parent=$HOME/dev
   dest=$parent/$dest

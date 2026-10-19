@@ -1,5 +1,5 @@
 {
-  flake.modules.homeManager.base = { pkgs, ... }: {
+  flake.modules.homeManager.base = { lib, pkgs, ... }: {
     programs.zoxide = {
       enable = true;
       enableZshIntegration = false; # pre-computed in zsh.nix
@@ -115,6 +115,9 @@
     programs.ripgrep.enable = true;
 
     programs.fd.enable = true;
+
+    # macOS ships /usr/bin/trash
+    home.packages = lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.trash-cli;
 
     programs.bat = {
       enable = true;
