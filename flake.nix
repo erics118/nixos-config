@@ -68,7 +68,7 @@
     };
 
     wezterm-src = {
-      url = "github:erics118/wezterm/eric?dir=nix";
+      url = "github:erics118/wezterm/main?dir=nix";
       # keeps its own nixpkgs, so it builds the same derivation the fork's ci pushes to erics118-wezterm.
       # flake-edit.toml stops the formatter adding a follows here
     };
@@ -105,7 +105,7 @@
     };
 
     sketchybar-src = {
-      url = "github:erics118/SketchyBar/eric";
+      url = "github:erics118/SketchyBar";
       flake = false;
     };
 
@@ -115,7 +115,7 @@
     };
 
     mosh-src = {
-      url = "github:erics118/mosh/eric";
+      url = "github:erics118/mosh";
       flake = false;
     };
   };
