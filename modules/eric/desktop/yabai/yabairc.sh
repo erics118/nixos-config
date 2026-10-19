@@ -30,13 +30,11 @@ yabai -m rule --add label="util" app="^(Fantastical|Todoist|Notion)$" space=^1
 
 yabai -m rule --add label="browser" app="^(Firefox|Google Chrome|Safari).*$" space=^2
 
-yabai -m rule --add label="chat" app="^(Discord.*|Slack|Messages)$" space=^3
+# yabai -m rule --add label="chat" app="^(Discord.*|Slack|Messages)$" space=^3
 
-yabai -m rule --add label="dev" app="^(Code|WezTerm)$" space=^4
+# 4, 5, 6 are general purpose
 
-yabai -m rule --add label="ai" app="^(Claude|ChatGPT)$" space=^5
-
-yabai -m rule --add label="music" app="^Spotify$" space=^6
+yabai -m rule --add label="music" app="^Spotify$" space=^7
 
 # apply rules first
 yabai -m rule --apply

@@ -22,7 +22,7 @@ hammer + b :
 
 # apps
 mod + return :
-    front -p "/Applications/Nix Apps/WezTerm.app"
+    front -p "/Applications/WezTerm.app"
 
 mod + shift + return :
     front -n "Visual Studio Code"

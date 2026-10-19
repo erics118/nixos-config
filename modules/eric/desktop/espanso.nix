@@ -1,4 +1,6 @@
 {
+  flake.modules.darwin.base = { pkgs, ... }: { signedApps.Espanso = pkgs.espanso; };
+
   flake.modules.homeManager.base =
     { lib, ... }:
     let

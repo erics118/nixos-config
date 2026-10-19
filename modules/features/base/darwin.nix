@@ -87,7 +87,7 @@
                   "/Applications/Notion.app"
                   "/System/Applications/Messages.app"
                   "/Applications/Firefox Developer Edition.app"
-                  "/Applications/Nix Apps/WezTerm.app"
+                  "/Applications/WezTerm.app"
                   "/Applications/Slack.app"
                   "/Applications/Spotify.app"
                 ];
