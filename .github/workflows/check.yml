@@ -59,8 +59,10 @@ jobs:
           name: erics118
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           extraPullNames: nix-community,numtide,devenv,catppuccin,erics118-wezterm
-          # only main pushes, so a pr branch can't put unreviewed builds in front of every host
-          skipPush: ${{ github.event_name != 'push' }}
+          # only main and lock-update prs push, so a pr branch can't put unreviewed builds in front of every host
+          # lock-update prs auto-merge unreviewed, so pushing them here fills the cache before hosts pull main
+          # a fix pushed to one by erics118 still pushes
+          skipPush: ${{ github.event_name != 'push' && !((github.actor == 'erics118-bot[bot]' || github.actor == 'erics118') && startsWith(github.head_ref, 'update_flake_lock_')) }}
           pushFilter: '-(secrets\.yaml|manifest(-for-users)?\.json|(dry-)?activate|launchd|org\.nixos\.sops-install-secrets\.plist)$|-(nixos|darwin)-system-'
 
       - run: nix flake check --print-build-logs
