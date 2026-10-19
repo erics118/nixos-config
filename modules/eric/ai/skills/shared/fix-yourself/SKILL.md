@@ -21,7 +21,7 @@ I hit a failure worth fixing durably, not just correcting in-session. Work the s
    Done when: both hypotheticals would be caught by the wording.
 
 4. **Choose the layer**, lowest layer that fits:
-   - must always/never happen and is mechanically checkable: a check in `~/nixos-config/modules/eric/ai/hooks/checks/`. Add it to the tool's list in `modules/eric/ai/hooks/guard.sh`, which Claude, Codex, and pi all run. Add its tests to `modules/eric/ai/hooks/test.sh`: CI runs it and fails on any check it does not test. Harness enforcement beats prose.
+   - must always/never happen and is mechanically checkable: a check in the Go guard at `~/nixos-config/modules/eric/ai/guard/`, one file per check. Add its row, with the tools it runs on, to the table in `guard/checks.go`, which Claude, Codex, and pi all run. Add its tests to `modules/eric/ai/hooks/test.sh`: CI runs it and fails on any check it does not test. It goes live with `just switch`. Harness enforcement beats prose.
    - judgment behavior one skill's task needs: that skill
    - judgment behavior spanning projects and tasks: global AGENTS.md
    - project-specific fact or constraint: the project instruction file or its docs, never memory

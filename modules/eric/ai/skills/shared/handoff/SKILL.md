@@ -12,7 +12,7 @@ Scope:
 - Empty: the whole conversation, with every thread that is still open.
 - A thread or task named: only that slice. Include its goal, its decisions and rejections, its open items, and the shared facts it depends on (paths, settings, constraints) even when they came up elsewhere in the session. Leave out the other threads, and name them in one line under "Not included" so the reader knows they exist.
 
-Save it to `/tmp/handoff-<YYYYMMDD-HHMM>-<short-slug>.md`, not `$TMPDIR` or a session scratchpad.
+Save it to `.eric/handoffs/<YYYY-MM-DD>-<short-slug>.md` at the main repo's root, or to `~/.eric/handoffs/` outside a repo, with the date from `date +%F`. Never use `/tmp`, `$TMPDIR`, or a session scratchpad.
 
 The reader shares the filesystem but none of the history: name absolute paths, spell out decisions already made and rejected, and state what is still open.
 

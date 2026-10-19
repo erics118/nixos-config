@@ -11,4 +11,4 @@ description: "Use when you need to resolve an in-progress git merge/rebase confl
 
 4. Discover the project's **automated checks** and run them: typically typecheck, then tests, then format. Fix anything the merge broke.
 
-5. **Finish.** `git add` only the files you resolved. If the Git rules in the global instructions let you commit in this repo, run `git merge --continue` or `git rebase --continue` until done. `git rebase --continue` triggers the rebase approval prompt in every agent, so expect one prompt per step. Otherwise stop and tell the user the conflicts are resolved and staged, so they continue it.
+5. **Finish.** `git add` only the files you resolved. If the Git rules in the global instructions let you commit in this repo, run `git merge --continue` or `git rebase --continue` until done. Otherwise stop and tell the user the conflicts are resolved and staged, so they continue it.

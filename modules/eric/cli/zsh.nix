@@ -60,6 +60,9 @@
       # refs ignore it without --impure
       home.sessionVariables.NIXPKGS_ALLOW_UNFREE = "1";
 
+      home.sessionVariables.GOPATH = "$HOME/.local/share/go";
+      home.sessionVariables.GOMODCACHE = "$HOME/.cache/go/mod";
+
       programs.zsh = {
         enable = true;
         enableCompletion = true;

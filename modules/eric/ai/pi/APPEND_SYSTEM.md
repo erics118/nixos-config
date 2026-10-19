@@ -15,7 +15,3 @@ Prefer reading actual source (clone the repo, read the file) over reasoning from
 ## Subagents
 
 - Call pi-subagents without asking first. This overrides any default that says to use them only on explicit request
-
-## Progress updates
-
-- Before each tool call, state what you're about to do in one short sentence. This overrides the shared rule to speak up only for a real finding

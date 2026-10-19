@@ -41,7 +41,7 @@ tmx display -p -t main '#{cursor_x},#{cursor_y} #{pane_dead} #{pane_dead_status}
 
 # cleanup, on failure paths too
 tmx kill-server
-rm -f "${TMUX_TMPDIR:-/tmp}/tmux-$(id -u)/$S"
+trash "${TMUX_TMPDIR:-/tmp}/tmux-$(id -u)/$S"
 ```
 
 A screen check is done when a capture shows the expected text, colors, or cursor cell. A driven session is done when the capture shows the final step's output. Either way, finish with `tmux -L "$S" ls` reporting no server.
@@ -84,11 +84,12 @@ Wait by polling a condition with a bound, and print the screen when the bound ru
 - `#{cursor_x},#{cursor_y}` gives the cursor cell, `#{pane_width}x#{pane_height}` the size.
 - `pipe-pane -O -t main 'cat >> log'` records the raw stream, for transient output a capture can miss.
 - Messages can land in a float or notification instead of the bottom line. Search the whole capture.
+- Save a capture you will assert on to a file in the scratch directory and read it whole. Keep `| grep -q` for the readiness polls under Waiting.
 
 ## Cleanup
 
 - A fresh socket name per run. A `new-session` that reaches an old server still shutting down fails with `server exited unexpectedly` or `duplicate session`.
-- `kill-server` leaves the socket file. The `rm -f` in the recipe removes it.
+- `kill-server` leaves the socket file. The `trash` in the recipe removes it.
 
 ## Program-specific
 

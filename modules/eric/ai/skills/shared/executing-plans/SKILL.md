@@ -23,7 +23,7 @@ The plan already did the thinking. Execute it exactly and prove every task with 
    - Otherwise run `mkdir -p .eric/plans/<plan-basename>` and create the file with the first line `# progress - plan: <plan path>`.
 4. On a fresh start, snapshot the working tree without touching the index or history, and record it as `Start: <sha>` in the progress file:
    ```bash
-   t=$(mktemp); cp "$(git rev-parse --git-dir)/index" "$t"; GIT_INDEX_FILE=$t git add -A; GIT_INDEX_FILE=$t git write-tree; rm "$t"
+   t=$(mktemp); cp "$(git rev-parse --git-dir)/index" "$t"; GIT_INDEX_FILE=$t git add -A; GIT_INDEX_FILE=$t git write-tree; trash "$t"
    ```
 5. Load test-driven-development if any task's check is a test.
 

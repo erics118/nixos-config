@@ -77,10 +77,10 @@ jobs:
 
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
 
-      # the guard hooks and the pi guards test need rg, jq and shfmt. direnv runs the treefmt-on-edit case
+      # go builds agent-guard and jq reads the hook decisions. direnv runs the treefmt-on-edit case
       # and just runs the git-add-before-nix recipe cases
       # from the flake's locked nixpkgs, so ci runs the same versions as the hosts
-      - run: nix profile install --inputs-from . nixpkgs#ripgrep nixpkgs#jq nixpkgs#shfmt nixpkgs#direnv nixpkgs#just nixpkgs#git nixpkgs#tmux nixpkgs#gawk nixpkgs#bash nixpkgs#coreutils nixpkgs#gnused nixpkgs#nodejs_24
+      - run: nix profile install --inputs-from . nixpkgs#jq nixpkgs#direnv nixpkgs#just nixpkgs#git nixpkgs#tmux nixpkgs#gawk nixpkgs#bash nixpkgs#coreutils nixpkgs#gnused nixpkgs#nodejs_24 nixpkgs#go
 
       # the extensions import these at runtime, pi provides them when installed
       # unpinned, since the installed pi updates itself
@@ -92,6 +92,9 @@ jobs:
       - run: echo "$HOME/.local/bin" >>"$GITHUB_PATH"
 
       - run: bash modules/eric/ai/hooks/test.sh
+
+      # the pi guards test runs the real hooks/guard.sh, which execs agent-guard from PATH
+      - run: mkdir -p "$HOME/.local/bin" && go build -C modules/eric/ai/guard -o "$HOME/.local/bin/agent-guard" .
 
       # pi loads extensions with full typescript support, plain type stripping rejects parameter properties
       - run: node --experimental-transform-types --test modules/eric/ai/pi/tests/*.test.ts

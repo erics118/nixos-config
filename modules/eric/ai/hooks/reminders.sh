@@ -3,7 +3,7 @@
 # usage: reminders.sh, with cwd in the JSON on stdin
 # always exit 0, so a failure never blocks the agent
 cwd=$(jq -r '.cwd // empty' 2>/dev/null)
-global=$HOME/.local/state/eric/reminders.md
+global=$HOME/.eric/reminders.md
 # the main worktree's list, so every worktree of a repo shares one
 main=$(git -C "${cwd:-$PWD}" worktree list --porcelain 2>/dev/null | sed -n '1s/^worktree //p')
 repo_file=${main:+$main/.eric/reminders.md}

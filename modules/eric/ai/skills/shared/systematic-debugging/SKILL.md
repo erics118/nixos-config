@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: Use when a bug, test failure, nix eval/build failure, or any unexpected behavior appears, before proposing a fix. Find the root cause first.
+description: Use when the user reports a bug, or a test, build, or nix eval fails, before proposing a fix. Find the root cause first.
 ---
 
 # Systematic Debugging

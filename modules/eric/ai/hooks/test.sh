@@ -8,6 +8,10 @@ settings="$root/modules/eric/ai/claude/settings.json"
 repo=$(mktemp -d)
 trap 'rm -rf "$repo"' EXIT
 
+# guard.sh runs agent-guard from PATH, so build the working tree's copy first
+(cd "$hooks/../guard" && go build -o "$repo/guard-bin/agent-guard" .)
+PATH=$repo/guard-bin:$PATH
+
 tested=()
 
 json() {
@@ -20,8 +24,8 @@ run_hook() {
   local script=$1 input=$2 cmd
   case $script in
   tmux-*) cmd=("$hooks/$script") ;;
-  treefmt-on-edit.sh | warn-comment-block.sh) cmd=("$hooks/guard.sh" post claude "${script%.sh}") ;;
-  *) cmd=("$hooks/guard.sh" pre "${HARNESS:-claude}" "${script%.sh}") ;;
+  treefmt-on-edit | warn-comment-block) cmd=("$hooks/guard.sh" post claude "$script") ;;
+  *) cmd=("$hooks/guard.sh" pre "${HARNESS:-claude}" "$script") ;;
   esac
   (cd "$repo" && printf '%s' "$input" | "${cmd[@]}")
 }
@@ -68,40 +72,40 @@ printf 'module\n' >"$repo/untracked.nix"
 printf 'code\n// one\n// two\n// three\n// four\n' >"$repo/comments.ts"
 printf 'code\n-- one\n-- two\n-- three\n-- four\n' >"$repo/comments.lua"
 printf '#!/usr/bin/env bash\n# one\n# two\n# three\n# four\ncode\n' >"$repo/header.sh"
-# deny-symlink-path.sh only denies links that resolve under its approved roots, such as $HOME/nixos-config
+# deny-symlink-path only denies links that resolve under its approved roots, such as $HOME/nixos-config
 # realpath because macOS temp dirs resolve through /private
 fake_home=$(realpath "$repo")/home
 mkdir -p "$fake_home/nixos-config"
 printf 'managed\n' >"$fake_home/nixos-config/managed.txt"
 ln -s "$fake_home/nixos-config/managed.txt" "$repo/managed-link"
-# block-sudo-probe.sh only acts on macOS, so this shim keeps its cases live on linux
+# block-sudo-probe only acts on macOS, so this shim keeps its cases live on linux
 mkdir "$repo/bin"
 printf '#!/bin/sh\necho Darwin\n' >"$repo/bin/uname"
 chmod +x "$repo/bin/uname"
 
-HOME=$fake_home expect_json deny-symlink-path deny-symlink-path.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+HOME=$fake_home expect_json deny-symlink-path deny-symlink-path '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" '' "$repo/managed-link")"
-HOME=$fake_home expect_allow deny-symlink-path-regular deny-symlink-path.sh "$(json "$repo" '' "$repo/tracked.txt")"
-expect_json block-smart-punct block-smart-punct.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+HOME=$fake_home expect_allow deny-symlink-path-regular deny-symlink-path "$(json "$repo" '' "$repo/tracked.txt")"
+expect_json block-smart-punct block-smart-punct '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" '' "$repo/new.txt" "em dash: $em_dash")"
-expect_allow block-smart-punct-ascii block-smart-punct.sh "$(json "$repo" '' "$repo/new.txt" 'dash: - quotes: "x"')"
-expect_json block-git-config-edit-write block-git-config-edit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_allow block-smart-punct-ascii block-smart-punct "$(json "$repo" '' "$repo/new.txt" 'dash: - quotes: "x"')"
+expect_json block-git-config-edit-write block-git-config-edit '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" '' "$repo/.git/config")"
-expect_allow block-git-config-edit-write-other block-git-config-edit.sh "$(json "$repo" '' "$repo/config")"
-expect_json block-write-tracked block-write-tracked.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_allow block-git-config-edit-write-other block-git-config-edit "$(json "$repo" '' "$repo/config")"
+expect_json block-write-tracked block-write-tracked '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" '' "$repo/tracked.txt")"
-expect_allow block-write-tracked-untracked block-write-tracked.sh "$(json "$repo" '' "$repo/untracked.nix")"
-expect_allow block-write-tracked-new block-write-tracked.sh "$(json "$repo" '' "$repo/new.txt")"
-expect_json git-add-before-nix git-add-before-nix.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_allow block-write-tracked-untracked block-write-tracked "$(json "$repo" '' "$repo/untracked.nix")"
+expect_allow block-write-tracked-new block-write-tracked "$(json "$repo" '' "$repo/new.txt")"
+expect_json git-add-before-nix git-add-before-nix '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'nix build')"
-expect_allow git-add-before-nix-not-nix git-add-before-nix.sh "$(json "$repo" 'git status')"
+expect_allow git-add-before-nix-not-nix git-add-before-nix "$(json "$repo" 'git status')"
 for cmd in 'rg -n home-manager modules' 'ls ~/.local/state/home-manager /tmp'; do
-  expect_allow "git-add-before-nix: $cmd" git-add-before-nix.sh "$(json "$repo" "$cmd")"
+  expect_allow "git-add-before-nix: $cmd" git-add-before-nix "$(json "$repo" "$cmd")"
 done
-expect_json git-add-before-nix-sudo git-add-before-nix.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_json git-add-before-nix-sudo git-add-before-nix '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'sudo darwin-rebuild switch --flake .')"
 for cmd in 'just switch' 'nh darwin switch' 'nix flake check'; do
-  expect_json "git-add-before-nix: $cmd" git-add-before-nix.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  expect_json "git-add-before-nix: $cmd" git-add-before-nix '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
 # a just recipe is judged by what its dry run calls, not by its name
@@ -111,42 +115,44 @@ printf 'flake\n' >"$repo/jb/flake.nix"
 printf 'build:\n    latexmk -pdf resume.tex\n\nswitch: build\n    nix build .\n' >"$repo/jb/justfile"
 git -C "$repo/jb" add flake.nix justfile
 printf 'new\n' >"$repo/jb/new.tex"
-expect_allow git-add-before-nix-just-not-nix git-add-before-nix.sh "$(json "$repo/jb" 'just build')"
-expect_json git-add-before-nix-just-nix git-add-before-nix.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_allow git-add-before-nix-just-not-nix git-add-before-nix "$(json "$repo/jb" 'just build')"
+# the dry run and the untracked check use the directory a later cd moves to
+expect_allow git-add-before-nix-just-after-cd git-add-before-nix "$(json "$repo" 'git status && cd jb && just build')"
+expect_json git-add-before-nix-just-nix git-add-before-nix '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo/jb" 'just switch')"
 mkdir "$repo/sub"
 git -C "$repo/sub" init -q
 printf 'flake\n' >"$repo/sub/flake.nix"
 git -C "$repo/sub" add flake.nix
 printf 'new\n' >"$repo/sub/new.lua"
-expect_json git-add-before-nix-non-nix git-add-before-nix.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_json git-add-before-nix-non-nix git-add-before-nix '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo/sub" 'darwin-rebuild switch --flake .')"
 git -C "$repo/sub" add new.lua
-expect_allow git-add-before-nix-all-added git-add-before-nix.sh "$(json "$repo/sub" 'nix build')"
+expect_allow git-add-before-nix-all-added git-add-before-nix "$(json "$repo/sub" 'nix build')"
 # the trailer goes and the message stays, in a -m with real newlines, inline, and in a heredoc
-expect_json strip-claude-attribution strip-claude-attribution.sh \
+expect_json strip-claude-attribution strip-claude-attribution \
   '.hookSpecificOutput.updatedInput.command | (test("Co-Authored-By"; "i") | not) and contains("git commit -m '"'"'subject")' \
   "$(json "$repo" $'git commit -m \'subject\n\nCo-Authored-By: Claude <noreply@anthropic.com>\'')"
-expect_json strip-claude-attribution-inline strip-claude-attribution.sh \
+expect_json strip-claude-attribution-inline strip-claude-attribution \
   '.hookSpecificOutput.updatedInput.command | (test("Co-Authored-By"; "i") | not) and contains("fix parser.")' \
   "$(json "$repo" 'git commit -m "fix parser. Co-Authored-By: Claude"')"
-expect_json strip-claude-attribution-heredoc strip-claude-attribution.sh \
+expect_json strip-claude-attribution-heredoc strip-claude-attribution \
   '.hookSpecificOutput.updatedInput.command | (test("Co-Authored-By|Generated with|🤖"; "i") | not) and contains("add the thing\n\nbody line")' \
   "$(json "$repo" $'git commit -F - <<\'EOF\'\nadd the thing\n\nbody line\n\n\xf0\x9f\xa4\x96 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF')"
-expect_allow strip-claude-attribution-plain strip-claude-attribution.sh "$(json "$repo" "git commit -m 'x'")"
+expect_allow strip-claude-attribution-plain strip-claude-attribution "$(json "$repo" "git commit -m 'x'")"
 for cmd in 'find / -name nope' 'rg x /nix' 'rg x /nix/store/' 'fd x /nix/store/*' 'grep -r x /nix/var/nix' 'rg x $HOME' \
-  'rg --files /' 'sudo find / -name x' 'cd -- $d && rg x .' 'echo "unterminated'; do
-  expect_json "block-global-search: $cmd" block-global-search.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  'rg --files /' 'sudo find / -name x' 'cd -- $d && rg x .'; do
+  expect_json "block-global-search: $cmd" block-global-search '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
-expect_json block-global-search-unguarded-cd block-global-search.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_json block-global-search-unguarded-cd block-global-search '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'd=$(fd -t d gitsigns . | head -1); cd $d && rg -l GitSignsUpdate .')"
-expect_json block-global-search-default-cd block-global-search.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_json block-global-search-default-cd block-global-search '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'cd ${d:-}
 rg x .')"
 for cmd in 'cd "${d:?}" && rg -l GitSignsUpdate .' 'cd "$d" && rg x .' 'cd $dir/sub && rg x .' 'cd $d && ls' 'echo "cd $d && rg x ."' \
   'cd ${d:?} && rg x .'; do
-  output=$(run_hook block-global-search.sh "$(json "$repo" "$cmd")")
+  output=$(run_hook block-global-search "$(json "$repo" "$cmd")")
   [ -z "$output" ] || {
     printf 'FAIL block-global-search allows: %s\n' "$cmd"
     exit 1
@@ -156,45 +162,56 @@ printf 'ok block-global-search-guarded-cd\n'
 for cmd in 'rg foo .' 'fd x .' 'find . -name x' "rg foo $repo" 'grep -n x /nix/store/abc-etc-zshenv' 'rg / src' 'echo "rg x /"' \
   'cat <<EOF
 rg x /
-EOF' 'echo ${(f)x}'; do
-  expect_allow "block-global-search: $cmd" block-global-search.sh "$(json "$repo" "$cmd")"
+EOF' 'echo ${(f)x}' 'd=/tmp; cd $d && rg x .' 'cd $d && rg x /tmp'; do
+  expect_allow "block-global-search: $cmd" block-global-search "$(json "$repo" "$cmd")"
 done
-expect_json block-symlink-clobber block-symlink-clobber.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+# a relative search after a cd into a filesystem-wide root scans that root
+for cmd in 'cd / && rg x .' 'cd ~ && fd x' 'cd /nix/store; find . -name x'; do
+  expect_json "block-global-search-after-cd: $cmd" block-global-search '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
+expect_json block-symlink-clobber block-symlink-clobber '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'echo x > managed-link')"
 for cmd in 'mv /tmp/x managed-link && echo ok' 'cp /tmp/x managed-link; ls' 'cp /tmp/x managed-link 2>/dev/null' \
   'printf x | tee managed-link >/dev/null' 'cp a b; cp /tmp/x managed-link' 'echo x &> managed-link' 'echo x >| managed-link' \
   'sed -i s/a/b/ managed-link' 'truncate -s 0 managed-link'; do
-  expect_json "block-symlink-clobber: $cmd" block-symlink-clobber.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  expect_json "block-symlink-clobber: $cmd" block-symlink-clobber '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
-expect_allow block-symlink-clobber-regular block-symlink-clobber.sh "$(json "$repo" 'cp /tmp/x other 2>/dev/null')"
-expect_json ask-dangerous-git ask-dangerous-git.sh '.hookSpecificOutput.permissionDecision == "ask"' \
+expect_allow block-symlink-clobber-regular block-symlink-clobber "$(json "$repo" 'cp /tmp/x other 2>/dev/null')"
+# a relative path after a leading cd names a file in that directory
+ln -s "$fake_home/nixos-config/managed.txt" "$repo/sub/link"
+expect_json block-symlink-clobber-after-cd block-symlink-clobber '.hookSpecificOutput.permissionDecision == "deny"' \
+  "$(json "$repo" 'cd sub && cp /tmp/x link')"
+expect_json ask-dangerous-git ask-dangerous-git '.hookSpecificOutput.permissionDecision == "ask"' \
   "$(json "$repo" 'git reset --hard')"
 for cmd in 'direnv exec . git reset --hard' 'bash -c "git reset --hard"' 'git clean -x -f' 'git stash drop' 'git stash clear' \
   'git checkout -f main' 'git switch --discard-changes main' 'git worktree remove --force x' \
   'git clean --force' 'git clean -d --force' 'bash -c "echo \"a b\" && git reset --hard"' \
   'git checkout -- f' 'git checkout feature -- src' 'git restore f' 'git restore -W f' 'git restore -S -W .' \
   'git restore --source=HEAD f' 'git switch -C main' 'git checkout -B main' 'git rebase main' 'git reflog expire --all' \
-  'git filter-branch' 'git branch -D x' 'git branch -d -f x'; do
-  expect_json "ask-dangerous-git: $cmd" ask-dangerous-git.sh '.hookSpecificOutput.permissionDecision == "ask"' \
+  'git filter-branch' 'git branch -D x' 'git branch -d -f x' 'git rebase --skip' 'git reset HEAD~1' 'git reset --soft HEAD~1' \
+  'git reset --keep HEAD~1' 'git reset --merge'; do
+  expect_json "ask-dangerous-git: $cmd" ask-dangerous-git '.hookSpecificOutput.permissionDecision == "ask"' \
     "$(json "$repo" "$cmd")"
 done
 for cmd in 'git stash list' 'git clean -n' 'git checkout main' 'git switch -c feat' 'git worktree remove x' \
-  'git restore --staged f' 'git restore -S f' 'git branch -d x'; do
-  output=$(run_hook ask-dangerous-git.sh "$(json "$repo" "$cmd")")
+  'git restore --staged f' 'git restore -S f' 'git branch -d x' 'git rebase --continue' 'git rebase --abort' \
+  'git rebase --quit' 'git reset' 'git reset -q' 'git reset -- f' 'git reset HEAD -- f'; do
+  output=$(run_hook ask-dangerous-git "$(json "$repo" "$cmd")")
   [ -z "$output" ] || {
     printf 'FAIL ask-dangerous-git asks: %s\n' "$cmd"
     exit 1
   }
 done
 printf 'ok ask-dangerous-git-safe\n'
-expect_json block-agent-commit block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_json block-agent-commit block-agent-commit '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git status --short
 git commit -m x')"
 # a -c script with a newline inside quotes parses whole, so a later line is still checked
-expect_allow block-agent-commit-multiline-script block-agent-commit.sh "$(json "$repo" $'bash -c \'echo "a\nb"\ngit status\'')"
+expect_allow block-agent-commit-multiline-script block-agent-commit "$(json "$repo" $'bash -c \'echo "a\nb"\ngit status\'')"
 # a nested parse error names the script, not the calls parsed before it
-expect_json block-agent-commit-nested-parse-error block-agent-commit.sh \
+expect_json block-agent-commit-nested-parse-error block-agent-commit \
   '.hookSpecificOutput.permissionDecisionReason | test("nested script: echo \"x") and (contains("argv") | not)' \
   "$(json "$repo" "echo hi; bash -c 'echo \"x'")"
 for cmd in 'direnv exec . git commit -m x' 'bash -c "git commit -m x"' "git -c 'alias.c=commit -m x' c" 'git -calias.c=commit c' \
@@ -203,8 +220,8 @@ for cmd in 'direnv exec . git commit -m x' 'bash -c "git commit -m x"' "git -c '
   'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=alias.c GIT_CONFIG_VALUE_0=commit git c' 'env GIT_DIR=sub/.git git commit -m x' \
   'export GIT_CONFIG_GLOBAL=/tmp/x' 'git config alias.c commit' 'git config include.path /tmp/x' 'git config --edit' \
   'git commit -m --abort' 'git commit -m --dry-run' 'git commit -- --dry-run' 'git commit --author --dry-run -m x' \
-  'git config include.path get' 'git config set eric-agent.commit list'; do
-  expect_json "block-agent-commit: $cmd" block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  'git config include.path get' 'git config set eric-agent.commit list' 'git rebase main' 'git rebase --continue'; do
+  expect_json "block-agent-commit: $cmd" block-agent-commit '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
 # wrappers that run git as a later word, and shells that read their script from a here-string or heredoc
@@ -212,93 +229,103 @@ for cmd in 'caffeinate git commit -m x' 'noglob git commit -m x' 'stdbuf -o0 git
   "flock /tmp/l -c 'git commit -m x'" 'xcrun git commit -m x' "env -S 'git commit -m x'" "bash <<<'git commit -m x'" \
   $'bash <<\'EOF\'\ngit commit -m x\nEOF' 'nix run nixpkgs#git -- commit -m x' "nix-shell -p git --run 'git commit -m x'" \
   'git update-ref refs/heads/main HEAD'; do
-  expect_json "block-agent-commit-wrapped: $cmd" block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  expect_json "block-agent-commit-wrapped: $cmd" block-agent-commit '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
 # a shell reading its script from a pipe hides it from every guard
-expect_json block-agent-commit-stdin-shell block-agent-commit.sh \
+expect_json block-agent-commit-stdin-shell block-agent-commit \
   '.hookSpecificOutput.permissionDecisionReason | test("standard input")' "$(json "$repo" "echo 'git status' | bash")"
 for cmd in 'bash ./run.sh' 'caffeinate -i sleep 1' 'flock /tmp/l true' 'command -v bash' 'command -V zsh' \
   'bash --version | head -1' '/bin/bash --help'; do
-  expect_allow "block-agent-commit: $cmd" block-agent-commit.sh "$(json "$repo" "$cmd")"
+  expect_allow "block-agent-commit: $cmd" block-agent-commit "$(json "$repo" "$cmd")"
 done
 for cmd in 'git merge --abort' 'git cherry-pick --quit' 'git pull --ff-only' 'git config --get alias.lg' \
-  'git commit --dry-run --short -- a b' 'git commit -m x --dry-run'; do
-  expect_allow "block-agent-commit: $cmd" block-agent-commit.sh "$(json "$repo" "$cmd")"
+  'git commit --dry-run --short -- a b' 'git commit -m x --dry-run' 'git rebase --abort' 'git rebase --edit-todo'; do
+  expect_allow "block-agent-commit: $cmd" block-agent-commit "$(json "$repo" "$cmd")"
 done
-expect_json block-agent-commit-config-write block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_json block-agent-commit-config-write block-agent-commit '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git config eric-agent.commit on')"
 for cmd in 'git config --get eric-agent.commit' 'git -C . config --show-origin --get-all eric-agent.commit' \
   'git config --show-scope --list' 'git config -l' 'git config get --all eric-agent.commit' 'git config list --show-origin'; do
-  expect_allow "block-agent-commit-config-read: $cmd" block-agent-commit.sh "$(json "$repo" "$cmd")"
+  expect_allow "block-agent-commit-config-read: $cmd" block-agent-commit "$(json "$repo" "$cmd")"
 done
 git -C "$repo" config eric-agent.commit on
 for cmd in 'git commit -m x' 'git pull' 'git commit-tree HEAD^{tree} -m x' 'git subtree add --prefix=x r main' 'git commit -C HEAD' \
-  'direnv exec . git commit -C HEAD' 'env FOO=1 git commit -m x' "git -C $repo commit -m x; cd sub"; do
-  expect_allow "block-agent-commit-on: $cmd" block-agent-commit.sh "$(json "$repo" "$cmd")"
+  'direnv exec . git commit -C HEAD' 'env FOO=1 git commit -m x' "git -C $repo commit -m x; cd sub" \
+  "T=$repo; git -C \$T commit -m x"; do
+  expect_allow "block-agent-commit-on: $cmd" block-agent-commit "$(json "$repo" "$cmd")"
 done
 # a repo named by a shell expansion cannot be resolved, so the denial says that, not that commits are off
-for cmd in "T=$repo; git -C \$T commit -m x" 'cd $T && git commit -m x' 'git -C "$(pwd)" commit -m x'; do
-  expect_json "block-agent-commit-dynamic-dir: $cmd" block-agent-commit.sh \
+for cmd in 'cd $T && git commit -m x' 'git -C "$(pwd)" commit -m x' 'T=$(pwd); git -C $T commit -m x'; do
+  expect_json "block-agent-commit-dynamic-dir: $cmd" block-agent-commit \
     '.hookSpecificOutput.permissionDecisionReason | test("shell variable")' "$(json "$repo" "$cmd")"
 done
-# every repo a command commits in must allow it, in either order, and a later cd or --git-dir cannot hide one
+# every repo a command commits in must allow it, in either order. sub is off, so a cd or -C there denies,
+# and --git-dir, --work-tree, core.worktree, and find -execdir deny since the guard does not follow them
 for cmd in 'git commit -m x; git -C sub commit -m x' 'git -C sub commit -m x; git commit -m x' \
   'git status && cd sub && git commit -m x' 'git --git-dir=sub/.git commit -m x' 'git --work-tree=sub commit -m x' \
   'pushd sub && git commit -m x' 'cd -P sub && git commit -m x' 'git -C . -C sub commit -m x' 'git -c core.worktree=sub commit -m x' \
   'env -C sub git commit -m x' 'env --chdir=sub git commit -m x' 'sudo -D sub git commit -m x' \
-  'find sub/flake.nix -execdir git commit -m x \;'; do
-  expect_json "block-agent-commit-other-repo: $cmd" block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  'find sub/flake.nix -execdir git commit -m x \;' '(cd sub) && git -C sub commit -m x'; do
+  expect_json "block-agent-commit-other-repo: $cmd" block-agent-commit '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
+# the guard follows each cd, pushd, -C, env -C, sudo -D, and literal variable to the repo a commit lands in
+git -C "$repo/sub" config eric-agent.commit on
+for cmd in 'git status && cd sub && git commit -m x' 'pushd sub && git commit -m x' 'R=sub; git -C $R commit -m x' \
+  'env -C sub git commit -m x' 'sudo -D sub git commit -m x' '(cd sub && git commit -m x) && git commit -m y' \
+  'git -C . -C sub commit -m x' 'pushd sub && popd && git commit -m x' 'cd sub; cd ..; git commit -m x'; do
+  expect_allow "block-agent-commit-followed: $cmd" block-agent-commit "$(json "$repo" "$cmd")"
+done
+git -C "$repo/sub" config --unset eric-agent.commit
 git -C "$repo" config eric-agent.commit branch
 git -C "$repo" checkout -q -b feat
 for cmd in 'git commit -m x' 'git pull'; do
-  expect_allow "block-agent-commit-branch-feature: $cmd" block-agent-commit.sh "$(json "$repo" "$cmd")"
+  expect_allow "block-agent-commit-branch-feature: $cmd" block-agent-commit "$(json "$repo" "$cmd")"
 done
 git -C "$repo" checkout -q -
 for cmd in 'git commit -m x' 'git pull' 'git commit-tree HEAD^{tree} -m x' 'git subtree add --prefix=x r main'; do
-  expect_json "block-agent-commit-branch-default: $cmd" block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  expect_json "block-agent-commit-branch-default: $cmd" block-agent-commit '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
 git -C "$repo" config eric-agent.commit ask
-expect_json block-agent-commit-ask block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "ask"' \
+expect_json block-agent-commit-ask block-agent-commit '.hookSpecificOutput.permissionDecision == "ask"' \
   "$(json "$repo" 'git commit -m x')"
 git -C "$repo/sub" config eric-agent.commit on
-expect_json block-agent-commit-ask-and-on block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "ask"' \
+expect_json block-agent-commit-ask-and-on block-agent-commit '.hookSpecificOutput.permissionDecision == "ask"' \
   "$(json "$repo" 'git -C sub commit -m x; git commit -m x')"
 git -C "$repo/sub" config --unset eric-agent.commit
-HARNESS=codex expect_json block-agent-commit-ask-codex block-agent-commit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+HARNESS=codex expect_json block-agent-commit-ask-codex block-agent-commit '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git commit -m x')"
 git -C "$repo" config --unset eric-agent.commit
 git -C "$repo" config eric-agent.push ask
-expect_json block-agent-push-ask block-agent-push.sh '.hookSpecificOutput.permissionDecision == "ask"' \
+expect_json block-agent-push-ask block-agent-push '.hookSpecificOutput.permissionDecision == "ask"' \
   "$(json "$repo" 'git push')"
-HARNESS=codex expect_json block-agent-push-ask-codex block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+HARNESS=codex expect_json block-agent-push-ask-codex block-agent-push '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git push')"
-expect_json block-agent-push-ask-gh block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_json block-agent-push-ask-gh block-agent-push '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git push; gh pr merge 1')"
 git -C "$repo" config --unset eric-agent.push
-expect_json block-agent-push-off block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_json block-agent-push-off block-agent-push '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git push')"
 for cmd in 'caffeinate git push' 'noglob git push' 'nix run nixpkgs#git -- push' "bash <<<'git push'"; do
-  expect_json "block-agent-push-off: $cmd" block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  expect_json "block-agent-push-off: $cmd" block-agent-push '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
 for cmd in 'git push --dry-run' 'git push -n origin main'; do
-  expect_allow "block-agent-push-off: $cmd" block-agent-push.sh "$(json "$repo" "$cmd")"
+  expect_allow "block-agent-push-off: $cmd" block-agent-push "$(json "$repo" "$cmd")"
 done
 # -C names the repo whose eric-agent.push applies
 git -C "$repo/sub" config eric-agent.push on
-expect_allow block-agent-push-dash-c block-agent-push.sh "$(json "$repo" 'git -C sub push')"
+expect_allow block-agent-push-dash-c block-agent-push "$(json "$repo" 'git -C sub push')"
 # every repo a command pushes from must allow it
-expect_json block-agent-push-other-repo block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_json block-agent-push-other-repo block-agent-push '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git -C sub push; git push')"
 git -C "$repo/sub" config --unset eric-agent.push
 for cmd in 'git send-pack origin main' 'git subtree push --prefix=x origin main' 'git lfs push origin main' \
   'GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=alias.p GIT_CONFIG_VALUE_0=push git p' 'git --config-env=alias.p=X p' \
   'git push -o --dry-run origin main' 'git push origin -- -n'; do
-  expect_json "block-agent-push: $cmd" block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  expect_json "block-agent-push: $cmd" block-agent-push '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
 for cmd in 'direnv exec . git push' 'nix develop -c git push' 'xargs git push' 'find . -exec git push \;' 'timeout 10 git push' \
@@ -306,14 +333,14 @@ for cmd in 'direnv exec . git push' 'nix develop -c git push' 'xargs git push' '
   "bash -l -c 'git push'" "bash -ec 'git push'" "sh -xc 'git push'" 'bash -c "echo \"a\"; git push"' \
   'env -i git push' 'command -p git push' 'sudo git push' 'nice git push' 'nohup git push' 'time git push' \
   'eval git push' 'git -P push' "git -c 'alias.p=!git push' p" 'git -c alias.p=push p'; do
-  expect_json "block-agent-push: $cmd" block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  expect_json "block-agent-push: $cmd" block-agent-push '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
 for cmd in 'direnv exec . git status' 'nix develop -c git status' 'bash -c "echo hi"' "bash -c 'echo hi'" 'echo "git push"' \
   "rg -n \"bash -c 'git push'\" docs" 'echo "a; git push"' 'cat <<EOF
 git push
 EOF'; do
-  output=$(run_hook block-agent-push.sh "$(json "$repo" "$cmd")")
+  output=$(run_hook block-agent-push "$(json "$repo" "$cmd")")
   [ -z "$output" ] || {
     printf 'FAIL block-agent-push denies: %s\n' "$cmd"
     exit 1
@@ -321,21 +348,21 @@ EOF'; do
 done
 printf 'ok block-agent-push-safe\n'
 git -C "$repo" config eric-agent.push on
-tested+=(block-agent-push.sh)
-output=$(run_hook block-agent-push.sh "$(json "$repo" 'git push')")
+tested+=(block-agent-push)
+output=$(run_hook block-agent-push "$(json "$repo" 'git push')")
 [ -z "$output" ]
 printf 'ok block-agent-push-on\n'
 for cmd in 'git send-pack origin main' 'git subtree push --prefix=x origin main' 'git lfs push origin main'; do
-  expect_allow "block-agent-push-on: $cmd" block-agent-push.sh "$(json "$repo" "$cmd")"
+  expect_allow "block-agent-push-on: $cmd" block-agent-push "$(json "$repo" "$cmd")"
 done
 # an allowed push does not skip the gh checks
-expect_json block-agent-push-on-gh block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_json block-agent-push-on-gh block-agent-push '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'git push; gh pr merge 1')"
 for cmd in 'gh pr view 1' 'gh pr list' 'gh pr diff 1' 'gh run view 1' 'gh run watch 1' 'gh api repos/o/r/pulls' 'gh search code x' \
   "gh api -X GET search/code -f q='repo:o/r x' --jq '.items[].path'" 'gh api --method=get search/code -F q=x' 'gh api -XGET search/code -fq=x' \
   "gh api graphql -f query='{search(query:\"repo:o/r x\", type:DISCUSSION, first:10){nodes{... on Discussion{number}}}}' --jq '.data'" \
   "gh api graphql -f query='query { viewer { login } }'"; do
-  expect_allow "block-agent-push: $cmd" block-agent-push.sh "$(json "$repo" "$cmd")"
+  expect_allow "block-agent-push: $cmd" block-agent-push "$(json "$repo" "$cmd")"
 done
 for cmd in 'gh pr merge 1' 'gh api -X DELETE repos/o/r' 'gh api repos/o/r/issues -f title=x' 'gh auth status --show-token' \
   'gh api repos/o/r/issues -ftitle=x' 'gh api repos/o/r/issues -Ftitle=x' 'gh api -XPOST repos/o/r' 'gh api --method=PATCH repos/o/r' \
@@ -344,75 +371,187 @@ for cmd in 'gh pr merge 1' 'gh api -X DELETE repos/o/r' 'gh api repos/o/r/issues
   "gh api graphql -f query='{ a }' --input q.json" 'gh api graphql -f query="$Q"' 'gh api graphql -f query="{ $(cat q) }"' \
   "gh api graphql -f query='query(\$o: String!) { a(o: \$o) }' -f o=x" "gh api graphql -f query='{ a }' -f query='mutation { x }'" \
   "gh api repos/o/r/issues -f query='{ a }' -f title=x" "gh api -X POST graphql -f query='{ a }'"; do
-  expect_json "block-agent-push: $cmd" block-agent-push.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  expect_json "block-agent-push: $cmd" block-agent-push '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
-expect_json block-git-config-edit-write-global block-git-config-edit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_json block-git-config-edit-write-global block-git-config-edit '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" '' "$fake_home/.gitconfig")"
 for cmd in 'echo x > .git/config' 'cp /tmp/x .git/config' 'sudo cp /tmp/x .git/config' 'printf x > ~/.gitconfig' \
   'cp /tmp/x ~/.config/git/config'; do
-  expect_json "block-git-config-edit: $cmd" block-git-config-edit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  expect_json "block-git-config-edit: $cmd" block-git-config-edit '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
-for cmd in 'cat .git/config' 'sudo cat .git/config' 'cat ~/.gitconfig'; do
-  expect_allow "block-git-config-edit: $cmd" block-git-config-edit.sh "$(json "$repo" "$cmd")"
+for cmd in 'cat .git/config' 'sudo cat .git/config' 'cat ~/.gitconfig' 'rg -n python ~/.gitconfig'; do
+  expect_allow "block-git-config-edit: $cmd" block-git-config-edit "$(json "$repo" "$cmd")"
 done
-expect_json block-shell-edit block-shell-edit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+expect_json block-shell-edit block-shell-edit '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'sed -i s/tracked/changed/ tracked.txt')"
 for cmd in 'echo x > tracked.txt' 'printf x | tee -a tracked.txt' "python3 -c \"open('tracked.txt', 'w').write('x')\"" \
   'perl -pi -e s/a/b/ tracked.txt' 'printf x | tee new.txt tracked.txt' 'cd sub && sed -i s/a/b/ flake.nix' \
   'echo x > "$PWD/tracked.txt"' 'echo x > ${PWD}/tracked.txt' 'cp /tmp/x tracked.txt' 'mv /tmp/x tracked.txt' \
-  'cp -f /tmp/x /tmp/y tracked.txt'; do
-  expect_json "block-shell-edit: $cmd" block-shell-edit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  'cp -f /tmp/x /tmp/y tracked.txt' 'git status && cd sub && echo x > flake.nix' '(cd sub) && echo x > tracked.txt' \
+  'F=tracked.txt; echo x > $F'; do
+  expect_json "block-shell-edit: $cmd" block-shell-edit '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
 for cmd in 'echo x > "$HOME/tracked.txt"' 'echo x > ${HOME}/tracked.txt'; do
-  HOME=$repo expect_json "block-shell-edit: $cmd" block-shell-edit.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  HOME=$repo expect_json "block-shell-edit: $cmd" block-shell-edit '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
 for cmd in 'sed -n p tracked.txt' 'sed -i s/a/b/ untracked.nix' 'echo x > new.txt' 'cat tracked.txt > /dev/null' \
-  'cp tracked.txt /tmp/x' 'mv tracked.txt' 'cp /tmp/x.png blob.png' 'mv new.png blob.png'; do
-  expect_allow "block-shell-edit: $cmd" block-shell-edit.sh "$(json "$repo" "$cmd")"
+  'cp tracked.txt /tmp/x' 'mv tracked.txt' 'cp /tmp/x.png blob.png' 'mv new.png blob.png' \
+  "echo \"python: open('tracked.txt', 'w')\""; do
+  expect_allow "block-shell-edit: $cmd" block-shell-edit "$(json "$repo" "$cmd")"
 done
-PATH="$repo/bin:$PATH" expect_json block-sudo-probe block-sudo-probe.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+# a runner that starts the interpreter still counts as a script
+expect_json block-shell-edit-runner block-shell-edit '.hookSpecificOutput.permissionDecision == "deny"' \
+  "$(json "$repo" "uv run python -c \"open('tracked.txt', 'w').write('x')\"")"
+PATH="$repo/bin:$PATH" expect_json block-sudo-probe block-sudo-probe '.hookSpecificOutput.permissionDecision == "deny"' \
   "$(json "$repo" 'sudo -n true')"
-PATH="$repo/bin:$PATH" expect_allow block-sudo-probe-plain block-sudo-probe.sh "$(json "$repo" 'sudo true')"
+PATH="$repo/bin:$PATH" expect_allow block-sudo-probe-plain block-sudo-probe "$(json "$repo" 'sudo true')"
 for cmd in 'sudo --non-interactive true' 'sudo -u root -n true' 'sudo -nv'; do
-  PATH="$repo/bin:$PATH" expect_json "block-sudo-probe: $cmd" block-sudo-probe.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  PATH="$repo/bin:$PATH" expect_json "block-sudo-probe: $cmd" block-sudo-probe '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
-PATH="$repo/bin:$PATH" expect_allow block-sudo-probe-value block-sudo-probe.sh "$(json "$repo" 'sudo -u nobody true')"
+PATH="$repo/bin:$PATH" expect_allow block-sudo-probe-value block-sudo-probe "$(json "$repo" 'sudo -u nobody true')"
+for cmd in 'rm f' 'rm -rf /tmp/x' '/bin/rm f' 'command rm f' 'fd -0 . | xargs -0 rm' 'bash -c "rm f"' 'sudo rm f'; do
+  expect_json "block-rm: $cmd" block-rm '.hookSpecificOutput.permissionDecision == "deny"' "$(json "$repo" "$cmd")"
+done
+for cmd in 'doas rm f' 'doas -u root rm f' 'ionice -c 3 rm f' 'chronic rm f' 'unbuffer rm f' 'watch rm f' \
+  "watch -n 1 'rm f'" "script -qc 'rm f' /dev/null" 'coproc rm f'; do
+  expect_json "block-rm-wrapped: $cmd" block-rm '.hookSpecificOutput.permissionDecision == "deny"' "$(json "$repo" "$cmd")"
+done
+# a script nested deeper than any fixed limit is still checked
+nested='rm f'
+for _ in 1 2 3 4 5; do nested="bash -c $(printf %q "$nested")"; done
+expect_json block-rm-deeply-nested block-rm '.hookSpecificOutput.permissionDecision == "deny"' "$(json "$repo" "$nested")"
+for cmd in 'trash f' 'git rm f' 'echo rm' 'watch -n 1 ls' 'chronic ls'; do
+  expect_allow "block-rm: $cmd" block-rm "$(json "$repo" "$cmd")"
+done
+for cmd in 'tmux kill-server' 'tmux kill-session -t main' 'tmux killp -t 1' 'TMUX_TMPDIR=/tmp/x tmux kill-server' \
+  'pkill tmux' 'killall tmux' 'bash -c "tmux kill-server"'; do
+  expect_json "block-tmux-kill: $cmd" block-tmux-kill '.hookSpecificOutput.permissionDecision == "deny"' "$(json "$repo" "$cmd")"
+done
+for cmd in 'tmux -L agent kill-server' 'tmux -Lagent kill-session -t main' 'tmux -S /tmp/s kill-server' 'tmux ls' 'pkill node'; do
+  expect_allow "block-tmux-kill: $cmd" block-tmux-kill "$(json "$repo" "$cmd")"
+done
 for cmd in 'fd . -x rm' 'fd -e png -X convert' 'fd --exec rm' 'fd --exec-batch=rm' 'rg --pre sh x .' 'rg --pre=./p x' \
   'sort -o out in' 'sort -oout in' 'sort --output=out in' 'sort --output out in' 'tree -o out' 'git diff --output=/tmp/x' \
   'git log --output /tmp/x' 'git -C . show --output=/tmp/x' 'command fd -x rm'; do
-  expect_json "block-exec-flags: $cmd" block-exec-flags.sh '.hookSpecificOutput.permissionDecision == "deny"' \
+  expect_json "block-exec-flags: $cmd" block-exec-flags '.hookSpecificOutput.permissionDecision == "deny"' \
     "$(json "$repo" "$cmd")"
 done
 for cmd in 'fd -e nix .' 'fd -t x .' 'fd -tx .' 'rg -n foo .' 'rg --pretty foo' 'sort -u in' 'tree -L 2' 'git diff --stat' \
   'git log --oneline' 'git diff -- --output'; do
-  expect_allow "block-exec-flags: $cmd" block-exec-flags.sh "$(json "$repo" "$cmd")"
+  expect_allow "block-exec-flags: $cmd" block-exec-flags "$(json "$repo" "$cmd")"
 done
-# a hook that fails internally must exit 2, since claude code and codex run the command on any other code
-for snippet in 'unset HOOK_CALLS; hook_any true' 'hook_any ".argv[0] + 1"'; do
-  set +e
-  HOOK_CALLS='{"argv":["x"]}' bash -c "set -u; source '$hooks/lib.sh'; $snippet" >/dev/null 2>&1
-  status=$?
-  set -e
-  [ "$status" -eq 2 ] || {
-    printf 'FAIL lib fails closed: %s exited %s\n' "$snippet" "$status"
-    exit 1
-  }
-  printf 'ok lib fails closed: %s\n' "$snippet"
+# a command the guard cannot parse is denied before any check runs
+expect_json parse-error block-rm '.hookSpecificOutput.permissionDecisionReason | test("could not parse")' \
+  "$(json "$repo" 'echo "unterminated')"
+# commands only the walk's control flow, wrapper options, or command-name rules reveal
+deeply=$(printf 'c=%q; eval $c$c$c$c$c$c' 'rm -f nothing-here;')
+for cmd in 'builtin eval "rm f"' 'command eval "rm f"' "$deeply" 'sudo --user root rm f' 'timeout --signal KILL 5 rm f' \
+  'nice --adjustment 5 rm f' 'xargs --max-args 1 rm' 'env -vC . rm f' 'env -iS "rm f"' 'exec -a x rm f' \
+  "\$'\\x72m' f" '/bin/r[m] f' '$(printf rm) f' 'R=rm; $R f' 'f() { rm x; }; f' 'cd sub & rm f'; do
+  expect_json "block-rm-revealed: $cmd" block-rm '.hookSpecificOutput.permissionDecision == "deny"' "$(json "$repo" "$cmd")"
 done
-# a check that prints something other than a decision blocks, in a copy so the repo holds no fake check
-cp -r "$hooks/." "$repo/hooks-copy"
-printf 'echo nope\n' >"$repo/hooks-copy/checks/bad-output.sh"
-json "$repo" 'ls' | "$repo/hooks-copy/guard.sh" pre claude bad-output | jq -e '.hookSpecificOutput.permissionDecision == "deny"' >/dev/null || {
-  printf 'FAIL guard.sh let a check with non-decision output pass\n'
+for cmd in '[ -f x ] && echo y' '"$HOME/bin/tool" x' 'f() { echo; }; f'; do
+  expect_allow "block-rm-readable: $cmd" block-rm "$(json "$repo" "$cmd")"
+done
+for cmd in 'env -C / rg x .' 'sudo -D / fd x' 'cd /; true || cd /tmp; rg x .' 'cd /; if false; then cd /tmp; else rg x .; fi' \
+  'cd /; cd /tmp; cd -; rg x .' 'cd /tmp && cd -LP / && rg x .' 'rg x /.' 'rg x //' 'find /. -name x' 'rg x ~/.' \
+  'rg x /tmp/..' 'find -O3 / -name x' 'find -x / -name x' 'rg -- -foo /' 'egrep -r x /' 'rg -e foo /'; do
+  expect_json "block-global-search-revealed: $cmd" block-global-search '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
+expect_allow block-global-search-background-cd block-global-search "$(json "$repo" 'cd / & rg x .')"
+for cmd in '{ echo x; } >> .git/config' '(echo x) > .git/config' '>> .git/config <<< x' 'echo x 1<> .git/config' \
+  'echo x >& .git/config' 'echo x > .git//config' 'echo x > .GIT/config' 'cd .git && echo x >> config' \
+  'echo x > /tmp/x/git/config'; do
+  expect_json "block-git-config-edit-revealed: $cmd" block-git-config-edit '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
+for cmd in '{ echo x; } > tracked.txt' "perl -e 'open(F, \">tracked.txt\")'" "ruby -e \"File.write('tracked.txt', 'x')\"" \
+  "node -e \"require('fs').appendFileSync('tracked.txt', 'x')\"" 'python3 -c "open(\"tracked.txt\", \"w\")"'; do
+  expect_json "block-shell-edit-revealed: $cmd" block-shell-edit '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
+expect_json block-symlink-clobber-compound block-symlink-clobber '.hookSpecificOutput.permissionDecision == "deny"' \
+  "$(json "$repo" '{ echo x; } > managed-link')"
+for cmd in 'tmux -L default kill-server' 'pkill tm[u]x' "pkill -f 'tmux.*'" 'killall -m tmu.'; do
+  expect_json "block-tmux-kill-revealed: $cmd" block-tmux-kill '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
+expect_allow block-tmux-kill-other-user block-tmux-kill "$(json "$repo" 'pkill -u eric node')"
+# a relative write after a cd the guard cannot follow could land on any file, so it denies
+for cmd in 'cd "$d" && echo x > f' 'cd $dir/sub && sed -i s/a/b/ f' 'cd "$d"; cp /tmp/x out' \
+  'cd "$d" && python3 -c "open(\"f\", \"w\")"'; do
+  expect_json "block-unresolved-write: $cmd" block-unresolved-write '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
+for cmd in 'cd "$d" && echo x > /tmp/abs' 'cd "$d" && rg x .' 'cd "$d" && make 2>/dev/null' 'cd "$d" && make 2>&1' \
+  'cd sub && echo x > f' 'cd "$d" && sed -i s/a/b/ /tmp/abs'; do
+  expect_allow "block-unresolved-write: $cmd" block-unresolved-write "$(json "$repo" "$cmd")"
+done
+expect_allow git-add-before-nix-unresolved-cd git-add-before-nix "$(json "$repo" 'cd "$d" && nix build')"
+expect_json block-exec-flags-cluster block-exec-flags '.hookSpecificOutput.permissionDecision == "deny"' \
+  "$(json "$repo" 'fd -Hx echo')"
+for cmd in 'nix -L build' 'nix --print-build-logs build' 'nix shell .#hello'; do
+  expect_json "git-add-before-nix-revealed: $cmd" git-add-before-nix '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
+expect_json git-add-before-nix-justfile-flag git-add-before-nix '.hookSpecificOutput.permissionDecision == "deny"' \
+  "$(json "$repo/jb" 'just -f justfile switch')"
+# a configured alias is expanded, and one that runs a shell command denies, since no check can see into it
+git -C "$repo" config alias.ci commit
+git -C "$repo" config alias.sh '!git commit'
+for cmd in 'git ci -m x' 'git sh' 'XDG_CONFIG_HOME=/tmp/x git status'; do
+  expect_json "block-agent-commit-alias: $cmd" block-agent-commit '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
+git -C "$repo" config --unset alias.ci
+git -C "$repo" config --unset alias.sh
+# a cd in a branch that may not run, or a function called after a cd, still reaches the commit gate
+git -C "$repo" config eric-agent.commit on
+for cmd in 'false && cd sub; git commit -m x' 'f() { git commit -m x; }; cd sub; f'; do
+  expect_json "block-agent-commit-branch: $cmd" block-agent-commit '.hookSpecificOutput.permissionDecision == "deny"' \
+    "$(json "$repo" "$cmd")"
+done
+# the attribution rewrite comes with an ask in an ask repo, and codex, which cannot apply a rewrite with an ask, denies
+git -C "$repo" config eric-agent.commit ask
+attributed=$(json "$repo" $'git commit -m \'x\n\nCo-Authored-By: Claude <noreply@anthropic.com>\'')
+printf '%s' "$attributed" | (cd "$repo" && "$hooks/guard.sh" pre claude block-agent-commit strip-claude-attribution) |
+  jq -e '.hookSpecificOutput.permissionDecision == "ask" and (.hookSpecificOutput.updatedInput.command | test("Co-Authored-By") | not)' >/dev/null || {
+  printf 'FAIL ask with rewrite\n'
   exit 1
 }
-printf 'ok guard fails closed on non-decision output\n'
-expect_allow treefmt-on-edit-no-envrc treefmt-on-edit.sh "$(json "$repo" '' "$repo/tracked.txt")"
+printf 'ok ask with rewrite\n'
+git -C "$repo" config --unset eric-agent.commit
+HARNESS=codex expect_allow strip-claude-attribution-codex strip-claude-attribution "$attributed"
+# the default lists run for Monitor and under pi, as for Bash under claude
+printf '%s' "$(jq -cn --arg cwd "$repo" '{cwd:$cwd,tool_name:"Monitor",tool_input:{command:"rm f"}}')" |
+  (cd "$repo" && "$hooks/guard.sh" pre claude) | jq -e '.hookSpecificOutput.permissionDecision == "deny"' >/dev/null || {
+  printf 'FAIL Monitor runs the shell checks\n'
+  exit 1
+}
+printf 'ok Monitor runs the shell checks\n'
+HARNESS=pi expect_json block-rm-pi block-rm '.hookSpecificOutput.permissionDecision == "deny"' "$(json "$repo" 'rm f')"
+# a missing agent-guard must exit 2, since claude code and codex run the command on any other code
+set +e
+json "$repo" 'ls' | PATH=/usr/bin:/bin "$hooks/guard.sh" pre claude >/dev/null 2>&1
+status=$?
+set -e
+[ "$status" -eq 2 ] || {
+  printf 'FAIL guard.sh exited %s without agent-guard\n' "$status"
+  exit 1
+}
+printf 'ok guard fails closed without agent-guard\n'
+json "$repo" 'ls' | "$hooks/guard.sh" pre claude no-such-check | jq -e '.hookSpecificOutput.permissionDecision == "deny"' >/dev/null || {
+  printf 'FAIL guard.sh let an unknown check pass\n'
+  exit 1
+}
+printf 'ok guard fails closed on an unknown check\n'
+expect_allow treefmt-on-edit-no-envrc treefmt-on-edit "$(json "$repo" '' "$repo/tracked.txt")"
 if command -v direnv >/dev/null 2>&1; then
   # a stub treefmt that rewrites the file and fails shows the hook ran it and still exits silently
   # direnv exec does not match an allow made through a symlinked path like /tmp
@@ -424,7 +563,7 @@ if command -v direnv >/dev/null 2>&1; then
   printf 'raw\n' >"$fmt/file.txt"
   # a private direnv allow list and config keep the user's direnv state out of the test
   XDG_DATA_HOME=$repo/xdg XDG_CONFIG_HOME=$repo/xdg direnv allow "$fmt" 2>/dev/null
-  XDG_DATA_HOME=$repo/xdg XDG_CONFIG_HOME=$repo/xdg expect_allow treefmt-on-edit-formats treefmt-on-edit.sh \
+  XDG_DATA_HOME=$repo/xdg XDG_CONFIG_HOME=$repo/xdg expect_allow treefmt-on-edit-formats treefmt-on-edit \
     "$(json "$repo" '' "$fmt/file.txt")"
   [ "$(cat "$fmt/file.txt")" = formatted ] || {
     printf 'FAIL treefmt-on-edit did not run treefmt\n'
@@ -433,17 +572,17 @@ if command -v direnv >/dev/null 2>&1; then
 else
   printf 'skip treefmt-on-edit-formats: direnv is not on PATH\n'
 fi
-expect_exit_2 warn-comment-block warn-comment-block.sh \
+expect_exit_2 warn-comment-block warn-comment-block \
   "$(jq -cn --arg file_path "$repo/comments.ts" --arg text $'// one\n// two\n// three\n// four' '{tool_input:{file_path:$file_path,edits:[{new_string:$text}]}}')"
-expect_exit_2 warn-comment-block-lua warn-comment-block.sh \
+expect_exit_2 warn-comment-block-lua warn-comment-block \
   "$(jq -cn --arg file_path "$repo/comments.lua" --arg text $'-- one\n-- two\n-- three\n-- four' '{tool_input:{file_path:$file_path,edits:[{new_string:$text}]}}')"
-expect_allow warn-comment-block-lua-short warn-comment-block.sh \
+expect_allow warn-comment-block-lua-short warn-comment-block \
   "$(jq -cn --arg file_path "$repo/comments.lua" --arg text $'-- one\n-- two\nlocal x = 1' '{tool_input:{file_path:$file_path,edits:[{new_string:$text}]}}')"
-expect_allow warn-comment-block-short warn-comment-block.sh \
+expect_allow warn-comment-block-short warn-comment-block \
   "$(jq -cn --arg file_path "$repo/comments.ts" --arg text $'// one\n// two\ncode' '{tool_input:{file_path:$file_path,edits:[{new_string:$text}]}}')"
-expect_allow warn-comment-block-file-header warn-comment-block.sh \
+expect_allow warn-comment-block-file-header warn-comment-block \
   "$(jq -cn --arg file_path "$repo/header.sh" --arg content "$(cat "$repo/header.sh")" '{tool_input:{file_path:$file_path,content:$content}}')"
-expect_exit_2 warn-comment-block-after-header warn-comment-block.sh \
+expect_exit_2 warn-comment-block-after-header warn-comment-block \
   "$(jq -cn --arg file_path "$repo/header.sh" --arg content $'#!/usr/bin/env bash\n# one\n# two\n# three\n# four\ncode\n# a\n# b\n# c\n# d' '{tool_input:{file_path:$file_path,content:$content}}')"
 
 # a stub tmux names a plain file as the pane's tty, so the test never rings a real bell
@@ -500,14 +639,14 @@ fi
 tested+=(reminders.sh)
 rem_home=$repo/reminders-home
 rem_repo=$repo/reminders-repo
-mkdir -p "$rem_home/.local/state/eric"
+mkdir -p "$rem_home/.eric"
 git init -q "$rem_repo"
 [ -z "$(cd "$repo" && HOME=$rem_home "$hooks/reminders.sh" <<<'{}')" ] || {
   printf 'FAIL reminders printed with no lists\n'
   exit 1
 }
 printf 'ok reminders-empty\n'
-printf -- '- global item\n' >"$rem_home/.local/state/eric/reminders.md"
+printf -- '- global item\n' >"$rem_home/.eric/reminders.md"
 mkdir "$rem_repo/.eric"
 printf -- '- repo item\n' >"$rem_repo/.eric/reminders.md"
 # a worktree reads its main repo's list
@@ -521,17 +660,11 @@ printf 'ok reminders-both\n'
 
 # every check, and every other script settings.json runs from this directory, since herdr installs its own by absolute path
 configured=$({
-  ls "$hooks/checks"
+  agent-guard checks
   jq -r '.hooks | to_entries[] | .value[] | .hooks[] | .command | select(startswith("\"$HOME/.agents/hooks/"))' "$settings" |
     sed -E 's#.*/##; s/"//g; s/ .*//' | grep -vx guard.sh
 } | sort -u)
 covered=$(printf '%s\n' "${tested[@]}" | sort -u)
-for check in "$hooks"/checks/*.sh; do
-  grep -qw -- "$(basename "$check" .sh)" "$hooks/guard.sh" || {
-    printf 'FAIL guard.sh never runs %s\n' "$(basename "$check")"
-    exit 1
-  }
-done
 [ "$configured" = "$covered" ] || {
   printf 'configured hook coverage mismatch\nexpected:\n%s\ncovered:\n%s\n' "$configured" "$covered" >&2
   exit 1

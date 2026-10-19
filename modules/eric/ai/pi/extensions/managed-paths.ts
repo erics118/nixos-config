@@ -6,7 +6,7 @@ type Resolution =
   | { kind: "regular" | "missing"; path: string }
   | { kind: "redirect" | "blocked"; path: string; target: string };
 
-// hooks/checks/deny-symlink-path.sh keeps the same list
+// guard/deny_symlink_path.go keeps the same list
 function approvedRoots(home: string): string[] {
   return [
     path.join(home, "nixos-config"),

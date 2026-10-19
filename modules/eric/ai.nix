@@ -116,6 +116,7 @@
       '';
 
       home.packages = with pkgs; [
+        agent-guard
         ccusage
         context7Mcp
         cornellConfluenceMcp

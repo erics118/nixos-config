@@ -40,6 +40,7 @@
       "Bash(npm run start:*)",
       "mcp__ide__getDiagnostics",
       "mcp__context7__*",
+      "Edit(~/.eric/**)",
       "Bash(nix-store -q *)",
       "Bash(nix path-info *)",
       "Bash(nix flake metadata *)",
@@ -52,7 +53,40 @@
       "Bash(just check*)",
       "Bash(just fmt*)",
       "Bash(readlink *)",
-      "Bash(realpath *)"
+      "Bash(realpath *)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(ls *)",
+      "Bash(stat *)",
+      "Bash(which *)",
+      "Bash(du *)",
+      "Bash(grep *)",
+      "Bash(date *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git status *)",
+      "Bash(git rev-parse *)",
+      "Bash(nix build *)",
+      "Bash(nix flake check *)",
+      "Bash(gh api *)",
+      "Bash(gh search *)",
+      "Bash(gh status *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh run view *)",
+      "Bash(gh run list *)",
+      "Bash(gh run watch *)",
+      "Bash(gh issue view *)",
+      "Bash(gh issue list *)",
+      "Bash(gh repo view *)",
+      "Bash(tmux -L *)",
+      "Bash(ntfy pub *)",
+      "Bash(sketchybar --set apple *)"
     ],
     "deny": ["EnterPlanMode", "ExitPlanMode"],
     "defaultMode": "auto"
@@ -165,10 +199,10 @@
     }
   },
   "feedbackDrafts": "off",
-  "effortLevel": "high",
+  "effortLevel": "medium",
   "modelSettings": {
     "claude-opus-5-5": {
-      "effortLevel": "medium"
+      "autoCompactWindow": 800000
     }
   },
   "advisorModel": "fable",
@@ -179,6 +213,7 @@
   "editorMode": "normal",
   "verbose": true,
   "autoCompactEnabled": true,
+  "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
   "autoMode": {
@@ -186,6 +221,5 @@
       "$defaults",
       "In /Users/eric/dev/resume, running the applying-to-jobs CLI (node .../applying-to-jobs/src/cli.ts) to submit job applications (submit, apply --submit, batch --submit) is authorized when the user asked in this session to submit them, and so is reading the receipt folders it writes."
     ]
-  },
-  "remoteControlAtStartup": true
+  }
 }

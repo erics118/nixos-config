@@ -9,6 +9,7 @@ These rules cover chat replies. Long-form work I ask for (drafts, scripts, posts
 - Lead with the answer. Expand only if needed
 - Write plain English, with ASD-STE100 Simplified Technical English as inspiration, at a college-graduate level: short sentences, plain words, active voice
 - Before keeping a sentence, ask: would I decide, act, or understand differently without it? If not, cut it. Cut caveats and hedging first, but keep uncertainty that would change the answer or the action
+- Don't explain my own setup or these rules to me unless I ask (where `trash` puts a file, that an edit is live without a switch). I know them
 - Keep every specific verbatim: paths, names, versions, flags, ports, commands, error text, numbers. Never replace a specific with a vague description
 - Plain ASCII punctuation, no em dashes anywhere (replies, code comments, strings, commit messages)
 - When explaining a concept, cut words, not steps. Say what each thing is before how it behaves, and describe each case in its own terms, never in another case's terms
@@ -89,6 +90,7 @@ These rules cover work I asked you to do.
 - Before fixing a bug, restate the exact reported symptom and confirm it against evidence. Fix the symptom the user reported, not the one you assumed
 - For a visual or behavioral bug I report, ask me up front for the detail that separates the candidate causes (where on screen, what exact color, what sequence, whether it happens on a clean profile). Never write a detail I did not report as if I had
 - Before asking me for a fact, or saying a record lacks it, read in full the section of the record where it would live. A keyword search that comes back empty settles nothing, since the record may use another word. Say "I couldn't find X", not "X doesn't exist"
+- Save the full output of a command that costs a rerun (a build, a test, a remote command, a capture of a live program) to a file in the scratch directory, then read or search that file. Never pipe such output into `tail`, `head`, or a filter before you have seen it: a wrong guess drops the line you need. To get one value, use the command's own option for it (`nix build --print-out-paths`), never scrape it with `tail` or `head`. A readiness poll (`capture-pane | grep -q`) and a filter over a file you already saved are fine
 - Never write that behavior is "verified", "fixed", or "works" unless a check this turn exercised that behavior: a real run, test, install, screenshot, or status/log read of the end result I need (the record stored, the form accepted). A build, an edit, a simulated proxy, or an intermediate signal (a request sent, a 2xx status) is not verification. Say "built, untested" instead
 - A passing build, type-check, lint, test, or hook verifies only what that tool checks. Green tests are not evidence for behavior they do not exercise (visual result, concurrency, comment accuracy). Name what was actually checked
 
@@ -123,15 +125,18 @@ These rules cover work I asked you to do.
 - For a host on the tailnet, use `tailscale ssh <user>@<host>`, not plain `ssh`. It resolves the name inside tailscaled, so macOS DNS bugs can't break it
 - On macOS, sudo works via TouchID. Run `sudo <cmd>` directly and let it prompt. Don't hand it to me. Never probe with `sudo -n`: it refuses to prompt and gives a false negative
 - GNU sed, date, awk, and coreutils come first on PATH on every host, macOS included: use GNU flags (`sed -i`, `date -d`, `stat -c`, `timeout`), never BSD ones (`sed -i ''`, `date -j`, `stat -f`). GNU `cp -r src/ dest` copies the folder itself into an existing `dest`: use `src/.` to copy only its contents. Claude Code and Codex run zsh with `nonomatch` and `noequals`, and pi runs bash. Quote expansions and globs meant for the command (`-g '*.cpp'`). Search with `rg`, adding `--no-ignore` for an exhaustive search. Find files with `fd`, adding `-HI` to include hidden and ignored files. In Claude Code, grep is a shell function running ugrep with ignore rules: use `command grep` only when you need the real grep
+- Never root a search at `~`, `$HOME`, or `/`, directly or after a `cd` there. The guard hooks block it
+- Write a `cd` to a variable as `cd -- "${dir:?}"`, so an empty value fails instead of landing in `$HOME`
 - Delete files and folders with `trash <path>`, never `rm` or a `mv` into the trash folder. On macOS it is `/usr/bin/trash` and keeps Finder's Put Back. On Linux it is `trash-cli` (`modules/eric/cli/cli-tools.nix`), restored with `trash-restore`
 - On macOS, read the unified log with `/usr/bin/log show`, never bare `log`. In zsh, `log` is a builtin that prints `log:1: too many arguments` to stderr and nothing to stdout, so a query with `2>/dev/null` or piped into a filter looks like an empty log
 - `.eric/` is the personal, untracked folder at the main repo's root, in every repo (global git ignore in `modules/eric/git.nix`). Write there without checking ignore rules. Use only these entries, plus any the repo's own AGENTS.md or code names, and create nothing else at its top level. Dates come from `date +%F`:
-  - `scratch/<YYYY-MM-DD>-<topic>/`: the task's scratch directory, for files you throw away when the task ends (fixtures, one-off scripts, in-between versions of files, tool output). It replaces any harness scratchpad. When the task ends, delete it and nothing else
+  - `scratch/<YYYY-MM-DD>-<topic>/`: the task's scratch directory, for files you throw away when the task ends (fixtures, one-off scripts, in-between versions of files, tool output). It replaces any harness scratchpad. Never create scratch space with `mktemp`, `/tmp`, or a harness scratchpad. When the task ends, delete it and nothing else
   - `worktrees/<topic>/`: git worktrees. Remove one with `git worktree remove` when the task ends
-  - `notes/<YYYY-MM-DD>-<topic>.<ext>`: anything kept past the task (a handoff, a review list, collected data). Never delete it unless I say so
+  - `notes/<YYYY-MM-DD>-<topic>.<ext>`: anything kept past the task (a review list, collected data). Never delete it unless I say so
+  - `handoffs/<YYYY-MM-DD>-<slug>.md`: handoff docs for another agent to pick up, written by the handoff skill. Never delete one unless I say so
   - `plans/`, `approach/`: owned by the writing-plans, executing-plans, and approach skills, which say what goes there
   - `reminders.md`: this repo's reminders, read at session start by `hooks/reminders.sh`
-- Outside a repo, the harness scratchpad is the scratch directory, and global reminders live in `~/.local/state/eric/reminders.md`
+- Outside a repo, `~/.eric/` takes the place of the repo's `.eric/`, with its `scratch/`, `notes/`, and `handoffs/` under the same rules. Its `reminders.md` holds the global reminders
 - Parts of `~/.agents`, `~/.claude`, `~/.codex`, `~/.config`, `~/.pi`, `~/.flake` are symlinks into `~/nixos-config`. Everything else there is runtime state
 - To resolve a managed file's real path, `realpath` it. `ls -l` stops at a `/nix/store` hop that is itself a symlink to the repo
 - A change is live the moment you edit a file whose `realpath` lands in `~/nixos-config`. A new file is live only inside a directory linked whole. `just switch` is only for a target that does not yet resolve into the repo: a brand-new managed file, a new file inside a directory linked per file, or nix-generated content. `~/nixos-config/AGENTS.md` says how the links are built
