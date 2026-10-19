@@ -146,6 +146,23 @@
     sheet.replaceSync(CSS);
     root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
     root._sideberyFirstSheet = sheet;
+    // a launcher button toggles its view, so clicking the open view closes the
+    // sidebar. The second click of a double click is dropped too, since the
+    // first click's show may not have updated currentID yet
+    root.addEventListener(
+      "click",
+      (event) => {
+        const button = event
+          .composedPath()
+          .find((n) => n.localName === "moz-button");
+        const view = button?.getAttribute("view");
+        if (!view) return;
+        const active =
+          SidebarController.isOpen && SidebarController.currentID === view;
+        if (active || event.detail > 1) event.stopImmediatePropagation();
+      },
+      true,
+    );
     return true;
   }
 

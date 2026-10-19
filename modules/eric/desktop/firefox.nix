@@ -12,6 +12,7 @@ let
         "${profile}/chrome/resources".source = repoFile "${base}/chrome/resources";
         "${profile}/chrome/utils".source = "${inputs.fx-autoconfig-src}/profile/chrome/utils";
         "${profile}/chrome/userChrome.css".source = repoFile "${base}/chrome/userChrome.css";
+        "${profile}/chrome/userContent.css".source = repoFile "${base}/chrome/userContent.css";
         "${profile}/user.js".source = repoFile "${base}/user.js";
       };
     };

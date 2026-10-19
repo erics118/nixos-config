@@ -1,0 +1,27 @@
+/* catppuccin mocha on about: pages in dark mode, through Firefox's semantic tokens.
+   The color ramps (--color-gray-* and others) stay stock */
+@-moz-document url-prefix("about:") {
+  @media (prefers-color-scheme: dark) {
+    * {
+      --background-color-canvas: #1e1e2e !important;
+      --background-color-box: #181825 !important;
+      --text-color: #cdd6f4 !important;
+      --text-color-deemphasized: #a6adc8 !important;
+      --border-color: #45475a !important;
+
+      --color-accent-primary: #cba6f7 !important;
+      --color-accent-primary-hover: #b4befe !important;
+      --color-accent-primary-active: #b4befe !important;
+      --color-accent-primary-selected: #cba6f7 !important;
+      --button-text-color-primary: #11111b !important;
+      --text-color-accent-primary-selected: #11111b !important;
+
+      --icon-color-success: #a6e3a1 !important;
+      --icon-color-warning: #f9e2af !important;
+      --icon-color-critical: #f38ba8 !important;
+      --icon-color-information: #89b4fa !important;
+      --text-color-error: #f38ba8 !important;
+      --border-color-error: #f38ba8 !important;
+    }
+  }
+}

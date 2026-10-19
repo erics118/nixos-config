@@ -12,9 +12,10 @@ Chrome customization for Firefox Developer Edition on macOS, installed from `/Ap
 ## After an edit
 
 - `.uc.js` scripts: restart with the startup cache cleared, using the button in `about:support` or Tools > userScripts > Clear startup cache & Restart Firefox Developer Edition
-- `userChrome.css`: restart Firefox
+- `userChrome.css`, `userContent.css`: restart Firefox
 
 ## Extension dependencies
 
 - `sidebar-launcher-footer.uc.js` targets the Sidebery fork (add-on id `sidebery-fork@erics118`) by its sidebar view id. With another Sidebery build the footer still lays out, but the toolbar sidebar button toggles a view that does not exist and the Sidebery launcher button loses its first place.
 - `userChrome.css` reads colors set by Adaptive Tab Bar Colour (ATBC).
+- `userContent.css` themes about: pages with Catppuccin Mocha in dark mode. ATBC can't read about: pages and paints their toolbar with built-in colors, so an ATBC rule `about:*` set to `#1e1e2e` makes the toolbar match.
