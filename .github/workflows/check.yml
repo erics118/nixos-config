@@ -45,7 +45,7 @@ jobs:
           ssh-private-key: ${{ secrets.PRIVATE_FLAKE_DEPLOY_KEY }}
 
       # the cache list and keys live in modules/features/base/nix-common.nix
-      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+      - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
         with:
           extra_nix_config: |
             extra-substituters = https://cache.numtide.com
@@ -75,7 +75,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
+      - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
 
       # go builds agent-guard and jq reads the hook decisions. direnv runs the treefmt-on-edit case
       # and just runs the git-add-before-nix recipe cases
