@@ -117,6 +117,11 @@
       url = "github:erics118/mosh";
       flake = false;
     };
+
+    smart-splits-backend-tmux-src = {
+      url = "github:smart-splits-nvim/backend-tmux";
+      flake = false;
+    };
   };
 
   outputs =

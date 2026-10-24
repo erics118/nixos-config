@@ -41,6 +41,5 @@ return {
             highlight_overrides = { all = require("user.catppuccin_overrides") },
         })
         vim.cmd.colorscheme("catppuccin-" .. flavour)
-        vim.env.BAT_THEME = "catppuccin-" .. flavour
     end,
 }

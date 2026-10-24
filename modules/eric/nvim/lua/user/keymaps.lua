@@ -1,10 +1,5 @@
 local map = require("user.utils.map")
 
--- split navigation, continuing into the next tmux pane at an edge (see tmux/keys.conf)
-map("n", "<C-J>", require("smart-splits").move_cursor_down, "Move to window below")
-map("n", "<C-K>", require("smart-splits").move_cursor_up, "Move to window above")
-map("n", "<C-L>", require("smart-splits").move_cursor_right, "Move to window right")
-map("n", "<C-H>", require("smart-splits").move_cursor_left, "Move to window left")
 map("n", "<C-W>\\", "<Cmd>vsplit<CR>", "Vertical split")
 map("n", "<C-W>-", "<Cmd>split<CR>", "Horizontal split")
 map("n", "<C-W>x", "<Cmd>q<CR>", "Close window")

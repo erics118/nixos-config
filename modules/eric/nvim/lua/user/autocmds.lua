@@ -23,13 +23,6 @@ vim.api.nvim_create_autocmd("FileType", {
     command = "if win_gettype() !=# 'popup' | setlocal spell spelllang=en_us wrap linebreak breakindent | endif",
 })
 
-vim.api.nvim_create_autocmd("FileType", {
-    desc = "Set 4 space indentation",
-    group = misc,
-    pattern = { "c", "cpp", "java", "python", "rust", "tex" },
-    command = "setlocal shiftwidth=4 tabstop=4 softtabstop=4",
-})
-
 vim.api.nvim_create_autocmd("VimResized", {
     desc = "Automatically resize windows when the host window size changes.",
     group = misc,

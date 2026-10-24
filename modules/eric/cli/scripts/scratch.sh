@@ -24,6 +24,12 @@ case ${1-} in
   dir=$HOME/dev/scratch/$(date +%Y-%m-%d-%H%M%S)
   mkdir -p "$dir"
   git -C "$dir" init -q
+  # trust it for claude, which keys trust on the repo root (docs: permissions, workspace trust)
+  # rewritten in place, since claude owns the file and its mode
+  if [[ -f $HOME/.claude.json ]]; then
+    json=$(jq --arg p "$dir" '.projects[$p].hasTrustDialogAccepted = true' "$HOME/.claude.json")
+    printf '%s\n' "$json" >"$HOME/.claude.json"
+  fi
   echo "$dir"
   exit
   ;;
