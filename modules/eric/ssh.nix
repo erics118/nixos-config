@@ -4,35 +4,27 @@
 
     let
       inherit (pkgs.stdenv.hostPlatform) isDarwin;
-      mkGit =
-        hostname: filename:
-        {
-          inherit hostname;
-          user = "git";
-          identitiesOnly = true;
-        }
-        // lib.optionalAttrs (!isDarwin) { identityFile = "~/.ssh/${filename}"; };
-
     in
     {
+      # the 1password agent serves the private half
+      home.file.".ssh/keys/github_erics118.pub" = lib.mkIf isDarwin {
+        text = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO2fRl3E9j8GZxoB3JMJoho4GWM6nY90Ob+bqxASZMrM\n";
+      };
+
       programs.ssh = {
         enable = true;
         enableDefaultConfig = false;
 
-        includes = [
-          "~/.ssh/config.local"
-        ]
-        ++ lib.optionals isDarwin [
-          "~/.orbstack/ssh/config"
-          "~/.ssh/1Password/config"
-        ];
+        includes = [ "~/.ssh/config.local" ] ++ lib.optionals isDarwin [ "~/.orbstack/ssh/config" ];
 
         settings = {
-          # default github
-          "github.com" = mkGit "github.com" "id_ed25519_github_erics118";
-
-          # cornell github
-          "github.coecis.cornell.edu" = mkGit "github.coecis.cornell.edu" "id_ed25519_cornell";
+          "github.com" = {
+            hostname = "github.com";
+            user = "git";
+            identitiesOnly = true;
+            identityFile =
+              if isDarwin then "~/.ssh/keys/github_erics118.pub" else "~/.ssh/id_ed25519_github_erics118";
+          };
 
           # cev tailnet, prefer password authentication
           "*.tail4ccb95.ts.net" = {
@@ -62,7 +54,7 @@
             # handshake and the 1password prompt; rtmux opts its autossh out
             controlMaster = "auto";
             controlPath = "~/.ssh/master-%C";
-            controlPersist = "10m";
+            controlPersist = "4h";
             identitiesOnly = true;
             identityAgent = lib.mkIf isDarwin "\"~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock\"";
           };
