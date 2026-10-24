@@ -111,6 +111,9 @@ for i = 1, 8 do
     map(tostring(i), { "LEADER", "CTRL" }, act.ActivateTab(i - 1))
 end
 map("9", { "LEADER", "CTRL" }, act.ActivateTab(-1))
+-- next/previous wezterm tab, stopping at either end
+map("Tab", "CTRL", act.ActivateTabRelativeNoWrap(1))
+map("Tab", "CTRL|SHIFT", act.ActivateTabRelativeNoWrap(-1))
 for i = 1, 9 do
     map(tostring(i), MOD, to_tmux(tostring(i)))
 end
@@ -144,6 +147,11 @@ map("[", SMOD, to_tmux("p"))
 map("{", { MOD, SMOD }, to_tmux("p"))
 map("]", SMOD, to_tmux("n"))
 map("}", { MOD, SMOD }, to_tmux("n"))
+-- split the tmux pane toward the arrow
+map("LeftArrow", SMOD, to_tmux("|"))
+map("RightArrow", SMOD, to_tmux("\\"))
+map("UpArrow", SMOD, to_tmux("+"))
+map("DownArrow", SMOD, to_tmux("="))
 -- tmux first draws a new popup's cursor at its top-left corner, so the cursor stays invisible while a popup opens.
 -- the cursor takes the background colour through OSC 12 written straight into wezterm's terminal, then OSC 112 resets it.
 -- a config override would re-apply the whole config and stall the popup's first frame.

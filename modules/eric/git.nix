@@ -81,7 +81,7 @@
           mergetool.prompt = false;
           alias = {
             tokei = "!tokei --vcs=git";
-            lg = "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit";
+            lg = "log --graph --pretty=format:'%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit";
             pushf = "push --force-with-lease --force-if-includes";
           };
         };
@@ -94,6 +94,15 @@
           navigate = true;
           line-numbers = true;
           hyperlinks = true;
+          tabs = 4;
+          # match nvim's LineNr
+          line-numbers-zero-style = "#45475a";
+          line-numbers-left-style = "#45475a";
+          line-numbers-right-style = "#45475a";
+          # the Δ file header already names the file, and the path wraps the box in narrow panes
+          hunk-header-style = "line-number syntax";
+          # bat's theme from cli-tools.nix, which overrides the catppuccin feature's stock one
+          syntax-theme = "Catppuccin Mocha Nvim";
         };
       };
 

@@ -4,7 +4,7 @@ linemode = "mtime"
 
 [[plugin.prepend_previewers]]
 url = "*.md"
-run = 'piper -- CLICOLOR_FORCE=1 glow -w=$w -s=dark "$1"'
+run = 'piper -- CLICOLOR_FORCE=1 glow -w=$w -s="$HOME/.config/glow/catppuccin-mocha-nvim.json" "$1"'
 
 [[plugin.prepend_previewers]]
 mime = "application/{*zip,tar,bzip2,7z*,rar,xz,zstd,java-archive}"

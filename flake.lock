@@ -588,6 +588,7 @@
         "nixos-config-private": "nixos-config-private",
         "nixpkgs": "nixpkgs",
         "sketchybar-src": "sketchybar-src",
+        "smart-splits-backend-tmux-src": "smart-splits-backend-tmux-src",
         "smhkd-src": "smhkd-src",
         "sops-nix": "sops-nix",
         "treefmt-nix": "treefmt-nix",
@@ -713,6 +714,22 @@
       "original": {
         "owner": "erics118",
         "repo": "SketchyBar",
+        "type": "github"
+      }
+    },
+    "smart-splits-backend-tmux-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790943526,
+        "narHash": "sha256-RcJdM6wFHZOEOK+cXVIT10anktqGgIilPmojFpdY+4g=",
+        "owner": "smart-splits-nvim",
+        "repo": "backend-tmux",
+        "rev": "9e9e6aa9b3eb7a8d3896a993611622ac97abff52",
+        "type": "github"
+      },
+      "original": {
+        "owner": "smart-splits-nvim",
+        "repo": "backend-tmux",
         "type": "github"
       }
     },

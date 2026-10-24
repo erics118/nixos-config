@@ -184,6 +184,22 @@ done <<<"$pi_moves"
 
 [[ -z $old_mem ]] || run mv "$old_mem" "$new_mem"
 
+# claude keys trust by path, so carry it to NEW
+# a scratch folder counts as trusted, since scripts/scratch.sh made it empty
+claude_json=$HOME/.claude.json
+if [[ -f $claude_json ]] && {
+  [[ $(dirname "$old") == "$HOME/dev/scratch" ]] ||
+    jq -e --arg p "$old" '.projects[$p].hasTrustDialogAccepted == true' "$claude_json" >/dev/null
+}; then
+  if [[ -n $dry ]]; then
+    echo "trust $new in $claude_json"
+  else
+    # rewritten in place, since claude owns the file and its mode
+    json=$(jq --arg p "$new" '.projects[$p].hasTrustDialogAccepted = true' "$claude_json")
+    printf '%s\n' "$json" >"$claude_json"
+  fi
+fi
+
 # sesh's name for a path segment: . and : become _, and each run of whitespace one _ (sesh namer/convert.go)
 sesh_name() {
   local words

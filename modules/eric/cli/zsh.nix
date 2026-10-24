@@ -56,6 +56,9 @@
     {
       home.sessionVariables.COLORTERM = "truecolor";
 
+      # tabs go in the command, since setting LESS would stop git and gh adding their -FRX
+      home.sessionVariables.PAGER = "less -R -x4";
+
       # exported so ad-hoc `nix shell --impure nixpkgs#<unfree>` evaluates. flake
       # refs ignore it without --impure
       home.sessionVariables.NIXPKGS_ALLOW_UNFREE = "1";
@@ -155,6 +158,11 @@
           ":q" = "exit";
 
           ls = "eza";
+          cat = "bat";
+          # only the flag disables wrapping, width: 0 in glow.yml means auto
+          glow = "glow -w 0";
+          dig = "doggo";
+          less = "less -x4";
 
           mv = "mv -i";
           cp = "cp -i";

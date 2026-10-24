@@ -41,8 +41,8 @@
             SchemaStore-nvim
             nvim-treesitter.withAllGrammars
             rainbow-delimiters-nvim
-            # loads at startup so tmux sees @pane-is-vim before the first C-h/j/k/l
-            smart-splits-nvim
+            # smart-splits.nvim's tmux backend, required by its setup
+            smart-splits-backend-tmux
             vim-fugitive
           ]
           ++
@@ -78,6 +78,7 @@
                 nvim-ts-autotag
                 nvim-web-devicons
                 render-markdown-nvim
+                smart-splits-nvim
                 telescope-file-browser-nvim
                 telescope-fzf-native-nvim
                 telescope-nvim
@@ -116,6 +117,32 @@
           # fugitive, gitsigns, neogit
           git
         ];
+      };
+
+      # ~/.editorconfig, which project .editorconfig files override key by key
+      editorconfig = {
+        enable = true;
+        settings =
+          let
+            spaces4 = {
+              indent_style = "space";
+              indent_size = 4;
+            };
+            spaces2 = {
+              indent_style = "space";
+              indent_size = 2;
+              # tab_width defaults to indent_size
+              tab_width = 4;
+            };
+          in
+          {
+            "*.java" = spaces4;
+            "*.tex" = spaces4;
+            "*.{nix,sh,bash,zsh}" = spaces2;
+            # prettier's file types, see nvim/lua/user/plugins/conform.lua
+            "*.{js,jsx,mjs,cjs,ts,tsx,astro,css,scss,less,html,graphql,vue,svelte,json,jsonc,json5,hujson,yaml,yml,md}" =
+              spaces2;
+          };
       };
 
       home.sessionVariables = {

@@ -19,7 +19,7 @@ count_selected = { fg = "#1e1e2e", bg = "#89b4fa" }
 border_symbol = "│"
 border_style = { fg = "#7f849c" }
 
-syntect_theme = "~/.config/bat/themes/Catppuccin Mocha.tmTheme"
+syntect_theme = "~/.config/bat/themes/Catppuccin Mocha Nvim.tmTheme"
 
 [tabs]
 active = { fg = "#1e1e2e", bg = "#cdd6f4", bold = true }
@@ -124,6 +124,23 @@ rules = [
   { url = "*", is = "dummy", bg = "#f38ba8" },
   { url = "*/", is = "dummy", bg = "#f38ba8" },
 ]
+
+# read by the git plugin and by Entity:highlights in init.lua, which colors names instead of signs
+[git]
+ignored = { fg = "#6c7086" }
+untracked = { fg = "#cba6f7" }
+unstaged = { fg = "#f9e2af" }
+staged = { fg = "#a6e3a1" }
+added = { fg = "#a6e3a1" }
+deleted = { fg = "#f38ba8" }
+updated = { fg = "#fab387" }
+ignored_sign = ""
+untracked_sign = ""
+unstaged_sign = ""
+staged_sign = ""
+added_sign = ""
+deleted_sign = ""
+updated_sign = ""
 
 [spot]
 border = { fg = "#89b4fa" }

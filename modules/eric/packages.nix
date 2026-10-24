@@ -26,6 +26,8 @@
           # system utilities
           nmap
           dust
+          doggo
+          gping
           rsync
           killall
           ccache

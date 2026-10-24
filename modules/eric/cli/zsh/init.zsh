@@ -19,7 +19,7 @@ zstyle ':completion:*:descriptions' format '[%d]'
 zstyle ':completion:*' list-colors ''
 # preview files/dirs in the fzf popup, matching the default fzf preview
 zstyle ':fzf-tab:complete:*' fzf-preview \
-  'if [ -f "$realpath" ]; then bat --color=always --style=numbers --line-range=:500 -- "$realpath"; elif [ -d "$realpath" ]; then eza --tree --color=always --icons=always -- "$realpath"; fi'
+  'if [ -f "$realpath" ]; then bat --color=always --style=numbers --line-range=:500 --terminal-width="$FZF_PREVIEW_COLUMNS" -- "$realpath"; elif [ -d "$realpath" ]; then eza --tree --color=always --icons=always -- "$realpath"; fi'
 # switch completion groups with < and >
 zstyle ':fzf-tab:*' switch-group '<' '>'
 # drop the leading dot marker on each entry

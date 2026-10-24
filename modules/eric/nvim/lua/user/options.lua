@@ -70,9 +70,9 @@ opt.ignorecase = true
 opt.smartcase = true
 
 -- tab settings
-opt.shiftwidth = 2
-opt.tabstop = 2
-opt.softtabstop = 2
+opt.shiftwidth = 4
+opt.tabstop = 4
+opt.softtabstop = 4
 opt.expandtab = true
 
 -- always show 1 column of sign column (gitsigns, etc.)

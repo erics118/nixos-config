@@ -150,9 +150,12 @@ case ${1:-} in
   # one host's sessions, each line led by the host
   host=$2
   check_host
-  if probe "${quick[@]}"; then
-    sessions_on "${quick[@]}" | awk -v h="$host" '{ print h "\t" $0 }'
-  fi
+  # a host of this config by name has tmux-sessions, so it skips the probe's round trip
+  if own; then
+    ssh "${quick[@]}" "$host" tmux-sessions
+  elif probe "${quick[@]}"; then
+    sessions_on "${quick[@]}"
+  fi | awk -v h="$host" '{ print h "\t" $0 }'
   exit 0
   ;;
 --sessions)
