@@ -4,6 +4,7 @@
       config,
       lib,
       pkgs,
+      repoFile,
       ...
     }:
     {
@@ -39,8 +40,8 @@
             filterMode = "fuzzy";
             showRandomTip = false;
             showNumstatInFilesView = true;
-            # catppuccin mocha mauve, inlined because catppuccin's lazygit port still puts
-            # authorColors under gui, and lazygit exits when it can't migrate that read-only file
+            # catppuccin mocha mauve, copied from the port's themes-mergable/mocha/mauve.yml
+            # catppuccin.lazygit themes only through LG_CONFIG_FILE, which GUI and launchd launches never get
             theme = {
               activeBorderColor = [
                 "#cba6f7"
@@ -66,7 +67,8 @@
             diffRenderers = [
               {
                 colorArg = "always";
-                command = "delta --paging=never";
+                # lazygit opens lazygit-edit links in the editor at that line, file:// goes to macOS open
+                command = "delta --paging=never --hyperlinks-file-link-format=lazygit-edit://{path}:{line}";
               }
             ];
           };
@@ -97,5 +99,9 @@
       home.file."Library/Preferences/clangd/config.yaml" = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
         inherit (config.home.file."${config.xdg.configHome}/clangd/config.yaml") source enable;
       };
+
+      # clang-format has no user config, it walks parent dirs and else falls back to LLVM's 2 spaces
+      # so this applies to every project under ~ without its own .clang-format
+      home.file.".clang-format".source = repoFile "modules/eric/cli/clang-format/clang-format.yaml";
     };
 }

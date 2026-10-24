@@ -110,8 +110,6 @@
           };
           refetchIntervalMinutes = 30;
         };
-        keybindings = { };
-        repoPaths = { };
         theme.ui = {
           sectionsShowCount = true;
           table = {
@@ -119,7 +117,7 @@
             compact = false;
           };
         };
-        pager.diff = "";
+        pager.diff = "delta";
         confirmQuit = false;
         showAuthorIcons = true;
         smartFilteringAtLaunch = true;
