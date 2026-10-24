@@ -69,9 +69,6 @@
         ++ lib.optionals stdenv.hostPlatform.isLinux [
           # sandboxing
           bubblewrap
-
-          # apps, which darwin gets from signedApps
-          espanso
         ];
 
       sessionPath = [ "$HOME/.local/bin" ];
