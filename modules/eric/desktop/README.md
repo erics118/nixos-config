@@ -12,7 +12,6 @@
 | `firefox/chrome/`, `firefox/user.js` | live, per entry in `firefox.nix`           | see `firefox/README.md`                                                                      |
 | `smhkd/smhkdrc`                      | store copy                                 | `just switch`, then `smhkd -r`                                                               |
 | `yabai/`                             | store copy                                 | `just switch`, then `yabai --restart-service`                                                |
-| `espanso/`                           | store copy                                 | `just switch`                                                                                |
 
 ## Forks
 
