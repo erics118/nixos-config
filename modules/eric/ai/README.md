@@ -38,10 +38,11 @@ Before a shell command:
 - `strip-claude-attribution`: removes Claude attribution from commit messages
 - `block-global-search`: no `find`, `fd`, `rg`, or `grep` rooted at `/`, `~`, `/nix`, or another filesystem-wide directory, including a relative search after a `cd` there, and no relative search after an unquoted `cd $var` / `cd $(...)` that could land in `$HOME`
 - `block-symlink-clobber`: no mv, cp, tee, redirect, in-place sed/perl, or truncate onto any symlink
-- `ask-dangerous-git`: asks before rebase, reset, clean, and other history changes
-- `block-agent-push`: agent pushes (`git push`, `send-pack`, `subtree push`, `lfs push`) follow `git config eric-agent.push` in every repo the command pushes from: unset or `off` (default) denies, `ask` (approve each; Codex denies it), or `on` (Codex still forbids `git push` in `codex/rules/default.rules`). Agents use `gh` read-only: only `view`, `list`, `status`, `diff`, `checks`, `search`, `repo clone`, `run watch`, `gh status`, and `gh api` GETs run (fields need an explicit `-X GET`, since gh otherwise sends them as a POST). In Codex this hook is the allowlist, because a `forbidden` rule for `gh` would also block the reads
+- `ask-dangerous-git`: asks before rebase, reset, clean, `gh pr checkout --force`, and other history changes
+- `block-agent-push`: agent pushes (`git push`, `send-pack`, `subtree push`, `lfs push`) follow `git config eric-agent.push` in every repo the command pushes from: unset or `off` (default) denies, `ask` (approve each; Codex denies it), or `on` (Codex still forbids `git push` in `codex/rules/default.rules`). Agents use `gh` read-only: only the reads and local-only downloads and checkouts in `ghRead` (`guard/block_agent_push.go`), `--help`, `help`, `version`, and `gh api` GETs run (fields need an explicit `-X GET`, since gh otherwise sends them as a POST). In Codex this hook is the allowlist, because a `forbidden` rule for `gh` would also block the reads
 - `block-agent-commit`: agent commits, merges, reverts, cherry-picks, `git am`, `commit-tree`, `update-ref`, `subtree`, and any `pull` without `--ff-only` follow `git config eric-agent.commit` in every repo the command commits in: `off` (default), `ask` (approve each; Codex denies it), `branch` (never on `main` or `master`), or `on`. `--abort`, `--quit`, and `commit --dry-run` always run, as does `push --dry-run` or `-n` in `block-agent-push`. Only the user sets `eric-agent`, `alias`, and `include` keys. Both gates deny `-c` or `--config-env` aliases and includes, `GIT_DIR`, `GIT_WORK_TREE`, and `GIT_CONFIG*` assignments, and a gated command with `--git-dir`, `--work-tree`, `core.worktree`, `find -execdir`, or a repo the guard cannot resolve (a `cd` or `-C` through an unknown variable), since each can move git past the repo or config the gate reads. Each `cd`, `pushd`, `-C`, `env -C`, and `sudo -D` before the command is followed. Rebase stays with `ask-dangerous-git`
 - `block-git-config-edit`: no redirect, tee, or other write onto a `.git` config file, `~/.gitconfig`, or `~/.config/git/config`, so `eric-agent` keys change only through `git config`
+- `block-eric-top`: no write that creates a file or folder directly under `~/.eric/` or a repo's `.eric/` other than the entries the global instructions name, or a `.eric/<entry>` the AGENTS.md beside it names
 - `block-shell-edit`: no sed/perl in place, scripts that write, or redirects, cp, or mv onto git-tracked text files. Binary files, which the edit tool cannot change, are exempt
 - `block-sudo-probe`: no `sudo -n` on macOS, where Touch ID approves a plain `sudo`
 - `block-exec-flags`: no `fd -x`, `rg --pre`, `sort -o`, `tree -o`, or `git diff`/`log`/`show --output`, which would run or write through tools the agents approve as read-only
@@ -50,7 +51,7 @@ Before a shell command:
 
 `agent-guard` denies a command its zsh parser (`mvdan.cc/sh`, the library behind shfmt) cannot parse, and a shell that reads its script from a pipe, since no check can see either. A here-string, heredoc, `eval`, `watch`, or `script -c` is checked like a `bash -c` script, at any depth.
 
-Before a file read or edit: `deny-symlink-path` (use the real path, not a managed symlink), `block-smart-punct` (no em dashes or curly quotes), `block-write-tracked` (no whole-file Write over a git-tracked file), `block-git-config-edit` (no Write or Edit of a `.git` config file).
+Before a file read or edit: `deny-symlink-path` (use the real path, not a managed symlink), `block-smart-punct` (no em dashes or curly quotes), `block-write-tracked` (no whole-file Write over a git-tracked file), `block-git-config-edit` (no Write or Edit of a `.git` config file), `block-eric-top` (no Write or Edit of a stray entry at the top of a `.eric/` folder).
 
 After an edit: `treefmt-on-edit` (formats the file), `warn-comment-block` (flags comment blocks of four or more lines).
 
@@ -59,7 +60,7 @@ After an edit: `treefmt-on-edit` (formats the file), `warn-comment-block` (flags
 Extensions in `pi/extensions/`, linked per file into `~/.pi/agent/extensions` by `ai.nix`, so a new extension needs `just switch`:
 
 - `guards.ts`: runs `hooks/guard.sh` before and after each tool call, and `hooks/tmux-bell.sh` on `agent_settled`. It does not run `Notification` hooks
-- `managed-paths.ts`: a path that is itself a symlink is already denied by `deny-symlink-path`, since `guards.ts` loads first. This blocks writes through a symlink that resolves outside `~/nixos-config`, `~/.flake`, or `~/.config`
+- `managed-paths.ts`: a path that is itself a symlink is already denied by `deny-symlink-path`, since `guards.ts` loads first. This blocks writes through a symlink that resolves outside `~/nixos-config`, `~/nixos-config-private`, or `~/.config`
 - `side-conversations.ts`: `/side` opens a side session, `/btw` a tool-free parallel conversation
 - `reflect.ts`: `/reflect` reviews the session for durable learning
 - `time.ts`: a `time` tool
@@ -72,4 +73,4 @@ Extensions in `pi/extensions/`, linked per file into `~/.pi/agent/extensions` by
 
 ## Tests
 
-CI's `ai-agent-tests` job in `.github/workflows/check.yml` runs `hooks/test.sh` and the `pi/tests` suite. To run them locally, run that job's steps from the repo root, with `go` from the devShell. `test.sh` builds `agent-guard` from `guard/` and fails if a check in `guard/checks.go` or a script in `claude/settings.json` has no test. `go test` in `guard/`, which the package build also runs, checks the table and that the walk reaches a call inside every shell construct. So a new check is one function, one row in `checks.go`, and a `test.sh` case. The `pi/tests` suite runs the `agent-guard` on PATH, so locally it tests the installed binary until the next switch.
+`go test ./...` in `guard/`, which the package build also runs, holds each check's cases in `guard/checks_test.go` and fails if a check in `guard/checks.go` has none. It also checks the table and that the walk reaches a call inside every shell construct. CI's `ai-agent-tests` job in `.github/workflows/check.yml` runs `hooks/test.sh` and the `pi/tests` suite. To run them locally, run that job's steps from the repo root, with `go` from the devShell. `test.sh` builds `agent-guard` from `guard/`, tests `guard.sh` and the other hook scripts, and fails if a script in `claude/settings.json` has no test. So a new check is one function, one row in `checks.go`, and an entry in `checks_test.go`. The `pi/tests` suite runs the `agent-guard` on PATH, so locally it tests the installed binary until the next switch.

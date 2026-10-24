@@ -10,7 +10,7 @@ Attack the target from the lens that it is wrong. Be blunt, do not soften, do no
 
 ## 1. Brief
 
-Write one brief to the task's scratch directory: the target (the diff via `git diff HEAD` plus untracked files, the named paths, or the plan text), the angles below, and the finding format. For a plan, judge the design on the five checks in the Decisions rules of the global instructions and its assumptions, not style, and do not demand code that does not exist yet.
+Write one brief to the task's scratch directory: the target (the diff via `git diff HEAD` plus untracked files, the named paths, or the plan text), the angles below, and the finding format. For a plan, judge the design on the five checks in the Working with me rules of the global instructions and its assumptions, not style, and do not demand code that does not exist yet.
 
 Done when: the brief file exists and names every path in scope.
 

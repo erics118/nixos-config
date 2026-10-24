@@ -11,7 +11,7 @@ The plan already did the thinking. Execute it exactly and prove every task with 
 ## Rules for the whole run
 
 - Rulings, not stalls. Decide every conflict, plan defect, or choice the plan left open that you can derive from the requirements, the code, or the user's rules. Record it as `Ruling: <what you decided> - <why> - <cost if wrong>` and keep going.
-- Stop and ask only for a requirement the plan does not settle and only the user can, or an action the Decisions and Git rules of the global instructions reserve for the user.
+- Stop and ask only for a requirement the plan does not settle and only the user can, or an action the Execution policy and Git rules of the global instructions reserve for the user.
 - Read the task, not your memory of it. The plan has the exact values.
 
 ## Setup
