@@ -62,10 +62,64 @@ jobs:
           # only main and lock-update prs push, so a pr branch can't put unreviewed builds in front of every host
           # lock-update prs auto-merge unreviewed, so pushing them here fills the cache before hosts pull main
           # a fix pushed to one by erics118 still pushes
-          skipPush: ${{ github.event_name != 'push' && !((github.actor == 'erics118-bot[bot]' || github.actor == 'erics118') && startsWith(github.head_ref, 'update_flake_lock_')) }}
+          skipPush: ${{ github.event_name != 'push' && !((github.actor == 'erics118-bot[bot]' || github.actor == 'erics118') && startsWith(github.head_ref, 'update-flake-lock-')) }}
           pushFilter: '-(secrets\.yaml|manifest(-for-users)?\.json|(dry-)?activate|launchd|org\.nixos\.sops-install-secrets\.plist)$|-(nixos|darwin)-system-'
 
       - run: nix flake check --print-build-logs
+
+      # diff each of this runner's host closures against the pr's base commit, for the closure-diff comment
+      # continue-on-error so a failed diff never blocks the auto-merge
+      - if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'update-flake-lock-')
+        continue-on-error: true
+        env:
+          BASE: github:${{ github.repository }}/${{ github.event.pull_request.base.sha }}
+        run: |
+          system=$(nix eval --impure --raw --expr builtins.currentSystem)
+          mkdir -p closure-diff
+          for check in $(nix eval --raw ".#checks.$system" --apply 'c: toString (builtins.filter (n: builtins.match "(nixos|darwin)-.*" n != null) (builtins.attrNames c))'); do
+            old=$(nix build --no-link --print-out-paths "$BASE#checks.$system.$check")
+            new=$(nix build --no-link --print-out-paths ".#checks.$system.$check")
+            nix run --inputs-from . nixpkgs#dix -- --color never "$old" "$new" >"closure-diff/${check#*-}.txt"
+          done
+
+      - if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'update-flake-lock-')
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: closure-diff-${{ matrix.os }}
+          path: closure-diff/
+          if-no-files-found: ignore
+
+  # post every host's closure diff as one bot comment, edited in place on reruns
+  closure-diff:
+    needs: flake-check
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'update-flake-lock-')
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: closure-diff-*
+          merge-multiple: true
+          path: closure-diff
+
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-pull-requests: write
+
+      - run: |
+          for f in closure-diff/*.txt; do
+            # the backticks are a literal markdown fence
+            # shellcheck disable=SC2016
+            printf '<details><summary>%s</summary>\n\n```\n%s\n```\n\n</details>\n\n' "$(basename "$f" .txt)" "$(cat "$f")"
+          done >body.md
+          gh pr comment "$PR" --edit-last --create-if-none --body-file body.md
+        env:
+          PR: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_REPO: ${{ github.repository }}
 
   ai-agent-tests:
     runs-on: ubuntu-26.04
@@ -77,10 +131,10 @@ jobs:
 
       - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
 
-      # go builds agent-guard and jq reads the hook decisions. direnv runs the treefmt-on-edit case
-      # and just runs the git-add-before-nix recipe cases
+      # go builds agent-guard and jq reads the hook decisions
+      # the check cases run in the agent-guard package build, which flake-check does
       # from the flake's locked nixpkgs, so ci runs the same versions as the hosts
-      - run: nix profile install --inputs-from . nixpkgs#jq nixpkgs#direnv nixpkgs#just nixpkgs#git nixpkgs#tmux nixpkgs#gawk nixpkgs#bash nixpkgs#coreutils nixpkgs#gnused nixpkgs#nodejs_24 nixpkgs#go
+      - run: nix profile install --inputs-from . nixpkgs#jq nixpkgs#git nixpkgs#tmux nixpkgs#gawk nixpkgs#bash nixpkgs#coreutils nixpkgs#gnused nixpkgs#nodejs_24 nixpkgs#go
 
       # the extensions import these at runtime, pi provides them when installed
       # unpinned, since the installed pi updates itself
