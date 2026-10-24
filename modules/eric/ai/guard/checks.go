@@ -40,6 +40,7 @@ var preChecks = []preCheck{
 	{meta{"block-agent-push", shellTools}, blockAgentPush},
 	{meta{"block-smart-punct", fileTools}, blockSmartPunct},
 	{meta{"block-git-config-edit", append(slices.Clone(shellTools), fileTools...)}, blockGitConfigEdit},
+	{meta{"block-eric-top", append(slices.Clone(shellTools), fileTools...)}, blockEricTop},
 	{meta{"block-shell-edit", shellTools}, blockShellEdit},
 	{meta{"block-sudo-probe", shellTools}, blockSudoProbe},
 	{meta{"block-exec-flags", shellTools}, blockExecFlags},

@@ -34,11 +34,14 @@ func blockAgentPush(h *hook) decision {
 
 	// gh is read-only: allow only known reads, so new write commands are denied too
 	for _, c := range h.calls {
-		if c.tool() != "gh" {
+		if c.tool() != "gh" || ghInfo(c.argv) {
 			continue
 		}
 		for _, line := range strings.Split(at(c.argv, 1)+" "+at(c.argv, 2), "\n") {
 			group, sub := readTwo(line)
+			if group == "repo" && slices.Contains([]string{"autolink", "deploy-key", "gitignore", "license"}, sub) {
+				group, sub = sub, at(c.argv, 3)
+			}
 			if !ghRead(group + " " + sub) {
 				return deny(fmt.Sprintf("Agents use gh read-only, and gh %s %s is not a known read. Tell the user what to run.", group, sub))
 			}
@@ -66,13 +69,23 @@ func readTwo(line string) (string, string) {
 	return line[:i], strings.Trim(line[i+1:], " \t")
 }
 
+// help and version only print. --help must come last, so a --body "--help" value can't pass a write
+func ghInfo(a []string) bool {
+	return a[len(a)-1] == "--help" || slices.Contains([]string{"--version", "version", "help"}, at(a, 1))
+}
+
 func ghRead(s string) bool {
 	for _, p := range []string{"api ", "search "} {
 		if strings.HasPrefix(s, p) {
 			return true
 		}
 	}
-	if s == "status " || s == "repo clone" || s == "run watch" {
+	// downloads and checkouts write only local files. ask-dangerous-git asks before a forced pr checkout
+	if slices.Contains([]string{"status ", "licenses ", "repo clone", "repo read-file", "repo read-dir", "run watch",
+		"ruleset check", "variable get", "config get", "project field-list", "project item-list",
+		"release verify", "release verify-asset", "attestation verify", "attestation trusted-root",
+		"extension search", "skill search", "skill preview",
+		"run download", "release download", "attestation download", "gist clone", "pr checkout"}, s) {
 		return true
 	}
 	for _, p := range []string{" view", " list", " status", " diff", " checks"} {

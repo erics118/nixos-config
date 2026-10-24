@@ -10,7 +10,10 @@ import (
 // asks rather than denies, so anything genuinely wanted is one confirmation away
 func askDangerousGit(h *hook) decision {
 	for _, c := range h.calls {
-		if g, shell := h.gitCommand(c); shell || (g != nil && dangerousGit(g)) {
+		// gh pr checkout --force runs git reset --hard onto the pr head
+		forcedCheckout := c.tool() == "gh" && at(c.argv, 1) == "pr" && at(c.argv, 2) == "checkout" &&
+			slices.ContainsFunc(c.argv[3:], func(a string) bool { return forceFlag.MatchString(a) || a == "--force" })
+		if g, shell := h.gitCommand(c); shell || forcedCheckout || (g != nil && dangerousGit(g)) {
 			return ask("This git command rewrites history or discards uncommitted work. Approve it, or run it yourself.")
 		}
 	}

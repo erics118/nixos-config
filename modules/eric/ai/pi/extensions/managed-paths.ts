@@ -10,7 +10,7 @@ type Resolution =
 function approvedRoots(home: string): string[] {
   return [
     path.join(home, "nixos-config"),
-    path.join(home, ".flake"),
+    path.join(home, "nixos-config-private"),
     path.join(home, ".config"),
   ];
 }

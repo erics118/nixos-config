@@ -18,7 +18,7 @@ func denySymlinkPath(h *hook) decision {
 	}
 	// only steer when the symlink resolves back into a managed repo location
 	home := os.Getenv("HOME")
-	for _, root := range []string{home + "/nixos-config/", home + "/.flake/", home + "/.config/"} {
+	for _, root := range []string{home + "/nixos-config/", home + "/nixos-config-private/", home + "/.config/"} {
 		if strings.HasPrefix(real, root) {
 			return deny("That path is a symlink into a nix-managed repo. Read and edit the real path instead: " + real)
 		}
