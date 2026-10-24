@@ -49,11 +49,6 @@ in
       }
     ];
 
-    # host-specific key ~/.ssh/id_ed25519_narwhal on orca, on top of the shared base key
-    users.users.eric.openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFi4z8EKPTUWxi0lI3voCfQVq8hIZJdtL/NAWzsG4+py eric@macb"
-    ];
-
     # wake-on-lan on the wired NIC
     networking.interfaces.enp5s0.wakeOnLan.enable = true;
 

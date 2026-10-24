@@ -27,11 +27,6 @@ in
       firewall.allowedTCPPorts = [ 22 ];
     };
 
-    # host-specific key ~/.ssh/id_ed25519_oracle_turtle on orca, on top of the shared base key
-    users.users.eric.openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEueqORxrYmEGwiC+DerpbNP0BUC8Byeetkq4M0ZPEUZ eric@orca"
-    ];
-
     boot.loader.systemd-boot = {
       enable = true;
       configurationLimit = 5;
