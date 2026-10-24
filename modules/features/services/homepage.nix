@@ -36,7 +36,9 @@
               "${config.networking.hostName}.${tailnetDomain}:${toString port}"
               homelabDomain
             ]
-            ++ lib.optional config.services.avahi.publish.enable "${config.networking.hostName}.local:${toString port}"
+            ++ lib.optional (
+              !config.services.avahi.settings.publish.disable-publishing
+            ) "${config.networking.hostName}.local:${toString port}"
           );
 
           settings = {
