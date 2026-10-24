@@ -1,4 +1,4 @@
-# read by the flake-edit treefmt formatter in flake.nix
+# read by the flake-edit treefmt formatter in modules/treefmt.nix
 [follow]
 # wezterm-src keeps its own nixpkgs, so it matches the build in the erics118-wezterm cache
 ignore = ["wezterm-src.nixpkgs"]

@@ -10,8 +10,7 @@
     # pure nix helper, doesn't depend on nixpkgs
     import-tree.url = "github:vic/import-tree";
 
-    # private bundle: sops secrets, recipients, host-specific config.
-    # exports flakeModules.default (import-tree of its ./modules).
+    # private bundle: sops secrets, recipients, host-specific config
     nixos-config-private = {
       url = "git+ssh://git@github.com/erics118/nixos-config-private.git";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -69,8 +68,8 @@
 
     wezterm-src = {
       url = "github:erics118/wezterm/main?dir=nix";
-      # keeps its own nixpkgs, so it builds the same derivation the fork's ci pushes to erics118-wezterm.
-      # flake-edit.toml stops the formatter adding a follows here
+      # keeps its own nixpkgs to match the build in the erics118-wezterm cache
+      # flake-edit.toml stops the formatter adding a follows
     };
 
     goku-src = {
@@ -141,100 +140,13 @@
           "aarch64-darwin"
         ];
 
-        perSystem =
-          {
-            config,
-            pkgs,
-            system,
-            ...
-          }:
-          {
-            # always allow unfree
-            _module.args.pkgs = import inputs.nixpkgs {
-              inherit system overlays;
-              config.allowUnfree = true;
-            };
-
-            devShells = {
-              default = pkgs.mkShell {
-                packages = with pkgs; [
-                  config.treefmt.build.wrapper
-                  lua-language-server
-                  stylua
-                  lua5_5
-                  clang-tools
-                  gnumake
-                  go
-                  gopls
-                ];
-                # LuaLS stubs for hyprland.lua, read by its .luarc.json
-                HYPR_STUBS = pkgs.runCommand "hyprland-lua-stubs" { nativeBuildInputs = [ pkgs.python3 ]; } ''
-                  python3 ${pkgs.hyprland.src}/meta/generateLuaStubs.py --root ${pkgs.hyprland.src} --output $out/hl.meta.lua
-                '';
-              };
-            };
-
-            treefmt = {
-              projectRootFile = "flake.nix";
-
-              settings = {
-                excludes = [
-                  "result"
-                  "result-*"
-                  "flake.lock"
-                ];
-                on-unmatched = "info";
-                # stylua config (indent type/width) lives in stylua.toml
-
-                # keep top-level inputs' direct follows tidy (`inputs.X.follows`).
-                # --depth 1 stays at direct children: deeper follows here only
-                # pull pinned/cache inputs off
-                # their own nixpkgs, which we don't want. --no-lock because the
-                # treefmt check runs in the nix sandbox with no network
-                formatter.flake-edit = {
-                  command = pkgs.flake-edit;
-                  options = [
-                    "--non-interactive"
-                    "--no-lock"
-                    "follow"
-                    "--depth"
-                    "1"
-                  ];
-                  includes = [ "flake.nix" ];
-                };
-              };
-
-              programs = {
-                nixfmt.enable = true;
-                nixfmt.strict = true;
-                deadnix.enable = true;
-                statix.enable = true;
-
-                shfmt.enable = true;
-                shellcheck = {
-                  enable = true;
-                  # direnv syntax, no shebang
-                  excludes = [ ".envrc" ];
-                };
-
-                prettier.enable = true;
-                just.enable = true;
-                taplo.enable = true;
-                yamlfmt = {
-                  enable = true;
-                  settings.formatter.retain_line_breaks_single = true;
-                };
-                jsonfmt.enable = true;
-
-                actionlint.enable = true;
-                zizmor.enable = true;
-
-                stylua.enable = true;
-                clang-format.enable = true;
-                gofmt.enable = true;
-              };
-            };
+        perSystem = { system, ... }: {
+          # always allow unfree
+          _module.args.pkgs = import inputs.nixpkgs {
+            inherit system overlays;
+            config.allowUnfree = true;
           };
+        };
       }
     );
 }
