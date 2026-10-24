@@ -9,10 +9,10 @@
     let
       checkout = "/home/eric/nixos-config";
       privateCheckout = "/home/eric/nixos-config-private";
-      bootCritical = {
-        requiredBy = [ "boot-complete.target" ];
-        before = [ "boot-complete.target" ];
-      };
+      bootCritical = [
+        "sshd.service"
+      ]
+      ++ lib.optional config.services.tailscale.enable "tailscaled.service";
     in
     {
       programs.ssh = {
@@ -37,8 +37,19 @@
       boot.loader.systemd-boot.bootCounting.enable = true;
 
       # a generation without ssh or tailscale is unreachable remotely, so it must not count as booted
-      systemd.services.sshd = bootCritical;
-      systemd.services.tailscaled = lib.mkIf config.services.tailscale.enable bootCritical;
+      # a oneshot checks them instead of requiring the services, since a required unit's restart
+      # restarts boot-complete.target and systemd-bless-boot, which fails once the boot is blessed
+      systemd.services.boot-critical-check = {
+        requiredBy = [ "boot-complete.target" ];
+        before = [ "boot-complete.target" ];
+        after = bootCritical;
+        restartIfChanged = false;
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+        };
+        script = "${config.systemd.package}/bin/systemctl is-active ${lib.concatStringsSep " " bootCritical}";
+      };
 
       systemd.services.nixos-upgrade = {
         # the upgrade runs as root but builds from eric's checkout
