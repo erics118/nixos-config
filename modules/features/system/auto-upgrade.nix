@@ -7,7 +7,8 @@
       ...
     }:
     let
-      checkout = "/home/eric/.flake";
+      checkout = "/home/eric/nixos-config";
+      privateCheckout = "/home/eric/nixos-config-private";
       bootCritical = {
         requiredBy = [ "boot-complete.target" ];
         before = [ "boot-complete.target" ];
@@ -59,6 +60,9 @@
             echo "checkout has commits not on origin/main; refusing to deploy" >&2
             exit 1
           fi
+          # the build uses the locked private input, so only its live links go stale here
+          runuser -u eric -- git -C ${privateCheckout} pull --ff-only \
+            || echo "private checkout did not fast-forward; its live links stay stale" >&2
         '';
         path = [
           pkgs.git

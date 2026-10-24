@@ -20,7 +20,7 @@ picks aspects with `m.<class>.<name>`. Some aspects, such as `sops`, `sops-homel
 and the media stack, are defined in the private repo. import-tree skips any path
 that starts with `_`.
 
-Files linked with `repoFile` or `repoFileAll` point through `~/.flake` into this checkout. See [AGENTS.md](./AGENTS.md) for the link chain and what needs `just switch`.
+Files linked with `repoFile` or `repoFileAll` point into this checkout at `~/nixos-config`, and `privateFile` or `privateFileAll` into the private checkout at `~/nixos-config-private`. See [AGENTS.md](./AGENTS.md) for the link chain and what needs `just switch`.
 
 ## Hosts
 
