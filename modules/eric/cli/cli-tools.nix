@@ -119,11 +119,6 @@
         };
       };
 
-      # home-manager writes tealdeer's config to Application Support on darwin, but tealdeer reads ~/.config
-      xdg.configFile."tealdeer/config.toml" = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
-        inherit (config.home.file."Library/Application Support/tealdeer/config.toml") source;
-      };
-
       programs.jq.enable = true;
 
       programs.ripgrep.enable = true;
