@@ -37,12 +37,11 @@ export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519_github_erics118 -o IdentitiesOn
 The clone gets what is on GitHub, so push the new host's files and `flake.lock` first.
 
 ```sh
-git clone git@github.com:erics118/nixos-config DIRECTORY
-# link flake to a globally stable location
-ln -sfn "$(realpath DIRECTORY)" ~/.flake
+git clone git@github.com:erics118/nixos-config ~/nixos-config
+git clone git@github.com:erics118/nixos-config-private ~/nixos-config-private
 ```
 
-The `~/.flake` link is required. Linked config files point through it, and home-manager activation aborts if `~/.flake/flake.nix` does not resolve. NixOS auto-upgrade also builds from `/home/eric/.flake`. A NixOS host gets both from [5. Ship the repo](#5-ship-the-repo).
+Both checkouts must live at exactly these paths. Files linked with `repoFile` and `privateFile` point into them, and home-manager activation aborts if `~/nixos-config/flake.nix` or `~/nixos-config-private/flake.nix` is missing. NixOS auto-upgrade also builds from `/home/eric/nixos-config`. A NixOS host gets both from [5. Ship the repo](#5-ship-the-repo).
 
 ## Define the host
 
@@ -262,10 +261,10 @@ Clone after the pushes, so the clone has the new host files and `flake.lock`:
 
 ```sh
 git clone git@github.com:erics118/nixos-config "$extra/home/eric/nixos-config"
-ln -s /home/eric/nixos-config "$extra/home/eric/.flake"
+git clone git@github.com:erics118/nixos-config-private "$extra/home/eric/nixos-config-private"
 ```
 
-The clone may fall behind `origin/main` later. Auto-upgrade fast-forwards it, and only refuses a checkout that is dirty or ahead.
+The clones may fall behind `origin/main` later. Auto-upgrade fast-forwards both, and only refuses a public checkout that is dirty or ahead.
 
 ### 6. Install
 

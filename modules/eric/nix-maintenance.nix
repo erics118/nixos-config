@@ -69,7 +69,7 @@
       homeManager.base = { config, ... }: {
         programs.nh = {
           enable = true;
-          flake = "${config.home.homeDirectory}/.flake";
+          flake = "${config.home.homeDirectory}/nixos-config";
         };
       };
     };
