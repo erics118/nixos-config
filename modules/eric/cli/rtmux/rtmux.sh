@@ -55,7 +55,7 @@ has() {
   return 1
 }
 
-# a host this flake configures, by name, or by the tmux-sessions on its PATH when an alias such as narwhal-ip reaches it
+# a host this flake configures, by name, or by the tmux-sessions on its PATH when an alias such as turtle-ip reaches it
 own() {
   has tmux-sessions && return 0
   local h
