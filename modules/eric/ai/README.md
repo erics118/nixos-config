@@ -7,27 +7,6 @@ Claude Code, Codex, and pi share one instruction file and one set of skills.
 - Subagents live in `claude/agents/`, `codex/agents/`, and `pi/agents/`, linked as `~/.claude/agents`, `~/.codex/agents`, and `~/.pi/agent/agents`. Each tool has `auditor` and `recall`. Claude and Codex also have `researcher`, and pi uses its built-in one. Codex agents cannot be made read-only, so read-only is only an instruction there.
 - Guard hooks live in `hooks/`, linked as `~/.agents/hooks`. `hooks/guard.sh` execs `agent-guard`, a Go binary built from `guard/` by `modules/overlays/agent-guard.nix`, and exits 2 when it is not on PATH. `guard/checks.go` is the one ordered table of checks and the tools each runs on, with one file per check. It parses a shell command once, following each `cd`, `pushd`, subshell, and literal variable so every call knows its directory, then runs each check and prints one decision. A change under `guard/` goes live with `just switch`. Claude (`claude/settings.json`), Codex (`codex/hooks.json`), and pi (`pi/extensions/guards.ts`) each call it once per event, naming the harness. Codex also runs `tmux-bell.sh` and `tmux-agent-resume.sh` from `codex/hooks.json` (trust them once with `/hooks`, and again after an entry there changes).
 
-## When to invoke what
-
-Invoke with `/name` in Claude Code, `$name` in Codex, and `/skill:name` in pi.
-
-| Moment                                            | Skill                                                                                             |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Small, clear change                               | none                                                                                              |
-| A question where an edit would be wrong           | `ask`                                                                                             |
-| Which mechanism should do a job, new or not       | `approach`                                                                                        |
-| Why I said or did something, or what a line means | `why`                                                                                             |
-| Is this more than the job needs                   | `overkill`                                                                                        |
-| Doubt a claim before acting on it                 | `recheck`                                                                                         |
-| What is left before ending the session            | `remaining`                                                                                       |
-| Many files, or code plus docs plus CI             | `writing-plans`, then `executing-plans` (or `executing-plans-agentic` in Claude)                  |
-| Before committing                                 | `summarize-changes`                                                                               |
-| Review                                            | `audit` (repo, area, or diff), or `review` (two-model red-team of a diff, file, or plan, by hand) |
-| Is the code split the right way into parts        | `architecture-review` (a full `audit` runs it too)                                                |
-| An agent failed and it should not happen again    | `fix-yourself`                                                                                    |
-| Hand the session, or one thread, to an agent      | `handoff`                                                                                         |
-| Start a new dev project                           | `new-project`                                                                                     |
-
 ## Guards
 
 All of these run in Claude and pi. Codex runs the shell-command checks, but it has no "ask" decision and applies a rewrite only with an allow, so under Codex `agent-guard` turns every ask into a deny and drops the attribution rewrite. `codex/rules/default.rules` still forbids `git push` and `gh pr` writes, which holds even while the hook is untrusted.
@@ -57,19 +36,7 @@ After an edit: `treefmt-on-edit` (formats the file), `warn-comment-block` (flags
 
 ## pi
 
-Extensions in `pi/extensions/`, linked per file into `~/.pi/agent/extensions` by `ai.nix`, so a new extension needs `just switch`:
-
-- `guards.ts`: runs `hooks/guard.sh` before and after each tool call, and `hooks/tmux-bell.sh` on `agent_settled`. It does not run `Notification` hooks
-- `managed-paths.ts`: a path that is itself a symlink is already denied by `deny-symlink-path`, since `guards.ts` loads first. This blocks writes through a symlink that resolves outside `~/nixos-config`, `~/nixos-config-private`, or `~/.config`
-- `side-conversations.ts`: `/side` opens a side session, `/btw` a tool-free parallel conversation
-- `reflect.ts`: `/reflect` reviews the session for durable learning
-- `time.ts`: a `time` tool
-- `git-signing.ts`: signs agent commits with `ssh-keygen` instead of 1Password, like the `GIT_CONFIG_*` env in `claude/settings.json`
-- `image-attachments.ts`: attaches image files whose paths appear in a prompt
-- `tmux-agent-resume.ts`: runs `hooks/tmux-agent-resume.sh pi` at session start, since `guards.ts` does not run `SessionStart` hooks
-- `statusline.ts`, `minimal-startup.ts`, `fullscreen-tweaks.ts`: UI
-
-`pi/lib/` holds helpers for extensions, since pi loads every `.ts` in `extensions/` as an extension. `mcp.json` starts the `context7-mcp` and `cornell-confluence-mcp` wrappers from `ai.nix`, plus `railway mcp`.
+Extensions in `pi/extensions/` are linked per file into `~/.pi/agent/extensions` by `ai.nix`, so a new extension needs `just switch`. `guards.ts` runs no `Notification` or `SessionStart` hooks, so `tmux-agent-resume.ts` runs that hook itself. `managed-paths.ts` relies on `guards.ts` loading first, so `deny-symlink-path` has already denied a path that is itself a symlink. `pi/lib/` holds helpers for extensions, since pi loads every `.ts` in `extensions/` as an extension. `mcp.json` starts the `context7-mcp` and `cornell-confluence-mcp` wrappers from `ai.nix`, plus `railway mcp`.
 
 ## Tests
 

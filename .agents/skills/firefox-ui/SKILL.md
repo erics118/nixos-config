@@ -16,4 +16,4 @@ The config lives in `~/nixos-config/modules/eric/desktop/firefox/`. Read its `RE
 3. Reload per the README. Restarting asks "Close N tabs?". Session restore is on, so closing is safe.
 4. Verify on the live window with the verify skill: a `screencapture` for looks, the clipboard recipe for keys. Get the discriminating detail from the user first for a visual bug: where on screen, what color, what sequence.
 
-Known mechanics, read before touching these areas: [gotchas.md](gotchas.md) (urlbar popover, transparent browser, content-area rounding, the ⇧⌘C copy-URL key). To restore the removed Arc-like page frame: [page-frame.md](page-frame.md).
+Known mechanics, read before touching these areas: [gotchas.md](gotchas.md) (urlbar popover, transparent browser, content-area rounding, the ⇧⌘C copy-URL key).
