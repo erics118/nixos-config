@@ -33,6 +33,8 @@ type state struct {
 	moved bool
 	// mayBeHome marks a cd to a bare $var or $(...), which goes to $HOME when it expands to nothing
 	mayBeHome bool
+	// piped marks commands that read the output of the command before a pipe
+	piped bool
 	// prev is the directory before the last cd, for cd -
 	prev  string
 	stack []string
@@ -411,6 +413,7 @@ func (w *walker) binary(c *syntax.BinaryCmd, st *state, depth int) error {
 		return err
 	}
 	y := st.clone()
+	y.piped = true
 	err := w.stmt(c.Y, y, depth)
 	st.merge(y)
 	return err
@@ -501,7 +504,7 @@ func (s *state) redirs(rs []*syntax.Redirect) []redir {
 
 func (w *walker) call(ce *syntax.CallExpr, rs []*syntax.Redirect, st *state, depth int) error {
 	w.visited[ce] = true
-	c := call{dir: st.dir, maybe: slices.Clone(st.maybe), moved: st.moved, mayBeHome: st.mayBeHome, redirs: st.redirs(rs)}
+	c := call{dir: st.dir, maybe: slices.Clone(st.maybe), moved: st.moved, mayBeHome: st.mayBeHome, piped: st.piped, redirs: st.redirs(rs)}
 	for _, a := range ce.Args {
 		c.argv = append(c.argv, st.word(a))
 		c.dyn = append(c.dyn, st.dynamic(a))

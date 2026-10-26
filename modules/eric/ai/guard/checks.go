@@ -46,6 +46,7 @@ var preChecks = []preCheck{
 	{meta{"block-exec-flags", shellTools}, blockExecFlags},
 	{meta{"block-rm", shellTools}, blockRm},
 	{meta{"block-tmux-kill", shellTools}, blockTmuxKill},
+	{meta{"block-pipe-head-tail", shellTools}, blockPipeHeadTail},
 	{meta{"block-write-tracked", []string{"Write"}}, blockWriteTracked},
 }
 

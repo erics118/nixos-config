@@ -450,6 +450,12 @@ var cases = map[string][]group{
 		{want: "allow", cmds: []string{"tmux -L agent kill-server", "tmux -Lagent kill-session -t main", "tmux -S /tmp/s kill-server",
 			"tmux ls", "pkill node", "pkill -u eric node"}},
 	},
+	"block-pipe-head-tail": {
+		{want: "deny", cmds: []string{"ssh turtle 'ls ~/.ssh' | tail -6", "nix build . 2>&1 | tail -n 20", "rg x . | head", "a | b | head -1",
+			"git log | head -c 100", `bash -c "ls | tail"`, "ls | tee /dev/null | tail -3", "ls | sudo tail -2", "cat log | tail -", "ls |& head"}},
+		{want: "allow", cmds: []string{"tail -n 20 out.log", "head -c 100 /dev/urandom", "nix build . 2>&1 | tee out.log | tail -n 5",
+			"tail -f log | rg error", "ls | rg x", "cat f | head -n 5 f", `echo "ls | head"`, "ls > out.log; tail out.log"}},
+	},
 	"block-exec-flags": {
 		{want: "deny", cmds: []string{"fd . -x rm", "fd -e png -X convert", "fd --exec rm", "fd --exec-batch=rm", "rg --pre sh x .",
 			"rg --pre=./p x", "sort -o out in", "sort -oout in", "sort --output=out in", "sort --output out in", "tree -o out",
