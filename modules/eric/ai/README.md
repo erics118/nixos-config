@@ -27,6 +27,7 @@ Before a shell command:
 - `block-exec-flags`: no `fd -x`, `rg --pre`, `sort -o`, `tree -o`, or `git diff`/`log`/`show --output`, which would run or write through tools the agents approve as read-only
 - `block-rm`: no `rm`, since `trash` keeps a way back
 - `block-tmux-kill`: no kill of a session, window, pane, or server on the user's tmux. A private `-L` or `-S` server stays the agent's to kill
+- `block-pipe-head-tail`: no output piped into `head` or `tail`, unless a `tee` to a file in the same command saves it. `head` or `tail` on a file stays allowed
 
 `agent-guard` denies a command its zsh parser (`mvdan.cc/sh`, the library behind shfmt) cannot parse, and a shell that reads its script from a pipe, since no check can see either. A here-string, heredoc, `eval`, `watch`, or `script -c` is checked like a `bash -c` script, at any depth.
 

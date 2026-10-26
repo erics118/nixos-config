@@ -28,6 +28,8 @@ type call struct {
 	moved bool
 	// mayBeHome marks a call after a cd that lands in $HOME when its variable is empty
 	mayBeHome bool
+	// piped marks a call that reads the output of the command before it in a pipe
+	piped bool
 	// opaque marks a command name the guard cannot read, such as $(...) or a glob
 	opaque bool
 }
