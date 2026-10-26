@@ -9,6 +9,14 @@ let
       owner = "eric";
     };
 
+    # the rex flake input on pkgs.superlogical.com needs this login until rex's first release
+    sops.templates."nix-netrc" = {
+      content = ''
+        machine pkgs.superlogical.com login rex password ${config.sops.placeholder."rex/package_token"}
+      '';
+      owner = "eric";
+    };
+
     nix = {
       # pkgs.nix lags a series behind, and 2.35.3 fixes the submodule fetcher-cache bug (NixOS/nix#16397)
       package = pkgs.nixVersions.latest;
@@ -22,6 +30,7 @@ let
           "flakes"
         ];
         warn-dirty = false;
+        netrc-file = config.sops.templates."nix-netrc".path;
         builders-use-substitutes = true;
         http-connections = 50;
         connect-timeout = 5;

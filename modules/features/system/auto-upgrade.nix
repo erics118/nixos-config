@@ -57,6 +57,8 @@
         environment.SUDO_UID = "1000";
         # sync checkout
         preStart = ''
+          # nixos-upgrade-rollback restores these if the run fails after switching
+          readlink -f /nix/var/nix/profiles/system /run/current-system >/run/nixos-upgrade-prev
           branch=$(runuser -u eric -- git -C ${checkout} symbolic-ref --short HEAD)
           if [ "$branch" != "main" ]; then
             echo "checkout is on '$branch', not main; refusing to deploy" >&2
@@ -71,17 +73,46 @@
             echo "checkout has commits not on origin/main; refusing to deploy" >&2
             exit 1
           fi
+          # two lock prs can each pass ci and merge into a combination ci never built
+          sha=$(runuser -u eric -- git -C ${checkout} rev-parse HEAD)
+          if ! curl -sf "https://api.github.com/repos/erics118/nixos-config/actions/workflows/check.yml/runs?head_sha=$sha&status=success" \
+            | jq -e '.total_count > 0' >/dev/null; then
+            echo "check.yml has not passed on $sha; refusing to deploy" >&2
+            exit 1
+          fi
           # the build uses the locked private input, so only its live links go stale here
           runuser -u eric -- git -C ${privateCheckout} pull --ff-only \
             || echo "private checkout did not fast-forward; its live links stay stale" >&2
         '';
         path = [
+          pkgs.curl
           pkgs.git
+          pkgs.jq
           pkgs.openssh
           pkgs.util-linux
         ];
         # notify on failure via ntfy
-        onFailure = [ "nixos-upgrade-notify.service" ];
+        onFailure = [
+          "nixos-upgrade-rollback.service"
+          "nixos-upgrade-notify.service"
+        ];
+      };
+
+      systemd.services.nixos-upgrade-rollback = {
+        description = "roll back a failed unattended upgrade";
+        serviceConfig.Type = "oneshot";
+        # the switch below must not stop or restart this unit
+        restartIfChanged = false;
+        unitConfig.X-StopOnRemoval = false;
+        # a run that failed before switching left both links as they were
+        script = ''
+          { read -r profile; read -r current; } </run/nixos-upgrade-prev
+          if [ "$(readlink -f /nix/var/nix/profiles/system)" != "$profile" ] \
+            || [ "$(readlink -f /run/current-system)" != "$current" ]; then
+            ${config.nix.package}/bin/nix-env -p /nix/var/nix/profiles/system --set "$profile"
+            "$profile/bin/switch-to-configuration" switch
+          fi
+        '';
       };
 
       systemd.services.nixos-upgrade-notify = {

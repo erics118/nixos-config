@@ -32,6 +32,16 @@ jobs:
           ssh-private-key: ${{ secrets.PRIVATE_FLAKE_DEPLOY_KEY }}
 
       - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
+        with:
+          extra_nix_config: |
+            netrc-file = /etc/nix/netrc
+
+      # the rex flake input needs this login until rex's first release
+      - run: |
+          sudo install -m 600 -o "$USER" /dev/null /etc/nix/netrc
+          printf 'machine pkgs.superlogical.com login rex password %s\n' "$REX_PACKAGE_TOKEN" >/etc/nix/netrc
+        env:
+          REX_PACKAGE_TOKEN: ${{ secrets.REX_PACKAGE_TOKEN }}
 
       # use a bot to trigger the pr
       - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0

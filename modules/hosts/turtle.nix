@@ -10,6 +10,7 @@ in
       m.nixos.sops
       m.nixos.docker
       m.nixos.tailscale
+      m.nixos.rex
       m.nixos.glances
       m.nixos.auto-upgrade
       m.nixos.ntfy
