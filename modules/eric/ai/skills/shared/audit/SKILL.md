@@ -1,7 +1,7 @@
 ---
 name: audit
-description: Use when asked to audit or sweep existing code or config for anything worth fixing.
-argument-hint: "[empty for whole repo | area | 'diff' for uncommitted changes] [+ a lens to narrow: cleanup|quality|debt|modernize|structure|architecture|correctness|robustness|concurrency|security|contract|performance|tests|operability|docs]"
+description: Use when asked to audit or sweep existing code or config for anything worth fixing, or to review a branch or PR.
+argument-hint: "[empty for whole repo | area | 'diff' for uncommitted changes | branch or PR] [+ a lens to narrow: cleanup|quality|debt|modernize|structure|architecture|consistency|correctness|robustness|concurrency|security|contract|performance|tests|operability|docs]"
 effort: high
 ---
 
@@ -13,7 +13,8 @@ ROI, sprints, or blanket coverage mandates.
 Scope: default to the entire codebase -- all of it, long-committed code included, not just
 what changed recently or sits uncommitted in the working tree. Narrow only on an explicit ask:
 an area or path, or the uncommitted changes ("diff", "uncommitted", "staged", "working"). Absent
-that ask, an audit reads everything.
+that ask, an audit reads everything. A branch or PR name means its diff against the merge base
+with the default branch, judged in the context of the whole repo.
 
 By default the sweep is complete: hunt everything a careful senior would flag as improper in
 any way. The lenses below are a checklist to force that breadth, not a fence -- a genuine
@@ -90,6 +91,9 @@ Quality and design
   a state machine or discriminated union); repeated shape assumptions that want a shared type;
   duplicated branching a small map, registry, or reducer removes; unclear ownership a module
   boundary clarifies. Never force an abstraction where boring local code is already clear.
+- **consistency** -- for each new piece, find how the repo already does the same job (nearest
+  neighbor, shared helpers, test framework, naming, config layout, CI and justfile wiring) and
+  flag every place the change rebuilds or departs from it.
 
 Correctness and robustness
 
@@ -133,7 +137,8 @@ Cross-cutting
 
 - Every item earns its place with a concrete win: a real defect, or clearer / safer / less
   code / fewer footguns. "Newer", "more standard", or "more abstract" alone is not a reason;
-  skip mere taste.
+  skip mere taste. A departure from an established repo convention is not taste: it is a
+  second way to do one job.
 - KISS/YAGNI: add no abstraction and rewrite no working code for fashion. If the code is
   already right, say so and move on.
 - A larger refactor earns its place when it removes a recurring cost: a fix that must land
