@@ -514,11 +514,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793044813,
-        "narHash": "sha256-6UsJw2UKkmX9TTO++cVXTT37egvyNg6HAulT79YAh/w=",
+        "lastModified": 1793046960,
+        "narHash": "sha256-R7/sS0EYgyC7V2NBEiujIwquHHZjtaElGsk27QRwl+M=",
         "ref": "refs/heads/main",
-        "rev": "a5eb5976c60c96822c4dc2f81a9682e8fb3193e2",
-        "revCount": 79,
+        "rev": "39d8972c676e60333be2b7cb9e8f39b848be5372",
+        "revCount": 80,
         "type": "git",
         "url": "ssh://git@github.com/erics118/nixos-config-private.git"
       },
@@ -568,6 +568,23 @@
         "url": "https://devimages-cdn.apple.com/design/resources/download/NY.dmg"
       }
     },
+    "rex": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792986743,
+        "narHash": "sha256-Cn99YZigOAA2DUiGLkNycZsaiOhr603o0kqNIlwnbe0=",
+        "type": "tarball",
+        "url": "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.7.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://pkgs.superlogical.com/rex/nix/preview.tar.gz"
+      }
+    },
     "root": {
       "inputs": {
         "apple-fonts": "apple-fonts",
@@ -587,6 +604,7 @@
         "nix-index-database": "nix-index-database",
         "nixos-config-private": "nixos-config-private",
         "nixpkgs": "nixpkgs",
+        "rex": "rex",
         "sketchybar-src": "sketchybar-src",
         "smart-splits-backend-tmux-src": "smart-splits-backend-tmux-src",
         "smhkd-src": "smhkd-src",

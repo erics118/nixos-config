@@ -50,6 +50,15 @@ jobs:
           extra_nix_config: |
             extra-substituters = https://cache.numtide.com
             extra-trusted-public-keys = niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=
+            netrc-file = /etc/nix/netrc
+
+      # the rex flake input needs this login until rex's first release
+      # dependabot runs read the dependabot secret of the same name
+      - run: |
+          sudo install -m 600 -o "$USER" /dev/null /etc/nix/netrc
+          printf 'machine pkgs.superlogical.com login rex password %s\n' "$REX_PACKAGE_TOKEN" >/etc/nix/netrc
+        env:
+          REX_PACKAGE_TOKEN: ${{ secrets.REX_PACKAGE_TOKEN }}
 
       # push to erics118.cachix.org, pull from the other cachix caches
       # the cache is public, so skip the sops file and every path whose closure holds it
@@ -63,7 +72,8 @@ jobs:
           # lock-update prs auto-merge unreviewed, so pushing them here fills the cache before hosts pull main
           # a fix pushed to one by erics118 still pushes
           skipPush: ${{ github.event_name != 'push' && !((github.actor == 'erics118-bot[bot]' || github.actor == 'erics118') && startsWith(github.head_ref, 'update-flake-lock-')) }}
-          pushFilter: '-(secrets\.yaml|manifest(-for-users)?\.json|(dry-)?activate|launchd|org\.nixos\.sops-install-secrets\.plist)$|-(nixos|darwin)-system-'
+          # rex is proprietary pre-release software, so it stays out of the public cache too
+          pushFilter: '-(secrets\.yaml|manifest(-for-users)?\.json|(dry-)?activate|launchd|org\.nixos\.sops-install-secrets\.plist)$|-(nixos|darwin)-system-|-rex-[0-9]'
 
       - run: nix flake check --print-build-logs
 

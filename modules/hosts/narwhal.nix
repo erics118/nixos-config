@@ -10,6 +10,7 @@ in
       m.nixos.sops
       m.nixos.docker
       m.nixos.tailscale
+      m.nixos.rex
       m.nixos.adguardhome
       m.nixos.homepage
       m.nixos.scrutiny

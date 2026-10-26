@@ -118,6 +118,12 @@
       flake = false;
     };
 
+    # needs the netrc from modules/features/base/nix-common.nix until rex's first release
+    rex = {
+      url = "https://pkgs.superlogical.com/rex/nix/preview.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     smart-splits-backend-tmux-src = {
       url = "github:smart-splits-nvim/backend-tmux";
       flake = false;

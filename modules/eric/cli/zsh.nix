@@ -148,6 +148,12 @@
               source ${atuinInit}
             fi
           ''
+          # last, so a rex terminal runs the rex matching its server ahead of any other copy
+          (lib.mkOrder 2000 ''
+            if [[ -n $REX_BIN_DIR ]]; then
+              export PATH="$REX_BIN_DIR:$PATH"
+            fi
+          '')
         ];
 
         localVariables = {
