@@ -53,6 +53,22 @@
               touch $out
             '';
 
+          # resolve every named host in the host's generated ssh config, so a bad line fails ci
+          # the sandbox has no network, so the turtle Match exec takes its fallback branch
+          sshConfig =
+            c:
+            let
+              hm = c.config.home-manager.users.eric;
+            in
+            pkgs.runCommand "ssh-config" { nativeBuildInputs = [ pkgs.openssh ]; } ''
+              export HOME=$TMPDIR
+              config=${hm.home-files}/.ssh/config
+              for host in $(awk 'tolower($1) == "host" { for (i = 2; i <= NF; i++) if ($i !~ /[*?!]/) print $i }' "$config"); do
+                ssh -G -F "$config" "$host" > /dev/null
+              done
+              touch $out
+            '';
+
           # one lua-<dir> check per lua project, which a .luarc.json marks
           luaDirs = map dirOf (
             lib.filter (f: baseNameOf f == ".luarc.json") (lib.filesystem.listFilesRecursive ./.)
@@ -77,6 +93,8 @@
           (forSystem "nvim" config.flake.darwinConfigurations nvimStartup)
           (forSystem "zsh" config.flake.nixosConfigurations zshParse)
           (forSystem "zsh" config.flake.darwinConfigurations zshParse)
+          (forSystem "ssh" config.flake.nixosConfigurations sshConfig)
+          (forSystem "ssh" config.flake.darwinConfigurations sshConfig)
           (lib.listToAttrs (map (dir: lib.nameValuePair "lua-${baseNameOf dir}" (luaCheck dir)) luaDirs))
           # flake check only evaluates devShells, so build it here to catch a broken HYPR_STUBS
           { devShell = self'.devShells.default; }

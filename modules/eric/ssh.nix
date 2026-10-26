@@ -1,9 +1,16 @@
+{ config, ... }:
+let
+  inherit (config) tailnetDomain;
+in
 {
   flake.modules.homeManager.base =
     { pkgs, lib, ... }:
 
     let
       inherit (pkgs.stdenv.hostPlatform) isDarwin;
+      cevTailnet = "tail4ccb95.ts.net";
+      # the erics118@github tailnet, unused but kept as a backup
+      backupTailnet = "tailda7ea.ts.net";
     in
     {
       # the 1password agent serves the private half
@@ -21,13 +28,12 @@
           "github.com" = {
             hostname = "github.com";
             user = "git";
-            identitiesOnly = true;
             identityFile =
               if isDarwin then "~/.ssh/keys/github_erics118.pub" else "~/.ssh/id_ed25519_github_erics118";
           };
 
           # cev tailnet, prefer password authentication
-          "*.tail4ccb95.ts.net" = {
+          "*.${cevTailnet}" = {
             user = "cev";
             PubkeyAuthentication = "no";
             PreferredAuthentications = "keyboard-interactive,password";
@@ -39,7 +45,7 @@
 
             # macOS skips tailscale's search domains for one-word names, so ssh appends them itself
             CanonicalizeHostname = "yes";
-            CanonicalDomains = "tail4ccb95.ts.net dolphin-sailfin.ts.net tailda7ea.ts.net";
+            CanonicalDomains = "${cevTailnet} ${tailnetDomain} ${backupTailnet}";
             CanonicalizeMaxDots = 0;
 
             forwardAgent = false;

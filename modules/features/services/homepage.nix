@@ -1,9 +1,14 @@
+{ config, ... }:
+let
+  inherit (config) tailnetDomain;
+in
 {
-  # tile options and domains are declared in base, see homelab-options.nix
+  # tile options and homelabDomain are declared in base, see homelab-options.nix
+  # tailnetDomain is flake-level, see tailscale.nix
   flake.modules.nixos.homepage = { config, lib, ... }: {
     config =
       let
-        inherit (config) homelabDomain tailnetDomain;
+        inherit (config) homelabDomain;
         port = 8082;
         mkUrl = host: p: "http://${host}:${toString p}";
         tileToService = t: {
