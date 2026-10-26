@@ -1,5 +1,12 @@
-{
-  flake.modules.nixos.tailscale = { pkgs, ... }: {
+{ lib, ... }: {
+  # flake-level, so every module class and the private repo read one value
+  options.tailnetDomain = lib.mkOption {
+    type = lib.types.str;
+    default = "dolphin-sailfin.ts.net";
+    description = "Tailscale magicdns domain of the tailnet these hosts are on";
+  };
+
+  config.flake.modules.nixos.tailscale = { pkgs, ... }: {
     services.tailscale = {
       enable = true;
       useRoutingFeatures = "server";

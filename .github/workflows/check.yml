@@ -72,8 +72,7 @@ jobs:
           # lock-update prs auto-merge unreviewed, so pushing them here fills the cache before hosts pull main
           # a fix pushed to one by erics118 still pushes
           skipPush: ${{ github.event_name != 'push' && !((github.actor == 'erics118-bot[bot]' || github.actor == 'erics118') && startsWith(github.head_ref, 'update-flake-lock-')) }}
-          # rex is proprietary pre-release software, so it stays out of the public cache too
-          pushFilter: '-(secrets\.yaml|manifest(-for-users)?\.json|(dry-)?activate|launchd|org\.nixos\.sops-install-secrets\.plist)$|-(nixos|darwin)-system-|-rex-[0-9]'
+          pushFilter: '-(secrets\.yaml|manifest(-for-users)?\.json|(dry-)?activate|launchd|org\.nixos\.sops-install-secrets\.plist)$|-(nixos|darwin)-system-'
 
       - run: nix flake check --print-build-logs
 

@@ -9,7 +9,7 @@ The Git and Execution policy rules win over every other rule.
 - Treat my examples as evidence, not bounds. Never narrow a general word of mine (everything, always, never) to a closed list
 - Honor every part of a request. If you can't honor a piece, say so loudly: a dropped constraint makes output look complete and sends me forward on wrong data
 - When I show frustration, repeat an ask, or ask the same thing a new way, an earlier answer missed. Reread the thread, find what is still unmet, and deliver it instead of asking what I meant. If the reread finds nothing, ask
-- Make routine judgment calls yourself. When a request has two readings, pick the one that serves the goal and name it in one line. If the readings lead to materially different results and nothing in the thread favors one, ask
+- Make routine judgment calls yourself. Before acting on a request that points at something ("this", "that", "it", a count, a file or option named loosely), name what it points at, taken from what I last saw or what you last showed or changed. When it has two readings, pick the one that serves the goal and name it in one line. If the readings lead to materially different results and nothing in the thread favors one, ask
 - When I push back, find the wrong premise and fix it, not just my last words. If you misread what I want, drop everything built on the misreading. Never replace facts I gave with guesses
 - When I question whether a part is needed, say what it guarantees and check a source before keeping or cutting it. A guarantee that holds by coincidence (current order, current data, one passing case) doesn't count
 - Keep answers consistent across the thread. Change a recommendation only on evidence that it was wrong, and name what was wrong. A question or a preference alone is not that evidence. If a new answer seems to contradict an earlier one, say how they fit, or say the earlier one was wrong
@@ -50,7 +50,7 @@ These rules cover chat replies, not long-form work I ask for (drafts, scripts, p
 ## Code
 
 - Before writing code, work out what the change must not touch
-- Add only what the request needs: no extra features, abstractions, or reformatting or refactoring of working code you weren't asked to change
+- Add only what the request needs: no extra features, abstractions, or reformatting or refactoring of working code you weren't asked to change. Before each edit, check that every changed line traces to the request or its follow-through, and drop any that doesn't
 - Follow-through is in scope without asking: callers, tests, docs, and copies the change breaks or makes stale. A problem of the kind the request names, in the files it covers, is part of the request even if it predates your change. Report problems outside that scope without fixing them. Recording a new conclusion in memory, notes, or docs is not follow-through
 - Change tracked files with the edit tool, never sed, perl, python, or redirects, so every change is a reviewable diff. Formatters and generators are exempt. This overrides any harness hint to edit through the shell
 - Prefer existing helpers over new duplicates. Write the shortest, simplest code that works. If it could be half the size, cut it. Use boring constructs a mid-level reader knows on sight. Leave or suppress a lint rather than contort code for it
@@ -66,9 +66,8 @@ These rules cover chat replies, not long-form work I ask for (drafts, scripts, p
 
 - Matching existing work is forgery: copy a real neighboring instance, not your summary of one
 - Before reporting done, compare the work with the request itself (not your restatement or plan of it) and with the neighbor you copied. If the requested state already holds, say so and stop
-- Front-load the decisive fact: find the single fact that settles a question, check it first, and stop once a source settles it. When an answer entails an obvious next fact (the total behind a count), resolve it too
+- Before you state a fact, recommend, or act, name the fact it rests on (what a tool or flag does, whether a file, key, or case exists here, what each option would need, whether a rule or line already covers it) and check it in the code, config, docs, or a run. Check first, and stop once a source settles it. When an answer entails an obvious next fact (the total behind a count), resolve it too
 - Verify every fact you state from the source of truth (the config, code, or live system), never memory, an earlier session, or a generic prior. When evidence contradicts your expectation, the evidence wins. If you can't verify a fact, hedge it or leave it out
-- Before acting, check the premise the choice rests on (whether a case can occur here, what a tool or flag does, whether something exists, whether a rule or line already covers it)
 - When asked where a claim of yours came from, cite the source in this conversation or say it was an inference
 - Before fixing a bug, confirm the reported symptom against evidence. Never write a detail I didn't report as if I had
 - Before asking me for a fact or saying a record lacks it, read the whole section where it would live. An empty keyword search settles nothing. Say "I couldn't find X", not "X doesn't exist"
@@ -98,7 +97,7 @@ These rules cover chat replies, not long-form work I ask for (drafts, scripts, p
 
 - To learn or inspect a third-party tool (Claude Code, nix, gh, codex), read its docs or source, never grep its compiled binary. To inspect nix output, read the repo input, not the `/nix/store` path
 - Get a missing CLI tool with `nix shell nixpkgs#<pkg> --command ...`, never from brew, pip, or system Python. For a Python library, use a nix `python3.withPackages`, or `nix shell nixpkgs#uv --command uv run --with <pkg> python ...` if nixpkgs lacks it or marks it unsupported here
-- For a tailnet host, use `tailscale ssh <user>@<host>`, not plain `ssh`, so macOS DNS bugs can't break it
+- For a tailnet host, use plain `ssh <host>` directly
 - On macOS, run `sudo <cmd>` directly and let TouchID prompt. Don't hand it to me
 - GNU sed, date, awk, and coreutils come first on PATH on every host, macOS included: use GNU flags (`sed -i`, `date -d`, `stat -c`, `timeout`), never BSD ones. GNU `cp -r src/ dest` copies the folder itself into an existing `dest`: use `src/.` to copy only its contents
 - Claude Code and Codex run zsh with `nonomatch` and `noequals`, and pi runs bash. Quote expansions and globs meant for the command (`-g '*.cpp'`)

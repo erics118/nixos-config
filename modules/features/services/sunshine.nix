@@ -1,3 +1,7 @@
+{ config, ... }:
+let
+  inherit (config) tailnetDomain;
+in
 {
   flake.modules.nixos.sunshine =
     {
@@ -43,7 +47,7 @@
 
           # web ui is only reached over tailscale, which csrf rejects as a non-default origin
           # magicdns name only, the tailnet address can change
-          csrf_allowed_origins = "https://${config.networking.hostName}.${config.tailnetDomain}:47990";
+          csrf_allowed_origins = "https://${config.networking.hostName}.${tailnetDomain}:47990";
         };
 
         # resize the agent output to the client's pixels on connect so a retina mac gets a hidpi desktop

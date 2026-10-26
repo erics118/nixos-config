@@ -26,12 +26,6 @@
           description = "Base domain for homelab services; homepage.nix gives each tile a <subdomain>.<homelabDomain> vhost and caddy.nix 404s the rest";
         };
 
-        options.tailnetDomain = lib.mkOption {
-          type = lib.types.str;
-          default = "dolphin-sailfin.ts.net";
-          description = "Tailscale magicdns domain, used for cross-host service urls";
-        };
-
         # each module appends to homepageTiles with a flat structure
         options.homepageTiles = lib.mkOption {
           default = [ ];
