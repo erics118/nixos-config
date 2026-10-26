@@ -1,11 +1,8 @@
 {
-  flake.modules.nixos.nvidia = { pkgs, ... }: {
+  flake.modules.nixos.nvidia = {
     services.xserver.videoDrivers = [ "nvidia" ];
 
-    hardware.graphics = {
-      enable = true;
-      extraPackages = [ pkgs.nvidia-vaapi-driver ];
-    };
+    hardware.graphics.enable = true;
 
     hardware.nvidia = {
       modesetting.enable = true;
@@ -18,8 +15,8 @@
 
     # CUDA binary cache
     nix.settings = {
-      extra-substituters = [ "https://cache.nixos-cuda.org" ];
-      extra-trusted-public-keys = [ "cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M=" ];
+      substituters = [ "https://cache.nixos-cuda.org" ];
+      trusted-public-keys = [ "cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M=" ];
     };
   };
 }

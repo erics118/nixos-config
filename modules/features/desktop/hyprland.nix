@@ -73,13 +73,18 @@
       noto-fonts
       noto-fonts-cjk-sans
       noto-fonts-color-emoji
+      pkgs.inputs.apple-fonts.sf-pro
     ];
+
+    fonts.fontconfig.defaultFonts = {
+      sansSerif = [ "SF Pro" ];
+      monospace = [ "Hack Nerd Font Mono" ];
+    };
 
     environment.systemPackages = with pkgs; [
       wezterm # terminal
       fuzzel # app launcher (SUPER+D)
       nautilus # file manager (SUPER+E)
-      hyprlock # screen lock (SUPER+L)
       hypridle # idle daemon (autolock + dpms)
       hyprpaper # wallpaper daemon
       grim # backend for grimblast
@@ -95,7 +100,6 @@
       qt5.qtwayland # Qt5 Wayland plugin
       qt6.qtwayland # Qt6 Wayland plugin
       pkgs.inputs.hyprland-contrib.grimblast # screenshot helper (hyprwm/contrib)
-      pkgs.inputs.hyprland-contrib.hdrop # dropdown-app toggler (hyprwm/contrib)
     ];
 
     environment.sessionVariables.NIXOS_OZONE_WL = "1";

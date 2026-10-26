@@ -1,15 +1,16 @@
-{ config, ... }:
+{ inputs, config, ... }:
 let
   m = config.flake.modules;
 in
 {
-  configurations.nixos.narwhal.module = { config, ... }: {
+  configurations.nixos.narwhal.module = { config, pkgs, ... }: {
     imports = [
       m.nixos.base
       m.nixos.ssh-server
       m.nixos.sops
       m.nixos.docker
       m.nixos.tailscale
+      m.nixos.rex
       m.nixos.adguardhome
       m.nixos.homepage
       m.nixos.scrutiny
@@ -18,13 +19,17 @@ in
       m.nixos.glances
       m.nixos.auto-upgrade
       m.nixos.ntfy-client
+      m.nixos.eriz
       m.nixos.hyprland
       m.nixos.sunshine
+      m.nixos.vnc
       m.nixos.hp-printer
       m.nixos.nvidia
       m.nixos.caddy
       m.nixos.nas
+      inputs.disko.nixosModules.disko
       ./_hardware/x86_64-narwhal.nix
+      ./_hardware/x86_64-narwhal-disko.nix
     ];
 
     home-manager.users.eric.imports = [ m.homeManager.hyprland ];
@@ -38,7 +43,7 @@ in
       {
         name = "ntfy";
         group = "Infrastructure";
-        href = "https://ntfy.eriz.cc";
+        href = "https://${config.ntfyHost}";
         proxy = false;
         description = "Push notifications";
         icon = "ntfy.svg";
@@ -51,13 +56,28 @@ in
     # persistent machine-check, memory, pcie error log
     hardware.rasdaemon.enable = true;
 
+    # cyberpower CP850PFCLCD on usb, shuts narwhal down on low battery
+    # upsd listens on localhost only, so the password can sit in the store
+    power.ups = {
+      enable = true;
+      mode = "standalone";
+      ups.cyberpower = {
+        driver = "usbhid-ups";
+        port = "auto";
+      };
+      users.upsmon = {
+        passwordFile = "${pkgs.writeText "upsmon-password" "local-only"}";
+        upsmon = "primary";
+      };
+      upsmon.monitor.cyberpower.user = "upsmon";
+    };
+
     # dont sleep
     systemd.sleep.settings.Sleep = {
       AllowSuspend = "no";
     };
 
-    # autologin into hyprland at boot: sunshine is a user service on
-    # graphical-session.target, so streaming needs a live session
+    # autologin into hyprland at boot so agents have a live desktop to drive
     services.greetd.settings.initial_session = {
       command = "uwsm start hyprland-uwsm.desktop";
       user = "eric";
@@ -72,12 +92,14 @@ in
         "x-systemd.device-timeout=10s"
       ];
     };
+    # root-owned, since tmpfiles refuses an owner change below a dir owned by a regular user
+    systemd.tmpfiles.rules = [ "d /mnt/external 0755 root root -" ];
 
     boot = {
       loader = {
         systemd-boot = {
           enable = true;
-          configurationLimit = 3;
+          configurationLimit = 10;
           consoleMode = "max";
         };
         efi.canTouchEfiVariables = true;
@@ -88,14 +110,11 @@ in
       };
     };
 
-    systemd.services.NetworkManager-wait-online.enable = false;
-
-    # narwhal no working public IPv6, so we prefer IPv4, and ignore the router advertisement on LAN
+    # narwhal has no working public IPv6, so prefer IPv4 addresses
     environment.etc."gai.conf".text = ''
       precedence ::ffff:0:0/96  100
     '';
-    boot.kernel.sysctl."net.ipv6.conf.wlo1.accept_ra" = 0;
 
-    environment.systemPackages = [ config.boot.kernelPackages.perf ];
+    environment.systemPackages = [ pkgs.perf ];
   };
 }

@@ -6,9 +6,12 @@
     in
     {
       # inject ntfy token at runtime
-      sops.templates."gatus-env".content = ''
-        NTFY_TOKEN=${config.sops.placeholder."ntfy/token"}
-      '';
+      sops.templates."gatus-env" = {
+        content = ''
+          NTFY_TOKEN=${config.sops.placeholder."ntfy/token"}
+        '';
+        restartUnits = [ "gatus.service" ];
+      };
 
       services.gatus = {
         enable = true;
@@ -36,14 +39,26 @@
 
           # generate from homepageTiles, skipping port-less ones (external/href tiles)
           # use tcp to avoid issues from redirects
-          endpoints = map (t: {
-            inherit (t) name;
-            inherit (t) group;
-            url = "tcp://${t.host}:${toString t.port}";
-            interval = "1m";
-            conditions = [ "[CONNECTED] == true" ];
-            alerts = [ { type = "ntfy"; } ];
-          }) (builtins.filter (t: t.port != null) config.homepageTiles);
+          endpoints =
+            map (t: {
+              inherit (t) name;
+              inherit (t) group;
+              url = "tcp://${t.host}:${toString t.port}";
+              interval = "1m";
+              conditions = [ "[CONNECTED] == true" ];
+              alerts = [ { type = "ntfy"; } ];
+            }) (builtins.filter (t: t.port != null) config.homepageTiles)
+            ++ [
+              {
+                name = "TLS certificate";
+                group = "Infrastructure";
+                url = "https://${config.homelabDomain}";
+                interval = "1h";
+                # caddy renews at about 30 days left, so under 7 means renewal has been failing for weeks
+                conditions = [ "[CERTIFICATE_EXPIRATION] > 168h" ];
+                alerts = [ { type = "ntfy"; } ];
+              }
+            ];
         };
       };
 

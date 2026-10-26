@@ -1,5 +1,10 @@
+{ config, ... }:
+let
+  inherit (config) tailnetDomain;
+in
 {
-  # homepageTiles and homelabDomain are declared in base, see homelab-options.nix
+  # tile options and homelabDomain are declared in base, see homelab-options.nix
+  # tailnetDomain is flake-level, see tailscale.nix
   flake.modules.nixos.homepage = { config, lib, ... }: {
     config =
       let
@@ -27,14 +32,19 @@
           listenPort = port;
 
           # tailscale is reached by its magicdns name, not its address, which can change
-          allowedHosts = lib.concatStringsSep "," [
-            "localhost:${toString port}"
-            "127.0.0.1:${toString port}"
-            "${config.networking.hostName}:${toString port}"
-            "192.168.68.150:${toString port}"
-            "narwhal.dolphin-sailfin.ts.net:${toString port}"
-            homelabDomain
-          ];
+          # the LAN reaches it by its mdns name, which follows dhcp address changes
+          allowedHosts = lib.concatStringsSep "," (
+            [
+              "localhost:${toString port}"
+              "127.0.0.1:${toString port}"
+              "${config.networking.hostName}:${toString port}"
+              "${config.networking.hostName}.${tailnetDomain}:${toString port}"
+              homelabDomain
+            ]
+            ++ lib.optional (
+              !config.services.avahi.settings.publish.disable-publishing
+            ) "${config.networking.hostName}.local:${toString port}"
+          );
 
           settings = {
             title = config.networking.hostName;
@@ -51,7 +61,7 @@
           widgets = [
             {
               glances = {
-                url = "http://narwhal.dolphin-sailfin.ts.net:61208";
+                url = "http://narwhal.${tailnetDomain}:61208";
                 cpu = true;
                 mem = true;
                 cputemp = true;
@@ -67,7 +77,7 @@
             }
             {
               glances = {
-                url = "http://turtle.dolphin-sailfin.ts.net:61208";
+                url = "http://turtle.${tailnetDomain}:61208";
                 cpu = true;
                 mem = true;
                 uptime = true;
@@ -82,12 +92,12 @@
 
         # the dashboard is the home root
         # services live at <service>.<homelabDomain>
-        # proxied to host:port from the registry
+        # proxied to host:port from homepageTiles
         services.caddy.virtualHosts = lib.mkMerge (
           [ { ${homelabDomain}.extraConfig = "reverse_proxy localhost:${toString port}"; } ]
           ++ map (t: {
             "${t.subdomain}.${homelabDomain}".extraConfig = "reverse_proxy ${t.host}:${toString t.port}";
-          }) (lib.filter (t: t.proxy) config.homepageTiles)
+          }) (lib.filter (t: t.proxy && t.port != null) config.homepageTiles)
         );
       };
   };

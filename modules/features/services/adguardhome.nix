@@ -8,13 +8,12 @@
       services.adguardhome = {
         enable = true;
 
-        # mutable so the UI can manage blocklists/clients/stats
+        # mutable so the UI can manage clients and stats
+        # settings below are merged over the on-disk file on every start
+        # so filters stay nix-owned and UI edits to them are lost
         mutableSettings = true;
 
         settings = {
-          # web UI on :3000
-          http.address = "0.0.0.0:${toString port}";
-
           dns = {
             # cloudflare DoH as primary, quad9 as fallback
             # no IPv6, as the router narwhal uses doesn't support it

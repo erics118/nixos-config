@@ -1,25 +1,23 @@
 {
   flake.modules.nixos.caddy = { pkgs, config, ... }: {
-    sops.secrets."api/cloudflare" = {
-      owner = "caddy";
-    };
+    sops.secrets."api/cloudflare" = { };
 
     # sops-nix template interpolates the raw token into an EnvironmentFile
     sops.templates."caddy-env" = {
       content = ''
         CF_API_TOKEN=${config.sops.placeholder."api/cloudflare"}
       '';
-      owner = "caddy";
+      restartUnits = [ "caddy.service" ];
     };
 
     services.caddy = {
       enable = true;
 
       # caddy with cloudflare DNS provider plugin for DNS-01 ACME challenges
-      # we need to manually specify the plugin and hash
+      # on a caddy or plugin bump, set hash = lib.fakeHash and copy the hash the build reports
       package = pkgs.caddy.withPlugins {
         plugins = [ "github.com/caddy-dns/cloudflare@v0.2.4" ];
-        hash = "sha256-7GoH8YLCoPmPExQxoga2FHB58zQDoZVf1BBwkVi0SsQ=";
+        hash = "sha256-5a5cpFl90pEWt0lUC4ZJQ7g+1//ZvsRhee64Dt9vh5o=";
       };
 
       globalConfig = ''
