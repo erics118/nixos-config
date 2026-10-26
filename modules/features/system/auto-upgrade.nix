@@ -55,6 +55,17 @@
         # the upgrade runs as root but builds from eric's checkout
         # nix's libgit2 fetches the git+file flake as root and refuses a repo owned by another user unless the owner matches $SUDO_UID
         environment.SUDO_UID = "1000";
+        # a merge just before the timer fires has ci still running, so skip that run without failing
+        # exit 1 in ExecCondition skips the unit and leaves it unfailed, so onFailure never fires
+        serviceConfig.ExecCondition = pkgs.writeShellScript "nixos-upgrade-ci-pending" ''
+          runuser -u eric -- git -C ${checkout} fetch --quiet origin main
+          sha=$(runuser -u eric -- git -C ${checkout} rev-parse origin/main) || exit 0
+          if curl -sf "https://api.github.com/repos/erics118/nixos-config/actions/workflows/check.yml/runs?head_sha=$sha" \
+            | jq -e '(any(.workflow_runs[]; .conclusion == "success") | not) and any(.workflow_runs[]; .status != "completed")' >/dev/null; then
+            echo "check.yml is still running on $sha; skipping until the next run" >&2
+            exit 1
+          fi
+        '';
         # sync checkout
         preStart = ''
           # nixos-upgrade-rollback restores these if the run fails after switching
