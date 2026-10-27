@@ -1,89 +1,24 @@
 import { execFile } from "node:child_process";
-import { promisify } from "node:util";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import {
   type ExtensionAPI,
   type ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
 
-const execFileAsync = promisify(execFile);
-const reset = "\x1b[0m";
-const separator = "\x1b[38;2;69;71;90m├┤\x1b[0m";
-const teal = "\x1b[38;2;148;226;213m";
-const pink = "\x1b[38;2;245;194;231m";
-const blue = "\x1b[38;2;137;180;250m";
-const dim = "\x1b[38;2;153;153;153m";
-const green = "\x1b[38;2;166;227;161m";
-const yellow = "\x1b[38;2;249;226;175m";
-const red = "\x1b[38;2;243;139;168m";
+// claude's statusline script draws this one too, from pi's values in claude's json shape
+const script = join(homedir(), ".claude", "statusline.zsh");
 
-function formatStatusline({
-  cwd,
-  git,
-  model,
-  thinking,
-  context,
-  cost,
-}: {
-  cwd?: string;
-  git?: string;
-  model?: string;
-  thinking?: string;
-  context?: string;
-  cost: number;
-}): string {
-  const segments = [
-    cwd,
-    git,
-    model && `${model}${thinking ? ` ${thinking}` : ""}`,
-    context,
-    `${dim}$${cost.toFixed(2)}${reset}`,
-  ].filter(Boolean);
-
-  return segments.join(separator);
-}
-
-function color(value: string, ansi: string): string {
-  return `${ansi}${value}${reset}`;
-}
-
-function colorForPercentage(percentage: number): string {
-  if (percentage >= 90) return red;
-  if (percentage >= 70) return yellow;
-  return green;
-}
-
-function gitStatus(output: string): { branch?: string; status?: string } {
-  const [head, ...entries] = output.trimEnd().split("\n");
-  if (!head?.startsWith("## ")) return {};
-
-  const branch = head.slice(3).split("...")[0];
-  if (!branch || branch === "HEAD (no branch)") return {};
-
-  let status = "";
-  if (entries.some((entry) => !entry.startsWith("??"))) status += "~";
-  if (entries.some((entry) => entry.startsWith("??"))) status += "+";
-  if (head.includes("ahead") && head.includes("behind")) status += "↕";
-  else if (head.includes("ahead")) status += "↑";
-  else if (head.includes("behind")) status += "↓";
-
-  return { branch, status };
-}
-
-async function getGitStatus(
-  cwd: string,
-): Promise<{ branch?: string; status?: string }> {
-  try {
-    const { stdout } = await execFileAsync(
-      "git",
-      ["-C", cwd, "status", "--porcelain=v1", "--branch"],
-      {
-        timeout: 1000,
-      },
+function runStatusline(input: object): Promise<string> {
+  return new Promise((resolve) => {
+    const child = execFile(
+      "zsh",
+      ["-f", script, "pi"],
+      { timeout: 1000 },
+      (error, stdout) => resolve(error ? "" : stdout),
     );
-    return gitStatus(stdout);
-  } catch {
-    return {};
-  }
+    child.stdin?.end(JSON.stringify(input));
+  });
 }
 
 function getSessionCost(ctx: ExtensionContext): number {
@@ -103,31 +38,18 @@ function getSessionCost(ctx: ExtensionContext): number {
 async function update(pi: ExtensionAPI, ctx: ExtensionContext): Promise<void> {
   if (ctx.mode !== "tui") return;
 
-  const git = await getGitStatus(ctx.cwd);
   const usage = ctx.getContextUsage();
-  const contextPercent =
-    usage?.tokens != null && usage.contextWindow > 0
-      ? Math.round((usage.tokens / usage.contextWindow) * 100)
-      : undefined;
   const model = ctx.model as
     { id: string; name?: string; reasoning?: boolean } | undefined;
-  const home = process.env.HOME;
-  const cwd =
-    home && ctx.cwd.startsWith(`${home}/`)
-      ? `~${ctx.cwd.slice(home.length)}`
-      : ctx.cwd;
-  const text = formatStatusline({
-    cwd: color(cwd, teal),
-    git: git.branch
-      ? color(` ${git.branch}${git.status ? ` ${git.status}` : ""}`, pink)
-      : undefined,
-    model: model ? color(model.name ?? model.id, blue) : undefined,
-    thinking: model?.reasoning ? color(pi.getThinkingLevel(), blue) : undefined,
-    context:
-      contextPercent === undefined
-        ? undefined
-        : `${dim}ctx:${colorForPercentage(contextPercent)}${contextPercent}%${reset}`,
-    cost: getSessionCost(ctx),
+  const text = await runStatusline({
+    workspace: { current_dir: ctx.cwd },
+    model: model && { display_name: model.name ?? model.id },
+    effort: model?.reasoning ? { level: pi.getThinkingLevel() } : undefined,
+    context_window:
+      usage?.tokens != null && usage.contextWindow > 0
+        ? { used_percentage: (usage.tokens / usage.contextWindow) * 100 }
+        : undefined,
+    cost: { total_cost_usd: getSessionCost(ctx) },
   });
 
   ctx.ui.setFooter(() => ({

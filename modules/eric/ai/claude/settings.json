@@ -184,6 +184,7 @@
   },
   "statusLine": {
     "type": "command",
+    "command": "zsh -f ~/.claude/statusline.zsh"
     "command": "bash ~/.claude/statusline.sh"
   },
   "enabledPlugins": {

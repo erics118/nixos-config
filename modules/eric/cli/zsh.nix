@@ -23,30 +23,14 @@
           } > $out
           ${lib.getExe pkgs.zsh} -n $out
         '';
-      starship = lib.getExe pkgs.starship;
-
-      # without a right_format, RPROMPT would run starship at every prompt to print nothing
-      noRightPrompt = !config.programs.starship.settings ? right_format;
-
-      # init lines that run starship, replaced with values computed here
-      bakedLines = [ "^PROMPT2=" ] ++ lib.optional noRightPrompt "^RPROMPT=";
-
-      starshipInit = mkInit "starship" ''
-        # STARSHIP_SHELL makes it wrap escapes in %{ %}, as it does when zsh runs it
-        export STARSHIP_CONFIG=${./starship/starship.toml} STARSHIP_SHELL=zsh
-        init=$(${starship} init zsh --print-full-init)
-        # each baked line must appear exactly once, so a change in starship's init fails the build
-        for re in ${lib.escapeShellArgs bakedLines}; do
-          [ "$(grep -c -e "$re" <<<"$init")" = 1 ] || { echo "starship init: expected one $re line" >&2; exit 1; }
-        done
-        grep -v ${lib.concatMapStringsSep " " (re: "-e ${lib.escapeShellArg re}") bakedLines} <<<"$init"
-        printf 'PROMPT2=%q\n' "$(${starship} prompt --continuation)"
-        ${lib.optionalString noRightPrompt "echo RPROMPT="}
-      '';
-
       zoxideInit = mkInit "zoxide" "${pkgs.zoxide}/bin/zoxide init zsh";
 
-      direnvInit = mkInit "direnv-instant" "${lib.getExe config.programs.direnv-instant.finalPackage} hook zsh";
+      # the hook also runs itself once at source time, which the precmd before the first prompt repeats
+      direnvInit = mkInit "direnv-instant" ''
+        ${lib.getExe config.programs.direnv-instant.finalPackage} hook zsh > "$TMPDIR/hook.zsh"
+        substituteInPlace "$TMPDIR/hook.zsh" --replace-fail $'\n  # Run initial hook\n  _direnv_hook\n' $'\n'
+        cat "$TMPDIR/hook.zsh"
+      '';
 
       nixYourShellInit = mkInit "nix-your-shell" "${pkgs.nix-your-shell}/bin/nix-your-shell zsh";
 
@@ -59,6 +43,9 @@
 
       # tabs go in the command, since setting LESS would stop git and gh adding their -FRX
       home.sessionVariables.PAGER = "less -R -x4";
+
+      # less shows private-use characters, such as nerd font icons, as <U+XXXX> unless they are marked printable
+      home.sessionVariables.LESSUTFCHARDEF = "e000-f8ff:p,f0000-10fffd:p";
 
       # exported so ad-hoc `nix shell --impure nixpkgs#<unfree>` evaluates. flake
       # refs ignore it without --impure
@@ -125,16 +112,32 @@
         history.path = "$HOME/.cache/zsh/history";
 
         initContent = lib.mkMerge [
-          # sourced at home-manager's plugin slot (900), after compinit and autosuggestions.
-          # programs.zsh.plugins would also put the plugin's dir on PATH
-          (lib.mkOrder 900 "source ${pkgs.zsh-fzf-tab}/share/fzf-tab/fzf-tab.plugin.zsh")
           ''
-            source "$ZDOTDIR/init.zsh"
+            source "$ZDOTDIR/conf/init.zsh"
 
             # pre-computed tool inits
             source ${zoxideInit}
             source ${direnvInit}
-            source ${starshipInit}
+            # direnv-instant starts a process at every prompt and at exit.
+            # skip it while nothing is loaded or loading and no .envrc or .env is here or above
+            functions[_direnv_instant_hook]=$functions[_direnv_hook]
+            _direnv_hook() {
+              if [[ -z $DIRENV_DIR$__DIRENV_INSTANT_CURRENT_DIR ]]; then
+                local d=$PWD
+                until [[ -e $d/.envrc || -e $d/.env ]]; do
+                  [[ -n $d ]] || return 0
+                  d=''${d%/*}
+                done
+              fi
+              _direnv_instant_hook
+            }
+            # stop only detaches the daemon this variable names (direnv-instant's commands/stop.rs)
+            _direnv_exit_cleanup() {
+              [[ -z $__DIRENV_INSTANT_CURRENT_DIR ]] || direnv-instant stop
+            }
+            # the prompt, with gitstatusd for its git segment. after direnv, whose TRAPUSR1 it wraps
+            source ${pkgs.gitstatus}/share/gitstatus/gitstatus.plugin.zsh
+            source "$ZDOTDIR/conf/prompt/prompt.zsh"
             source ${nixYourShellInit}
 
             if [[ $options[zle] = on ]]; then
@@ -162,6 +165,9 @@
 
         localVariables = {
           WORDCHARS = "*?_-.~";
+          # bind autosuggest's widgets once, at the first prompt, instead of at every prompt.
+          # rebinding guards against syntax-highlighting wrapping them, which it doesn't on zsh 5.9
+          ZSH_AUTOSUGGEST_MANUAL_REBIND = 1;
         };
 
         shellAliases = {
@@ -169,8 +175,6 @@
 
           ls = "eza";
           cat = "bat";
-          # only the flag disables wrapping, width: 0 in glow.yml means auto
-          glow = "glow -w 0";
           dig = "doggo";
           less = "less -x4";
 
@@ -329,6 +333,7 @@
         };
       };
 
-      xdg.configFile."zsh/init.zsh".source = repoFile "modules/eric/cli/zsh/init.zsh";
+      # one link for the whole folder, so new files there are live without a switch
+      xdg.configFile."zsh/conf".source = repoFile "modules/eric/cli/zsh";
     };
 }

@@ -77,7 +77,7 @@
         "agents"
         "keybindings.json"
         "settings.json"
-        "statusline.sh"
+        "statusline.zsh"
         "themes"
       ]
       // links ".codex" "codex" [

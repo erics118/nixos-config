@@ -23,7 +23,6 @@
         enableZshIntegration = false; # pre-computed in zsh.nix
         # a script keeps the preview's own quoting out of FZF_DEFAULT_OPTS, which
         # home-manager exports inside unescaped double quotes
-        # zsh/init.zsh copies this preview for fzf-tab
         defaultOptions = [
           "--preview='${pkgs.writeShellScript "fzf-preview" ''
             if [ -f "$1" ]; then
@@ -53,6 +52,9 @@
             "(?i)\\bbearer\\s+[A-Za-z0-9._~+/=-]{12,}"
             # a JWT anywhere, like a token passed as a plain argument
             "eyJ[A-Za-z0-9_-]{10,}\\.eyJ"
+            "tskey-"
+            "\\bgh[pousr]_[A-Za-z0-9]{20,}"
+            "github_pat_"
           ];
           filter_mode_shell_up_key_binding = "session";
           prefers_reduced_motion = true;

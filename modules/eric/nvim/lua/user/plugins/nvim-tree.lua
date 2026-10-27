@@ -112,7 +112,7 @@ return {
                 highlight_modified = "name",
                 icons = {
                     git_placement = "right_align",
-                    -- match the starship git_status symbols
+                    -- match the git status symbols of the zsh prompt
                     glyphs = {
                         git = {
                             untracked = "?",

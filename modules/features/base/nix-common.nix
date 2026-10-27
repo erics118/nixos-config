@@ -62,7 +62,7 @@ let
       # running it again at the system level doubles startup cost
       enableGlobalCompInit = false;
 
-      # skip default prompt theme b/c starship already sets the prompt
+      # skip default prompt theme b/c zsh/prompt already sets the prompt
       promptInit = "";
     };
 

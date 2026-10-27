@@ -1,6 +1,12 @@
 # expose this system's host toplevels, config checks and the devShell as flake checks
 # so `nix flake check` builds them. CI's runner matrix covers the other systems
-{ lib, config, ... }: {
+{
+  lib,
+  config,
+  inputs,
+  ...
+}:
+{
   perSystem =
     {
       system,
@@ -47,7 +53,8 @@
             in
             pkgs.runCommand "zsh-parse" { } ''
               for f in ${hm.home-files}/.config/zsh/{.zshenv,.zprofile,.zshrc} \
-                ${../modules/eric/cli/zsh/init.zsh} ${../modules/eric/cli/rtmux/_rtmux}; do
+                ${../modules/eric/cli/zsh}/*.zsh ${../modules/eric/cli/zsh}/prompt/*.zsh \
+                ${../modules/eric/ai/claude/statusline.zsh} ${../modules/eric/cli/rtmux/_rtmux}; do
                 ${lib.getExe hm.programs.zsh.package} -n "$f"
               done
               touch $out
@@ -105,6 +112,16 @@
               cd ${../modules/eric/cli/tmux}
               ${lib.getExe pkgs.tmux} -S $TMPDIR/sock -f /dev/null start-server \; \
                 source-file main.conf base.conf keys.conf popups.conf tabline.conf alerts.conf
+              touch $out
+            '';
+
+            # rex loads init.lua with its required modules beside it, as rex.nix links them
+            rex-config = pkgs.runCommand "rex-config" { } ''
+              export HOME=$TMPDIR
+              mkdir -p $HOME/.config/rex
+              ln -s ${../modules/eric/cli/rex/init.lua} $HOME/.config/rex/init.lua
+              ln -s ${inputs.rex-image-paste-src} $HOME/.config/rex/rex-image-paste
+              ${lib.getExe pkgs.inputs.rex.rex} --autostart=false config check
               touch $out
             '';
 
