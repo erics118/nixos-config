@@ -1,3 +1,4 @@
+# read by the flake-edit treefmt formatter in modules/treefmt.nix
 [follow]
-# do not follow nixpkgs for these flakes, for cache hits
-ignore = ["catppuccin.nixpkgs", "llm-agents.nixpkgs"]
+# wezterm-src keeps its own nixpkgs, so it matches the build in the erics118-wezterm cache
+ignore = ["wezterm-src.nixpkgs"]

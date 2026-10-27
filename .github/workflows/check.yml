@@ -6,15 +6,19 @@ on:
   pull_request:
   workflow_dispatch:
 
-# only the latest run per ref needs to finish
+# only the latest run per pr needs to finish
+# a running main build is never cancelled, but a newer push still replaces one that is only queued
 concurrency:
   group: check-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
 
 jobs:
   flake-check:
-    # these runner labels are baked into the check names the branch ruleset
-    # requires (`flake-check (ubuntu-26.04)` etc). renaming one here makes the
+    # the job ids and these runner labels are baked into the check names the branch ruleset
+    # requires (`flake-check (ubuntu-26.04)`, `ai-agent-tests`). renaming one makes the
     # ruleset wait forever on a context that never reports, which hangs the
     # `gh pr merge --auto` in update-flake-lock.yml. update the ruleset too
     strategy:
@@ -25,25 +29,135 @@ jobs:
           - ubuntu-26.04-arm
           - macos-26
     runs-on: ${{ matrix.os }}
+    # ~3x the slowest run, for a bump that misses the caches
+    timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v7
+      # actions are pinned to commit shas, which most repos don't need
+      # every host trusts the cachix cache these jobs push to, so a retagged action could poison it
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # the nixos-config-private input is a private git+ssh flake, so we need to set up ssh access for it
-      - uses: webfactory/ssh-agent@v0.10.0
+      # dependabot runs use their own deploy key ("dependabot CI") in the dependabot secret of the same name
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:
           ssh-private-key: ${{ secrets.PRIVATE_FLAKE_DEPLOY_KEY }}
 
-      - uses: cachix/install-nix-action@v31
+      # the cache list and keys live in modules/features/base/nix-common.nix
+      - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
         with:
           extra_nix_config: |
             extra-substituters = https://cache.numtide.com
             extra-trusted-public-keys = niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=
+            netrc-file = /etc/nix/netrc
+
+      # the rex flake input needs this login until rex's first release
+      # dependabot runs read the dependabot secret of the same name
+      - run: |
+          sudo install -m 600 -o "$USER" /dev/null /etc/nix/netrc
+          printf 'machine pkgs.superlogical.com login rex password %s\n' "$REX_PACKAGE_TOKEN" >/etc/nix/netrc
+        env:
+          REX_PACKAGE_TOKEN: ${{ secrets.REX_PACKAGE_TOKEN }}
 
       # push to erics118.cachix.org, pull from the other cachix caches
-      - uses: cachix/cachix-action@v17
+      # the cache is public, so skip the sops file and every path whose closure holds it
+      # (from `nix-store -q --referrers-closure` on it). cachix pushes each path's closure
+      - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
         with:
           name: erics118
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          extraPullNames: nix-community,numtide,devenv,catppuccin
+          extraPullNames: nix-community,numtide,devenv,catppuccin,erics118-wezterm
+          # only main and lock-update prs push, so a pr branch can't put unreviewed builds in front of every host
+          # lock-update prs auto-merge unreviewed, so pushing them here fills the cache before hosts pull main
+          # a fix pushed to one by erics118 still pushes
+          skipPush: ${{ github.event_name != 'push' && !((github.actor == 'erics118-bot[bot]' || github.actor == 'erics118') && startsWith(github.head_ref, 'update-flake-lock-')) }}
+          pushFilter: '-(secrets\.yaml|manifest(-for-users)?\.json|(dry-)?activate|launchd|org\.nixos\.sops-install-secrets\.plist)$|-(nixos|darwin)-system-'
 
       - run: nix flake check --print-build-logs
+
+      # diff each of this runner's host closures against the pr's base commit, for the closure-diff comment
+      # continue-on-error so a failed diff never blocks the auto-merge
+      - if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'update-flake-lock-')
+        continue-on-error: true
+        env:
+          BASE: github:${{ github.repository }}/${{ github.event.pull_request.base.sha }}
+        run: |
+          system=$(nix eval --impure --raw --expr builtins.currentSystem)
+          mkdir -p closure-diff
+          for check in $(nix eval --raw ".#checks.$system" --apply 'c: toString (builtins.filter (n: builtins.match "(nixos|darwin)-.*" n != null) (builtins.attrNames c))'); do
+            old=$(nix build --no-link --print-out-paths "$BASE#checks.$system.$check")
+            new=$(nix build --no-link --print-out-paths ".#checks.$system.$check")
+            nix run --inputs-from . nixpkgs#dix -- --color never "$old" "$new" >"closure-diff/${check#*-}.txt"
+          done
+
+      - if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'update-flake-lock-')
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: closure-diff-${{ matrix.os }}
+          path: closure-diff/
+          if-no-files-found: ignore
+
+  # post every host's closure diff as one bot comment, edited in place on reruns
+  closure-diff:
+    needs: flake-check
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'update-flake-lock-')
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: closure-diff-*
+          merge-multiple: true
+          path: closure-diff
+
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          client-id: ${{ secrets.CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-pull-requests: write
+
+      - run: |
+          for f in closure-diff/*.txt; do
+            # the backticks are a literal markdown fence
+            # shellcheck disable=SC2016
+            printf '<details><summary>%s</summary>\n\n```\n%s\n```\n\n</details>\n\n' "$(basename "$f" .txt)" "$(cat "$f")"
+          done >body.md
+          gh pr comment "$PR" --edit-last --create-if-none --body-file body.md
+        env:
+          PR: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_REPO: ${{ github.repository }}
+
+  ai-agent-tests:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
+
+      # go builds agent-guard and jq reads the hook decisions
+      # the check cases run in the agent-guard package build, which flake-check does
+      # from the flake's locked nixpkgs, so ci runs the same versions as the hosts
+      - run: nix profile install --inputs-from . nixpkgs#jq nixpkgs#git nixpkgs#tmux nixpkgs#gawk nixpkgs#bash nixpkgs#coreutils nixpkgs#gnused nixpkgs#nodejs_24 nixpkgs#go
+
+      # the extensions import these at runtime, pi provides them when installed
+      # unpinned, since the installed pi updates itself
+      - run: npm install --no-save --no-package-lock @earendil-works/pi-coding-agent @earendil-works/pi-tui @earendil-works/pi-ai # zizmor: ignore[adhoc-packages]
+
+      # test.sh checks codex/rules/default.rules with `codex execpolicy check`
+      # unpinned standalone install, since the installed codex updates itself
+      - run: curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh
+      - run: echo "$HOME/.local/bin" >>"$GITHUB_PATH"
+
+      - run: bash modules/eric/ai/hooks/test.sh
+
+      # the pi guards test runs the real hooks/guard.sh, which execs agent-guard from PATH
+      - run: mkdir -p "$HOME/.local/bin" && go build -C modules/eric/ai/guard -o "$HOME/.local/bin/agent-guard" .
+
+      # pi loads extensions with full typescript support, plain type stripping rejects parameter properties
+      - run: node --experimental-transform-types --test modules/eric/ai/pi/tests/*.test.ts

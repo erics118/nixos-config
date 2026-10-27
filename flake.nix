@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "https://channels.nixos.org/nixos-unstable/nixexprs.tar.zst";
 
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
@@ -10,8 +10,7 @@
     # pure nix helper, doesn't depend on nixpkgs
     import-tree.url = "github:vic/import-tree";
 
-    # private bundle: sops secrets, recipients, host-specific config.
-    # exports flakeModules.default (import-tree of its ./modules).
+    # private bundle: sops secrets, recipients, host-specific config
     nixos-config-private = {
       url = "git+ssh://git@github.com/erics118/nixos-config-private.git";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -28,6 +27,14 @@
     nix-index-database = {
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # fork with rex support until Mic92/direnv-instant#172 merges
+    direnv-instant = {
+      url = "github:erics118/direnv-instant";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.treefmt-nix.follows = "treefmt-nix";
     };
 
     darwin = {
@@ -50,16 +57,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # upstream nixvim.nixvim keeps its own pin to use cached builds
-    nixvim = {
-      url = "github:erics118/nixvim";
-      inputs.flake-parts.follows = "flake-parts";
-      inputs.treefmt-nix.follows = "treefmt-nix";
+    catppuccin = {
+      url = "github:catppuccin/nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # explicitly don't follow nixpkgs
-    catppuccin.url = "github:catppuccin/nix";
 
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
@@ -67,13 +68,24 @@
     };
 
     wezterm-src = {
-      # we aren't using github: because dir= will result in unstable hashes
-      url = "git+https://github.com/erics118/wezterm?ref=eric&dir=nix&shallow=1";
+      url = "github:erics118/wezterm/main?dir=nix";
+      # keeps its own nixpkgs to match the build in the erics118-wezterm cache
+      # flake-edit.toml stops the formatter adding a follows
+    };
+
+    goku-src = {
+      url = "github:erics118/GokuRakuJoudo";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "flake-parts";
     };
 
     hyprland-contrib = {
       url = "github:hyprwm/contrib";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    apple-fonts = {
+      url = "github:Lyndeno/apple-fonts.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -87,13 +99,49 @@
       flake = false;
     };
 
+    front-src = {
+      url = "github:erics118/front";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     sketchybar-src = {
-      url = "github:erics118/SketchyBar/eric";
+      url = "github:erics118/SketchyBar";
       flake = false;
     };
 
     yabai-src = {
-      url = "github:AhsanFazal/yabai";
+      url = "github:erics118/yabai";
+      flake = false;
+    };
+
+    mosh-src = {
+      url = "github:erics118/mosh";
+      flake = false;
+    };
+
+    # needs the netrc from modules/features/base/nix-common.nix until rex's first release
+    rex = {
+      url = "https://pkgs.superlogical.com/rex/nix/preview.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    smart-splits-backend-tmux-src = {
+      url = "github:smart-splits-nvim/backend-tmux";
+      flake = false;
+    };
+
+    rex-image-paste-src = {
+      url = "github:pablasso/rex-image-paste";
+      flake = false;
+    };
+
+    smart-splits-backend-rex-src = {
+      url = "github:rawnly/smart-splits-backend-rex";
+      flake = false;
+    };
+
+    rexume-src = {
+      url = "github:Entwining/rexume";
       flake = false;
     };
   };
@@ -119,88 +167,13 @@
           "aarch64-darwin"
         ];
 
-        perSystem =
-          {
-            config,
-            pkgs,
-            system,
-            ...
-          }:
-          {
-            # always allow unfree
-            _module.args.pkgs = import inputs.nixpkgs {
-              inherit system overlays;
-              config.allowUnfree = true;
-            };
-
-            devShells = {
-              default = pkgs.mkShell { packages = [ config.treefmt.build.wrapper ]; };
-
-              sketchybar = pkgs.mkShell {
-                packages = with pkgs; [
-                  lua-language-server
-                  stylua
-                  lua5_5
-                  clang-tools
-                  gnumake
-                ];
-              };
-            };
-
-            treefmt = {
-              projectRootFile = "flake.nix";
-
-              settings = {
-                excludes = [
-                  "secrets/**"
-                  "result"
-                  "result-*"
-                  "flake.lock"
-                  "*.age"
-                ];
-                on-unmatched = "info";
-                # stylua config (indent type/width) lives in stylua.toml
-
-                # keep top-level inputs' direct follows tidy (`inputs.X.follows`).
-                # --depth 1 stays at direct children: deeper follows here only
-                # pull pinned/cache inputs (nixvim.nixvim) off
-                # their own nixpkgs, which we don't want. --no-lock because the
-                # treefmt check runs in the nix sandbox with no network
-                formatter.flake-edit = {
-                  command = pkgs.flake-edit;
-                  options = [
-                    "--non-interactive"
-                    "--no-lock"
-                    "follow"
-                    "--depth"
-                    "1"
-                  ];
-                  includes = [ "flake.nix" ];
-                };
-              };
-
-              programs = {
-                nixfmt.enable = true;
-                nixfmt.strict = true;
-                deadnix.enable = true;
-                statix.enable = true;
-
-                shfmt.enable = true;
-
-                prettier.enable = true;
-                just.enable = true;
-                taplo.enable = true;
-                yamlfmt = {
-                  enable = true;
-                  settings.formatter.retain_line_breaks_single = true;
-                };
-                jsonfmt.enable = true;
-
-                stylua.enable = true;
-                clang-format.enable = true;
-              };
-            };
+        perSystem = { system, ... }: {
+          # always allow unfree
+          _module.args.pkgs = import inputs.nixpkgs {
+            inherit system overlays;
+            config.allowUnfree = true;
           };
+        };
       }
     );
 }
