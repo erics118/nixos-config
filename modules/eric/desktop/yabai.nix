@@ -1,13 +1,12 @@
 {
-  flake.modules.homeManager.darwin = {
+  flake.modules.homeManager.darwin = { repoFile, ... }: {
     home.file = {
-      ".config/yabai/yabairc".source = ./yabai/yabairc.sh;
-      ".config/yabai/unmanaged_rules.sh".source = ./yabai/unmanaged_rules.sh;
-      # yabairc execs this on load and from the display_added/removed signals
-      ".config/yabai/on_display_update.sh" = {
-        source = ./yabai/on_display_update.sh;
-        executable = true;
-      };
+      ".config/yabai/yabairc".source = repoFile "modules/eric/desktop/yabai/yabairc.sh";
+      ".config/yabai/unmanaged_rules.sh".source =
+        repoFile "modules/eric/desktop/yabai/unmanaged_rules.sh";
+      # yabairc execs this on load and from the display_added/removed signals, so the repo file is executable
+      ".config/yabai/on_display_update.sh".source =
+        repoFile "modules/eric/desktop/yabai/on_display_update.sh";
     };
   };
 

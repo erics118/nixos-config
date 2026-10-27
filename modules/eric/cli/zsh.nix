@@ -4,6 +4,7 @@
       config,
       lib,
       pkgs,
+      repoFile,
       ...
     }:
     let
@@ -328,6 +329,6 @@
         };
       };
 
-      xdg.configFile."zsh/init.zsh".source = ./zsh/init.zsh;
+      xdg.configFile."zsh/init.zsh".source = repoFile "modules/eric/cli/zsh/init.zsh";
     };
 }
