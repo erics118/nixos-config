@@ -122,6 +122,7 @@
         ccusage
         context7Mcp
         cornellConfluenceMcp
+        tex-math-render
       ];
     };
 }

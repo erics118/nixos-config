@@ -5,6 +5,7 @@
     "BASH_DEFAULT_TIMEOUT_MS": "10000",
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
     "CLAUDE_CODE_FORCE_TERMINAL_IMAGES": "1",
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/nixos-config/modules/eric/ai/claude/mods/tex-math",
     "ENABLE_TOOL_SEARCH": "auto",
     "GIT_CONFIG_COUNT": "2",
     "GIT_CONFIG_KEY_0": "gpg.ssh.program",

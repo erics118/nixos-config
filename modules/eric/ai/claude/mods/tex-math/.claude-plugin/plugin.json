@@ -1,0 +1,5 @@
+{
+  "name": "tex-math",
+  "version": "0.1.0",
+  "description": "Draws LaTeX math in replies as images"
+}
