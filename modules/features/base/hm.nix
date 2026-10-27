@@ -12,7 +12,11 @@ let
   };
 in
 {
-  flake.modules.homeManager.base = {
+  flake.modules.homeManager.base = { pkgs, ... }: {
+    # the module default builds ports from a separate nixpkgs instance
+    # building them from our pkgs avoids evaluating nixpkgs twice
+    catppuccin.sources = (import "${inputs.catppuccin}/default.nix" { inherit pkgs; }).packages;
+
     imports = [
       inputs.catppuccin.homeModules.catppuccin
 
@@ -22,7 +26,12 @@ in
         programs.nix-index-database.comma.enable = true;
         programs.nix-index.enable = true;
       }
+
+      inputs.direnv-instant.homeModules.direnv-instant
     ];
+
+    # skip evaluating home-manager's option docs for home-configuration.nix(5)
+    manual.manpages.enable = false;
 
     # let sops cli automatically use default ssh id_ed25519 key for age-ssh decryption
     home.sessionVariables.SOPS_AGE_SSH_PRIVATE_KEY_FILE = "$HOME/.ssh/id_ed25519";

@@ -7,8 +7,6 @@
     in
     {
       nixos.base = {
-        nix.settings.auto-optimise-store = true;
-
         programs.nh = {
           enable = true;
           clean = {
@@ -21,8 +19,6 @@
 
       # darwin has no programs.nh.clean, so run the same policy via launchd
       darwin.base = { pkgs, ... }: {
-        nix.settings.auto-optimise-store = true;
-
         launchd.daemons = {
           nh-clean.serviceConfig = {
             # launchd daemons need to have PATH set
@@ -52,12 +48,28 @@
           # deprioritize the nix build daemon
           nix-daemon.serviceConfig.Nice = 10;
         };
+
+        # launchd only appends to the nh-clean log, so newsyslog caps it (size in KB)
+        system.newsyslog = {
+          enable = true;
+          files.nh-clean = [
+            {
+              logfilename = "/var/log/nh-clean.log";
+              count = 3;
+              size = "1024";
+              flags = [
+                "Z"
+                "N"
+              ];
+            }
+          ];
+        };
       };
 
       homeManager.base = { config, ... }: {
         programs.nh = {
           enable = true;
-          flake = "${config.home.homeDirectory}/.flake";
+          flake = "${config.home.homeDirectory}/nixos-config";
         };
       };
     };

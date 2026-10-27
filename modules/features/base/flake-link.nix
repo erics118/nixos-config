@@ -1,42 +1,53 @@
 {
-  flake.modules.homeManager.base = { lib, config, ... }: {
-    _module.args =
-      let
-        repoRoot = ../../..;
-      in
-      rec {
-        repoFile =
-          relPath: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.flake/${relPath}";
+  flake.modules.homeManager.base =
+    {
+      lib,
+      config,
+      inputs,
+      ...
+    }:
+    let
+      # out-of-store symlink into the live checkout at ~/<repo>, so edits apply with no switch
+      liveFile =
+        repo: relPath:
+        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/${repo}/${relPath}";
 
-        repoFileAll =
-          relPath: targetPath:
-          let
-            sourceDir = repoRoot + "/${relPath}";
-            relTo = f: lib.removePrefix "${toString sourceDir}/" (toString f);
-          in
-          lib.listToAttrs (
-            map (
-              f:
-              let
-                rel = relTo f;
-              in
-              lib.nameValuePair "${targetPath}/${rel}" { source = repoFile "${relPath}/${rel}"; }
-            ) (lib.filesystem.listFilesRecursive sourceDir)
-          );
+      # one liveFile link per git-tracked file present at eval time, so a new file needs a git add and a switch
+      liveFileAll =
+        repo: root: relPath: targetPath:
+        let
+          sourceDir = root + "/${relPath}";
+          # a flake input root carries store context, which home.file names reject
+          relTo =
+            f: builtins.unsafeDiscardStringContext (lib.removePrefix "${toString sourceDir}/" (toString f));
+        in
+        lib.listToAttrs (
+          map (
+            f:
+            let
+              rel = relTo f;
+            in
+            lib.nameValuePair "${targetPath}/${rel}" { source = liveFile repo "${relPath}/${rel}"; }
+          ) (lib.filesystem.listFilesRecursive sourceDir)
+        );
+    in
+    {
+      _module.args = {
+        repoFile = liveFile "nixos-config";
+        repoFileAll = liveFileAll "nixos-config" ../../..;
+        privateFile = liveFile "nixos-config-private";
+        privateFileAll = liveFileAll "nixos-config-private" inputs.nixos-config-private;
       };
 
-    # require ~/.flake to actually resolve to the repo. test -L alone would
-    # pass a dangling symlink (repo moved/deleted), silently breaking every
-    # mkOutOfStoreSymlink target, so check the resolved flake.nix instead.
-    home.activation.checkFlakeLink = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
-      if ! test -e "$HOME/.flake/flake.nix"; then
-        echo "ERROR: \$HOME/.flake does not resolve to the nixos-config repo." >&2
-        if test -L "$HOME/.flake"; then
-          echo "  it points to $(readlink "$HOME/.flake"), which is missing or not the repo." >&2
-        fi
-        echo "Fix: from inside the repo run: ln -sfn \$PWD ~/.flake" >&2
-        exit 1
-      fi
-    '';
-  };
+      # a missing checkout silently breaks every mkOutOfStoreSymlink target into it
+      home.activation.checkCheckouts = lib.hm.dag.entryBefore [ "checkLinkTargets" ] ''
+        for repo in nixos-config nixos-config-private; do
+          if ! test -e "$HOME/$repo/flake.nix"; then
+            echo "ERROR: \$HOME/$repo is not a checkout of the $repo repo." >&2
+            echo "Fix: git clone git@github.com:erics118/$repo ~/$repo" >&2
+            exit 1
+          fi
+        done
+      '';
+    };
 }
