@@ -1,7 +1,7 @@
 blacklist = [
-    "Parallels Desktop"
     "Windows App"
     "WorkSpaces"
+    "Moonlight"
 ]
 
 sequence_command = "sketchybar --trigger smhkd_sequence SEQUENCE='{}'"
@@ -11,16 +11,18 @@ define_modifier hyper = cmd + alt + ctrl + shift
 define_modifier hammer = cmd + alt + shift
 
 # modifier conventions:
-# mod         -> core wm actions
-# mod + shift -> wm move/send/state changes
-# hyper       -> launcher, layout, and namespaces
+# mod         -> launch apps, focus, window state, spaces
+# mod + shift -> alternate apps, swap, send to space
+# mod + ctrl  -> alternate apps, send to space and follow
+# hyper       -> launcher (a) and wm (y) namespaces
+# hammer      -> bar toggle
 
 hammer + b :
     sketchybar --bar hidden=toggle
 
 # apps
 mod + return :
-    front -p "/Applications/Nix Apps/WezTerm.app"
+    front -p "/Applications/Rex Beta.app"
 
 mod + shift + return :
     front -n "Visual Studio Code"
@@ -114,9 +116,6 @@ hyper + a ; r :
 hyper + a ; f :
     open 'raycast-x://extensions/raycast/file-search/search-files'
 
-# hyper + a ; h :
-#     open 'raycast-x://extensions/abielzulio/chatgpt/conversation'
-
 hyper + a ; k :
     open 'raycast-x://extensions/rolandleth/kill-process/index'
 
@@ -128,6 +127,9 @@ hyper + a ; t :
 
 hyper + a ; v :
     open 'cleanshot://scrolling-capture'
+
+hyper + a ; escape :
+    true
 
 # wm namespace
 hyper + y ; e :
@@ -142,14 +144,16 @@ hyper + y ; m :
 hyper + y ; r :
     yabai -m space --rotate 90
 
+# sticky also floats the window, and unsticky resets float to what the rules say
 hyper + y ; s :
-    yabai -m window --toggle sticky && sketchybar --trigger yabai
+    if [ "$(yabai -m query --windows is-sticky --window | jq '."is-sticky"')" = true ]; then yabai -m window --sticky off --float auto; else yabai -m window --float on --sticky on; fi; sketchybar --trigger yabai
 
 hyper + y ; t :
     yabai -m window --toggle float && sketchybar --trigger yabai
 
+# pip also floats and stickies the window, and unpip resets both to what the rules say
 hyper + y ; p :
-    yabai -m window --toggle pip && sketchybar --trigger yabai
+    if [ "$(yabai -m query --windows is-pip --window | jq '."is-pip"')" = true ]; then yabai -m window --pip off --sticky auto --float auto; else yabai -m window --float on --sticky on --pip on; fi; sketchybar --trigger yabai
 
 hyper + y ; w :
     yabai -m window --close
@@ -169,16 +173,23 @@ hyper + y ; {j,k,l} :
 hyper + y ; {1,2,3,4,5,6,7,8,9,0} :
     yabai -m window --opacity {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0}
 
-# trackpad corner taps: hold cmd, tap a corner
+# ` (keycode 0x32): opacity 0.0 hands the window back to yabai's automatic dimming
+hyper + y ; 0x32 :
+    yabai -m window --opacity 0.0
+
+hyper + y ; escape :
+    true
+
+# trackpad corner taps: hold alt, tap a corner
 # right side -> volume, left side -> brightness
-alt + trackpad_tap(tr) |
-    sound_up
-
-alt + trackpad_tap(br) |
-    sound_down
-
-alt + trackpad_tap(tl) |
-    brightness_up
-
-alt + trackpad_tap(bl) |
-    brightness_down
+# alt + trackpad_tap(tr) |
+#     sound_up
+#
+# alt + trackpad_tap(br) |
+#     sound_down
+#
+# alt + trackpad_tap(tl) |
+#     brightness_up
+#
+# alt + trackpad_tap(bl) |
+#     brightness_down

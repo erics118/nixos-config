@@ -1,6 +1,4 @@
-/* userChrome.css - Sidebery + Arc-like chrome for Firefox Dev Edition.
-   Targets FF153 with sidebar.revamp: true. Companion author sheet (needs
-   shadow-DOM ::part selectors this file can't reach): resources/userChrome.au.css */
+/* userChrome.css - Sidebery chrome for Firefox Dev Edition. Needs sidebar.revamp: true */
 
 /* Hide the panel header above webextension sidebars. The id lives in
    webext-panels.xhtml (the doc that wraps Sidebery), not browser.xhtml. */
@@ -10,10 +8,8 @@
 
 /* ===== Design tokens ===== */
 :root {
-  /* ATBC owns --lwt-accent-color, but it's set by the extension's content
-     script after first paint, so it's briefly unset on startup - which makes
-     this whole var invalid and border/background fall back to white. Give it
-     a dark fallback matching ATBC's steady-state value to kill that flash. */
+  /* ATBC sets --lwt-accent-color through the theme API after first paint, so it is unset at startup.
+     the dark fallback matches ATBC's steady-state value, so the background doesn't flash white */
   --atbc-raised-surface: color-mix(
     in srgb,
     var(--lwt-accent-color, #2b2a33) 92%,
@@ -22,9 +18,6 @@
   --chrome-pill-radius: 9999px;
   --urlbar-control-size: 26px;
   --urlbar-icon-size: 16px;
-  /* Arc-like page frame around the rendered content */
-  --page-frame-width: 8px;
-  --page-frame-radius: 16px;
 }
 
 /* ===== Sidebery-driven layout =====
@@ -64,10 +57,8 @@
     padding-left: 3px !important;
   }
 
-  /* #navigator-toolbox is a .chrome-block whose 1px bottom border sits right
-     under the bookmarks bar. The 8px page frame already supplies that
-     separation, so drop the extra line. */
-  #navigator-toolbox.chrome-block {
+  /* Drop #navigator-toolbox's hairline bottom border under the bookmarks bar. */
+  #navigator-toolbox {
     border-bottom-width: 0 !important;
   }
 
@@ -78,10 +69,12 @@
     justify-content: center !important;
   }
 
-  /* Show the window controls in the nav-bar */
-  #nav-bar > .titlebar-buttonbox-container,
-  #nav-bar > .titlebar-buttonbox-container > .titlebar-buttonbox {
-    display: flex !important;
+  /* Show the window controls in the nav-bar, except in fullscreen and mini windows, where Firefox hides them */
+  &[customtitlebar]:not([inFullscreen], [mini-window]) {
+    #nav-bar > .titlebar-buttonbox-container,
+    #nav-bar > .titlebar-buttonbox-container > .titlebar-buttonbox {
+      display: flex !important;
+    }
   }
 
   /* #browser is the positioning context for the bottom launcher, and must not
@@ -100,7 +93,7 @@
        (animated) height, so Sidebery's top edge holds through the whole
        bookmarks-bar show/hide transition. */
     margin-top: calc(
-      -1 * var(--sidebery-bookmarks-toolbar-height, 0px)
+      -1 * var(--sidebery-bookmarks-toolbar-height, 0px) + 2px
     ) !important;
     transition: none !important;
   }
@@ -151,45 +144,6 @@
     box-sizing: border-box !important;
   }
 
-  /* --- Page frame (Arc-like rounded border around the rendered page) ---
-     Sidebery owns the top-left join, so leave that corner and the left edge
-     open. */
-  #tabbrowser-tabbox {
-    border-style: solid;
-    border-color: var(--atbc-raised-surface);
-    /* don't add border to left side b/c sidebery/sidebar is already there */
-    border-width: var(--page-frame-width) var(--page-frame-width)
-      var(--page-frame-width) 0px;
-    border-left-color: transparent !important;
-    border-radius: var(--page-frame-radius) !important;
-    /* with no left border to subtract, the left corners' visible (padding-box)
-       curve runs the full radius horizontally but radius - frame vertically,
-       reading as a stretched ellipse. Pre-shrink the horizontal radius by the
-       frame width so both axes land on radius - frame, matching the right. */
-    border-top-left-radius: calc(
-        var(--page-frame-radius) - var(--page-frame-width)
-      )
-      var(--page-frame-radius) !important;
-    border-bottom-left-radius: calc(
-        var(--page-frame-radius) - var(--page-frame-width)
-      )
-      var(--page-frame-radius) !important;
-    background-clip: padding-box !important;
-    overflow: hidden !important;
-  }
-
-  /* When the sidebar is closed, #sidebar-box gets a native `hidden` attribute
-     (Firefox's own, not Sidebery). Nothing occupies the left edge then, so
-     restore the frame + top-left rounding to keep the page inset even. */
-  #browser:has(#sidebar-box[hidden]) #tabbrowser-tabbox {
-    border-left-width: var(--page-frame-width) !important;
-    border-left-color: var(--atbc-raised-surface) !important;
-    /* left border is back, so both left corners are symmetric again: undo the
-       horizontal compensation above or they stretch the other way */
-    border-top-left-radius: var(--page-frame-radius) !important;
-    border-bottom-left-radius: var(--page-frame-radius) !important;
-  }
-
   /* The launcher pill is #sidebar-container, positioned absolutely in #browser,
      not part of #sidebar-box. Closing the sidebar only hides #sidebar-box, so
      hide the launcher alongside it. */
@@ -201,7 +155,7 @@
 
 /* ===== Address bar =====
    Fully rounded (semicircle ends) + extra right inner padding.
-   Note: in FF153 the painted box is div.urlbar-background (class, not id). */
+   Note: the painted box is div.urlbar-background (class, not id). */
 
 /* Half the idle urlbar height = a perfect pill when closed. When the results
    panel expands the box the radius stays ~16px, so no giant ellipse. */
@@ -216,33 +170,18 @@
 
 /* Inner padding of the whole bar: space between the pill edges and the
    first/last elements (search switcher on the left, page actions on the
-   right). urlbar-input-container is a class in FF153, not an id. */
+   right). urlbar-input-container is a class, not an id. */
 #urlbar .urlbar-input-container {
   padding-inline: 3px 3px !important;
 }
 
-/* When the results view opens, Firefox's proton breakout rules
-   (urlbar-searchbar.css, not-nova branch) grow the popover in every axis:
-   negative margin-left plus widened width, UrlbarInput.mjs pins its top to
-   the container's border-box top (one --urlbar-padding-block above the idle
-   pill's static position), and the input container grows to
-   --urlbar-container-height with compensating padding. Hold the bar at its
-   exact idle geometry instead: anchor it horizontally, push it back down by
-   the padding delta the JS top-pin skipped (nova's own
-   --urlbar-margin-block-start-breakout trick), and pin the input container
-   at idle height. The results view is a sibling of the input container, so
-   it still expands normally below the pill. */
-#urlbar[breakout][breakout-extend] {
-  margin-inline-start: 0 !important;
-  width: var(--urlbar-width) !important;
-  margin-block-start: calc(
-    (var(--urlbar-container-height) - var(--urlbar-height)) / 2
+/* on open, proton grows the input container and pads to match so contents hold
+   still; the padding-inline override above drops that pad and contents slide
+   re-add it here, keeping the same 3px inset */
+#urlbar[popover-open] > .urlbar-input-container {
+  padding-inline: calc(
+    var(--urlbar-input-growth-open-inline, 0px) + 3px
   ) !important;
-}
-
-#urlbar[breakout][breakout-extend] > .urlbar-input-container {
-  height: var(--urlbar-height) !important;
-  padding-block: var(--urlbar-input-container-padding) !important;
 }
 
 /* Round every pill/button inside the url bar: search engine switcher,
@@ -261,11 +200,11 @@
   border-radius: var(--chrome-pill-radius) !important;
 }
 
-/* the switcher's outer <button> wrapper renders 2px taller than its inner
-   .button-background pill; a 1px block margin insets it to line up with the
-   other 26px urlbar controls */
+/* Firefox fixes the switcher at 28px, so match the other 26px controls.
+   its shadow-DOM pill reads --button-border-radius, which inherits through the shadow boundary */
 #urlbar .searchmode-switcher {
-  margin-block: 1px !important;
+  height: var(--urlbar-control-size) !important;
+  --button-border-radius: var(--chrome-pill-radius) !important;
 }
 
 /* Compact circular hover targets for url bar icon buttons: fixed 26px height,
@@ -288,18 +227,25 @@
   justify-content: center !important;
 }
 
-/* go/revert are <image>s, not flex boxes, so pin width == height to force a
-   square (=> circle) instead of a pill */
+/* Firefox gives page actions a fixed width, so let min-width set the circle and a labeled action still grow */
+#urlbar .urlbar-page-action {
+  width: auto !important;
+}
+
+/* Firefox sizes go/revert by padding around the icon, so a fixed square needs padding that leaves it 16px */
 #urlbar .urlbar-go-button,
 #urlbar .urlbar-revert-button {
   width: var(--urlbar-control-size) !important;
+  padding: calc(
+    (var(--urlbar-control-size) - var(--urlbar-icon-size)) / 2
+  ) !important;
 }
 
 /* Chips that show a text label (e.g. "Extension (Sidebery)", "Not Secure",
    zoom "90%") get more inner left/right padding; icon-only states keep the
    tight padding above so they stay circular. */
 #urlbar .identity-box-button:has(label:not([collapsed])),
-#urlbar #trust-icon-container:not(.secure),
+#urlbar #trust-icon-container:is(.insecure, .has-blocked-trackers),
 #urlbar #urlbar-label-box,
 #urlbar #urlbar-zoom-button {
   padding-inline: 7px !important;
@@ -354,10 +300,17 @@ findbar {
   transition: none !important;
 }
 
-/* remove shadow from web content */
-#tabbrowser-tabbox,
-.browserContainer {
+/* with a sidebar shown, Firefox rounds and outlines .browserContainer, by two rules, so set the radii outright.
+   the border lines reach only Nova. split view keeps its rounded panes and the focused pane's outline */
+#tabbrowser-tabpanels > :not(.split-view-panel) .browserContainer {
   box-shadow: none !important;
+  outline: none !important;
+  --content-area-start-radius: 0 !important;
+  border-start-start-radius: 0 !important;
+  border-start-end-radius: 0 !important;
+  border-block-start: none !important;
+  border-inline-start: none !important;
+  border-inline-end: none !important;
 }
 
 /* ===== Focus mode =====
@@ -370,14 +323,5 @@ findbar {
   #sidebar-splitter,
   #sidebar-container[data-sidebery-bottom-launcher] {
     display: none !important;
-  }
-
-  /* Sidebery is gone, so close the page frame on the left like the
-     sidebar-hidden case above. */
-  #tabbrowser-tabbox {
-    border-left-width: var(--page-frame-width) !important;
-    border-left-color: var(--atbc-raised-surface) !important;
-    border-top-left-radius: var(--page-frame-radius) !important;
-    border-bottom-left-radius: var(--page-frame-radius) !important;
   }
 }

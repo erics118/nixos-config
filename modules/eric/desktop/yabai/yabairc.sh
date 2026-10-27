@@ -1,0 +1,186 @@
+#!/usr/bin/env bash
+
+CONFIG_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+printf 'loading scripting addition..\n'
+
+# Unload the macOS WindowManager process
+# launchctl unload -F /System/Library/LaunchAgents/com.apple.WindowManager.plist >/dev/null 2>&1 &
+
+# load sa
+yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa; echo 'reloaded sa..'"
+sudo yabai --load-sa
+printf 'loaded sa..\n'
+
+# set padding
+padding=0
+
+# events
+yabai -m signal --add event=window_focused action="sketchybar --trigger window_focused"
+
+# Finder sticky
+yabai -m rule --add label="Finder" app="^Finder$" sticky=on manage=off
+
+# unmanaged rules
+# shellcheck source-path=SCRIPTDIR source=unmanaged_rules.sh
+source "$CONFIG_DIR/unmanaged_rules.sh"
+
+# dedicated spaces for certain apps
+yabai -m rule --add label="util" app="^(Fantastical|Todoist|Notion)$" space=^1
+
+yabai -m rule --add label="browser" app="^(Firefox|Google Chrome|Safari).*$" space=^2
+
+# yabai -m rule --add label="chat" app="^(Discord.*|Slack|Messages)$" space=^3
+
+# 4, 5, 6 are general purpose
+
+yabai -m rule --add label="music" app="^Spotify$" space=^7
+
+# apply rules first
+yabai -m rule --apply
+
+config=(
+  # Global Settings
+
+  # Enable output of debug information to stdout.
+  debug_output off # [<BOOL_SEL>]
+
+  # Specify top and bottom padding for a potential custom bar that you may be running.
+  #   main: Apply the given padding only to spaces located on the main display.
+  #   all: Apply the given padding to all spaces regardless of their display.
+  #   off: Do not apply any special padding.
+  external_bar all:-1:0 # [<main|all|off>:<top_padding>:<bottom_padding>]
+
+  # Changes the transparency of the macOS menubar.
+  # If the value is 0.0, the menubar will no longer respond to mouse-events, effectively hiding the menubar permanently.
+  # The menubar will automatically become fully opaque upon entering a native-fullscreen space, and adjusted down afterwards.
+  # menubar_opacity 0.95 # [<FLOAT_SEL>]
+
+  # When focusing a window, put the mouse at its center.
+  mouse_follows_focus off # [<BOOL_SEL>]
+
+  # Automatically focus the window under the mouse.
+  focus_follows_mouse off # [autofocus|autoraise|off]
+
+  # Specify how displays are ordered (determined by center point).
+  #   default: Native macOS ordering.
+  #   vertical: Order by y-coordinate (followed by x-coordinate when equal).
+  #   horizontal: Order by x-coordinate (followed by y-coordinate when equal).
+  display_arrangement_order default # [default|vertical|horizontal]
+
+  # Specify which display a newly created window should be managed in.
+  #   default: The display in which the window is created (standard macOS behaviour).
+  #   focused: The display that has focus when the window is created.
+  #   cursor: The display that currently holds the mouse cursor.
+  window_origin_display cursor # [default|focused|cursor]
+
+  # Specify whether managed windows should become the first or second leaf-node.
+  window_placement second_child # [first_child|second_child]
+
+  # Specify where new managed windows will be inserted.
+  # window_insertion_point focused # [focused|first|last]
+
+  # Windows will keep their zoom-state through layout changes.
+  window_zoom_persist off # [<BOOL_SEL>]
+
+  # Bypass macOS space animation when an application or window on an inactive space is focused.
+  # You should only enable this if you do NOT use the scripting addition.
+  # The scripting addition implements the same functionality in a more robust way.
+  # skip_window_focus_animation off # [<BOOL_SEL>]
+
+  # Draw shadow for windows.
+  # System Integrity Protection must be partially disabled.
+  # window_shadow on # [<BOOL_SEL>|float]
+
+  # Enable opacity for windows.
+  # System Integrity Protection must be partially disabled.
+  # window_opacity on # [<BOOL_SEL>]
+
+  # Duration of transition between active / normal opacity.
+  # System Integrity Protection must be partially disabled.
+  # window_opacity_duration 0.2 # [<FLOAT_SEL>]
+
+  # Opacity of the focused window.
+  # System Integrity Protection must be partially disabled.
+  # active_window_opacity 0.95 # [<FLOAT_SEL>]
+
+  # Opacity of an unfocused window.
+  # System Integrity Protection must be partially disabled.
+  # normal_window_opacity 0.80 # [<FLOAT_SEL>]
+
+  # Duration of window frame animation.
+  # If 0.0, the change in dimension is not animated.
+  # Requires Screen Recording permissions.
+  # System Integrity Protection must be partially disabled.
+  # window_animation_duration 0.2 # [<FLOAT_SEL>]
+
+  # Easing function to use for window animations.
+  # See https://easings.net for details.
+  # window_animation_easing ease_in_out_quad # [<EASING>]
+
+  # Color of the window --insert message and mouse_drag selection.
+  # The purpose is to provide a visual preview of the new window frame.
+  insert_feedback_color 0xffcba6f7 # [0xAARRGGBB]
+
+  # Specify the size distribution when a window is split.
+  split_ratio 0.5 # [<FLOAT_SEL>]
+
+  # Keyboard modifier used for moving and resizing windows.
+  mouse_modifier fn # [cmd|alt|shift|ctrl|fn]
+
+  # Action performed when pressing mouse_modifier + button1.
+  mouse_action1 move # [move|resize]
+
+  # Action performed when pressing mouse_modifier + button2.
+  mouse_action2 resize # [move|resize]
+
+  # Action performed when a bsp-managed window is dropped in the center of some other bsp-managed window.
+  mouse_drop_action stack # [swap|stack]
+
+  # Space Settings
+  # handle padding first
+
+  # Padding added at the upper side of the selected space.
+  top_padding "$padding" # [<integer number>]
+
+  # Padding added at the lower side of the selected space.
+  bottom_padding "$padding" # [<integer number>]
+
+  # Padding added at the left side of the selected space.
+  left_padding "$padding" # [<integer number>]
+
+  # Padding added at the right side of the selected space.
+  right_padding "$padding" # [<integer number>]
+
+  # Size of the gap that separates windows for the selected space.
+  window_gap "$padding" # [<integer number>]
+
+  # Set the layout of the selected space.
+  layout stack # [bsp|stack|float]
+
+  # Specify how a window should be split.
+  # vertical: The window is split along the y-axis.
+  # horizontal: The window is split along the x-axis.
+  # auto: The axis is determined based on width/height ratio.
+  split_type auto # [vertical|horizontal|auto]
+
+  # Balance the window tree upon change, so that all windows occupy an equally sized area.
+  auto_balance off # [<BOOL_SEL>|x-axis|y-axis]
+)
+
+yabai -m config "${config[@]}"
+
+printf "configured layout..\n"
+
+# display update events
+
+yabai -m signal --add event=display_added \
+  action="$CONFIG_DIR/on_display_update.sh"
+
+# on unplug, re-evaluate all displays so migrated spaces get the right default
+yabai -m signal --add event=display_removed \
+  action="$CONFIG_DIR/on_display_update.sh removed"
+
+"$CONFIG_DIR/on_display_update.sh"
+
+printf "yabai configuration file loaded..\n"

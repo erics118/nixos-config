@@ -23,8 +23,17 @@
   root.style.paddingTop = "25px";
 
   // The legacy bookmarks sidebar (bookmarksSidebar.xhtml) is a plain XUL doc
-  // with no sidebar-* component, so it gets only the root tweaks above.
-  if (win.location.href.endsWith("bookmarksSidebar.xhtml")) return;
+  // with no sidebar-* component, so it gets only the root tweaks above, plus
+  // a search box inset measured to line up with the synced tabs and history ones
+  if (win.location.href.endsWith("bookmarksSidebar.xhtml")) {
+    // the new sidebar pages use font: menu, and the search box sizes its text
+    // and icon spacing from the root font
+    root.style.font = "menu";
+    document
+      .getElementById("sidebar-search-container")
+      ?.style.setProperty("padding", "6.5px", "important");
+    return;
+  }
 
   let attempts = 0;
 
@@ -95,6 +104,19 @@
 
           moz-card::part(moz-card-heading-wrapper) {
             padding-inline: var(--compact-sidebar-spacing) !important;
+          }
+
+          /* a device with no tabs gets a plain card, with no chevron and a text body.
+             Its icon and text line up with the accordion cards and the tab rows */
+          moz-card:not([type="accordion"]) {
+            --card-padding-block: var(--compact-sidebar-spacing);
+            --card-padding-inline: 8px;
+          }
+
+          moz-card:not([type="accordion"])::part(moz-card-heading-wrapper) {
+            padding-inline-start: calc(
+              var(--compact-sidebar-spacing) + var(--icon-size) + var(--card-gap)
+            ) !important;
           }
         `);
         panelRoot.adoptedStyleSheets = [...panelRoot.adoptedStyleSheets, sheet];

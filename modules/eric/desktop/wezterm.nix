@@ -5,7 +5,7 @@ let
   };
 in
 {
-  flake.modules.darwin.base = { pkgs, ... }: { environment.systemPackages = [ pkgs.wezterm ]; };
+  flake.modules.darwin.base = { pkgs, ... }: { signedApps.WezTerm = pkgs.wezterm; };
 
   flake.modules.homeManager.darwin = homeConfig;
   flake.modules.homeManager.hyprland = homeConfig;

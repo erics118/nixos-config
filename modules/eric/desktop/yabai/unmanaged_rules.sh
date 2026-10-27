@@ -2,7 +2,7 @@
 
 join_re() {
   local IFS='|'
-  printf '^(%s)$\n' "$*"
+  printf '%s\n' "$*"
 }
 
 # window only
@@ -10,6 +10,9 @@ titles=("Window" "Software Updater?")
 title_regex=$(join_re "${titles[@]}")
 
 yabai -m rule --add label="misc unmanaged windows" title="^($title_regex)$" manage=off
+
+# system dialogs
+yabai -m rule --add label="system dialogs" subrole="^AXSystemDialog$" manage=off
 
 # apps only
 apps=(
@@ -32,7 +35,7 @@ apps=(
   "Siri" "Stickies" "System .*"
   "Tailscale"
 
-  "Microsoft Remote Desktop" "Parallels Desktop" "WorkSpaces"
+  "Microsoft Remote Desktop" "Moonlight" "Parallels Desktop" "WorkSpaces"
 
   "Main" "java" "Python" "knot"
 )
@@ -50,6 +53,7 @@ yabai -m rule --add label="weather prefs" app="^Weather$" title="^Settings$" man
 yabai -m rule --add label="discord updater" app="^Discord.*$" title="^Discord Updater$" manage=off
 yabai -m rule --add label="fantastical" app="^Fantastical$" title="^(Flexibits Account|General|Appearance|Events & Tasks|Alerts|Accounts|Calendars & Lists|Openings|Weather|Advanced)$" manage=off
 yabai -m rule --add label="messages" app="^Messages$" title="^(General|iMessage|Shared with You)$" manage=off
+yabai -m rule --add label="rex" app="^Rex Beta$" title="^Settings - " manage=off
 
 # jetbrains
 jetbrains=(
@@ -60,6 +64,9 @@ jetbrains_regex=$(join_re "${jetbrains[@]}")
 # only manage the main editor window, which has the dash in the title
 yabai -m rule --add label="intellij idea1" app="^($jetbrains_regex)$" manage=off
 yabai -m rule --add label="intellij idea" app="^($jetbrains_regex)$" title=".* –.*" manage=on
+# rules only match when a window is created, and the editor window gets its project title later
+yabai -m signal --add label="jetbrains_title" event=window_title_changed app="^($jetbrains_regex)$" \
+  action='yabai -m rule --apply "intellij idea"'
 
 # orion popups
 yabai -m rule --add label="orion popup 1" app="^Orion.*$" role="^AXPopover$" manage=off
@@ -76,7 +83,8 @@ yabai -m rule --add label="zoom opacity" app="^Zoom$" opacity=1.0
 yabai -m rule --add label="apple music" app="^Music$" title="^MiniPlayer$" manage=off
 
 # firefox pip
-yabai -m rule --add label="firefox pip" app="^Firefox.*$" title="^Picture-in-Picture$" manage=off
+# pin full opacity so the floating pip window is not dimmed while unfocused
+yabai -m rule --add label="firefox pip" app="^Firefox.*$" title="^Picture-in-Picture$" manage=off opacity=1.0
 
 # amazon workspaces login window
 yabai -m rule --add label="amazon workspaces" app="^Amazon WorkSpaces$" title="^$" manage=off

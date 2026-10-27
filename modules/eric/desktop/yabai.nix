@@ -1,13 +1,12 @@
 {
-  flake.modules.homeManager.darwin = {
+  flake.modules.homeManager.darwin = { repoFile, ... }: {
     home.file = {
-      ".config/yabai/yabairc".source = ./yabai/yabairc;
-      ".config/yabai/unmanaged_rules.sh".source = ./yabai/unmanaged_rules.sh;
-      # yabairc execs this on load and from the display_added/removed signals
-      ".config/yabai/on_display_update" = {
-        source = ./yabai/on_display_update;
-        executable = true;
-      };
+      ".config/yabai/yabairc".source = repoFile "modules/eric/desktop/yabai/yabairc.sh";
+      ".config/yabai/unmanaged_rules.sh".source =
+        repoFile "modules/eric/desktop/yabai/unmanaged_rules.sh";
+      # yabairc execs this on load and from the display_added/removed signals, so the repo file is executable
+      ".config/yabai/on_display_update.sh".source =
+        repoFile "modules/eric/desktop/yabai/on_display_update.sh";
     };
   };
 
@@ -18,19 +17,24 @@
       enableScriptingAddition = true;
     };
 
+    signedAgents.yabai = config.services.yabai.package;
+
     launchd.user.agents.yabai.serviceConfig = {
+      # the label yabai's own --start-service/--stop-service manage
+      Label = "com.asmvik.yabai";
       StandardOutPath = "/tmp/yabai_eric.out.log";
       StandardErrorPath = "/tmp/yabai_eric.err.log";
       EnvironmentVariables.PATH = lib.mkForce (
-        "${config.services.yabai.package}/bin:"
+        "/usr/local/bin:"
         + builtins.replaceStrings [ "$HOME" "$USER" ] [ "/Users/eric" "eric" ] config.environment.systemPath
       );
     };
 
-    # enableScriptingAddition keys its sudoers rule to the store path, but yabairc
-    # calls `sudo yabai`, which resolves through PATH and never matches that rule.
-    # grant the PATH-resolved binary too, or --load-sa silently asks for a password
+    # enableScriptingAddition keys its sudoers rule to the store binary and its hash
+    # `sudo yabai` in yabairc finds /usr/local/bin/yabai first, the re-signed copy from signedAgents
+    # grant the PATH-resolved binaries too, or --load-sa silently asks for a password
     security.sudo.extraConfig = ''
+      %admin ALL=(root) NOPASSWD: /usr/local/bin/yabai --load-sa
       %admin ALL=(root) NOPASSWD: /run/current-system/sw/bin/yabai --load-sa
     '';
   };
