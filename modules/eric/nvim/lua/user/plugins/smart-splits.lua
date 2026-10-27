@@ -6,7 +6,7 @@ local function move(direction)
     end
 end
 
--- split navigation, continuing into the next tmux pane at an edge (see tmux/keys.conf)
+-- split navigation, continuing into the next tmux or rex pane at an edge (see tmux/keys.conf and rex/init.lua)
 map("n", "<C-J>", move("down"), "Move to window below")
 map("n", "<C-K>", move("up"), "Move to window above")
 map("n", "<C-L>", move("right"), "Move to window right")
@@ -17,8 +17,9 @@ return {
     "smart-splits.nvim",
     after = function()
         require("smart-splits").setup({
-            -- nvim also runs outside tmux, where the backend is expected to be missing
-            mux = { backend = "smart-splits-backend-tmux", warn_if_unusable = false },
+            -- tmux first, since a tmux inside a rex pane owns the panes nvim sits in.
+            -- nvim also runs outside both, where neither backend is expected to detect
+            mux = { backend = { "smart-splits-backend-tmux", "smart-splits-backend-rex" }, warn_if_unusable = false },
             move = { at_edge = "stop" },
         })
     end,

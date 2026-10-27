@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# move a project folder and carry its claude and pi history, memory, and tmux session along
+# move a project folder and carry its claude and pi history, memory, and tmux and rex sessions along
 
 set -euo pipefail
 
@@ -13,8 +13,9 @@ usage() {
 Usage: mvproj [--dry-run] [OLD] NEW
 
   Move the folder OLD to NEW, then carry along what is keyed by its path:
-  claude sessions and memory, pi sessions and project memory, and a tmux
-  session named after the folder. Subfolders of OLD are covered too.
+  claude sessions and memory, pi sessions and project memory, and tmux and
+  rex sessions named after the folder (see project-name). Subfolders of OLD
+  are covered too.
   OLD defaults to the current folder.
   A NEW without a / is a name, and renames OLD in place.
   For a folder directly in ~/dev/scratch, the name moves it to ~/dev/NEW instead.
@@ -166,6 +167,11 @@ replace() {
   done
 }
 
+# the sessions to rename, read before the move, since project-name reads the folder's git repo
+old_name=$(project-name "$old")
+tmux_sessions=$(tmux list-sessions -F $'#{session_name}\t#{session_path}' 2>/dev/null) || true
+rex_sessions=$(rex --autostart=false ls --json 2>/dev/null | jq -r '.sessions[] | "\(.session_id)\t\(.label)"') || true
+
 run mv "$old" "$new"
 
 while IFS=$'\t' read -r from to; do
@@ -200,26 +206,20 @@ if [[ -f $claude_json ]] && {
   fi
 fi
 
-# sesh's name for a path segment: . and : become _, and each run of whitespace one _ (sesh namer/convert.go)
-sesh_name() {
-  local words
-  read -ra words <<<"${1//[.:]/_}"
-  local IFS=_
-  printf '%s' "${words[*]}"
+# a session named after OLD, or after a folder below it, gets project-name's name for its new place.
+# a name that doesn't start with OLD's, such as a sesh config entry's own, stays
+new_name=$(project-name "$new")
+renamed() {
+  [[ $old_name != "$new_name" && ($1 == "$old_name" || $1 == "$old_name"/*) ]] || return 1
+  printf '%s' "$new_name${1#"$old_name"}"
 }
-# sesh names a session in a repo after the repo and subpath, so a session in OLD or under it renames its OLD segment
-if tmux list-sessions >/dev/null 2>&1; then
-  seg_old=$(sesh_name "$(basename "$old")")
-  seg_new=$(sesh_name "$(basename "$new")")
-  while IFS=$'\t' read -r name path; do
-    [[ $path == "$old" || $path == "$old"/* ]] || continue
-    IFS=/ read -ra segs <<<"$name"
-    for i in "${!segs[@]}"; do
-      [[ ${segs[i]} != "$seg_old" ]] || segs[i]=$seg_new
-    done
-    renamed=$(IFS=/ && printf '%s' "${segs[*]}")
-    [[ $renamed == "$name" ]] || run tmux rename-session -t "=$name" "$renamed"
-  done < <(tmux list-sessions -F $'#{session_name}\t#{session_path}')
-fi
+while IFS=$'\t' read -r name path; do
+  [[ $path == "$old" || $path == "$old"/* ]] || continue
+  new_label=$(renamed "$name") && run tmux rename-session -t "=$name" "$new_label"
+done <<<"$tmux_sessions"
+# rex sessions have no folder, so a label alone ties one to OLD, as rext opens them by label
+while IFS=$'\t' read -r id label; do
+  new_label=$(renamed "$label") && run rex --autostart=false session rename "$id" "$new_label"
+done <<<"$rex_sessions"
 
 [[ -n $dry ]] || echo "mvproj: moved to ${new/#"$HOME"/\~}"

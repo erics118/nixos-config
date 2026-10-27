@@ -163,15 +163,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1792057823,
-        "narHash": "sha256-x/zEPsUGw0p10/R2X6GkvkIh6KsRiUFSEp6NdEw7/JM=",
-        "owner": "Mic92",
+        "lastModified": 1793065267,
+        "narHash": "sha256-N56Fs5k3Zx0ShGxpMRQq5VSu3yn+E7LuISKEXR+R49g=",
+        "owner": "erics118",
         "repo": "direnv-instant",
-        "rev": "e78b9752621f1f1fcaeaefeebec0f3477f81652b",
+        "rev": "212c6fdf9fcab4f9919f97a5f2d3f65c7cf43821",
         "type": "github"
       },
       "original": {
-        "owner": "Mic92",
+        "owner": "erics118",
         "repo": "direnv-instant",
         "type": "github"
       }
@@ -575,14 +575,46 @@
         ]
       },
       "locked": {
-        "lastModified": 1792986743,
-        "narHash": "sha256-Cn99YZigOAA2DUiGLkNycZsaiOhr603o0kqNIlwnbe0=",
+        "lastModified": 1793041098,
+        "narHash": "sha256-dd6GRxsuxMcYbRYP/LtjMm8/NQ+rkEU03b3OA1G0ZJ8=",
         "type": "tarball",
-        "url": "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.7.tar.gz"
+        "url": "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.8.tar.gz"
       },
       "original": {
         "type": "tarball",
         "url": "https://pkgs.superlogical.com/rex/nix/preview.tar.gz"
+      }
+    },
+    "rex-image-paste-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792816498,
+        "narHash": "sha256-bbClHHHmhovu0A862BgwhhDDZuUNfICDOCPQyh+F6Oo=",
+        "owner": "pablasso",
+        "repo": "rex-image-paste",
+        "rev": "1d883efb5d348477796733555306f2e445a3593e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pablasso",
+        "repo": "rex-image-paste",
+        "type": "github"
+      }
+    },
+    "rexume-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792949956,
+        "narHash": "sha256-+LHc1OKAIh+3auXPCytsIUWipRDwGFITOM5P2DA2FCk=",
+        "owner": "Entwining",
+        "repo": "rexume",
+        "rev": "20ae4bc057d1b7ce06d92e853af8d5d1de27f342",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Entwining",
+        "repo": "rexume",
+        "type": "github"
       }
     },
     "root": {
@@ -605,7 +637,10 @@
         "nixos-config-private": "nixos-config-private",
         "nixpkgs": "nixpkgs",
         "rex": "rex",
+        "rex-image-paste-src": "rex-image-paste-src",
+        "rexume-src": "rexume-src",
         "sketchybar-src": "sketchybar-src",
+        "smart-splits-backend-rex-src": "smart-splits-backend-rex-src",
         "smart-splits-backend-tmux-src": "smart-splits-backend-tmux-src",
         "smhkd-src": "smhkd-src",
         "sops-nix": "sops-nix",
@@ -732,6 +767,22 @@
       "original": {
         "owner": "erics118",
         "repo": "SketchyBar",
+        "type": "github"
+      }
+    },
+    "smart-splits-backend-rex-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792777628,
+        "narHash": "sha256-eqpAPNOglYRtHyhBLI7WJqNjfGHOgeTDVjp1A37v3Jg=",
+        "owner": "rawnly",
+        "repo": "smart-splits-backend-rex",
+        "rev": "464432c443cd2252d37df91664f9d9f4680d044d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rawnly",
+        "repo": "smart-splits-backend-rex",
         "type": "github"
       }
     },

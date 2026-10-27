@@ -77,10 +77,10 @@ c.window_content_alignment = {
     vertical = "Top",
 }
 c.adjust_window_size_when_changing_font_size = false
-c.window_background_opacity = 0.97
+c.window_background_opacity = 1.0
 -- explicit cell backgrounds, such as tmux's dimmed panes and status segments, go as translucent as the window
 c.text_background_opacity = c.window_background_opacity
-c.macos_window_background_blur = 20
+-- c.macos_window_background_blur = 200
 
 -- metal on macos and vulkan on linux, instead of opengl
 c.front_end = "WebGpu"

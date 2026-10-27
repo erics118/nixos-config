@@ -3,6 +3,7 @@
   "cleanupPeriodDays": 3560,
   "env": {
     "BASH_DEFAULT_TIMEOUT_MS": "10000",
+    "CLAUDE_CODE_FORCE_TERMINAL_IMAGES": "1",
     "ENABLE_TOOL_SEARCH": "auto",
     "GIT_CONFIG_COUNT": "2",
     "GIT_CONFIG_KEY_0": "gpg.ssh.program",
@@ -165,7 +166,16 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/bin/sh -c 'rex __internal session-start --agent claude 2>/dev/null || true'",
+            "command": "/bin/sh -c 'rex __internal session-start --agent claude --feature-session-naming=false 2>/dev/null || true'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c 'command -v rexume >/dev/null || exit 0; exec rexume report claude'",
             "timeout": 5
           }
         ]

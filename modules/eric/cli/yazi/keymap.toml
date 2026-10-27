@@ -9,7 +9,7 @@ prepend_keymap = [
   { on = "<C-A-y>", run = "quit", desc = "Close the popup" },
   { on = "<C-A-j>", run = 'shell --orphan -- tmux-popup scratch "$TMUX_POPUP_CLIENT"', desc = "Switch to the scratch shell" },
   { on = "<C-A-p>", run = 'shell --orphan -- tmux-popup projects "$TMUX_POPUP_CLIENT"', desc = "Switch to the project picker" },
-  # in herdr's and tmux's prefix y popup, keys reach yazi, so C-b y (wezterm's cmd-e in herdr) quits it to close the popup
+  # in tmux's prefix y popup, keys reach yazi, so C-b y quits it to close the popup
   { on = [
     "<C-b>",
     "y",

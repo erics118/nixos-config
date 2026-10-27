@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# opens another claude or pi in a tmux split beside the calling pane, for their /side commands
+# opens another claude or pi in a tmux or rex split beside the calling pane, for their /side commands
 
 set -euo pipefail
 
@@ -21,10 +21,22 @@ EOF
   exit
 fi
 
-[[ -n ${TMUX-} ]] || die "needs an active tmux session"
+# tmux first, since a tmux inside a rex terminal owns the pane
+if [[ -n ${TMUX-} ]]; then
+  where=tmux
+elif [[ -n ${REX_BLOCK-} ]]; then
+  where=rex
+else
+  die "needs an active tmux session or a rex terminal"
+fi
 
+# $1 is a shell command line, which tmux runs through its default shell and rex through sh -c
 split() {
-  tmux split-window -h -t "${TMUX_PANE-}" -c "$PWD" "$1"
+  if [[ $where == tmux ]]; then
+    tmux split-window -h -t "${TMUX_PANE-}" -c "$PWD" "$1"
+  else
+    rex split --block "$REX_BLOCK" --split=right --cwd "$PWD" -- sh -c "$1" >/dev/null
+  fi
 }
 
 # the prompt travels through a file, so no quote in it can break the pane's command.
@@ -33,7 +45,10 @@ with_prompt() {
   local f
   f=$(mktemp /tmp/side-XXXXXX)
   printf '%s' "$2" >"$f"
-  split "$1 \"\$(cat '$f'; rm -f '$f')\""
+  split "$1 \"\$(cat '$f'; rm -f '$f')\"" || {
+    rm -f "$f"
+    die "could not open a $where split"
+  }
 }
 
 agent=${1-}
@@ -58,19 +73,19 @@ fork)
     fork="pi --session $(printf %q "$1")"
     shift
   fi
-  if (($#)); then with_prompt "$fork$sep" "$*"; else split "$fork"; fi
-  echo "side: opened a fork in a tmux split"
+  if (($#)); then with_prompt "$fork$sep" "$*"; else split "$fork" || die "could not open a $where split"; fi
+  echo "side: opened a fork in a $where split"
   ;;
 handoff)
   (($# >= 2)) || die "handoff needs a task, as in /side handoff <task>"
   doc=$1
   shift
   with_prompt "$fresh$sep" "You were opened with /side from another agent's session. Read $doc, which that agent wrote: treat its claims as notes to check, not as facts from me. Then do this task: $*"
-  echo "side: opened a handoff in a tmux split ($doc)"
+  echo "side: opened a handoff in a $where split ($doc)"
   ;;
 new)
-  split "$fresh"
-  echo "side: opened a new conversation in a tmux split"
+  split "$fresh" || die "could not open a $where split"
+  echo "side: opened a new conversation in a $where split"
   ;;
 *) die "unknown mode '$mode', use 'fork', 'handoff', or 'new'" ;;
 esac

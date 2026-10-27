@@ -41,8 +41,9 @@
             SchemaStore-nvim
             nvim-treesitter.withAllGrammars
             rainbow-delimiters-nvim
-            # smart-splits.nvim's tmux backend, required by its setup
+            # smart-splits.nvim's tmux and rex backends, required by its setup
             smart-splits-backend-tmux
+            smart-splits-backend-rex
             vim-fugitive
           ]
           ++

@@ -66,6 +66,9 @@
       home.sessionVariables.GOPATH = "$HOME/.local/share/go";
       home.sessionVariables.GOMODCACHE = "$HOME/.cache/go/mod";
 
+      # login(1) skips its "Last login" line when this file exists
+      home.file.".hushlogin".text = "";
+
       programs.zsh = {
         enable = true;
         enableCompletion = true;

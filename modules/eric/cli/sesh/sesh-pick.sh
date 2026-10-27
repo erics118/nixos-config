@@ -147,15 +147,16 @@ look=(--height 60% --border --border-label ' sesh ')
 # outside the popup hide stays a no-op
 client_tty=''
 ((popup)) && client_tty=${TMUX_POPUP_CLIENT:-}
+printf -v client_tty_q %q "$client_tty"
 # the sequences end in BEL, since a transform output loses the backslash of ESC \
 hide=''
 if [[ -w $client_tty ]]; then
-  hide="execute-silent(printf %s $(printf %q $'\e]12;#1e1e2e\a') > $(printf %q "$client_tty"))+"
+  printf -v hide 'execute-silent(printf %%s %q > %s)+' $'\e]12;#1e1e2e\a' "$client_tty_q"
 fi
 # the tmux server runs the reset, since this script's own children die with the popup
 unhide() {
   [[ -w $client_tty ]] || return 0
-  tmux run-shell -b "sleep 0.15; printf '\\033]112\\007' > $(printf %q "$client_tty")"
+  tmux run-shell -b "sleep 0.15; printf '\\033]112\\007' > $client_tty_q"
 }
 
 # the key help sits in a preview pane at the top, since an fzf header stays next to the prompt.
@@ -169,39 +170,46 @@ fi
 
 # the actions that switch to a view: its prompt icon, the help pane's window, and its list
 show() {
-  printf 'change-prompt(%s  )+change-preview-window(%s)+reload(%q --list %s)' "$1" "$2" "$0" "$3"
+  printf -v REPLY 'change-prompt(%s  )+change-preview-window(%s)+reload(%q --list %s)' "$1" "$2" "$0" "$3"
 }
+show "$all" "$shown" d
+show_all=$REPLY
+show "$tmux" hidden t
+show_tmux=$REPLY
+show "$config" "$shown" c
+show_configs=$REPLY
+show "$dir" "$shown" z
+show_dirs=$REPLY
 
 # cmd-p reaches an open picker as ctrl-alt-p (see scripts/tmux-popup.sh).
 # it switches an open picker to the projects view, or closes it when that view is already shown
-toggle() {
-  # shellcheck disable=SC2016
-  printf '%s:transform:[[ $FZF_PROMPT == %q* ]] && echo %q || echo %q' "$1" "$2" "${hide}abort" "$(show "$2" "$3" "$4")"
-}
-toggles=(--bind "$(toggle ctrl-alt-p "$all" "$shown" d)")
+# shellcheck disable=SC2016
+printf -v toggle_projects 'ctrl-alt-p:transform:[[ $FZF_PROMPT == %q* ]] && echo %q || echo %q' "$all" "${hide}abort" "$show_all"
+toggles=(--bind "$toggle_projects")
 # a remote tmux sends cmd-j and cmd-e into the popup as ctrl-alt-j and ctrl-alt-y, and tmux-popup swaps the picker for that popup
 if [[ -n $client_tty ]]; then
-  toggles+=(--bind "ctrl-alt-j:execute-silent(tmux-popup scratch $(printf %q "$client_tty"))"
-  --bind "ctrl-alt-y:execute-silent(tmux-popup files $(printf %q "$client_tty"))")
+  toggles+=(--bind "ctrl-alt-j:execute-silent(tmux-popup scratch $client_tty_q)"
+    --bind "ctrl-alt-y:execute-silent(tmux-popup files $client_tty_q)")
 fi
 
 # ^n names a new project from the query, or on an empty one prints scratch/, which makes a folder with the scratch script
 # shellcheck disable=SC2016
-new_bind=$(printf 'ctrl-n:transform:[[ -n $FZF_QUERY ]] && echo %q || echo "change-query(scratch/)+"%q' "${hide}print-query" "${hide}print-query")
+printf -v new_bind 'ctrl-n:transform:[[ -n $FZF_QUERY ]] && echo %q || echo "change-query(scratch/)+"%q' "${hide}print-query" "${hide}print-query"
+printf -v preview 'printf %%s %q' "$help"
 
 # enter on a match prints that row, which starts with a sesh icon.
 # enter with no match, or ^n always, prints the typed text instead, which names a new project.
 # ^n is needed since most short names fuzzy-match some zoxide dir
 sel=$(list "$start_flags" | fzf "${look[@]}" \
   --no-sort --ansi --prompt "$start_prompt  " \
-  --preview "printf %s $(printf %q "$help")" --preview-window "$start_window" --color 'preview-fg:#f38ba8,bg:-1' \
+  --preview "$preview" --preview-window "$start_window" --color 'preview-fg:#f38ba8,bg:-1' \
   --bind "tab:down,btab:up,enter:${hide}accept-or-print-query" --bind "$new_bind" \
   --bind "esc:${hide}abort,ctrl-c:${hide}abort" "${toggles[@]}" \
-  --bind "ctrl-a:$(show "$all" "$shown" d)" \
-  --bind "ctrl-t:$(show "$tmux" hidden t)" \
-  --bind "ctrl-g:$(show "$config" "$shown" c)" \
-  --bind "ctrl-x:$(show "$dir" "$shown" z)" \
-  --bind "ctrl-d:execute-silent(tmux kill-session -t ={2..})+$(show "$all" "$shown" d)") &&
+  --bind "ctrl-a:$show_all" \
+  --bind "ctrl-t:$show_tmux" \
+  --bind "ctrl-g:$show_configs" \
+  --bind "ctrl-x:$show_dirs" \
+  --bind "ctrl-d:execute-silent(tmux kill-session -t ={2..})+$show_all") &&
   status=0 || status=$?
 unhide
 ((status == 0)) || exit 0

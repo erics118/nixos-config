@@ -39,7 +39,11 @@
           excludes = [ ".envrc" ];
         };
 
-        prettier.enable = true;
+        prettier = {
+          enable = true;
+          # rex skill status compares the stub byte for byte with what rex skill setup writes
+          excludes = [ "modules/eric/ai/skills/shared/rex/SKILL.md" ];
+        };
         just.enable = true;
         taplo.enable = true;
         yamlfmt = {

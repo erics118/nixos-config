@@ -29,8 +29,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # fork with rex support until Mic92/direnv-instant#172 merges
     direnv-instant = {
-      url = "github:Mic92/direnv-instant";
+      url = "github:erics118/direnv-instant";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
       inputs.treefmt-nix.follows = "treefmt-nix";
@@ -126,6 +127,21 @@
 
     smart-splits-backend-tmux-src = {
       url = "github:smart-splits-nvim/backend-tmux";
+      flake = false;
+    };
+
+    rex-image-paste-src = {
+      url = "github:pablasso/rex-image-paste";
+      flake = false;
+    };
+
+    smart-splits-backend-rex-src = {
+      url = "github:rawnly/smart-splits-backend-rex";
+      flake = false;
+    };
+
+    rexume-src = {
+      url = "github:Entwining/rexume";
       flake = false;
     };
   };

@@ -370,7 +370,7 @@ export default function (pi: ExtensionAPI) {
     };
   };
 
-  // agent-side owns the tmux check and the split, and prints one "side: ..." line either way
+  // agent-side owns the tmux or rex check and the split, and prints one "side: ..." line either way
   const runAgentSide = async (args: string[], ctx: ExtensionContext) => {
     const result = await pi.exec("agent-side", ["pi", ...args], {
       cwd: ctx.cwd,
@@ -399,7 +399,7 @@ export default function (pi: ExtensionAPI) {
       sessionPath = sideSession.sessionPath;
       if (!sessionPath) {
         throw new Error(
-          "/side needs a saved Pi session before tmux can resume it",
+          "/side needs a saved Pi session before the split can resume it",
         );
       }
       const forkPrompt = sideSession.effectivePrompt;
@@ -653,7 +653,7 @@ export default function (pi: ExtensionAPI) {
 
   pi.registerCommand("side", {
     description:
-      "Open a fork, handoff, or fresh Pi session in a tmux split: /side [fork [question] | handoff <task> | new]",
+      "Open a fork, handoff, or fresh Pi session in a tmux or rex split: /side [fork [question] | handoff <task> | new]",
     handler: async (args, ctx) => {
       const { mode, text } = parseSideArgs(args);
       if (mode === "fork") {

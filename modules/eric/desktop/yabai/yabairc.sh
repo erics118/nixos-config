@@ -94,7 +94,7 @@ config=(
 
   # Enable opacity for windows.
   # System Integrity Protection must be partially disabled.
-  window_opacity on # [<BOOL_SEL>]
+  # window_opacity on # [<BOOL_SEL>]
 
   # Duration of transition between active / normal opacity.
   # System Integrity Protection must be partially disabled.
@@ -106,7 +106,7 @@ config=(
 
   # Opacity of an unfocused window.
   # System Integrity Protection must be partially disabled.
-  normal_window_opacity 0.80 # [<FLOAT_SEL>]
+  # normal_window_opacity 0.80 # [<FLOAT_SEL>]
 
   # Duration of window frame animation.
   # If 0.0, the change in dimension is not animated.

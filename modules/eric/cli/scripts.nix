@@ -37,6 +37,7 @@ in
         lsof
         jq
       ];
+      project-name = [ pkgs.git ];
       # macOS ships /usr/bin/trash
       scratch = [
         pkgs.lsof

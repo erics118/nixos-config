@@ -35,13 +35,11 @@ local openUrl = act.QuickSelectArgs({
 })
 
 -- what owns a pane's keys, from its foreground process tree: "local-tmux", "remote-tmux" (rtmux over mosh or autossh),
--- "herdr", "ssh", or nil for anything else. mosh hides its remote command, so any mosh counts as remote tmux
+-- "ssh", or nil for anything else. mosh hides its remote command, so any mosh counts as remote tmux
 local function classify(info)
     local exe = info.executable:match("[^/]+$") or ""
     if exe == "tmux" then
         return "local-tmux"
-    elseif exe == "herdr" then
-        return "herdr"
     elseif exe == "mosh-client" then
         return "remote-tmux"
     elseif exe == "ssh" or exe == "autossh" then
@@ -62,7 +60,6 @@ local function classify(info)
     end
 end
 
--- herdr shares tmux's C-b prefix and maps the same keys, so it counts as tmux here
 local function runs_tmux(info)
     local kind = classify(info)
     return kind ~= nil and kind ~= "ssh"
@@ -165,29 +162,24 @@ local function hide_cursor_briefly(pane)
 end
 
 -- an open popup takes every key, so a local tmux gets its popups from tmux-popup (see cli/scripts), run directly.
--- a remote tmux gets the keys its own bindings take (see cli/tmux/popups.conf and cli/rtmux/remote.conf), and herdr its own popup keys
-local function popup_key(kind, tmux_keys, herdr_keys)
+-- a remote tmux gets the keys its own bindings take (see cli/tmux/popups.conf and cli/rtmux/remote.conf)
+local function popup_key(kind, tmux_keys)
     return wezterm.action_callback(function(window, pane)
         local info = pane:get_foreground_process_info()
         local owner = info and classify(info)
         if not owner then
             return
-        elseif owner == "herdr" then
-            window:perform_action(act.SendString(herdr_keys), pane)
+        end
+        hide_cursor_briefly(pane)
+        if owner == "local-tmux" then
+            wezterm.background_child_process({ "tmux-popup", kind, pane:get_tty_name() })
         else
-            hide_cursor_briefly(pane)
-            if owner == "local-tmux" then
-                wezterm.background_child_process({ "tmux-popup", kind, pane:get_tty_name() })
-            else
-                window:perform_action(act.SendString(tmux_keys), pane)
-            end
+            window:perform_action(act.SendString(tmux_keys), pane)
         end
     end)
 end
--- herdr's scratch popup takes every key, so cmd-j sends ctrl+\, which herdr opens it on and dtach closes it on.
--- herdr has its one picker on prefix f, since its prefix s is settings
-map("j", { MOD }, popup_key("scratch", "\x1b\x0a", "\x1c"))
-map("e", { MOD }, popup_key("files", "\x1b\x19", "\x02y"))
+map("j", { MOD }, popup_key("scratch", "\x1b\x0a"))
+map("e", { MOD }, popup_key("files", "\x1b\x19"))
 -- cmd-k opens the native projects menu (see bar.lua), and elsewhere tmux's session picker on prefix S.
 -- bar.lua requires this file, so it is required here only when the key fires
 if is_mac then
@@ -201,7 +193,7 @@ if is_mac then
 else
     map("k", { MOD }, to_tmux("S"))
 end
-map("p", { MOD }, popup_key("projects", "\x1b\x10", "\x02f"))
+map("p", { MOD }, popup_key("projects", "\x1b\x10"))
 -- tmux prefix, sent unchecked so it also reaches tmux over plain ssh
 map("s", { MOD }, act.SendString("\x02"))
 -- the linux leader is ctrl-a, so pressing it twice sends a real ctrl-a
