@@ -5,7 +5,7 @@
       inputs.sops-nix.darwinModules.sops
     ];
 
-    # spotlight, fseventsd, finder hardening for the /nix volume
+    # /nix volume hardening (spotlight, fseventsd, finder), plus disabling duetexpertd
     system.activationScripts.postActivation.text = ''
       # disable fseventsd on /nix volume
       mkdir -p /nix/.fseventsd
@@ -15,10 +15,14 @@
       # hide /nix from Finder
       chflags hidden /nix
       # disable duetexpertd, app-prediction daemon that pins a cpu core, unused with siri off
+      # resetting its store does not hold, since the store rebuilds within hours
       duetuid=$(id -u eric)
       launchctl bootout gui/"$duetuid"/com.apple.duetexpertd 2>/dev/null || true
       launchctl disable gui/"$duetuid"/com.apple.duetexpertd 2>/dev/null || true
     '';
+
+    # skip evaluating the darwin option docs for the html manual and darwin-help
+    documentation.doc.enable = false;
 
     users.users.eric = {
       name = "eric";
@@ -42,12 +46,63 @@
           "com.apple.security.authorization".ignoreArd = true;
           # window corner radius in points, 1 is effectively square corners
           NSGlobalDomain.NSConvolutionOverride1 = 1.0;
+          # ask to keep changes when closing documents
+          NSGlobalDomain.NSCloseAlwaysConfirmsChanges = true;
+          NSGlobalDomain.WebAutomaticSpellingCorrectionEnabled = false;
+          # liquid glass tint sliders
+          NSGlobalDomain.NSGlassTintAmount = 0.5;
+          NSGlobalDomain.NSGlassBuddyTintAmount = 0.5;
+          # no .DS_Store files on network shares or usb drives
+          "com.apple.desktopservices" = {
+            DSDontWriteNetworkStores = true;
+            DSDontWriteUSBStores = true;
+          };
+          # not system.defaults.dock, which restarts Dock every activation and drops yabai pip windows to 0,0
+          # so changes here apply at the next Dock restart or login
+          "com.apple.dock" = {
+            autohide = true;
+            autohide-delay = 0.2;
+            minimize-to-application = true;
+            # keep spaces in a fixed order for the tiling wm
+            mru-spaces = false;
+            show-recents = false;
+            showhidden = true;
+            tilesize = 50;
+            # display sleep
+            wvous-br-corner = 10;
+            # modifier held for the bottom-right hot corner
+            wvous-br-modifier = 1966080;
+            # the tile records system.defaults.dock.persistent-apps builds from app paths
+            persistent-apps =
+              map
+                (app: {
+                  tile-data.file-data = {
+                    _CFURLString = app;
+                    _CFURLStringType = 0;
+                  };
+                })
+                [
+                  "/Applications/Fantastical.app"
+                  "/Applications/Todoist.app"
+                  "/Applications/Notion.app"
+                  "/System/Applications/Messages.app"
+                  "/Applications/Firefox Developer Edition.app"
+                  "/Applications/WezTerm.app"
+                  "/Applications/Slack.app"
+                  "/Applications/Spotify.app"
+                ];
+          };
+          # document icons in window title bars. macos protects this domain, so the
+          # write may need full disk access for the activation
+          "com.apple.universalaccess".showWindowTitlebarIcons = true;
         };
 
         NSGlobalDomain = {
           AppleICUForce24HourTime = true;
+          AppleIconAppearanceTheme = "RegularDark";
           AppleInterfaceStyle = "Dark";
           ApplePressAndHoldEnabled = false;
+          AppleReduceDesktopTinting = true;
           AppleScrollerPagingBehavior = true;
           AppleShowAllExtensions = true;
           AppleShowScrollBars = "WhenScrolling";
@@ -60,12 +115,14 @@
           NSAutomaticPeriodSubstitutionEnabled = false;
           NSAutomaticQuoteSubstitutionEnabled = false;
           NSAutomaticSpellingCorrectionEnabled = false;
-          "com.apple.keyboard.fnState" = true;
+          "com.apple.keyboard.fnState" = false;
           "com.apple.mouse.tapBehavior" = 1;
           "com.apple.sound.beep.feedback" = 0;
           "com.apple.sound.beep.volume" = 0.0;
           "com.apple.trackpad.forceClick" = true;
         };
+
+        hitoolbox.AppleFnUsageType = "Do Nothing";
 
         finder = {
           _FXShowPosixPathInTitle = true;
@@ -84,6 +141,8 @@
         menuExtraClock = {
           IsAnalog = false;
           Show24Hour = true;
+          # always, not only when space allows
+          ShowDate = 1;
           ShowDayOfWeek = true;
           ShowSeconds = true;
         };
@@ -91,6 +150,10 @@
         WindowManager = {
           EnableStandardClickToShowDesktop = false;
           EnableTiledWindowMargins = false;
+          # macos's own window tiling off
+          EnableTilingByEdgeDrag = false;
+          EnableTilingOptionAccelerator = false;
+          EnableTopTilingByEdgeDrag = false;
           GloballyEnabled = false;
           HideDesktop = true;
           StandardHideDesktopIcons = false;
@@ -106,8 +169,11 @@
       auth sufficient pam_tid.so.2
     '';
 
+    # callers: modules/eric/cli/scripts/darwin/keepawake.sh and the sketchybar sleep and battery items
+    # sudoers matches arguments exactly, so a caller's pmset arguments must match a rule here verbatim
     security.sudo.extraConfig = ''
       %admin ALL=(root) NOPASSWD: /usr/bin/pmset -a disablesleep 1, /usr/bin/pmset -a disablesleep 0
+      %admin ALL=(root) NOPASSWD: /usr/bin/pmset -a powermode 0, /usr/bin/pmset -a powermode 1, /usr/bin/pmset -a powermode 2
     '';
   };
 }
