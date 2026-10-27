@@ -576,6 +576,15 @@ func plainParam(p *syntax.ParamExp) bool {
 }
 
 func (s *state) value(p *syntax.ParamExp) (string, bool) {
+	// ${d:?} and ${d?} expand to $d whenever they expand at all, so a known non-empty d stands in for them
+	if p.Exp != nil && strings.Contains(p.Exp.Op.String(), "?") {
+		bare := *p
+		bare.Exp = nil
+		if v, ok := s.value(&bare); ok && v != "" {
+			return v, true
+		}
+		return "", false
+	}
 	if !plainParam(p) {
 		return "", false
 	}

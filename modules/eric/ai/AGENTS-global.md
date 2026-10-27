@@ -31,6 +31,7 @@ These rules cover chat replies, not long-form work I ask for (drafts, scripts, p
 - When you truncate, summarize, or show a subset, say what was cut and how to get the rest
 - Don't explain my own setup or these rules to me unless I ask
 - While working, speak up only for a real finding or a change of direction
+- When a reply waits on my decision, end it with one line naming that decision, since the last line becomes the Rex notification
 - Completion reports: **Done** (files touched, commit, then the `Checked:` and `Not checked:` lines per the verify skill), **Remaining** (unfinished work or real risks), **Needs your decision**. Drop empty sections
 
 ## Execution policy
@@ -107,7 +108,7 @@ These rules cover chat replies, not long-form work I ask for (drafts, scripts, p
 - Delete with `trash <path>`, never `rm` or a `mv` into the trash folder. On macOS it is `/usr/bin/trash` and keeps Finder's Put Back. On Linux it is `trash-cli`, restored with `trash-restore`
 - On macOS, read the unified log with `/usr/bin/log show`, never bare `log`, which is a zsh builtin that prints nothing to stdout
 - `.eric/` is the personal, untracked folder at the main repo's root in every repo (global git ignore in `modules/eric/git.nix`). Write there without checking ignore rules. Create nothing at its top level beyond these entries and any the repo's own AGENTS.md or code names. Dates come from `date +%F`:
-  - `scratch/<YYYY-MM-DD>-<topic>/`: the task's throwaway files (fixtures, one-off scripts, in-between versions of files, tool output). It replaces any harness scratchpad: never use `mktemp`, `/tmp`, or a harness scratchpad for scratch space. When the task ends, delete it and nothing else
+  - `scratch/<YYYY-MM-DD>-<topic>/`: the task's throwaway files (fixtures, one-off scripts, in-between versions of files, tool output). It replaces any harness scratchpad: never use `mktemp`, `/tmp`, or a harness scratchpad for scratch space. Make it with `~/.agents/bin/new-scratch.sh <topic>`, which prints a fresh folder. Delete only a folder you created. When the task ends, delete it and nothing else
   - `worktrees/<topic>/`: git worktrees. Remove one with `git worktree remove` when the task ends
   - `notes/<YYYY-MM-DD>-<topic>.<ext>`: anything kept past the task (a review list, collected data). Delete only when I say so
   - `handoffs/<YYYY-MM-DD>-<slug>.md`: handoff docs for another agent, written by the handoff skill. Delete only when I say so

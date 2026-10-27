@@ -401,9 +401,6 @@ trusted_hash = "sha256:f27a4fda937303a82b584fd3a3acbbb561b32c64d5a09ea51ffe7177f
 [hooks.state."/Users/eric/.codex/hooks.json:session_start:0:0"]
 trusted_hash = "sha256:fdcc0e8ab137e94aed9979e34df6b07780dced7150df9eba5c3bccd3855152e7"
 
-[hooks.state."/Users/eric/.codex/hooks.json:session_start:0:1"]
-trusted_hash = "sha256:341f095eb06db5b52fa3c919f6e3ba2ada4c63883b73a18707a760623a7fc589"
-
 [hooks.state."/Users/eric/.codex/hooks.json:pre_tool_use:0:0"]
 trusted_hash = "sha256:d06868730b61f05db3f56714b5e7499632bd731c1905525d29d402477834ed44"
 

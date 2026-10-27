@@ -5,10 +5,11 @@
 input=$(cat)
 id=$(jq -r '.session_id // empty' <<<"$input" 2>/dev/null)
 [[ -n $id ]] || exit 0
+printf -v id %q "$id"
 case $1 in
-claude) cmd="claude --resume $(printf %q "$id")" ;;
-codex) cmd="codex resume $(printf %q "$id")" ;;
-pi) cmd="pi --session $(printf %q "$id")" ;;
+claude) cmd="claude --resume $id" ;;
+codex) cmd="codex resume $id" ;;
+pi) cmd="pi --session $id" ;;
 *) exit 0 ;;
 esac
 
@@ -18,14 +19,23 @@ if [[ -n ${TMUX_PANE:-} ]]; then
   [[ $(ps -o comm= -p "$agent") =~ (^|/)-?(sh|bash|zsh|dash)$ ]] && agent=$(ps -o ppid= -p "$agent" | tr -d ' ')
 elif [[ $1 == codex ]]; then
   # codex runs hooks in its background daemon, outside any pane.
-  # the pane is the only one whose shell started a codex in the session's directory
+  # the pane is the only one whose shell started a codex in the session's directory,
+  # and no codex outside tmux, such as one in rex, runs there too
   cwd=$(jq -r '.cwd // empty' <<<"$input")
+  in_cwd() {
+    [[ $(lsof -a -d cwd -p "$1" -Fn 2>/dev/null | sed -n 's/^n//p') == "$cwd" ]]
+  }
   matches=$(tmux list-panes -a -F '#{pane_id} #{pane_pid}' 2>/dev/null | while read -r pane pane_pid; do
     for child in $(pgrep -P "$pane_pid" -x codex); do
-      [[ $(lsof -a -d cwd -p "$child" -Fn 2>/dev/null | sed -n 's/^n//p') == "$cwd" ]] && echo "$pane $child"
+      in_cwd "$child" && echo "$pane $child"
     done
   done)
   [[ -n $matches && $(wc -l <<<"$matches") -eq 1 ]] || exit 0
+  total=0
+  for pid in $(pgrep -x codex); do
+    in_cwd "$pid" && ((total += 1))
+  done
+  ((total == 1)) || exit 0
   read -r TMUX_PANE agent <<<"$matches"
 else
   exit 0

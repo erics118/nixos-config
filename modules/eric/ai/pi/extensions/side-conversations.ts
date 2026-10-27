@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { unlink } from "node:fs/promises";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import type { AssistantMessage, UserMessage } from "@earendil-works/pi-ai";
 import {
   SessionManager,
@@ -26,6 +28,9 @@ import {
   type TUI,
 } from "@earendil-works/pi-tui";
 import { parseSideArgs, SIDE_SYSTEM_PROMPT } from "../lib/side-session.ts";
+
+// ai/bin/agent-side.sh, linked as ~/.agents/bin
+const agentSide = join(homedir(), ".agents", "bin", "agent-side.sh");
 
 const BTW_SYSTEM_PROMPT = [
   "You are having a private side conversation with the user.",
@@ -372,7 +377,7 @@ export default function (pi: ExtensionAPI) {
 
   // agent-side owns the tmux or rex check and the split, and prints one "side: ..." line either way
   const runAgentSide = async (args: string[], ctx: ExtensionContext) => {
-    const result = await pi.exec("agent-side", ["pi", ...args], {
+    const result = await pi.exec(agentSide, ["pi", ...args], {
       cwd: ctx.cwd,
       timeout: 10_000,
     });
@@ -653,7 +658,7 @@ export default function (pi: ExtensionAPI) {
 
   pi.registerCommand("side", {
     description:
-      "Open a fork, handoff, or fresh Pi session in a tmux or rex split: /side [fork [question] | handoff <task> | new]",
+      "Open a fork, handoff, or fresh Pi session in a tmux or rex split: /side [fork [question] | handoff <task> | new [prompt]]",
     handler: async (args, ctx) => {
       const { mode, text } = parseSideArgs(args);
       if (mode === "fork") {
@@ -665,7 +670,7 @@ export default function (pi: ExtensionAPI) {
         pi.sendUserMessage(
           [
             `Write a handoff document as ~/.agents/skills/handoff/SKILL.md describes, focused on this task: ${text}`,
-            "Then run `agent-side pi handoff <doc path> '<task>'` with the task single-quoted, and reply with the line it prints.",
+            "Then run `~/.agents/bin/agent-side.sh pi handoff <doc path> '<task>'` with the task single-quoted, and reply with the line it prints.",
           ].join("\n\n"),
         );
         return;

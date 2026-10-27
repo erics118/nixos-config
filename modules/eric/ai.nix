@@ -72,6 +72,8 @@
         ".codex/AGENTS.md".source = globalInstructions;
         ".pi/agent/AGENTS.md".source = globalInstructions;
         ".agents/hooks".source = repoFile "${base}/hooks";
+        # commands only agents run, which the global instructions call by path
+        ".agents/bin".source = repoFile "${base}/bin";
       }
       // links ".claude" "claude" [
         "agents"

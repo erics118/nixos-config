@@ -35,7 +35,10 @@ func blockSmartPunct(h *hook) decision {
 		return decision{}
 	}
 	if smartCount(added) > smartCount(strings.Join(olds, "\n")) {
-		return deny("this write introduces smart punctuation (em/en dash, curly quotes, ellipsis). use plain ASCII: -, straight quotes, ... instead. rewrite and retry.")
+		return deny(`smart punctuation (dash, curly quote, ellipsis) is blocked. use ASCII instead: "-", straight quotes, "...". ` +
+			`only if code must match or produce the exact character (e.g. normalizing scraped text), escape it: ` +
+			`\u{2019} in js, ts, rust, lua, swift; \N{RIGHT SINGLE QUOTATION MARK} or chr(0x2019) in python. ` +
+			`never in prose, comments, docs, or messages. a four-digit backslash-u escape arrives as the character and is blocked too.`)
 	}
 	return decision{}
 }

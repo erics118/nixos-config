@@ -51,6 +51,31 @@ func nixCommand(a []string) []string {
 	return nil
 }
 
+var remoteFlake = regexp.MustCompile(`^(nixpkgs([/#]|$)|(github|gitlab|sourcehut):|(git\+)?(https?|ssh)://|tarball\+)`)
+
+// remoteOnly reports nix arguments that name at least one installable and only remote flakes.
+// the program and its arguments after --command, -c, or -- are not installables.
+// any other word, such as an option's value, counts as local, so a misread denies
+func remoteOnly(args []string) bool {
+	n := 0
+	for _, w := range args {
+		if w == "--command" || w == "-c" || w == "--" {
+			break
+		}
+		if strings.HasPrefix(w, "-") {
+			if slices.Contains([]string{"--inputs-from", "--override-input", "--expr", "--file", "-f", "--reference-lock-file"}, w) {
+				return false
+			}
+			continue
+		}
+		if !remoteFlake.MatchString(w) {
+			return false
+		}
+		n++
+	}
+	return n > 0
+}
+
 // evaluatesFlake reports a call that evaluates the flake in dir.
 // a just recipe counts only when its dry run calls nix, since many repos with a flake use just for other builds.
 // a dry run that fails falls back to the recipe name, so an unreadable justfile still blocks
@@ -59,7 +84,10 @@ func evaluatesFlake(c call, dir string) bool {
 	switch {
 	case t == "nix":
 		sub := nixCommand(a)
-		return slices.Contains([]string{"build", "develop", "eval", "run", "fmt", "shell", "repl", "bundle", "copy"}, at(sub, 0)) ||
+		if slices.Contains([]string{"build", "eval", "run", "shell", "bundle", "copy"}, at(sub, 0)) {
+			return !remoteOnly(sub[1:])
+		}
+		return slices.Contains([]string{"develop", "fmt", "repl"}, at(sub, 0)) ||
 			(at(sub, 0) == "flake" && slices.Contains([]string{"check", "show", "metadata"}, at(sub, 1)))
 	case t == "nh":
 		return (at(a, 1) == "darwin" || at(a, 1) == "os" || at(a, 1) == "home") && (at(a, 2) == "build" || at(a, 2) == "switch")

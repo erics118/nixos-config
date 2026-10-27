@@ -3,6 +3,7 @@
   "cleanupPeriodDays": 3560,
   "env": {
     "BASH_DEFAULT_TIMEOUT_MS": "10000",
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
     "CLAUDE_CODE_FORCE_TERMINAL_IMAGES": "1",
     "ENABLE_TOOL_SEARCH": "auto",
     "GIT_CONFIG_COUNT": "2",
@@ -99,7 +100,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.agents/hooks/guard.sh\" pre claude"
+            "command": "\"$HOME/.agents/hooks/guard.sh\" pre claude || { echo 'guard hook did not run, so the call was not checked' >&2; exit 2; }"
           }
         ]
       }
@@ -110,7 +111,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.agents/hooks/guard.sh\" post claude"
+            "command": "\"$HOME/.agents/hooks/guard.sh\" post claude || { echo 'guard hook did not run, so the edit was not checked' >&2; exit 2; }"
           }
         ]
       }
@@ -153,16 +154,6 @@
         ]
       },
       {
-        "matcher": "^(startup|resume|clear|compact|fork)$",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
-            "timeout": 10
-          }
-        ]
-      },
-      {
         "hooks": [
           {
             "type": "command",
@@ -185,7 +176,6 @@
   "statusLine": {
     "type": "command",
     "command": "zsh -f ~/.claude/statusline.zsh"
-    "command": "bash ~/.claude/statusline.sh"
   },
   "enabledPlugins": {
     "feature-dev@claude-plugins-official": false,

@@ -225,6 +225,7 @@ var cases = map[string][]group{
 	"block-smart-punct": {
 		{want: "deny", files: []string{"new.txt"}, content: "em dash: " + string(rune(0x2014))},
 		{want: "allow", files: []string{"new.txt"}, content: `dash: - quotes: "x"`},
+		{want: "allow", files: []string{"new.ts"}, content: `const q = /[\u{2018}\u{2019}]/gu, d = "\\u2014", p = "\N{EM DASH}"`},
 	},
 	"block-git-config-edit": {
 		{want: "deny", files: []string{".git/config", "{home}/.gitconfig"}},
@@ -251,7 +252,10 @@ var cases = map[string][]group{
 	},
 	"git-add-before-nix": {
 		{want: "deny", cmds: []string{"nix build", "sudo darwin-rebuild switch --flake .", "just switch", "nh darwin switch",
-			"nix flake check", "nix -L build", "nix --print-build-logs build", "nix shell .#hello"}},
+			"nix flake check", "nix -L build", "nix --print-build-logs build", "nix shell .#hello", "nix develop", "nix fmt",
+			"nix shell nixpkgs#jq .#hello", "nix eval --raw --inputs-from . nixpkgs#hello.version", "nix build -o result nixpkgs#hello"}},
+		{want: "allow", cmds: []string{"nix shell nixpkgs#jq --command jq .", "nix eval --raw nixpkgs#hello.version",
+			"nix run github:o/r -- .", "nix build --no-link nixpkgs#hello nixpkgs/nixos-unstable#jq", "nix shell nixpkgs#jq -c jq ."}},
 		{want: "allow", cmds: []string{"git status", "rg -n home-manager modules", "ls ~/.local/state/home-manager /tmp",
 			// the dry run and the untracked check use the directory a later cd moves to
 			"git status && cd jb && just build",
@@ -416,11 +420,19 @@ var cases = map[string][]group{
 			// a runner that starts the interpreter still counts as a script
 			`uv run python -c "open('tracked.txt', 'w').write('x')"`,
 			"{ echo x; } > tracked.txt", `perl -e 'open(F, ">tracked.txt")'`, `ruby -e "File.write('tracked.txt', 'x')"`,
-			`node -e "require('fs').appendFileSync('tracked.txt', 'x')"`, `python3 -c "open(\"tracked.txt\", \"w\")"`}},
+			`node -e "require('fs').appendFileSync('tracked.txt', 'x')"`, `python3 -c "open(\"tracked.txt\", \"w\")"`,
+			`d=sub; cd -- "${d:?}" && echo x > flake.nix`, `python3 -c "p='tracked.txt'; open(o, 'w').write(open(p).read())"`}},
 		{env: map[string]string{"HOME": "{repo}"}, want: "deny", cmds: []string{`echo x > "$HOME/tracked.txt"`, "echo x > ${HOME}/tracked.txt"}},
 		{want: "allow", cmds: []string{"sed -n p tracked.txt", "sed -i s/a/b/ untracked.nix", "echo x > new.txt",
 			"cat tracked.txt > /dev/null", "cp tracked.txt /tmp/x", "mv tracked.txt", "cp /tmp/x.png blob.png", "mv new.png blob.png",
-			`echo "python: open('tracked.txt', 'w')"`}},
+			`echo "python: open('tracked.txt', 'w')"`, `python3 -c "p='blob.png'; open(o, 'w').write(open(p, 'rb').read())"`}},
+	},
+	"ask-defaults-write": {
+		{want: "ask", cmds: []string{"defaults write com.x k -bool false", "sudo defaults write /Library/Preferences/com.x k -int 1",
+			"/usr/bin/defaults delete com.x k", "defaults -currentHost write com.x k 1", "defaults -host h import com.x f.plist",
+			"defaults rename com.x a b", `bash -c "defaults write com.x k 1"`}},
+		{want: "allow", cmds: []string{"defaults read com.x", "defaults read-type com.x k", "defaults domains", "defaults find x",
+			"defaults export com.x -", "defaults -currentHost read com.x", `echo "defaults write com.x k 1"`}},
 	},
 	"block-sudo-probe": {
 		{env: map[string]string{"PATH": "{repo}/bin:{path}"}, want: "deny",
@@ -443,12 +455,22 @@ var cases = map[string][]group{
 		{want: "allow", cmds: []string{"trash f", "git rm f", "echo rm", "watch -n 1 ls", "chronic ls", "[ -f x ] && echo y",
 			`"$HOME/bin/tool" x`, "f() { echo; }; f"}},
 	},
-	"block-tmux-kill": {
+	"block-mux-kill": {
 		{want: "deny", cmds: []string{"tmux kill-server", "tmux kill-session -t main", "tmux killp -t 1", "TMUX_TMPDIR=/tmp/x tmux kill-server",
 			"pkill tmux", "killall tmux", `bash -c "tmux kill-server"`, "tmux -L default kill-server", "pkill tm[u]x",
 			"pkill -f 'tmux.*'", "killall -m tmu."}},
 		{want: "allow", cmds: []string{"tmux -L agent kill-server", "tmux -Lagent kill-session -t main", "tmux -S /tmp/s kill-server",
 			"tmux ls", "pkill node", "pkill -u eric node"}},
+		{want: "deny", cmds: []string{"rex kill main", "rex session kill main", "rex -S narwhal kill main", "rex --timeout 5s kill x",
+			`rex block close -s "$REX_SESSION" block:1`, "rex window close window:1", "rex server stop", "rex do pane.close",
+			"rex -C studio do client.tab.close", "rex do session.close", "rex do confirm_close_tab", "rex do -b block:1 pane.close",
+			"rex -S 'unix:///Users/eric/Library/Application%20Support/rex/server.sock' kill x", "pkill rex", "killall 'Rex Beta'",
+			"pkill -f 're[x]'", "rex kill agent-test-a main", "rex kill agent-x", "rex block close session:1",
+			"rex session kill agent-test", "rex kill"}},
+		{want: "allow", cmds: []string{"rex ls", "rex new x", "rex split --split=right", "rex do popup_closed", "rex do session.select",
+			"rex do -e 'return 1'", "rex -S unix:///tmp/agent.sock kill x", "rex --server=/tmp/agent.sock block close block:1",
+			"rex block inspect block:1", "rex capture -b block:1", "rex kill agent-test-popup", "rex kill agent-test-a agent-test-b",
+			"rex session kill agent-test-x", `rex block close -s "$REX_SESSION" agent-test-codex`, "rex window close agent-test-w"}},
 	},
 	"block-pipe-head-tail": {
 		{want: "deny", cmds: []string{"ssh turtle 'ls ~/.ssh' | tail -6", "nix build . 2>&1 | tail -n 20", "rg x . | head", "a | b | head -1",
@@ -466,9 +488,10 @@ var cases = map[string][]group{
 	// a relative write after a cd the guard cannot follow could land on any file, so it denies
 	"block-unresolved-write": {
 		{want: "deny", cmds: []string{`cd "$d" && echo x > f`, "cd $dir/sub && sed -i s/a/b/ f", `cd "$d"; cp /tmp/x out`,
-			`cd "$d" && python3 -c "open(\"f\", \"w\")"`}},
+			`cd "$d" && python3 -c "open(\"f\", \"w\")"`, `cd -- "${d:?}" && echo x > f`}},
 		{want: "allow", cmds: []string{`cd "$d" && echo x > /tmp/abs`, `cd "$d" && rg x .`, `cd "$d" && make 2>/dev/null`,
-			`cd "$d" && make 2>&1`, "cd sub && echo x > f", `cd "$d" && sed -i s/a/b/ /tmp/abs`}},
+			`cd "$d" && make 2>&1`, "cd sub && echo x > f", `cd "$d" && sed -i s/a/b/ /tmp/abs`,
+			`d=sub; cd -- "${d:?}" && echo x > f`, `d=sub; cd "${d?}" && echo x > f`}},
 	},
 	"treefmt-on-edit": {
 		{want: "quiet", files: []string{"tracked.txt"}},

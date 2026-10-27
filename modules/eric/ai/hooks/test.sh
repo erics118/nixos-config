@@ -124,7 +124,7 @@ HOME=$rem_home "$hooks/reminders.sh" <<<"{\"cwd\":\"$repo/reminders-wt\"}" |
 }
 printf 'ok reminders-both\n'
 
-# every script settings.json runs from this directory, since herdr installs its own by absolute path
+# every script settings.json runs from this directory
 # guard/checks_test.go covers every agent-guard check
 configured=$(jq -r '.hooks | to_entries[] | .value[] | .hooks[] | .command | select(startswith("\"$HOME/.agents/hooks/"))' "$settings" |
   sed -E 's#.*/##; s/"//g; s/ .*//' | grep -vx guard.sh | sort -u)
@@ -171,6 +171,19 @@ HOME=$check_home bash -c "$startup_check" | jq -e '.systemMessage | contains("gu
   exit 1
 }
 printf 'ok session-start-hook-check\n'
+
+# with guard.sh missing, sh exits 127, which the harnesses treat as non-blocking, so the commands turn it into a block
+while IFS= read -r cmd; do
+  set +e
+  HOME=$check_home sh -c "$cmd" </dev/null >/dev/null 2>&1
+  status=$?
+  set -e
+  [ "$status" -eq 2 ] || {
+    printf 'FAIL guard command exited %s without guard.sh: %s\n' "$status" "$cmd"
+    exit 1
+  }
+done < <(jq -r '.hooks[][].hooks[].command | select(contains("guard.sh"))' "$settings" "$root/modules/eric/ai/codex/hooks.json")
+printf 'ok guard-command-fails-closed\n'
 
 rules="$root/modules/eric/ai/codex/rules/default.rules"
 expect_rule() {

@@ -4,7 +4,7 @@
       {
         "hooks": [
           {
-            "command": "\"$HOME/.agents/hooks/guard.sh\" pre codex",
+            "command": "\"$HOME/.agents/hooks/guard.sh\" pre codex || { echo 'guard hook did not run, so the call was not checked' >&2; exit 2; }",
             "type": "command"
           }
         ],
@@ -16,11 +16,6 @@
         "hooks": [
           {
             "command": "\"$HOME/.agents/hooks/tmux-agent-resume.sh\" codex",
-            "type": "command"
-          },
-          {
-            "command": "bash \"$HOME/.codex/herdr-agent-state.sh\" session",
-            "timeout": 10,
             "type": "command"
           }
         ]

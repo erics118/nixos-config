@@ -50,7 +50,7 @@ func blockShellEdit(h *hook) decision {
 		for _, p := range candidates {
 			// perl opens with the mode in front of the path, as ">file"
 			p = strings.TrimLeft(p, "+<> ")
-			if slices.ContainsFunc(h.paths(in, p), tracked) {
+			if slices.ContainsFunc(h.paths(in, p), func(p string) bool { return tracked(p) && !binary(p) }) {
 				return deny(p + trackedSuffix)
 			}
 		}

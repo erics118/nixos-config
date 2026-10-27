@@ -10,13 +10,13 @@ die() {
 
 if [[ ${1-} == -h || ${1-} == --help ]]; then
   cat <<EOF
-Usage: agent-side claude [fork [QUESTION] | handoff DOC TASK | new]
-       agent-side pi [fork SESSION [QUESTION] | handoff DOC TASK | new]
+Usage: agent-side.sh claude [fork [QUESTION] | handoff DOC TASK | new [PROMPT]]
+       agent-side.sh pi [fork SESSION [QUESTION] | handoff DOC TASK | new [PROMPT]]
 
   fork              fork the conversation, sending QUESTION if given.
                     claude forks \$CLAUDE_CODE_SESSION_ID, pi opens the branched SESSION file
   handoff DOC TASK  a fresh agent that reads DOC, then does TASK
-  new               a fresh agent with no history
+  new               a fresh agent with no history, sending PROMPT if given
 EOF
   exit
 fi
@@ -70,7 +70,7 @@ fork)
     fork="claude --resume $CLAUDE_CODE_SESSION_ID --fork-session"
   else
     (($#)) || die "pi fork needs the branched session file"
-    fork="pi --session $(printf %q "$1")"
+    printf -v fork 'pi --session %q' "$1"
     shift
   fi
   if (($#)); then with_prompt "$fork$sep" "$*"; else split "$fork" || die "could not open a $where split"; fi
@@ -84,7 +84,7 @@ handoff)
   echo "side: opened a handoff in a $where split ($doc)"
   ;;
 new)
-  split "$fresh" || die "could not open a $where split"
+  if (($#)); then with_prompt "$fresh$sep" "$*"; else split "$fresh" || die "could not open a $where split"; fi
   echo "side: opened a new conversation in a $where split"
   ;;
 *) die "unknown mode '$mode', use 'fork', 'handoff', or 'new'" ;;

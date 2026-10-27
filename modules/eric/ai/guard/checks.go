@@ -36,6 +36,7 @@ var preChecks = []preCheck{
 	{meta{"block-unresolved-write", shellTools}, blockUnresolvedWrite},
 	{meta{"block-symlink-clobber", shellTools}, blockSymlinkClobber},
 	{meta{"ask-dangerous-git", shellTools}, askDangerousGit},
+	{meta{"ask-defaults-write", shellTools}, askDefaultsWrite},
 	{meta{"block-agent-commit", shellTools}, blockAgentCommit},
 	{meta{"block-agent-push", shellTools}, blockAgentPush},
 	{meta{"block-smart-punct", fileTools}, blockSmartPunct},
@@ -45,7 +46,7 @@ var preChecks = []preCheck{
 	{meta{"block-sudo-probe", shellTools}, blockSudoProbe},
 	{meta{"block-exec-flags", shellTools}, blockExecFlags},
 	{meta{"block-rm", shellTools}, blockRm},
-	{meta{"block-tmux-kill", shellTools}, blockTmuxKill},
+	{meta{"block-mux-kill", shellTools}, blockMuxKill},
 	{meta{"block-pipe-head-tail", shellTools}, blockPipeHeadTail},
 	{meta{"block-write-tracked", []string{"Write"}}, blockWriteTracked},
 }
