@@ -3,32 +3,28 @@ set script-interpreter := ["zsh", "-eu"]
 
 system_target := if os() == "macos" { "darwin" } else { "os" }
 ntfy_topic := "nix"
-ntfy_token := `cat /run/secrets/ntfy/token 2>/dev/null || echo ""`
 
 set default-list
 
 [private]
 ntfy msg status:
     #!/usr/bin/env zsh
-    [[ -z "{{ ntfy_token }}" ]] && exit 0
+    # read here, not as a just variable, so `just --evaluate` and curl's argv never show it
+    token=$(cat /run/secrets/ntfy/token 2>/dev/null) || exit 0
+    [[ -n "$token" ]] || exit 0
     curl -s -o /dev/null \
-      -H "Authorization: Bearer {{ ntfy_token }}" \
+      -H @<(printf 'Authorization: Bearer %s\n' "$token") \
       -H "Title: just on `hostname` ({{ invocation_directory_native() }})" \
       -H "Tags: nix,{{ if status == "0" { "white_check_mark" } else { "x" } }}" \
       -d "just {{ msg }}: {{ if status == "0" { "ok" } else { "failed" } }}" \
       "https://ntfy.eriz.cc/{{ ntfy_topic }}"
 
-# update all flake inputs
+# update the named flake inputs, or all of them when none are named
 [group('flake')]
-update-all:
-    nix flake update
+update *inputs:
+    nix flake update {{ inputs }}
 
-# update a single flake input
-[group('flake')]
-update input:
-    nix flake update {{ input }}
-
-# format nix files
+# format all files with treefmt
 [group('flake')]
 fmt:
     nix fmt -- --no-cache
@@ -57,14 +53,14 @@ build:
     trap 'just ntfy build $?' EXIT
     nh {{ system_target }} build
 
-# switch with a local checkout of the private input
+# switch with one flake input from a local checkout, the private repo by default
 [group('system')]
 [script]
-dev:
+dev input="nixos-config-private" src="../nixos-config-private":
     trap 'just ntfy dev $?' EXIT
-    nh {{ system_target }} switch . -- --override-input nixos-config-private path:../nixos-config-private
+    nh {{ system_target }} switch . -- --override-input {{ input }} "git+file:$(realpath {{ src }})"
 
-# test the NixOS configuration (Linux only)
+# test the NixOS configuration
 [group('system')]
 [linux]
 [script]

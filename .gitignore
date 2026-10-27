@@ -10,3 +10,6 @@ result
 
 # direnv
 .direnv/
+
+# pi packages for the agent tests, from the ai-agent-tests steps in .github/workflows/check.yml
+/node_modules/

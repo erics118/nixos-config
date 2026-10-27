@@ -1,5 +1,6 @@
 # standalone home-manager provider
 # to use, add `configurations.homeManager.<name> = mkHome {...}`
+# the _ prefix keeps import-tree from loading it, rename to home.nix to enable
 {
   lib,
   config,

@@ -15,26 +15,45 @@ concurrency:
 jobs:
   update-lock:
     runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    # GITHUB_TOKEN only clones
+    # every write uses the app token
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
     steps:
-      - uses: actions/checkout@v7
+      # actions are pinned to commit shas, which most repos don't need
+      # this job lands lock changes on main, which feeds the cachix cache every host trusts
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: webfactory/ssh-agent@v0.10.0
+      - uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:
           ssh-private-key: ${{ secrets.PRIVATE_FLAKE_DEPLOY_KEY }}
 
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
+        with:
+          extra_nix_config: |
+            netrc-file = /etc/nix/netrc
+
+      # the rex flake input needs this login until rex's first release
+      - run: |
+          sudo install -m 600 -o "$USER" /dev/null /etc/nix/netrc
+          printf 'machine pkgs.superlogical.com login rex password %s\n' "$REX_PACKAGE_TOKEN" >/etc/nix/netrc
+        env:
+          REX_PACKAGE_TOKEN: ${{ secrets.REX_PACKAGE_TOKEN }}
 
       # use a bot to trigger the pr
-      - uses: actions/create-github-app-token@v3
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         id: app-token
         with:
           client-id: ${{ secrets.CLIENT_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          # push the branch, open the pr, enable auto-merge
+          permission-contents: write
+          permission-pull-requests: write
 
-      - uses: DeterminateSystems/update-flake-lock@v29
+      - uses: DeterminateSystems/update-flake-lock@da03c0f078bc4b2c37ee4f7e072d34bf8f188bb3 # v29
         id: update
         with:
           token: ${{ steps.app-token.outputs.token }}
@@ -44,7 +63,7 @@ jobs:
           pr-labels: dependencies
           # empty for schedule/workflow_dispatch, which updates every input
           inputs: ${{ github.event.client_payload.input }}
-          branch: update_flake_lock_${{ github.event.client_payload.input || 'all' }}
+          branch: update-flake-lock-${{ github.event.client_payload.input || 'all' }}
           # the id+slug form is what links the commit to the bot's profile
           git-author-name: erics118-bot[bot]
           git-author-email: 311185523+erics118-bot[bot]@users.noreply.github.com
