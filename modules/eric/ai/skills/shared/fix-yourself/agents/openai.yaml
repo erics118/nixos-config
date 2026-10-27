@@ -1,0 +1,6 @@
+interface:
+  short_description: "Diagnose an agent failure and install a durable fix"
+  default_prompt: "Use $fix-yourself to diagnose what went wrong and fix it in the right layer."
+
+policy:
+  allow_implicit_invocation: false

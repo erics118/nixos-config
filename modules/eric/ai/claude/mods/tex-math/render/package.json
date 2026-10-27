@@ -1,0 +1,12 @@
+{
+  "name": "tex-math-render",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "tex-math-render": "render.mjs"
+  },
+  "dependencies": {
+    "mathjax": "4.1.3"
+  }
+}

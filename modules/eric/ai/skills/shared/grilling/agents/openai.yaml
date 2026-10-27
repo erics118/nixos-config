@@ -3,4 +3,4 @@ interface:
   default_prompt: "Use $grilling to interrogate my plan one question at a time."
 
 policy:
-  allow_implicit_invocation: false
+  allow_implicit_invocation: true
