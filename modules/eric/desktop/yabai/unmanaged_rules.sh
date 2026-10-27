@@ -11,6 +11,9 @@ title_regex=$(join_re "${titles[@]}")
 
 yabai -m rule --add label="misc unmanaged windows" title="^($title_regex)$" manage=off
 
+# system dialogs
+yabai -m rule --add label="system dialogs" subrole="^AXSystemDialog$" manage=off
+
 # apps only
 apps=(
   "AdGuard Mini" "AdGuard VPN" "AltTab" "Archive Utility" "Alcove"
@@ -50,6 +53,7 @@ yabai -m rule --add label="weather prefs" app="^Weather$" title="^Settings$" man
 yabai -m rule --add label="discord updater" app="^Discord.*$" title="^Discord Updater$" manage=off
 yabai -m rule --add label="fantastical" app="^Fantastical$" title="^(Flexibits Account|General|Appearance|Events & Tasks|Alerts|Accounts|Calendars & Lists|Openings|Weather|Advanced)$" manage=off
 yabai -m rule --add label="messages" app="^Messages$" title="^(General|iMessage|Shared with You)$" manage=off
+yabai -m rule --add label="rex" app="^Rex Beta$" title="^Settings - " manage=off
 
 # jetbrains
 jetbrains=(
