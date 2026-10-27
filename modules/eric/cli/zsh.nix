@@ -4,31 +4,58 @@
       config,
       lib,
       pkgs,
+      repoFile,
       ...
     }:
     let
       # pre-compute the zsh init scripts for these tools at nix build time to
       # reduce shell startup time
+      # zsh -n fails the build on an init zsh can't parse
       mkInit =
-        name: cmd:
+        name: script:
         pkgs.runCommand "${name}-init.zsh" { } ''
           export HOME="$TMPDIR/home"
           export XDG_CONFIG_HOME="$HOME/.config"
           export XDG_CACHE_HOME="$HOME/.cache"
           mkdir -p "$XDG_CONFIG_HOME" "$XDG_CACHE_HOME"
-          ${cmd} > $out
+          {
+            ${script}
+          } > $out
+          ${lib.getExe pkgs.zsh} -n $out
         '';
-      starshipInit = mkInit "starship" "${pkgs.starship}/bin/starship init zsh --print-full-init";
       zoxideInit = mkInit "zoxide" "${pkgs.zoxide}/bin/zoxide init zsh";
-      direnvInit = mkInit "direnv" "${pkgs.direnv}/bin/direnv hook zsh";
+
+      # the hook also runs itself once at source time, which the precmd before the first prompt repeats
+      direnvInit = mkInit "direnv-instant" ''
+        ${lib.getExe config.programs.direnv-instant.finalPackage} hook zsh > "$TMPDIR/hook.zsh"
+        substituteInPlace "$TMPDIR/hook.zsh" --replace-fail $'\n  # Run initial hook\n  _direnv_hook\n' $'\n'
+        cat "$TMPDIR/hook.zsh"
+      '';
+
       nixYourShellInit = mkInit "nix-your-shell" "${pkgs.nix-your-shell}/bin/nix-your-shell zsh";
+
       fzfInit = mkInit "fzf" "${pkgs.fzf}/bin/fzf --zsh";
+
       atuinInit = mkInit "atuin" "${pkgs.atuin}/bin/atuin init zsh --disable-ai";
     in
     {
       home.sessionVariables.COLORTERM = "truecolor";
-      # exported so ad-hoc `nix shell nixpkgs#<unfree>` evaluates
+
+      # tabs go in the command, since setting LESS would stop git and gh adding their -FRX
+      home.sessionVariables.PAGER = "less -R -x4";
+
+      # less shows private-use characters, such as nerd font icons, as <U+XXXX> unless they are marked printable
+      home.sessionVariables.LESSUTFCHARDEF = "e000-f8ff:p,f0000-10fffd:p";
+
+      # exported so ad-hoc `nix shell --impure nixpkgs#<unfree>` evaluates. flake
+      # refs ignore it without --impure
       home.sessionVariables.NIXPKGS_ALLOW_UNFREE = "1";
+
+      home.sessionVariables.GOPATH = "$HOME/.local/share/go";
+      home.sessionVariables.GOMODCACHE = "$HOME/.cache/go/mod";
+
+      # login(1) skips its "Last login" line when this file exists
+      home.file.".hushlogin".text = "";
 
       programs.zsh = {
         enable = true;
@@ -54,15 +81,25 @@
           zmodload -F zsh/stat b:zstat
           zstat -L -A _gen +mtime /run/current-system 2>/dev/null
           zstat -A _dump +mtime "$ZSH_COMPDUMP" 2>/dev/null
+          # compiled to a per-shell file and renamed, so a shell starting at the same
+          # moment never reads a half-written .zwc
+          zmodload -F zsh/files b:zf_mv
+          _compdump_compile() {
+            zcompile -R -- "$ZSH_COMPDUMP.$$.zwc" "$ZSH_COMPDUMP" 2>/dev/null \
+              && zf_mv -f "$ZSH_COMPDUMP.$$.zwc" "$ZSH_COMPDUMP.zwc"
+          }
           if (( ''${_dump[1]:-0} < ''${_gen[1]:-1} )); then
+            # compinit skips rewriting an unchanged dump, which would leave it older than
+            # the generation and rebuild it at every start
+            command rm -f "$ZSH_COMPDUMP"
             compinit -d "$ZSH_COMPDUMP"
-            zcompile -R -- "$ZSH_COMPDUMP.zwc" "$ZSH_COMPDUMP" 2>/dev/null
+            _compdump_compile
           else
             compinit -C -d "$ZSH_COMPDUMP"
-            [[ -s "$ZSH_COMPDUMP.zwc" && "$ZSH_COMPDUMP" -ot "$ZSH_COMPDUMP.zwc" ]] \
-              || zcompile -R -- "$ZSH_COMPDUMP.zwc" "$ZSH_COMPDUMP" 2>/dev/null
+            [[ -s "$ZSH_COMPDUMP.zwc" && "$ZSH_COMPDUMP" -ot "$ZSH_COMPDUMP.zwc" ]] || _compdump_compile
           fi
           unset _gen _dump
+          unfunction _compdump_compile
         '';
 
         dotDir = "${config.home.homeDirectory}/.config/zsh";
@@ -70,81 +107,95 @@
         autosuggestion.enable = true;
         syntaxHighlighting.enable = true;
 
-        plugins = [
-          {
-            name = "fzf-tab";
-            src = pkgs.zsh-fzf-tab;
-            file = "share/fzf-tab/fzf-tab.plugin.zsh";
-          }
-        ];
-
         defaultKeymap = "emacs";
 
         history.path = "$HOME/.cache/zsh/history";
 
-        initContent = ''
-          source "$ZDOTDIR/init.zsh"
+        initContent = lib.mkMerge [
+          ''
+            source "$ZDOTDIR/conf/init.zsh"
 
-          # pre-computed tool inits
-          source ${zoxideInit}
-          source ${direnvInit}
-          source ${starshipInit}
-          source ${nixYourShellInit}
+            # pre-computed tool inits
+            source ${zoxideInit}
+            source ${direnvInit}
+            # direnv-instant starts a process at every prompt and at exit.
+            # skip it while nothing is loaded or loading and no .envrc or .env is here or above
+            functions[_direnv_instant_hook]=$functions[_direnv_hook]
+            _direnv_hook() {
+              if [[ -z $DIRENV_DIR$__DIRENV_INSTANT_CURRENT_DIR ]]; then
+                local d=$PWD
+                until [[ -e $d/.envrc || -e $d/.env ]]; do
+                  [[ -n $d ]] || return 0
+                  d=''${d%/*}
+                done
+              fi
+              _direnv_instant_hook
+            }
+            # stop only detaches the daemon this variable names (direnv-instant's commands/stop.rs)
+            _direnv_exit_cleanup() {
+              [[ -z $__DIRENV_INSTANT_CURRENT_DIR ]] || direnv-instant stop
+            }
+            # the prompt, with gitstatusd for its git segment. after direnv, whose TRAPUSR1 it wraps
+            source ${pkgs.gitstatus}/share/gitstatus/gitstatus.plugin.zsh
+            source "$ZDOTDIR/conf/prompt/prompt.zsh"
+            source ${nixYourShellInit}
 
-          if [[ $options[zle] = on ]]; then
-            source ${fzfInit}
-            source ${atuinInit}
-          fi
-
-          # rv <cmd>: run in the turtle riscv64 dev env (flake at turtle:~/rv-infra)
-          # mirrors cwd to turtle, runs there, syncs results back; files stay local
-          rv() {
-            emulate -L zsh
-            local host=turtle
-            ssh -o BatchMode=yes -o ConnectTimeout=4 "$host" true 2>/dev/null || host=turtle-ip
-            local rdir="rvwork/$(pwd -P | shasum | cut -c1-12)"
-            ssh "$host" "mkdir -p '$rdir'" || return
-            rsync -az --delete \
-              --exclude .git --exclude _build --exclude result --exclude node_modules \
-              ./ "$host:$rdir/" || return
-            if (( $# )); then
-              ssh -o LogLevel=ERROR "$host" "cd '$rdir' && \$HOME/rv-infra/run.sh $*"
-            else
-              ssh -t -o LogLevel=ERROR "$host" "cd '$rdir' && nix develop \$HOME/rv-infra"
+            if [[ $options[zle] = on ]]; then
+              source ${fzfInit}
+              # atuin's init runs `atuin uuid` unless this shell level already has a session
+              # a UUIDv7 built here in the same 32-hex format skips that process
+              if [[ -z $ATUIN_SESSION || $ATUIN_SHLVL != $SHLVL ]]; then
+                zmodload zsh/datetime
+                typeset -i _atuin_ms=$(( EPOCHREALTIME * 1000 ))
+                printf -v ATUIN_SESSION '%012x7%03x%x%03x%04x%04x%04x' $_atuin_ms \
+                  $(( RANDOM & 4095 )) $(( 8 + (RANDOM & 3) )) $(( RANDOM & 4095 )) $RANDOM $RANDOM $RANDOM
+                export ATUIN_SESSION ATUIN_SHLVL=$SHLVL
+                unset _atuin_ms
+              fi
+              source ${atuinInit}
             fi
-            local rc=$?
-            rsync -az "$host:$rdir/" ./
-            return $rc
-          }
-        '';
+          ''
+          # last, so a rex terminal runs the rex matching its server ahead of any other copy
+          (lib.mkOrder 2000 ''
+            if [[ -n $REX_BIN_DIR ]]; then
+              export PATH="$REX_BIN_DIR:$PATH"
+            fi
+          '')
+        ];
 
         localVariables = {
           WORDCHARS = "*?_-.~";
+          # bind autosuggest's widgets once, at the first prompt, instead of at every prompt.
+          # rebinding guards against syntax-highlighting wrapping them, which it doesn't on zsh 5.9
+          ZSH_AUTOSUGGEST_MANUAL_REBIND = 1;
         };
 
         shellAliases = {
           ":q" = "exit";
 
-          ls = "eza --icons auto --color auto -F always";
+          ls = "eza";
+          cat = "bat";
+          dig = "doggo";
+          less = "less -x4";
 
           mv = "mv -i";
           cp = "cp -i";
           rm = "rm -i";
 
           r = "rtmux";
-          "?" = "ask";
+          "?" = "noglob ask";
 
           mmv = "noglob zmv -W";
           zmv = "noglob zmv";
 
-          timeout = "gtimeout";
-
-          sshn = "ssh -F /dev/null -o PubkeyAuthentication=no";
+          # ssh with forced password auth
+          sshn = "ssh -o PubkeyAuthentication=no -o PreferredAuthentications=keyboard-interactive,password";
 
           ws = "wezterm cli spawn -- ";
 
-          # # is an extended-glob operator in zsh; disable globbing so flake
-          # refs like nixpkgs#foo work without quoting
+          scc = "scc --no-cocomo";
+
+          # flake refs can carry glob characters, like ? in github:owner/repo?ref=main
           nix = "noglob nix";
         }
         // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
@@ -161,7 +212,6 @@
           "sudo"
           "command"
           "builtin"
-          "rv"
         ];
 
         abbreviations = {
@@ -169,8 +219,13 @@
           n = "nvim";
           j = "just";
           lg = "lazygit";
+
+          # ai
           c = "claude";
           cr = "claude --resume";
+
+          p = "pi";
+          pr = "pi --resume";
 
           # ls
           la = "ls -la";
@@ -199,8 +254,10 @@
           gmc = "git merge --continue";
           gma = "git merge --abort";
           gms = "git merge --squash";
+          gmff = "git merge --ff-only";
           # p = pull
           gp = "git pull";
+          gpff = "git pull --ff-only";
           # P = push
           gP = "git push";
           gPf = "git push -f";
@@ -276,6 +333,7 @@
         };
       };
 
-      xdg.configFile."zsh/init.zsh".source = ./cli/zsh/init.zsh;
+      # one link for the whole folder, so new files there are live without a switch
+      xdg.configFile."zsh/conf".source = repoFile "modules/eric/cli/zsh";
     };
 }

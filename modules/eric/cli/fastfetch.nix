@@ -25,7 +25,7 @@ let
       };
       printRemaining = true;
       preserveAspectRatio = false;
-      recache = false;
+      cache = true;
       position = "left";
     };
 

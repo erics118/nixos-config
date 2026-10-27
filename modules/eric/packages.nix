@@ -18,7 +18,7 @@
 
           # global languages/toolchains
           nodejs_24
-          python3Minimal
+          python3
 
           # apps
           _1password-cli
@@ -26,6 +26,8 @@
           # system utilities
           nmap
           dust
+          doggo
+          gping
           rsync
           killall
           ccache
@@ -36,7 +38,6 @@
           hyperfine
           onefetch
           yq-go
-          yazi
           scc
           railway
           docker-sbx
@@ -47,8 +48,10 @@
           nerd-fonts.hack
         ]
         ++ lib.optionals stdenv.hostPlatform.isDarwin [
-          # gnu coreutils with g-prefix (gls, gdate, ...) since macOS ships BSD coreutils
-          coreutils-prefixed
+          # gnu tools under their plain names, ahead of the BSD ones macOS ships
+          coreutils
+          gnused
+          gawk
 
           # cli tools
           mosh
@@ -62,9 +65,6 @@
 
           # development
           lua5_5 # for sketchybar
-
-          # apps
-          espanso
         ]
         ++ lib.optionals stdenv.hostPlatform.isLinux [
           # sandboxing
