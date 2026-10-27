@@ -4,7 +4,7 @@ sbar.default({
     icon = {
         font = {
             family = "SF Pro",
-            style = "Bold",
+            style = "Regular",
             size = 13.0,
             typographical_width = true,
         },
@@ -16,7 +16,7 @@ sbar.default({
     label = {
         font = {
             family = "SF Pro",
-            style = "Semibold",
+            style = "Medium",
             size = 13.0,
             typographical_width = true,
         },

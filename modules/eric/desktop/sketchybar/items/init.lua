@@ -6,12 +6,16 @@ require("items.spaces")
 require("items.yabai")
 require("items.front_app")
 
+require("items.lock_screen")
+
 -- center
 -- require("items.media")
 
 -- right
 require("items.calendar")
 require("items.battery")
+require("items.wifi")
 require("items.weather")
+require("items.sleep")
 require("items.cpu")
 -- require("items.volume")

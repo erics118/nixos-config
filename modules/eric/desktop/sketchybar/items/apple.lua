@@ -1,4 +1,3 @@
-local colors = require("colors")
 local icons = require("icons")
 
 local apple = sbar.add_icon_item("apple", {
@@ -6,7 +5,6 @@ local apple = sbar.add_icon_item("apple", {
     icon = {
         font = { size = 16.0 },
         string = icons.apple,
-        color = settings.mode_colors.default,
     },
     padding_left = 3,
     padding_right = 3,
@@ -25,22 +23,21 @@ local function toggle_zen()
 
         local switch = mode ~= "default"
 
-        -- popups
-        for _, name in ipairs({ "weather", "battery" }) do
-            sbar.set(name, { popup = { drawing = false } })
-        end
+        sbar.close_popups()
 
         sbar.set("smhkd", { drawing = switch })
         sbar.set("yabai", { drawing = switch })
         sbar.set("front_app", { drawing = switch })
         sbar.set("/cpu\\..*/", { drawing = switch })
         sbar.set("battery", { drawing = switch })
+        sbar.set("sleep", { drawing = switch })
+        sbar.set("wifi", { drawing = switch })
         sbar.set("calendar", { icon = { drawing = switch } })
         sbar.set("weather", { drawing = switch })
 
         sbar.set("/space\\..*/", { background = { drawing = switch }, label = { drawing = switch } })
     else
-        sbar.exec("$CONFIG_DIR/helpers/menus/bin/menus -s 0")
+        sbar.exec(settings.helpers_dir .. "menus -s 0")
     end
 end
 

@@ -4,7 +4,7 @@
     sketchybar = prev.sketchybar.overrideAttrs (old: {
       version = old.version + "-eric";
       __intentionallyOverridingVersion = true;
-      # eric branch, feat: optionally use typographical width
+      # fork's eric branch carries fixes not yet in an upstream release
       src = inputs.sketchybar-src;
       # binary reports upstream version
       doInstallCheck = false;

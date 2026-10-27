@@ -2,7 +2,7 @@ local wezterm = require("wezterm")
 
 local act = wezterm.action
 
-local is_mac = wezterm.target_triple:find("darwin") ~= nil
+local is_mac = require("platform").is_mac
 local MOD = is_mac and "CMD" or "CTRL|SHIFT"
 local SMOD = is_mac and "SHIFT|CMD" or "CTRL|ALT"
 
@@ -18,13 +18,11 @@ local map = function(key, mods, action)
     end
 end
 
-wezterm.GLOBAL.enable_tab_bar = true
-
+-- each window flips its own override, so reloads and other windows can't desync it
 local toggleTabBar = wezterm.action_callback(function(window)
-    wezterm.GLOBAL.enable_tab_bar = not wezterm.GLOBAL.enable_tab_bar
-    window:set_config_overrides({
-        enable_tab_bar = wezterm.GLOBAL.enable_tab_bar,
-    })
+    local overrides = window:get_config_overrides() or {}
+    overrides.enable_tab_bar = overrides.enable_tab_bar == false
+    window:set_config_overrides(overrides)
 end)
 
 local openUrl = act.QuickSelectArgs({
@@ -36,7 +34,51 @@ local openUrl = act.QuickSelectArgs({
     end),
 })
 
-map("a", "LEADER", act.AttachDomain("unix"))
+-- what owns a pane's keys, from its foreground process tree: "local-tmux", "remote-tmux" (rtmux over mosh or autossh),
+-- "ssh", or nil for anything else. mosh hides its remote command, so any mosh counts as remote tmux
+local function classify(info)
+    local exe = info.executable:match("[^/]+$") or ""
+    if exe == "tmux" then
+        return "local-tmux"
+    elseif exe == "mosh-client" then
+        return "remote-tmux"
+    elseif exe == "ssh" or exe == "autossh" then
+        -- rtmux over autossh runs its remote command through a wrapper named rtmux-remote (see rtmux/rtmux.sh)
+        for _, arg in ipairs(info.argv) do
+            if arg:find("rtmux-remote", 1, true) then
+                return "remote-tmux"
+            end
+        end
+        return "ssh"
+    end
+    -- t attaches through sesh, which stays the foreground parent of tmux
+    for _, child in pairs(info.children) do
+        local kind = classify(child)
+        if kind then
+            return kind
+        end
+    end
+end
+
+local function runs_tmux(info)
+    local kind = classify(info)
+    return kind ~= nil and kind ~= "ssh"
+end
+
+local function in_tmux(pane)
+    local info = pane:get_foreground_process_info()
+    return info ~= nil and runs_tmux(info)
+end
+
+-- send the tmux prefix (default C-b) + keys when tmux (local, or remote via
+-- rtmux) owns the pane. outside tmux the key does nothing
+local function to_tmux(keys)
+    return wezterm.action_callback(function(window, pane)
+        if in_tmux(pane) then
+            window:perform_action(act.SendString("\x02" .. keys), pane)
+        end
+    end)
+end
 
 -- use 'Backslash' to split horizontally
 map("\\", "LEADER", act.SplitHorizontal({ domain = "CurrentPaneDomain" }))
@@ -60,22 +102,104 @@ map(
         end),
     })
 )
--- map 1-9 to switch to tab 1-9, 0 for the last tab
-for i = 1, 9 do
-    map(tostring(i), { "LEADER", MOD }, act.ActivateTab(i - 1))
+-- 1-8 pick tabs 1-8 and 9 the last tab, like a browser. leader or ctrl digits
+-- pick wezterm tabs, the bare MOD digits pick tmux windows
+for i = 1, 8 do
+    map(tostring(i), { "LEADER", "CTRL" }, act.ActivateTab(i - 1))
 end
-map("0", { "LEADER" }, act.ActivateTab(-1))
+map("9", { "LEADER", "CTRL" }, act.ActivateTab(-1))
+-- next/previous wezterm tab, stopping at either end
+map("Tab", "CTRL", act.ActivateTabRelativeNoWrap(1))
+map("Tab", "CTRL|SHIFT", act.ActivateTabRelativeNoWrap(-1))
+for i = 1, 9 do
+    map(tostring(i), MOD, to_tmux(tostring(i)))
+end
 -- 'hjkl' to move between panes
 map("h", { "LEADER" }, act.ActivatePaneDirection("Left"))
 map("j", { "LEADER" }, act.ActivatePaneDirection("Down"))
 map("k", { "LEADER" }, act.ActivatePaneDirection("Up"))
 map("l", { "LEADER" }, act.ActivatePaneDirection("Right"))
 -- spawn & close
-map("c", "LEADER", act.SpawnTab("CurrentPaneDomain"))
+-- a wezterm tab is a project: leader c picks a local one, leader C a remote one, leader t opens a bare shell.
+-- the trailing shell keeps the tab open after the picker is cancelled or tmux detaches
+map("c", "LEADER", act.SpawnCommandInNewTab({ domain = "DefaultDomain", args = { "zsh", "-lc", "t; exec zsh -l" } }))
+map(
+    "c",
+    "LEADER|SHIFT",
+    act.SpawnCommandInNewTab({ domain = "DefaultDomain", args = { "zsh", "-lc", "rtmux; exec zsh -l" } })
+)
+map("t", "LEADER", act.SpawnTab("CurrentPaneDomain"))
 map("x", "LEADER", act.CloseCurrentPane({ confirm = true }))
-map("t", { MOD }, act.SpawnTab("CurrentPaneDomain"))
-map("w", { MOD }, act.CloseCurrentTab({ confirm = true }))
+map("w", "LEADER", act.CloseCurrentTab({ confirm = true }))
+if is_mac then
+    map("w", "CTRL|SHIFT", act.CloseCurrentTab({ confirm = true }))
+    map("t", "CTRL|SHIFT", act.SpawnTab("CurrentPaneDomain"))
+end
+-- native tab keys drive tmux windows
+map("t", { MOD }, to_tmux("c"))
+map("w", { MOD }, to_tmux("&"))
 map("n", { SMOD }, act.SpawnWindow)
+-- prev/next window, same keys as wezterm's default tab switching
+map("[", SMOD, to_tmux("p"))
+map("{", { MOD, SMOD }, to_tmux("p"))
+map("]", SMOD, to_tmux("n"))
+map("}", { MOD, SMOD }, to_tmux("n"))
+-- split the tmux pane toward the arrow
+map("LeftArrow", SMOD, to_tmux("|"))
+map("RightArrow", SMOD, to_tmux("\\"))
+map("UpArrow", SMOD, to_tmux("+"))
+map("DownArrow", SMOD, to_tmux("="))
+-- tmux first draws a new popup's cursor at its top-left corner, so the cursor stays invisible while a popup opens.
+-- the cursor takes the background colour through OSC 12 written straight into wezterm's terminal, then OSC 112 resets it.
+-- a config override would re-apply the whole config and stall the popup's first frame.
+-- tmux sends no OSC 12 of its own while its cursor-colour option is unset.
+-- 0.15s covers the 15-40ms a popup takes to open
+local function hide_cursor_briefly(pane)
+    pane:inject_output("\x1b]12;#1e1e2e\x1b\\")
+    wezterm.time.call_after(0.15, function()
+        pane:inject_output("\x1b]112\x1b\\")
+    end)
+end
+
+-- an open popup takes every key, so a local tmux gets its popups from tmux-popup (see cli/scripts), run directly.
+-- a remote tmux gets the keys its own bindings take (see cli/tmux/popups.conf and cli/rtmux/remote.conf)
+local function popup_key(kind, tmux_keys)
+    return wezterm.action_callback(function(window, pane)
+        local info = pane:get_foreground_process_info()
+        local owner = info and classify(info)
+        if not owner then
+            return
+        end
+        hide_cursor_briefly(pane)
+        if owner == "local-tmux" then
+            wezterm.background_child_process({ "tmux-popup", kind, pane:get_tty_name() })
+        else
+            window:perform_action(act.SendString(tmux_keys), pane)
+        end
+    end)
+end
+map("j", { MOD }, popup_key("scratch", "\x1b\x0a"))
+map("e", { MOD }, popup_key("files", "\x1b\x19"))
+-- cmd-k opens the native projects menu (see bar.lua), and elsewhere tmux's session picker on prefix S.
+-- bar.lua requires this file, so it is required here only when the key fires
+if is_mac then
+    map(
+        "k",
+        { MOD },
+        wezterm.action_callback(function(window, pane)
+            require("bar").show_projects(window, pane)
+        end)
+    )
+else
+    map("k", { MOD }, to_tmux("S"))
+end
+map("p", { MOD }, popup_key("projects", "\x1b\x10"))
+-- tmux prefix, sent unchecked so it also reaches tmux over plain ssh
+map("s", { MOD }, act.SendString("\x02"))
+-- the linux leader is ctrl-a, so pressing it twice sends a real ctrl-a
+if not is_mac then
+    map("a", "LEADER|CTRL", act.SendKey({ key = "a", mods = "CTRL" }))
+end
 -- zoom states
 map("z", { "LEADER" }, act.TogglePaneZoomState)
 map("Z", { "LEADER" }, toggleTabBar)
@@ -83,23 +207,23 @@ map("Z", { "LEADER" }, toggleTabBar)
 map("v", "LEADER", act.ActivateCopyMode)
 map("c", { MOD }, act.CopyTo("Clipboard"))
 map("v", { MOD }, act.PasteFrom("Clipboard"))
-map("f", { SMOD }, act.Search("CurrentSelectionOrEmptyString"))
+map("f", "LEADER", act.Search("CurrentSelectionOrEmptyString"))
 -- rotation
 map("r", { "LEADER" }, act.RotatePanes("Clockwise"))
 map("r", { "LEADER|SHIFT" }, act.RotatePanes("CounterClockwise"))
--- pickerg
+-- pickers
 map(" ", "LEADER", act.QuickSelect)
 map("o", { "LEADER" }, openUrl)
 map("p", { "LEADER" }, act.PaneSelect({ alphabet = "asdfghjkl" }))
 map("r", { "LEADER|" .. MOD }, act.ReloadConfiguration)
-map("u", SMOD, act.CharSelect)
-map("p", { SMOD }, act.ActivateCommandPalette)
+map("u", "LEADER", act.CharSelect)
+map("P", "LEADER", act.ActivateCommandPalette)
 -- view
 map("-", { MOD }, act.DecreaseFontSize)
 map("=", { MOD }, act.IncreaseFontSize)
 map("0", { MOD }, act.ResetFontSize)
 -- debug
-map("l", SMOD, act.ShowDebugOverlay)
+map("d", "LEADER", act.ShowDebugOverlay)
 -- app
 map("q", MOD, act.QuitApplication)
 map("h", MOD, act.HideApplication)
@@ -113,48 +237,21 @@ map("LeftArrow", MOD, act.SendKey({ key = "LeftArrow", mods = "CTRL" }))
 map("RightArrow", MOD, act.SendKey({ key = "RightArrow", mods = "CTRL" }))
 
 map("Enter", "SHIFT", act.SendString("\x1b[13;2u"))
-
-local key_tables = {
-    resize_mode = {
-        { key = "h", action = act.AdjustPaneSize({ "Left", 1 }) },
-        { key = "j", action = act.AdjustPaneSize({ "Down", 1 }) },
-        { key = "k", action = act.AdjustPaneSize({ "Up", 1 }) },
-        { key = "l", action = act.AdjustPaneSize({ "Right", 1 }) },
-        { key = "LeftArrow", action = act.AdjustPaneSize({ "Left", 1 }) },
-        { key = "DownArrow", action = act.AdjustPaneSize({ "Down", 1 }) },
-        { key = "UpArrow", action = act.AdjustPaneSize({ "Up", 1 }) },
-        { key = "RightArrow", action = act.AdjustPaneSize({ "Right", 1 }) },
-    },
-}
-
--- add a common escape sequence to all key tables
-for k, _ in pairs(key_tables) do
-    table.insert(key_tables[k], { key = "Escape", action = "PopKeyTable" })
-    table.insert(key_tables[k], { key = "Enter", action = "PopKeyTable" })
-end
+map("Enter", "CMD", act.SendString("\x1b[13;9u"))
 
 local M = {}
 
+M.runs_tmux = runs_tmux
+
 M.apply_to_config = function(c)
     c.leader = {
-        key = is_mac and "s" or "a",
+        key = "a",
         mods = is_mac and "CMD" or "CTRL",
         timeout_milliseconds = math.maxinteger,
     }
     c.keys = shortcuts
     c.disable_default_key_bindings = true
-    c.key_tables = key_tables
     c.mouse_bindings = {
-        {
-            event = { Down = { streak = 1, button = { WheelUp = 1 } } },
-            mods = "NONE",
-            action = wezterm.action.ScrollByLine(-3),
-        },
-        {
-            event = { Down = { streak = 1, button = { WheelDown = 1 } } },
-            mods = "NONE",
-            action = wezterm.action.ScrollByLine(3),
-        },
         -- disable normal click to open link
         {
             event = { Up = { streak = 1, button = "Left" } },

@@ -5,14 +5,12 @@ local icons = {
     yabai_float = "􀢌",
     yabai_grid = "􀧍",
 
-    battery = {
-        _100 = "􀛨",
-        _75 = "􀺸",
-        _50 = "􀺶",
-        _25 = "􀛩",
-        _0 = "􀛪",
-        charging = "􀢋",
-    },
+    circle = "􀀀",
+    circle_fill = "􀀁",
+
+    lock = "\u{1003A1}",
+    chevron_right = "\u{10018A}",
+    chevron_down = "\u{100188}",
 }
 
 return icons
