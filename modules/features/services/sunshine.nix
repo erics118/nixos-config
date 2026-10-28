@@ -21,6 +21,18 @@ in
       # drop the module's cap_sys_admin, we only capture through wlr screencopy
       security.wrappers.sunshine.capabilities = lib.mkForce "cap_sys_nice+ep";
 
+      # upstream sunshine sets the obsolete services.avahi.publish.enable/userServices
+      # null them to drop the eval warning and set what they mapped to
+      services.avahi.publish = {
+        enable = null;
+        userServices = null;
+      };
+      services.avahi.settings.publish = {
+        disable-publishing = lib.mkDefault false;
+        disable-user-service-publishing = lib.mkDefault false;
+        publish-addresses = lib.mkDefault true;
+      };
+
       # openFirewall stays off: tailscale.nix trusts tailscale0, so only the tailnet reaches it
       services.sunshine = {
         enable = true;

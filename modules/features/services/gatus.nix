@@ -50,6 +50,26 @@
             }) (builtins.filter (t: t.port != null) config.homepageTiles)
             ++ [
               {
+                name = "eriz.cc";
+                group = "Websites";
+                url = "https://eriz.cc";
+                interval = "1m";
+                # root 302s to ericzshen.com; check the worker's own response, not the redirect target
+                client."ignore-redirect" = true;
+                conditions = [ "[STATUS] == 302" ];
+                alerts = [ { type = "ntfy"; } ];
+              }
+              {
+                name = "ericzshen.com";
+                group = "Websites";
+                url = "https://ericzshen.com";
+                interval = "1m";
+                conditions = [ "[STATUS] == 200" ];
+                alerts = [ { type = "ntfy"; } ];
+              }
+            ]
+            ++ [
+              {
                 name = "TLS certificate";
                 group = "Infrastructure";
                 url = "https://${config.homelabDomain}";
