@@ -8,7 +8,9 @@
     },
     "railway": {
       "command": "railway",
-      "args": ["mcp"]
+      "args": [
+        "mcp"
+      ]
     }
   }
 }

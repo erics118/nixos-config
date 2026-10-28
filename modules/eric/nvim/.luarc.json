@@ -1,5 +1,7 @@
 {
   "runtime.version": "LuaJIT",
-  "workspace.library": ["${env:VIMRUNTIME}"],
+  "workspace.library": [
+    "${env:VIMRUNTIME}"
+  ],
   "workspace.checkThirdParty": false
 }

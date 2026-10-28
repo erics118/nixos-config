@@ -42,7 +42,11 @@
         prettier = {
           enable = true;
           # rex skill status compares the stub byte for byte with what rex skill setup writes
-          excludes = [ "modules/eric/ai/skills/shared/rex/SKILL.md" ];
+          # jsonfmt owns json, in the expanded layout claude code writes settings.json in
+          excludes = [
+            "modules/eric/ai/skills/shared/rex/SKILL.md"
+            "*.json"
+          ];
         };
         just.enable = true;
         taplo.enable = true;
