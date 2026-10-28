@@ -104,10 +104,6 @@ in
         };
         efi.canTouchEfiVariables = true;
       };
-
-      initrd = {
-        systemd.enable = true;
-      };
     };
 
     # narwhal has no working public IPv6, so prefer IPv4 addresses
