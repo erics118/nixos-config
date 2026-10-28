@@ -1,0 +1,24 @@
+[mgr]
+prepend_keymap = [
+  { on = "e", run = "open", desc = "Edit or open selected files" },
+  { on = "o", run = 'shell -- open -R %h', desc = "Reveal in Finder", for = "macos" },
+  # toggles like finder's space: closes an open quick look instead of stacking another window
+  { on = "i", run = 'shell --orphan -- pkill -x qlmanage || qlmanage -p %h >/dev/null 2>&1', desc = "Quick Look", for = "macos" },
+  { on = "<Enter>", run = "plugin smart-enter", desc = "Enter the child directory, or open the file" },
+  # a remote tmux sends cmd-e/j/p into its popup as ctrl-alt-y/j/p, and tmux-popup swaps yazi for that popup
+  { on = "<C-A-y>", run = "quit", desc = "Close the popup" },
+  { on = "<C-A-j>", run = 'shell --orphan -- tmux-popup scratch "$TMUX_POPUP_CLIENT"', desc = "Switch to the scratch shell" },
+  { on = "<C-A-p>", run = 'shell --orphan -- tmux-popup projects "$TMUX_POPUP_CLIENT"', desc = "Switch to the project picker" },
+  # in tmux's prefix y popup, keys reach yazi, so C-b y quits it to close the popup
+  { on = [
+    "<C-b>",
+    "y",
+  ], run = "quit", desc = "Close the popup" },
+  # the output's extension picks the format, zip by default
+  { on = "C", run = "plugin ouch", desc = "Compress with ouch" },
+  # numeric steps stop at the ends, where prev and next wrap around
+  { on = "k", run = "arrow -1", desc = "Previous file" },
+  { on = "j", run = "arrow 1", desc = "Next file" },
+  { on = "<Up>", run = "arrow -1", desc = "Previous file" },
+  { on = "<Down>", run = "arrow 1", desc = "Next file" },
+]

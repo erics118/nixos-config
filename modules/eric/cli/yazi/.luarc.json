@@ -1,0 +1,18 @@
+{
+  "runtime.version": "Lua 5.4",
+  "diagnostics.globals": [
+    "ya",
+    "ui",
+    "cx",
+    "th",
+    "rt",
+    "ps",
+    "fs",
+    "Url",
+    "Command",
+    "Entity",
+    "Status",
+    "Header",
+    "Tab"
+  ]
+}

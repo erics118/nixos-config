@@ -4,13 +4,27 @@
       config,
       lib,
       pkgs,
+      repoFile,
       ...
     }:
     {
       programs.direnv = {
         enable = true;
-        enableZshIntegration = false; # pre-computed in shell.nix
+        enableZshIntegration = false; # pre-computed in zsh.nix
         nix-direnv.enable = true;
+        # nix pins bash, direnv, and nix-direnv together, so its per-load version check can't fail
+        # unexported, so it stays out of the environment direnv hands to the shell
+        stdlib = ''
+          NIX_DIRENV_SKIP_VERSION_CHECK=1
+        ''
+        # .direnv is a rebuildable cache, so tmutil's sticky exclusion keeps it out of time machine
+        # tmutil can take seconds while a backup runs, so it runs in the background and only when the xattr is missing
+        # a new .direnv appears during its first load and gets excluded on the next one
+        + lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
+          if [[ -d .direnv ]] && ! /usr/bin/xattr -p com.apple.metadata:com_apple_backup_excludeItem .direnv &>/dev/null; then
+            /usr/bin/tmutil addexclusion .direnv &>/dev/null &
+          fi
+        '';
         config = {
           global = {
             load_dotenv = true;
@@ -20,26 +34,63 @@
         };
       };
 
+      programs.direnv-instant = {
+        enable = true;
+        enableZshIntegration = false; # pre-computed in zsh.nix
+      };
+
       programs.lazygit = {
         enable = true;
+        # its lg cd-on-exit wrapper never runs, since the lg abbr expands to lazygit first
+        enableZshIntegration = false;
 
         settings = {
           gui = {
             nerdFontsVersion = "3";
             filterMode = "fuzzy";
             showRandomTip = false;
+            showNumstatInFilesView = true;
+            # catppuccin mocha mauve, copied from the port's themes-mergable/mocha/mauve.yml
+            # catppuccin.lazygit themes only through LG_CONFIG_FILE, which GUI and launchd launches never get
+            theme = {
+              activeBorderColor = [
+                "#cba6f7"
+                "bold"
+              ];
+              inactiveBorderColor = [ "#a6adc8" ];
+              searchingActiveBorderColor = [ "#f9e2af" ];
+              optionsTextColor = [ "#89b4fa" ];
+              selectedLineBgColor = [ "#313244" ];
+              inactiveViewSelectedLineBgColor = [ "#6c7086" ];
+              cherryPickedCommitFgColor = [ "#cba6f7" ];
+              cherryPickedCommitBgColor = [ "#45475a" ];
+              markedBaseCommitFgColor = [ "#89b4fa" ];
+              markedBaseCommitBgColor = [ "#f9e2af" ];
+              unstagedChangesColor = [ "#f38ba8" ];
+              defaultFgColor = [ "#cdd6f4" ];
+              authorColors."*" = "#b4befe";
+            };
           };
-          git.diffRenderers = [
-            {
-              colorArg = "always";
-              command = "delta --paging=never";
-            }
-          ];
+          git = {
+            autoFetch = false;
+            overrideGpg = true;
+            diffRenderers = [
+              {
+                colorArg = "always";
+                # lazygit opens lazygit-edit links in the editor at that line, file:// goes to macOS open
+                command = "delta --paging=never --hyperlinks-file-link-format=lazygit-edit://{path}:{line}";
+              }
+            ];
+          };
           update.method = "never";
+          disableStartupPopups = true;
+          promptToReturnFromSubprocess = false;
         };
       };
 
       # lazygit on macOS reads ~/Library/Application Support/lazygit/config.yml, but home-manager writes to ~/.config/lazygit/config.yml
+      # XDG_CONFIG_HOME comes from zsh's zshenv, so GUI and launchd launches, which never start zsh, need this mirror
+      # keep the direction: Application Support links to the home-manager file, never the reverse
       home.file."Library/Application Support/lazygit/config.yml" =
         lib.mkIf pkgs.stdenv.hostPlatform.isDarwin
           { inherit (config.home.file."${config.xdg.configHome}/lazygit/config.yml") source enable; };
@@ -58,5 +109,9 @@
       home.file."Library/Preferences/clangd/config.yaml" = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
         inherit (config.home.file."${config.xdg.configHome}/clangd/config.yaml") source enable;
       };
+
+      # clang-format has no user config, it walks parent dirs and else falls back to LLVM's 2 spaces
+      # so this applies to every project under ~ without its own .clang-format
+      home.file.".clang-format".source = repoFile "modules/eric/cli/clang-format/clang-format.yaml";
     };
 }

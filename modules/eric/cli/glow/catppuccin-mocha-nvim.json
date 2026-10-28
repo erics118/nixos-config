@@ -1,0 +1,211 @@
+{
+  "document": {
+    "block_prefix": "\n",
+    "block_suffix": "\n",
+    "color": "#cdd6f4",
+    "margin": 2
+  },
+  "block_quote": {
+    "indent": 1,
+    "indent_token": "▋ ",
+    "color": "#f5c2e7"
+  },
+  "paragraph": {},
+  "list": {
+    "level_indent": 2
+  },
+  "heading": {
+    "block_suffix": "\n",
+    "color": "#cdd6f4"
+  },
+  "h1": {
+    "prefix": " 󰲡 ",
+    "suffix": " ",
+    "color": "#f38ba8",
+    "background_color": "#5a3d50"
+  },
+  "h2": {
+    "prefix": " 󰲣 ",
+    "suffix": " ",
+    "color": "#fab387",
+    "background_color": "#5c4847"
+  },
+  "h3": {
+    "prefix": " 󰲥 ",
+    "suffix": " ",
+    "color": "#f9e2af",
+    "background_color": "#5b5552"
+  },
+  "h4": {
+    "prefix": " 󰲧 ",
+    "suffix": " ",
+    "color": "#a6e3a1",
+    "background_color": "#44554e"
+  },
+  "h5": {
+    "prefix": " 󰲩 ",
+    "suffix": " ",
+    "color": "#74c7ec",
+    "background_color": "#364d63"
+  },
+  "h6": {
+    "prefix": " 󰲫 ",
+    "suffix": " ",
+    "color": "#b4befe",
+    "background_color": "#484b68"
+  },
+  "text": {},
+  "strikethrough": {
+    "crossed_out": true
+  },
+  "emph": {
+    "color": "#f38ba8",
+    "italic": true
+  },
+  "strong": {
+    "color": "#f38ba8",
+    "bold": true
+  },
+  "hr": {
+    "color": "#45475a",
+    "format": "\n────────────────────────────────────────\n"
+  },
+  "item": {
+    "prefix": "- ",
+    "color": "#94e2d5"
+  },
+  "enumeration": {
+    "block_prefix": ". "
+  },
+  "task": {
+    "ticked": "[✓] ",
+    "unticked": "[ ] "
+  },
+  "link": {
+    "color": "#89b4fa",
+    "underline": true,
+    "italic": true
+  },
+  "link_text": {
+    "color": "#b4befe",
+    "bold": true
+  },
+  "image": {
+    "color": "#89b4fa",
+    "underline": true
+  },
+  "image_text": {
+    "color": "#b4befe",
+    "format": "Image: {{.text}} →"
+  },
+  "code": {
+    "color": "#a6e3a1",
+    "background_color": "#313244"
+  },
+  "code_block": {
+    "margin": 2,
+    "chroma": {
+      "text": {
+        "color": "#cdd6f4"
+      },
+      "error": {
+        "color": "#cdd6f4",
+        "background_color": "#f38ba8"
+      },
+      "comment": {
+        "color": "#9399b2",
+        "italic": true
+      },
+      "comment_preproc": {
+        "color": "#89b4fa"
+      },
+      "keyword": {
+        "color": "#cba6f7"
+      },
+      "keyword_reserved": {
+        "color": "#cba6f7"
+      },
+      "keyword_namespace": {
+        "color": "#f9e2af"
+      },
+      "keyword_type": {
+        "color": "#f9e2af"
+      },
+      "operator": {
+        "color": "#89dceb"
+      },
+      "punctuation": {
+        "color": "#9399b2"
+      },
+      "name": {
+        "color": "#b4befe"
+      },
+      "name_builtin": {
+        "color": "#fab387"
+      },
+      "name_tag": {
+        "color": "#cba6f7"
+      },
+      "name_attribute": {
+        "color": "#f9e2af"
+      },
+      "name_class": {
+        "color": "#f9e2af"
+      },
+      "name_constant": {
+        "color": "#f9e2af"
+      },
+      "name_decorator": {
+        "color": "#f5c2e7"
+      },
+      "name_exception": {},
+      "name_function": {
+        "color": "#89b4fa"
+      },
+      "name_other": {},
+      "literal": {},
+      "literal_number": {
+        "color": "#fab387"
+      },
+      "literal_date": {},
+      "literal_string": {
+        "color": "#a6e3a1"
+      },
+      "literal_string_escape": {
+        "color": "#f5c2e7"
+      },
+      "generic_deleted": {
+        "color": "#f38ba8"
+      },
+      "generic_emph": {
+        "color": "#cdd6f4",
+        "italic": true
+      },
+      "generic_inserted": {
+        "color": "#a6e3a1"
+      },
+      "generic_strong": {
+        "color": "#cdd6f4",
+        "bold": true
+      },
+      "generic_subheading": {
+        "color": "#89dceb"
+      },
+      "background": {
+        "background_color": "#181825"
+      }
+    }
+  },
+  "table": {
+    "center_separator": "┼",
+    "column_separator": "│",
+    "row_separator": "─"
+  },
+  "definition_list": {},
+  "definition_term": {},
+  "definition_description": {
+    "block_prefix": "\n🠶 "
+  },
+  "html_block": {},
+  "html_span": {}
+}

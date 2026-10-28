@@ -45,14 +45,14 @@ ask - Query AI models via OpenRouter API
 Usage: ask [OPTIONS] [PROMPT]
 
 Options:
-  -s          Use a smarter, slower model when the default gets it wrong
-  -m MODEL    Use a specific model
-  -r          Disable system prompt (raw model behavior)
-  --stream    Enable streaming output
-  --system    Set system prompt for the conversation
-  --metadata  Show metadata
-  --provider  Comma-separated list of providers for routing
-  -h, --help  Show this help message
+  -s                 Use a smarter, slower model when the default gets it wrong
+  -m MODEL           Use a specific model
+  -r                 Disable system prompt (raw model behavior), ignored with --system
+  --stream           Enable streaming output
+  --system PROMPT    Set system prompt for the conversation
+  --metadata         Show metadata
+  --provider LIST    Comma-separated list of providers for routing
+  -h, --help         Show this help message
 
 Examples:
   ask "Write a hello world in Python"
@@ -115,14 +115,6 @@ if [[ $NO_SYSTEM == false ]] && [[ -z $SYSTEM_PROMPT ]]; then
   SYSTEM_PROMPT="$DEFAULT_PROMPT"
 fi
 
-if [[ -n $SYSTEM_PROMPT ]]; then
-  MESSAGES=$(jq -n --arg sys "$SYSTEM_PROMPT" --arg u "$PROMPT" \
-    '[{"role":"system","content":$sys},{"role":"user","content":$u}]')
-else
-  MESSAGES=$(jq -n --arg u "$PROMPT" \
-    '[{"role":"user","content":$u}]')
-fi
-
 START_TIME=$(date +%s.%N)
 
 PROVIDER_JSON=""
@@ -133,12 +125,14 @@ if [[ -n $PROVIDER_ORDER ]]; then
   fi
 fi
 
+# the prompt reaches jq and curl on stdin, since a large piped prompt overflows the argument limit
 JSON_PAYLOAD=$(
-  jq -n \
+  printf '%s' "$PROMPT" | jq -Rs \
     --arg model "$MODEL" \
-    --argjson messages "$MESSAGES" \
+    --arg sys "$SYSTEM_PROMPT" \
     --argjson stream "$STREAMING" \
-    '{model: $model, messages: $messages, stream: $stream}'
+    '{model: $model, stream: $stream,
+      messages: ((if $sys == "" then [] else [{role: "system", content: $sys}] end) + [{role: "user", content: .}])}'
 )
 
 if [[ -n $PROVIDER_JSON ]]; then
@@ -151,21 +145,42 @@ elapsed_since_start() {
   printf '%.2f' "$(echo "$(date +%s.%N) - $START_TIME" | bc)"
 }
 
+# the key reaches curl through an fd fed by builtin printf, so it never shows in ps
 if [[ $STREAMING == true ]]; then
-  curl -sS -N --fail-with-body "$API_URL" \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $OPENROUTER_API_KEY" \
-    -d "$JSON_PAYLOAD" | while IFS= read -r line; do
+  # process substitution keeps the loop in the main shell so a failed request
+  # surfaces its error body instead of being swallowed by the pipe under pipefail.
+  # on http error --fail-with-body writes the json error to stdout with no data: prefix
+  saw_data=false
+  error_body=""
+  while IFS= read -r line; do
     if [[ $line == data:* ]]; then
+      saw_data=true
       json="${line#data: }"
       if [[ -z $json ]] || [[ $json == "[DONE]" ]]; then
         continue
       fi
-      content=$(jq -r '.choices[0].delta.content // ""' <<<"$json" 2>/dev/null)
+      content=$(jq -r '.choices[0].delta.content // ""' <<<"$json" 2>/dev/null) || content=""
       [[ -n $content ]] && printf '%s' "$content"
+    else
+      error_body+="$line"
     fi
-  done
+  done < <(curl -sS -N --fail-with-body "$API_URL" \
+    -H "Content-Type: application/json" \
+    -H @<(printf 'Authorization: Bearer %s\n' "$OPENROUTER_API_KEY") \
+    --data-binary @- <<<"$JSON_PAYLOAD")
+  # the process substitution's exit status, so a stream that dies midway still fails
+  curl_status=0
+  wait $! || curl_status=$?
   echo
+
+  if [[ $saw_data == false ]]; then
+    echo "Error: $(printf '%s' "$error_body" | jq -r '.error.message // .error // "Unknown error"' 2>/dev/null || echo "request failed")" >&2
+    exit 1
+  fi
+  if [[ $curl_status -ne 0 ]]; then
+    echo "Error: stream interrupted (curl exit $curl_status)" >&2
+    exit 1
+  fi
 
   if [[ $SHOW_METADATA == true ]]; then
     ELAPSED=$(elapsed_since_start)
@@ -176,8 +191,8 @@ else
   status=0
   response="$(curl -sS --fail-with-body "$API_URL" \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $OPENROUTER_API_KEY" \
-    -d "$JSON_PAYLOAD")" || status=$?
+    -H @<(printf 'Authorization: Bearer %s\n' "$OPENROUTER_API_KEY") \
+    --data-binary @- <<<"$JSON_PAYLOAD")" || status=$?
 
   if [[ $status -ne 0 ]]; then
     echo "Error: $(printf '%s' "$response" | jq -r '.error.message // .error // "Unknown error"')" >&2
