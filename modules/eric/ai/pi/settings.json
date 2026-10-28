@@ -1,48 +1,65 @@
 {
-  "theme": "dark",
-  "defaultProvider": "openai",
+  "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.6-terra",
+  "defaultThinkingLevel": "medium",
   "tuiMode": "fullscreen",
+  "shellPath": "/run/current-system/sw/bin/bash",
+  "quietStartup": true,
+  "fullscreenExitOutput": "resume-hint",
   "fullscreenCopyOnSelect": true,
   "showHardwareCursor": true,
   "editorPaddingX": 2,
-  "enabledModels": ["openai/*", "openrouter/*"],
+  "outputPad": 1,
+  "enabledModels": [
+    "openai/*",
+    "openai-codex/*",
+    "openrouter/*",
+    "amazon-bedrock/*"
+  ],
   "packages": [
-    "npm:pi-web-access",
-    "npm:pi-hermes-memory",
-    "npm:pi-mcp-adapter",
-    "npm:pi-subagents",
-    "npm:pi-effort",
-    "npm:@tifan/pi-inline-skills",
-    "git:github.com/elpapi42/pi-fork",
-    {
-      "source": "git:github.com/amosblomqvist/pi-config",
-      "extensions": ["bash-guard"]
-    }
+    "npm:pi-web-access@0.34.0",
+    "git:github.com/erics118/pi-hermes-memory",
+    "npm:pi-subagents@0.76.1",
+    "git:github.com/erics118/pi-diff"
   ],
   "subagents": {
-    "defaultProvider": "openai",
+    "defaultProvider": "openai-codex",
     "defaultModel": "gpt-5.6-terra",
     "agentOverrides": {
       "oracle": {
-        "model": "gpt-5.6-sol",
-        "thinking": "high"
+        "model": "gpt-6.1-sol",
+        "thinking": "high",
+        "inheritGlobalContext": true,
+        "inheritSkills": true
       },
       "reviewer": {
-        "model": "gpt-5.6-sol",
-        "thinking": "high"
+        "model": "gpt-6.1-sol",
+        "thinking": "high",
+        "inheritGlobalContext": true,
+        "inheritSkills": true
+      },
+      "scout": {
+        "inheritGlobalContext": true,
+        "inheritSkills": true
+      },
+      "researcher": {
+        "inheritGlobalContext": true,
+        "inheritSkills": true,
+        "output": false
+      },
+      "evidence-auditor": {
+        "inheritGlobalContext": true,
+        "inheritSkills": true
+      },
+      "worker": {
+        "inheritGlobalContext": true,
+        "inheritSkills": true
       }
     }
   },
-  "pi-fork": {
-    "defaultEffort": "balanced",
-    "effortProfiles": {
-      "deep": {
-        "provider": "openai",
-        "id": "gpt-5.6-sol",
-        "thinking": "high"
-      }
-    }
-  },
-  "lastChangelogVersion": "0.85.0"
+  "lastChangelogVersion": "1.1.0",
+  "theme": "catppuccin-mocha",
+  "modelThinkingLevels": {
+    "openai/gpt-5.6-terra": "medium"
+  }
 }

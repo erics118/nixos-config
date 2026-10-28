@@ -2,7 +2,16 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "cleanupPeriodDays": 3560,
   "env": {
-    "ENABLE_TOOL_SEARCH": "auto"
+    "BASH_DEFAULT_TIMEOUT_MS": "10000",
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
+    "CLAUDE_CODE_FORCE_TERMINAL_IMAGES": "1",
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/nixos-config/modules/eric/ai/claude/mods/tex-math",
+    "ENABLE_TOOL_SEARCH": "auto",
+    "GIT_CONFIG_COUNT": "2",
+    "GIT_CONFIG_KEY_0": "gpg.ssh.program",
+    "GIT_CONFIG_VALUE_0": "ssh-keygen",
+    "GIT_CONFIG_KEY_1": "core.sshCommand",
+    "GIT_CONFIG_VALUE_1": "ssh -o IdentityAgent=none -i ~/.ssh/id_ed25519_github_erics118 -i ~/.ssh/id_ed25519_cornell"
   },
   "attribution": {
     "commit": "",
@@ -11,37 +20,22 @@
   },
   "permissions": {
     "allow": [
-      "Bash(cat *)",
       "Bash(cut *)",
       "Bash(df *)",
-      "Bash(du *)",
       "Bash(dune:*)",
       "Bash(fd *)",
       "Bash(file *)",
-      "Bash(find:*)",
-      "Bash(git diff *)",
-      "Bash(git log *)",
-      "Bash(git show *)",
-      "Bash(git status *)",
-      "Bash(grep *)",
-      "Bash(head *)",
       "Bash(jq *)",
       "Bash(less *)",
-      "Bash(ls *)",
-      "Bash(nix develop:*)",
       "Bash(ocamlfind:*)",
       "Bash(ocamlmerlin:*)",
       "Bash(pwd *)",
       "Bash(rg *)",
       "Bash(scc *)",
       "Bash(sort *)",
-      "Bash(stat *)",
-      "Bash(tail *)",
       "Bash(tr *)",
       "Bash(tree *)",
       "Bash(uniq *)",
-      "Bash(wc *)",
-      "Bash(which:*)",
       "Bash(xargs cat *)",
       "Bash(xargs ls *)",
       "Bash(npm run build:*)",
@@ -49,67 +43,70 @@
       "Bash(npm run start:*)",
       "mcp__ide__getDiagnostics",
       "mcp__context7__*",
-      "mcp__plugin_context7_context7__*",
+      "Edit(~/.eric/**)",
       "Bash(nix-store -q *)",
       "Bash(nix path-info *)",
       "Bash(nix flake metadata *)",
       "Bash(nix flake show *)",
       "Bash(nix eval *)",
       "Bash(nix search *)",
-      "Bash(direnv exec *)",
       "Bash(direnv allow *)",
       "Bash(git add *)",
       "Bash(just build*)",
       "Bash(just check*)",
       "Bash(just fmt*)",
       "Bash(readlink *)",
-      "Bash(realpath *)"
+      "Bash(realpath *)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(ls *)",
+      "Bash(stat *)",
+      "Bash(which *)",
+      "Bash(du *)",
+      "Bash(grep *)",
+      "Bash(date *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git status *)",
+      "Bash(git rev-parse *)",
+      "Bash(nix build *)",
+      "Bash(nix flake check *)",
+      "Bash(gh api *)",
+      "Bash(gh search *)",
+      "Bash(gh status *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh run view *)",
+      "Bash(gh run list *)",
+      "Bash(gh run watch *)",
+      "Bash(gh issue view *)",
+      "Bash(gh issue list *)",
+      "Bash(gh repo view *)",
+      "Bash(tmux -L *)",
+      "Bash(ntfy pub *)",
+      "Bash(sketchybar --set apple *)"
+    ],
+    "deny": [
+      "EnterPlanMode",
+      "ExitPlanMode"
     ],
     "defaultMode": "auto"
   },
-  "model": "claude-opus-4-8",
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Read|Write|Edit",
+        "matcher": "Bash|Monitor|Read|Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/deny-symlink-path.sh\""
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$HOME/.claude/hooks/block-smart-punct.sh\""
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$HOME/.claude/hooks/git-add-before-nix.sh\""
-          },
-          {
-            "type": "command",
-            "command": "\"$HOME/.claude/hooks/strip-claude-attribution.sh\""
-          },
-          {
-            "type": "command",
-            "command": "\"$HOME/.claude/hooks/block-global-find.sh\""
-          },
-          {
-            "type": "command",
-            "command": "\"$HOME/.claude/hooks/block-symlink-clobber.sh\""
-          },
-          {
-            "type": "command",
-            "command": "\"$HOME/.claude/hooks/ask-dangerous-git.sh\""
+            "command": "\"$HOME/.agents/hooks/guard.sh\" pre claude || { echo 'guard hook did not run, so the call was not checked' >&2; exit 2; }",
+            "timeout": 60,
+            "onFailure": "block"
           }
         ]
       }
@@ -120,11 +117,63 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/treefmt-on-edit.sh\""
+            "command": "\"$HOME/.agents/hooks/guard.sh\" post claude; s=$?; [ $s -eq 0 ] || [ $s -eq 2 ] || { echo 'guard hook did not run, so the edit was not checked' >&2; exit 2; }; exit $s"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/tmux-bell.sh\""
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/tmux-bell.sh\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/tmux-agent-resume.sh\" claude"
           },
           {
             "type": "command",
-            "command": "\"$HOME/.claude/hooks/warn-comment-block.sh\""
+            "command": "bash -c 'm=$(jq -r \".hooks[][].hooks[].command\" \"$HOME/.claude/settings.json\" | grep -o \"\\$HOME/\\.agents/hooks/[^\\\" ]*\" | sort -u | while read -r p; do f=$HOME${p#\\$HOME}; [ -x \"$f\" ] || printf \"%s \" \"$f\"; done); [ -z \"$m\" ] || jq -n --arg m \"guard hooks missing, so they do not run: $m\" \"{systemMessage:\\$m,hookSpecificOutput:{hookEventName:\\\"SessionStart\\\",additionalContext:\\$m}}\"'"
+          },
+          {
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/reminders.sh\""
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c 'rex __internal session-start --agent claude --feature-session-naming=false 2>/dev/null || true'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c 'command -v rexume >/dev/null || exit 0; exec rexume report claude'",
+            "timeout": 5
           }
         ]
       }
@@ -132,7 +181,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash ~/.claude/statusline.sh"
+    "command": "zsh -f ~/.claude/statusline.zsh"
   },
   "enabledPlugins": {
     "feature-dev@claude-plugins-official": false,
@@ -155,7 +204,6 @@
     "security-guidance@claude-plugins-official": false,
     "lua-lsp@claude-plugins-official": false,
     "remember@claude-plugins-official": false,
-    "context7@claude-plugins-official": false,
     "railway@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
@@ -167,14 +215,30 @@
     }
   },
   "feedbackDrafts": "off",
-  "effortLevel": "high",
+  "effortLevel": "medium",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "autoCompactWindow": 800000
+    }
+  },
   "advisorModel": "fable",
+  "promptSuggestionEnabled": false,
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
+  "theme": "custom:catppuccin-mocha",
   "editorMode": "normal",
   "verbose": true,
   "autoCompactEnabled": true,
-  "remoteControlAtStartup": false,
+  "switchModelsOnFlag": false,
+  "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "In /Users/eric/dev/resume, running the applying-to-jobs CLI (node .../applying-to-jobs/src/cli.ts) to submit job applications (submit, apply --submit, batch --submit) is authorized when the user asked in this session to submit them, and so is reading the receipt folders it writes."
+    ]
+  },
+  "model": "claude-opus-4-8"
 }

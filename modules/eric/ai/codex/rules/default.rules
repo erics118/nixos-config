@@ -30,6 +30,12 @@ prefix_rule(pattern=["git", "log"], decision="allow")
 prefix_rule(pattern=["git", "show"], decision="allow")
 prefix_rule(pattern=["git", "status"], decision="allow")
 prefix_rule(pattern=["git", "rev-parse"], decision="allow")
+# flake eval sees only tracked files, so new paths are staged before it
+prefix_rule(pattern=["git", "add"], decision="allow")
+
+# Agents never push or write pull requests.
+prefix_rule(pattern=["git", "push"], decision="forbidden")
+prefix_rule(pattern=["gh", "pr", ["create", "merge", "close", "reopen", "edit", "comment", "review", "ready", "lock", "unlock", "update-branch"]], decision="forbidden")
 
 # Keep read-only Nix metadata and lookup commands outside the sandbox.
 prefix_rule(pattern=["nix", "eval"], decision="allow")
@@ -45,5 +51,4 @@ prefix_rule(pattern=["just", "build"], decision="allow")
 prefix_rule(pattern=["just", "check"], decision="allow")
 prefix_rule(pattern=["just", "fmt"], decision="allow")
 prefix_rule(pattern=["nix", "build"], decision="allow")
-prefix_rule(pattern=["nix", "develop"], decision="allow")
 prefix_rule(pattern=["nix", "flake", "check"], decision="allow")

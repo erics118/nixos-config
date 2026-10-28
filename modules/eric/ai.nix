@@ -2,39 +2,27 @@
   flake.modules.homeManager.base =
     {
       repoFile,
+      repoFileAll,
       lib,
       pkgs,
       ...
     }:
     let
       base = "modules/eric/ai";
-      vendors = {
-        claude = "claude";
-        codex = "codex";
-      };
-      skillLocations = {
-        agents = ".agents/skills";
-        claude = ".claude/skills";
-      };
-      vendorFiles =
-        vendor: files:
-        lib.mapAttrs' (
-          target: source:
-          lib.nameValuePair ".${vendor}/${target}" { source = repoFile "${base}/${vendor}/${source}"; }
-        ) files;
+      globalInstructions = repoFile "${base}/AGENTS-global.md";
+      # links each named path under ~/<target> to the same path under <base>/<source>
+      links =
+        target: source: names:
+        lib.genAttrs' names (
+          name: lib.nameValuePair "${target}/${name}" { source = repoFile "${base}/${source}/${name}"; }
+        );
+      # links every skill directory in <base>/skills/<scope> into ~/<target>
       skillDirectories =
-        location: scope:
-        let
-          skills = ./ai/skills + "/${scope}";
-          names = builtins.attrNames (
-            lib.filterAttrs (_: type: type == "directory") (builtins.readDir skills)
-          );
-        in
-        lib.listToAttrs (
-          map (
-            name:
-            lib.nameValuePair "${location}/${name}" { source = repoFile "${base}/skills/${scope}/${name}"; }
-          ) names
+        target: scope:
+        links target "skills/${scope}" (
+          builtins.attrNames (
+            lib.filterAttrs (_: type: type == "directory") (builtins.readDir (./ai/skills + "/${scope}"))
+          )
         );
       context7Mcp = pkgs.writeShellApplication {
         name = "context7-mcp";
@@ -52,57 +40,89 @@
           export CONTEXT7_API_KEY
           npm_config_cache="''${XDG_CACHE_HOME:-$HOME/.cache}/context7/npm"
           export npm_config_cache
+          # nix node trusts only NIX_SSL_CERT_FILE, which codex strips from mcp servers
+          export NIX_SSL_CERT_FILE="''${NIX_SSL_CERT_FILE:-/etc/ssl/certs/ca-certificates.crt}"
 
           exec npx --yes @upstash/context7-mcp@4.0.2
         '';
       };
+      cornellConfluenceMcp = pkgs.writeShellApplication {
+        name = "cornell-confluence-mcp";
+        runtimeInputs = [ pkgs.uv ];
+        text = ''
+          KEY_FILE=/run/secrets/api/cornell-confluence
+          CONFLUENCE_PERSONAL_TOKEN="''${CONFLUENCE_PERSONAL_TOKEN:-}"
+          if [[ -z $CONFLUENCE_PERSONAL_TOKEN && -r $KEY_FILE ]]; then
+            CONFLUENCE_PERSONAL_TOKEN="$(<"$KEY_FILE")"
+          fi
+          if [[ -z $CONFLUENCE_PERSONAL_TOKEN ]]; then
+            printf >&2 'cornell-confluence-mcp: no token. export CONFLUENCE_PERSONAL_TOKEN or provision %s\n' "$KEY_FILE"
+            exit 1
+          fi
+          export CONFLUENCE_PERSONAL_TOKEN
+          export CONFLUENCE_URL=https://confluence.cornell.edu
+
+          exec uvx mcp-atlassian@0.23.1
+        '';
+      };
     in
     {
-      home.file =
-        vendorFiles vendors.codex {
-          "AGENTS.md" = "AGENTS.md";
-          "config.toml" = "config.toml";
-          "hooks.json" = "hooks.json";
-          "rules/default.rules" = "rules/default.rules";
-        }
-        // vendorFiles vendors.claude {
-          "CLAUDE.md" = "CLAUDE-global.md";
-          "settings.json" = "settings.json";
-          "statusline.sh" = "statusline.sh";
-          hooks = "hooks";
-        }
-        // skillDirectories skillLocations.agents "shared"
-        // skillDirectories skillLocations.agents vendors.codex
-        // skillDirectories skillLocations.claude "shared"
-        // skillDirectories skillLocations.claude vendors.claude;
+      home.file = {
+        ".claude/CLAUDE.md".source = globalInstructions;
+        ".codex/AGENTS.md".source = globalInstructions;
+        ".pi/agent/AGENTS.md".source = globalInstructions;
+        ".agents/hooks".source = repoFile "${base}/hooks";
+        # commands only agents run, which the global instructions call by path
+        ".agents/bin".source = repoFile "${base}/bin";
+      }
+      // links ".claude" "claude" [
+        "agents"
+        "keybindings.json"
+        "settings.json"
+        "statusline.zsh"
+        "themes"
+      ]
+      // links ".codex" "codex" [
+        "agents"
+        "config.toml"
+        "hooks.json"
+        "rules/default.rules"
+      ]
+      // links ".pi/agent" "pi" [
+        "agents"
+        "settings.json"
+        "hermes-memory-config.json"
+        "APPEND_SYSTEM.md"
+        "mcp.json"
+      ]
+      // repoFileAll "${base}/pi/extensions" ".pi/agent/extensions"
+      // repoFileAll "${base}/pi/lib" ".pi/agent/lib"
+      // repoFileAll "${base}/pi/themes" ".pi/agent/themes"
+      # claude reads ~/.claude/skills, codex and pi read ~/.agents/skills
+      // skillDirectories ".claude/skills" "shared"
+      // skillDirectories ".claude/skills" "claude"
+      // skillDirectories ".agents/skills" "shared"
+      // skillDirectories ".agents/skills" "codex";
 
-      home.activation.migrateClaudeSkills =
-        lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ]
-          ''
-            skills="$HOME/.claude/skills"
+      # pi's default agent dir, set explicitly so pi-subagents saves new agents to the
+      # repo-linked ~/.pi/agent/agents instead of ~/.agents, which it picks whenever that exists
+      home.sessionVariables.PI_CODING_AGENT_DIR = "$HOME/.pi/agent";
+      # pi's better-sqlite3 runs node-gyp on install
+      # gyp needs ctypes, which python3Minimal lacks
+      # npm 11 warns on npm_config_python as an unknown config, so point node-gyp at python directly
+      home.sessionVariables.NODE_GYP_FORCE_PYTHON = lib.getExe pkgs.python3;
 
-            if test -L "$skills" && ! test -e "$skills"; then
-              target="$(${pkgs.coreutils}/bin/readlink "$skills")"
-
-              case "$target" in
-                /nix/store/*-home-manager-files/.claude/skills)
-                  verboseEcho "Removing obsolete Home Manager link at $skills"
-                  $DRY_RUN_CMD ${pkgs.coreutils}/bin/rm "$skills"
-                  ;;
-                *)
-                  errorEcho "$skills is a dangling symlink not created by the previous Home Manager layout"
-                  exit 1
-                  ;;
-              esac
-            elif test -e "$skills" && ! test -d "$skills"; then
-              errorEcho "$skills exists but is not a directory"
-              exit 1
-            fi
-          '';
+      # agent shells pass unmatched globs and words starting with = through like bash
+      programs.zsh.envExtra = ''
+        [[ -n ''${CLAUDECODE-} || -n ''${CODEX_SHELL-} ]] && setopt no_nomatch no_equals
+      '';
 
       home.packages = with pkgs; [
+        agent-guard
         ccusage
         context7Mcp
+        cornellConfluenceMcp
+        tex-math-render
       ];
     };
 }

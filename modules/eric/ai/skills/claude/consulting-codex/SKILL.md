@@ -7,19 +7,22 @@ description: Use when you want an independent second opinion from a different mo
 
 Codex is a **different model**, so its value is disagreement. Ask it to judge, not to fetch. Never reconcile away its verdict when reporting back -- quote it, then say where you disagree.
 
-Pin `-m gpt-5.6-sol -c model_reasoning_effort="high"` on every call. `~/.codex/config.toml` sets the same values today, so pinning is what stops a later edit there from silently swapping the model mid-review.
+Pin `-m gpt-5.6-sol -c model_reasoning_effort="high"` on every call. Pinning stops a later edit to `~/.codex/config.toml` from silently swapping the model mid-review.
 
-Runs take minutes. Launch with `run_in_background: true` and wait for the completion notification; never poll with `pgrep -f`, whose pattern matches the polling loop itself and never exits. The answer is whatever lands in `-o`; write it to the scratchpad and read it from there.
+Runs take minutes. Launch with `run_in_background: true` and wait for the completion notification. Never poll with `pgrep -f`, whose pattern matches the polling loop itself and never exits. The answer is whatever lands in `-o`; write it to the task's scratch directory (`<scratch>` below, see the Environment rules) and read it from there.
 
 ## First turn
 
 ```bash
 codex exec --sandbox read-only -m gpt-5.6-sol -c model_reasoning_effort="high" \
-  -C /path/to/repo --json -o <scratchpad>/codex-1.md "<prompt>" < /dev/null
+  -C /path/to/repo --json -o <scratch>/codex-1.md "<prompt>" \
+  < /dev/null > <scratch>/codex-1.jsonl 2> <scratch>/codex-1.err
 ```
 
 - `-o` writes **only** the final message. Bare `codex exec` buries it in a huge trace.
-- `--json` makes the first line `{"type":"thread.started","thread_id":"<uuid>"}`. **Capture that id** if a follow-up is at all likely; without it you are limited to `--last`.
+- Redirect the `--json` stream to a file (`> codex-1.jsonl` above); do not let it print to the terminal.
+- **Never pipe codex stdout to `head`/`grep`/`tee` to grab the id.** When that reader closes the pipe, codex dies with a `failed printing to stdout: Broken pipe` panic before `-o` is written, and you get an empty answer.
+- `--json` makes the first line `{"type":"thread.started","thread_id":"<uuid>"}`. **Capture that id** (read the first line of the `.jsonl` file) if a follow-up is at all likely; without it you are limited to `--last`.
 - `-C <repo>` is required, else it fails with `Not inside a trusted directory`.
 - `< /dev/null` stops codex blocking on stdin when stdin is not a TTY.
 
@@ -29,9 +32,11 @@ codex exec --sandbox read-only -m gpt-5.6-sol -c model_reasoning_effort="high" \
 
 ```bash
 codex exec resume -m gpt-5.6-sol -c model_reasoning_effort="high" \
-  -c sandbox_mode="read-only" -o <scratchpad>/codex-2.md <thread_id> "<prompt>" < /dev/null
+  -c sandbox_mode="read-only" -o <scratch>/codex-2.md <thread_id> "<prompt>" \
+  < /dev/null > <scratch>/codex-2.out 2> <scratch>/codex-2.err
 ```
 
-- No `-C` and no `--sandbox`. Set the working directory yourself, and reach the sandbox through `-c sandbox_mode="read-only"`.
+- The same pipe trap applies: redirect stdout to a file, never pipe it to `head`/`grep`/`tee`, or codex panics with `Broken pipe` before `-o` is written.
+- No `-C` and no `--sandbox`. Set the working directory by prefixing the command with `cd /path/to/repo &&`. Reach the sandbox through `-c sandbox_mode="read-only"`.
 - Options come **before** `<thread_id>`. `resume <id> -o file` fails with a bare usage error.
 - `--last` replaces `<thread_id>` to resume the most recent session.

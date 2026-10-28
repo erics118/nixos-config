@@ -1,0 +1,53 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "\"$HOME/.agents/hooks/guard.sh\" pre codex || { echo 'guard hook did not run, so the call was not checked' >&2; exit 2; }",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "\"$HOME/.agents/hooks/tmux-agent-resume.sh\" codex",
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/sh -c 'rex __internal session-start --agent codex --feature-session-naming=false 2>/dev/null || true'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "command": "/bin/sh -c 'command -v rexume >/dev/null || exit 0; exec rexume report codex'",
+            "timeout": 5,
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "\"$HOME/.agents/hooks/tmux-bell.sh\"",
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}

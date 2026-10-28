@@ -1,0 +1,6 @@
+interface:
+  short_description: "Read-only review of how existing code is split across its parts"
+  default_prompt: "Use $architecture-review to review this repo's architecture."
+
+policy:
+  allow_implicit_invocation: true

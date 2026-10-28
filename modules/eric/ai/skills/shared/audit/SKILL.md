@@ -1,7 +1,8 @@
 ---
 name: audit
-description: Complete read-only sweep of existing code across every lens -- correctness, robustness, concurrency, and security as much as tech debt, idioms, and structure -- reported by what to fix first, then applies the accepted fixes on confirm. Use to find everything a senior would call improper across a codebase or area, or narrow to one lens or the working diff.
-argument-hint: "[empty for whole repo | area | 'diff' for uncommitted changes] [+ a lens to narrow: debt|modernize|structure|correctness|robustness|concurrency|security|contract|performance|tests|operability|docs]"
+description: Use when asked to audit or sweep existing code or config for anything worth fixing, or to review a branch or PR.
+argument-hint: "[empty for whole repo | area | 'diff' for uncommitted changes | branch or PR] [+ a lens to narrow: cleanup|quality|debt|modernize|structure|architecture|consistency|correctness|robustness|concurrency|security|contract|performance|tests|operability|docs]"
+effort: high
 ---
 
 Survey existing code and report what is worth fixing, then apply the accepted fixes once
@@ -12,57 +13,64 @@ ROI, sprints, or blanket coverage mandates.
 Scope: default to the entire codebase -- all of it, long-committed code included, not just
 what changed recently or sits uncommitted in the working tree. Narrow only on an explicit ask:
 an area or path, or the uncommitted changes ("diff", "uncommitted", "staged", "working"). Absent
-that ask, an audit reads everything.
+that ask, an audit reads everything. A branch or PR name means its diff against the merge base
+with the default branch, judged in the context of the whole repo.
 
-By default the sweep is complete: hunt everything a careful senior would flag as improper in
-any way. The lenses below are a checklist to force that breadth, not a fence -- a genuine
+By default the sweep is complete: review as a senior engineer would, for code they would call
+great, not merely code with no bugs. Hunt everything that engineer would flag as improper in any
+way, and the shape that keeps producing it. The lenses below are a checklist to force that breadth, not a fence -- a genuine
 problem that fits no named lens still counts. Reach for the list to check you have missed no
 dimension, never to bound what you look for. Narrow to a single lens, or to `cleanup` /
-`quality` for the debt+structure+modernize group, only when the ask names one.
+`quality` for the debt+structure+modernize group, only when the ask names one. The
+`architecture` lens runs `architecture-review` alone, at any depth.
 
-Match depth to the ask too. A light ask -- "surface", "quick", "cleanup", "tidy", or a small
-named target -- is a single direct pass for the obvious, high-confidence wins: read, report,
-apply, and skip the coordinated apparatus below. A wide ask -- the whole repo, or "thorough" /
-"deep" / "everything" -- earns the full sweep in Survey the scope.
+Match depth to the ask too. A light ask is one of "surface", "quick", "cleanup", "tidy", or a
+small named target. It gets a single direct pass for the obvious, high-confidence wins: read,
+report, and apply on confirm. Skip the coordinated apparatus below. A wide ask is the whole
+repo, or "thorough" / "deep" / "everything". It earns the full sweep in Survey the scope. A
+named area larger than a few files also gets the full sweep, bounded to that area.
 
-## Survey the scope (wide audits)
-
-The full coordinated sweep, for a wide ask; a light or single-target ask skips it for the
-direct pass above.
+## Survey the scope (full sweep)
 
 You are the coordinator. Run until the whole scope is reviewed and the findings are validated.
-Read-only throughout: edit no files, run no fixes, change nothing. Read-only inspection commands
-are fine.
+Read-only throughout.
 
 Coverage contract: inventory every identifiable subsystem. Give each a stable ID and name,
 an exact ownership boundary, its key files and major interfaces, and a status (queued, in
-review, finding, skip). Keep one canonical scratchpad holding the inventory, confirmed
+review, finding, skip). Keep one canonical inventory file in the task's scratch directory
+(see the Environment rules) holding the inventory, confirmed
 findings, explicit skips, cross-cutting patterns, duplicates, and priorities. A broad
 catch-all row does not prove coverage. Do not skip the unglamorous corners: scripts, CLIs,
 build and deploy config, and vendored assets are subsystems too.
 
-Dispatch fresh read-only subagents in parallel, one distinct subsystem each with a
-non-overlapping boundary. Under Claude use Explore or general-purpose agents via the Agent
-tool; under Codex use its native subagents; only where no subagent mechanism exists, run
-each subsystem review yourself in sequence. Keep every worker read-only, bound concurrency
-to the lanes you can coordinate, wait on the batch together, and harvest each result. Brief
-each worker to apply every lens (or the single focused lens) within its boundary and return,
-per finding: what and where (`file:line`), severity or effort, why it matters with a concrete
+Dispatch fresh `auditor` agents in parallel, one distinct subsystem each with a
+non-overlapping boundary. Only where no subagent mechanism exists, run
+each subsystem review yourself in sequence. Bound concurrency
+to the lanes you can coordinate, wait on the batch together, and harvest each result. Every
+worker brief opens with a `Lenses:` line naming each lens it applies within its boundary: all
+of them, or the one the ask names. A brief limited to defects is a narrowed audit. The brief
+points the worker at this file's Lenses and Rules sections by path. For each
+finding it returns: what and where (`file:line`), severity or effort, why it matters with a concrete
 failure scenario, the proposed fix, regression risk, and confidence. It may note
 cross-subsystem concerns but must not expand scope.
+
+Run `architecture-review` once over the same scope, alongside the subsystem lanes. Its
+findings span subsystems, so they keep their own section instead of one subsystem owner.
 
 Validate every finding against the current code before accepting it. Reject or demote
 findings that are vague, duplicate another, misread intentional semantics, or merely relocate
 complexity. A wrong "bug" or "bypass" claim costs more than a missed nitpick, so verify the
-decisive line before believing the worker. Deduplicate and assign each to one authoritative
-subsystem. Record skips as completed coverage.
+decisive line before believing the worker. Deduplicate, assign each to one authoritative
+subsystem, and tie each to its root cause: the architecture finding that produces it, or
+`local`. Record skips as completed coverage.
 
 Audit the audit with fresh passes: repository coverage and missing boundaries; duplication
 and ownership overlap; materiality and over-abstraction; severity and priority ranking. A real
 omission gets its own subsystem row, audited; do not hide it by broadening a finished
 boundary.
 
-Done when every subsystem has a finding or explicit skip, each finding has complete evidence /
+Done when every subsystem has a finding or explicit skip, the `architecture-review` report is
+in, each finding has complete evidence /
 fix / severity / risk, duplicates and weak claims are removed, and the repository is unchanged.
 
 ## Lenses
@@ -85,6 +93,9 @@ Quality and design
   a state machine or discriminated union); repeated shape assumptions that want a shared type;
   duplicated branching a small map, registry, or reducer removes; unclear ownership a module
   boundary clarifies. Never force an abstraction where boring local code is already clear.
+- **consistency** -- for each new piece, find how the repo already does the same job (nearest
+  neighbor, shared helpers, test framework, naming, config layout, CI and justfile wiring) and
+  flag every place the change rebuilds or departs from it.
 
 Correctness and robustness
 
@@ -103,8 +114,8 @@ Security and contract
 - **security** -- authn/authz on every path; CSRF and origin checks; XSS and injection, with
   escaping correct for the context it lands in, not just some context; sandbox and CSP; secret
   handling and exposure; info leakage in errors; SSRF and open-redirect; supply-chain
-  (vendored, pinned, integrity-checked). For a deeper dedicated pass, `security-review` and
-  `adversarial-review` go further; this lens is the broad net that finds where to aim them.
+  (vendored, pinned, integrity-checked). For a deeper dedicated pass, Claude Code has the built-in
+  `security-review`; this lens is the broad net that finds where to aim it.
 - **contract** -- http/api semantics (status codes, headers, conditional and range requests,
   redirects and their cache stickiness); caching and invalidation (stale-on-mutate, and
   read-your-write on an eventually-consistent store); platform and runtime limits (memory, cpu,
@@ -128,9 +139,22 @@ Cross-cutting
 
 - Every item earns its place with a concrete win: a real defect, or clearer / safer / less
   code / fewer footguns. "Newer", "more standard", or "more abstract" alone is not a reason;
-  skip mere taste.
+  skip mere taste. A departure from an established repo convention is not taste: it is a
+  second way to do one job.
 - KISS/YAGNI: add no abstraction and rewrite no working code for fashion. If the code is
   already right, say so and move on.
+- A larger refactor earns its place when it removes a recurring cost: a fix that must land
+  twice, a boundary crossed per action, a workaround at every call site. Rank it by that cost
+  against its risk like any other item.
+- Materiality: a finding needs a failure someone would plausibly hit. On a public surface,
+  that someone is any anonymous client sending hostile input. On an owner-only surface, it
+  is the owner and their real clients, so guards against the owner's own malformed input or
+  nonexistent callers go in note-only.
+- Exception: judge authn, authz, CSRF, injection, and secret-exposure findings as if every
+  outer layer (Access, WAF, the edge) has failed. Defense in depth is never demoted for
+  being behind another layer.
+- Unverified platform behavior on a public surface stays in the fix list as "verify, then
+  fix", not note-only. Probe the live system read-only when a probe can settle it.
 - Leave formatting and whitespace to the formatter; do not flag those.
 - A fix that would break a deliberate, tested behavior is not a fix. When a finding collides
   with an existing decision the code or tests encode, surface the collision instead of
@@ -144,9 +168,15 @@ why it matters (a concrete failure scenario for a defect), and the fix with roug
 (small / medium / large). Group note-only items -- low value, or a design decision rather than
 a bug -- at the end with why they can wait.
 
+Give every defect a `Root cause:` line naming its architecture finding, or `local`. An
+architecture finding ranks by the combined impact of the defects it causes, and those defects
+sit under it, so the list reads cause first. Recommend what a senior engineer would: fix the
+shape first, then land its symptoms on the new shape. Architecture findings otherwise keep the
+shape `architecture-review` gives them.
+
 Present the ranked list and change nothing yet. On confirmation, apply the accepted findings
-in priority order, highest-impact first. Every edit traces to a listed finding; make no change
+in priority order, highest-impact first. Where accepted findings share a root cause, apply the
+root cause first. This covers only fixes inside one subsystem. An
+accepted architecture finding follows `architecture-review`'s last line. Every edit traces to a listed finding; make no change
 beyond the list, and leave note-only or risky items untouched unless explicitly approved. After
 applying, re-run the relevant tests or checks.
-
-Read-only until you confirm. Never auto-apply.

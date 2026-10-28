@@ -9,14 +9,19 @@ notify = [
 personality = "pragmatic"
 project_doc_fallback_filenames = ["CLAUDE.md"]
 sandbox_mode = "workspace-write"
+service_tier = "default"
 
 [sandbox_workspace_write]
 network_access = true
 
 [desktop]
-conversationDetailMode = "STEPS_COMMANDS"
+conversationDetailMode = "STEPS_PROSE"
 dock-icon-preference = "codex-system"
 followUpQueueMode = "queue"
+show-context-window-usage = false
+avatar-overlay-pet-visible = false
+hotkey-window-projectless-default-enabled = true
+confirm-before-close = "never"
 
 [desktop.appearanceDarkChromeTheme]
 accent = "#339cff"
@@ -42,17 +47,11 @@ multi_agent = true
 steer = true
 terminal_resize_reflow = true
 
-[hooks.state."/Users/eric/.codex/hooks.json:session_start:0:0"]
-enabled = true
-trusted_hash = "sha256:7fe63c42973ca988a5758d5295fb0dc0a24afb6c970d412f11c71b6e91a48abb"
-
 [marketplaces.openai-bundled]
-last_updated = "2026-08-13T20:27:52Z"
 source_type = "local"
 source = "/Users/eric/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-08-14T09:40:19Z"
 source_type = "local"
 source = "/Users/eric/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
@@ -61,6 +60,9 @@ args = ["mcp"]
 command = "./Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient"
 cwd = "."
 enabled = false
+
+[mcp_servers.cornell-confluence]
+command = "/etc/profiles/per-user/eric/bin/cornell-confluence-mcp"
 
 [mcp_servers.context7]
 command = "/etc/profiles/per-user/eric/bin/context7-mcp"
@@ -74,17 +76,18 @@ startup_timeout_sec = 120
 NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS = "1000"
 NODE_REPL_NODE_MODULE_DIRS = "/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 NODE_REPL_NODE_PATH = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node"
-NODE_REPL_TRUSTED_CODE_PATHS = "/Users/eric/.codex"
+NODE_REPL_TRUSTED_CODE_PATHS = "/Users/eric/.codex:/Applications/ChatGPT.app/Contents/Resources/cua_node/lib/node_modules"
 CODEX_HOME = "/Users/eric/.codex"
-NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "028a14b6eaa6d98dac2aae00764345ab9f244801ed8493d42b9af3be5575006e,f204d340535055781952b10ed396de20b842f00a19e430852f7e121ad1ce91f6"
-BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
-NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
-NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
-NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = "Control desktop apps on macOS through Computer Use."
+BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab,mcpapps"
+BROWSER_USE_TINYSKY_ENABLED = "1"
+NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = ""
+NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = ""
+NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = ""
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.727.51351"
+BROWSER_USE_CODEX_APP_VERSION = "26.1007.71326"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/eric/.codex/plugins/cache/openai-bundled/browser/26.1007.71326/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
 SKY_CUA_SERVICE_PATH = "/Users/eric/.codex/computer-use/Codex Computer Use.app"
-CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex"
+CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex"
 
 [mcp_servers.railway]
 args = ["mcp"]
@@ -94,12 +97,6 @@ command = "railway"
 "gpt-5.2-codex" = "gpt-5.4"
 "gpt-5.4" = "gpt-5.5"
 
-[plugins."browser@openai-bundled"]
-enabled = true
-
-[plugins."computer-use@openai-bundled"]
-enabled = true
-
 [plugins."documents@openai-primary-runtime"]
 enabled = true
 
@@ -107,19 +104,112 @@ enabled = true
 enabled = true
 
 [plugins."presentations@openai-primary-runtime"]
-enabled = true
-
-[plugins."sites@openai-bundled"]
-enabled = true
+enabled = false
 
 [plugins."spreadsheets@openai-primary-runtime"]
-enabled = true
+enabled = false
 
 [plugins."template-creator@openai-primary-runtime"]
-enabled = true
+enabled = false
 
 [plugins."visualize@openai-bundled"]
 enabled = true
+
+[plugins."codex-app-tools@openai-bundled"]
+enabled = true
+
+[plugins."browser@openai-bundled"]
+enabled = true
+
+[plugins."unified-computer-use@openai-bundled"]
+enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-analytics-dashboard"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-business-review"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-design-report"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-experiment-analysis"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-financial-budget"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-investment-committee-memo"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-legal-memorandum"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-market-trends-report"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-minimal-letterhead"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-operating-calendar"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-operating-review"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-project-kickoff"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-project-tracker"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-sales-pipeline"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-simple-dark-mode"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-simple-light-mode"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-strategy-memorandum"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-system-design"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-team-alignment"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/openai-templates/0.1.1/skills/artifact-template-three-statement-forecast"
+enabled = false
+
+[[skills.config]]
+path = "/Users/eric/.codex/plugins/cache/openai-curated-remote/plugin-management/0.1.0/skills/plugin-management"
+enabled = false
 
 [projects."/Users/eric"]
 trust_level = "untrusted"
@@ -143,9 +233,6 @@ trust_level = "trusted"
 trust_level = "trusted"
 
 [projects."/Users/eric/Documents/Codex/2026-07-10/sites-plugin-sites-openai-bundled-create"]
-trust_level = "trusted"
-
-[projects."/Users/eric/Documents/New project"]
 trust_level = "trusted"
 
 [projects."/Users/eric/Library/Application Support/Firefox/Profiles"]
@@ -226,9 +313,6 @@ trust_level = "trusted"
 [projects."/Users/eric/dev/nixpkgs"]
 trust_level = "trusted"
 
-[projects."/Users/eric/dev/nixvim"]
-trust_level = "trusted"
-
 [projects."/Users/eric/dev/ocaml-raytracer"]
 trust_level = "trusted"
 
@@ -274,25 +358,21 @@ trust_level = "trusted"
 [projects."/Users/eric/nixos-config"]
 trust_level = "untrusted"
 
-[projects."/Users/eric/nixos-config/fastfetch"]
-trust_level = "trusted"
-
-[projects."/Users/eric/nixvim"]
-trust_level = "trusted"
-
-[projects."/Users/eric/smolvm"]
-trust_level = "trusted"
-
 [projects."/opt/homebrew/Library/Taps/erics118/homebrew-tap"]
 trust_level = "trusted"
 
 [projects."/Users/eric/dev/alcove"]
 trust_level = "trusted"
 
+[projects."/Users/eric/Documents/Codex/2026-09-22/hi"]
+trust_level = "trusted"
+
+[projects."/Users/eric/dev/cornell/club/cev/urban-concept"]
+trust_level = "trusted"
+
 [shell_environment_policy.set]
-BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
+CODEX_SHELL = "1"
 NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "028a14b6eaa6d98dac2aae00764345ab9f244801ed8493d42b9af3be5575006e,f204d340535055781952b10ed396de20b842f00a19e430852f7e121ad1ce91f6"
-NODE_REPL_TRUSTED_CODE_PATHS = "/Users/eric/.codex"
 
 [tui]
 status_line = [
@@ -305,7 +385,27 @@ status_line = [
 ]
 status_line_use_colors = true
 terminal_title = ["activity", "project-name", "current-dir"]
+screen_reader_detection_done = true
 
 [tui.model_availability_nux]
 "gpt-5.5" = 4
 "gpt-5.6-sol" = 4
+gpt-6-astra = 4
+"gpt-6.1-sol" = 4
+
+[hooks.state]
+
+[hooks.state."/Users/eric/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:f27a4fda937303a82b584fd3a3acbbb561b32c64d5a09ea51ffe7177fd640ee0"
+
+[hooks.state."/Users/eric/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:fdcc0e8ab137e94aed9979e34df6b07780dced7150df9eba5c3bccd3855152e7"
+
+[hooks.state."/Users/eric/.codex/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:d06868730b61f05db3f56714b5e7499632bd731c1905525d29d402477834ed44"
+
+[hooks.state."/Users/eric/.codex/hooks.json:session_start:1:0"]
+trusted_hash = "sha256:3da181f6a6d78fa2e4446bb51881bea0b4d69562eb909961fa616df84970d643"
+
+[hooks.state."/Users/eric/.codex/hooks.json:session_start:2:0"]
+trusted_hash = "sha256:c6d1b7e1e7e8532f6527115f02884e91386d9e8c31a2a14de4f25bb27f6938ec"
