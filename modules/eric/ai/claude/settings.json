@@ -91,10 +91,7 @@
       "Bash(ntfy pub *)",
       "Bash(sketchybar --set apple *)"
     ],
-    "deny": [
-      "EnterPlanMode",
-      "ExitPlanMode"
-    ],
+    "deny": ["EnterPlanMode", "ExitPlanMode"],
     "defaultMode": "auto"
   },
   "hooks": {
