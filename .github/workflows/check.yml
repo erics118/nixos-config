@@ -45,7 +45,7 @@ jobs:
           ssh-private-key: ${{ secrets.PRIVATE_FLAKE_DEPLOY_KEY }}
 
       # the cache list and keys live in modules/features/base/nix-common.nix
-      - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
+      - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
         with:
           extra_nix_config: |
             extra-substituters = https://cache.numtide.com
@@ -111,7 +111,7 @@ jobs:
           merge-multiple: true
           path: closure-diff
 
-      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         id: app-token
         with:
           client-id: ${{ secrets.CLIENT_ID }}
@@ -138,7 +138,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
+      - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
 
       # go builds agent-guard and jq reads the hook decisions
       # the check cases run in the agent-guard package build, which flake-check does
