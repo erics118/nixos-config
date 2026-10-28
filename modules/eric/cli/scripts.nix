@@ -31,6 +31,10 @@ in
         bc
         coreutils
       ];
+      cornell-archive = with pkgs; [
+        git
+        git-filter-repo
+      ];
       mvproj = with pkgs; [
         gnused
         gnugrep

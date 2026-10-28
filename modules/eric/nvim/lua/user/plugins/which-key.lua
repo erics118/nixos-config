@@ -15,6 +15,7 @@ local groups = {
 
 return {
     "which-key.nvim",
+    event = "DeferredUIEnter",
     after = function()
         local spec = {}
         for key, group in pairs(groups) do

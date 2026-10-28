@@ -55,6 +55,8 @@ map("n", "<leader>hi", "<cmd>Gitsigns preview_hunk_inline<CR>", "Preview hunk in
 return {
     {
         "gitsigns.nvim",
+        event = require("user.utils.lazy").file_events,
+        cmd = "Gitsigns",
         after = function()
             require("gitsigns").setup({
                 current_line_blame = false,

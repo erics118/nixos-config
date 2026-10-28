@@ -14,6 +14,8 @@ vim.api.nvim_create_autocmd("FileType", {
     group = vim.api.nvim_create_augroup("UserLatexWhichKey", { clear = true }),
     pattern = "tex",
     callback = function(ev)
+        -- a tex file opened at startup gets here before which-key's DeferredUIEnter
+        require("lz.n").trigger_load("which-key.nvim")
         require("which-key").add({
             { "ds", group = "Delete surrounding", buffer = ev.buf },
             { "cs", group = "Change surrounding", buffer = ev.buf },
@@ -46,8 +48,10 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 return {
-    -- loaded at startup: skim inverse search runs VimtexInverseSearch headlessly before any tex buffer opens
+    -- skim inverse search runs VimtexInverseSearch headlessly before any tex buffer opens, so the command loads it too
     "vimtex",
+    ft = { "tex", "bib" },
+    cmd = "VimtexInverseSearch",
     before = function()
         vim.g.vimtex_compiler_method = "latexmk"
         vim.g.vimtex_quickfix_mode = 0

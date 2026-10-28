@@ -6,6 +6,12 @@
     programs.rex.enable = true;
   };
 
+  # cmd-a is the app's edit > select all menu item, not a rex shortcut that init.lua can unbind.
+  # it moves to cmd-ctrl-opt-shift-f20 (appkit's \uf717), which no mac keyboard has.
+  # nix strings can't hold the \0 that usually clears a menu key
+  flake.modules.darwin.base.system.defaults.CustomUserPreferences."com.superlogical.rex".NSUserKeyEquivalents."Select All" =
+    builtins.fromJSON ''"@^~$\uf717"'';
+
   flake.modules.homeManager.base =
     {
       config,

@@ -32,11 +32,24 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		}
 		return 0
 	}
+	if len(args) == 2 && args[0] == "tools" && (args[1] == "pre" || args[1] == "post") {
+		tools := toolsOf(preChecks)
+		if args[1] == "post" {
+			tools = toolsOf(postChecks)
+		}
+		for _, t := range tools {
+			fmt.Fprintln(stdout, t)
+		}
+		return 0
+	}
 	if len(args) < 2 || (args[0] != "pre" && args[0] != "post") {
-		fmt.Fprintln(stderr, "usage: agent-guard pre|post claude|codex|pi [check...]")
+		fmt.Fprintln(stderr, "usage: agent-guard pre|post claude|codex|pi [check...], agent-guard checks, or agent-guard tools pre|post")
 		return 2
 	}
 	event, harness, names := args[0], args[1], args[2:]
+	if !slices.Contains([]string{"claude", "codex", "pi"}, harness) {
+		return failClosed(event, stdout, stderr, fmt.Sprintf("The guard does not know the harness %q, so the call was not checked.", harness))
+	}
 	raw, err := io.ReadAll(stdin)
 	if err != nil {
 		return failClosed(event, stdout, stderr, fmt.Sprintf("The guard could not read the hook event: %v, so the call was not checked.", err))
@@ -82,21 +95,22 @@ func failClosed(event string, stdout, stderr io.Writer, reason string) int {
 // runPre combines the checks. a deny wins at once, the first ask wins over later ones, and the last rewrite wins
 func runPre(h *hook, checks []preCheck) decision {
 	if h.command != "" {
-		if err := h.parse(); err != nil {
+		var err error
+		if panicked := safely(func() { err = h.parse() }); panicked != nil {
+			err = panicked
+		}
+		if err != nil {
 			return deny(fmt.Sprintf("The guard hooks could not parse this command, so they could not check it: %v. Rewrite it in plain bash syntax.", err))
 		}
-		if slices.ContainsFunc(h.calls, func(c call) bool { return c.stdin }) {
-			return deny("A shell here reads its script from standard input, so the guard hooks cannot check it. Pass the script with bash -c, a here-string, or a heredoc.")
-		}
-		if slices.ContainsFunc(h.calls, func(c call) bool { return c.opaque }) {
-			return deny("The guard cannot tell which program this command runs, since its name comes from a variable, a substitution, a glob, or an escape, so it cannot check it. Write the program name literally.")
+		if i := slices.IndexFunc(h.calls, func(c call) bool { return c.hidden != "" }); i >= 0 {
+			return deny(h.calls[i].hidden)
 		}
 	}
 	var out decision
 	for _, c := range checks {
 		name := c.name
-		d, err := safely(func() decision { return c.run(h) })
-		if err != nil {
+		var d decision
+		if err := safely(func() { d = c.run(h) }); err != nil {
 			return deny(fmt.Sprintf("The guard check %s failed: %v, so the command was not checked.", name, err))
 		}
 		switch d.kind {
@@ -127,13 +141,15 @@ func runPre(h *hook, checks []preCheck) decision {
 	return out
 }
 
-func safely(f func() decision) (d decision, err error) {
+// safely runs f and turns a panic into an error, so one broken check fails closed instead of crashing the hook
+func safely(f func()) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%v", r)
 		}
 	}()
-	return f(), nil
+	f()
+	return nil
 }
 
 // a post check warns the model with stderr and exit 2. the tool already ran, so nothing blocks
@@ -142,8 +158,7 @@ func runPost(h *hook, checks []postCheck, stderr io.Writer) int {
 	for _, c := range checks {
 		var msg string
 		var code int
-		_, err := safely(func() decision { msg, code = c.run(h); return decision{} })
-		if err != nil {
+		if err := safely(func() { msg, code = c.run(h) }); err != nil {
 			fmt.Fprintf(stderr, "The guard check %s failed: %v.\n", c.name, err)
 			rc = 1
 			continue

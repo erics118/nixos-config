@@ -67,9 +67,9 @@ PATH=$repo/tmux-bin:$PATH TMUX_PANE=%1 expect_allow tmux-bell tmux-bell.sh '{}'
   exit 1
 }
 
-tested+=(tmux-agent-resume.sh)
 # a private tmux server, with timeout standing in for an agent the pane's shell starts
 if command -v tmux >/dev/null; then
+  tested+=(tmux-agent-resume.sh)
   resume_tmux() { tmux -L "agent-resume-test-$$" -f /dev/null "$@"; }
   # each pane signals once its hook has run, then stays open so its options can be read
   resume_tmux new -d -s direct "timeout 5 '$hooks/tmux-agent-resume.sh' claude <<<'{\"session_id\":\"abc\"}'; tmux wait-for -S direct; sleep 5"
@@ -135,6 +135,27 @@ covered=$(printf '%s\n' "${tested[@]}" | sort -u)
 }
 printf 'all configured hooks covered\n'
 
+# the claude matchers name exactly the tools the checks run on, so a check on a new tool is never left unhooked
+for event in pre post; do
+  key=PreToolUse
+  [ "$event" = pre ] || key=PostToolUse
+  matcher=$(jq -r --arg k "$key" '.hooks[$k][].matcher' "$settings" | tr '|' '\n' | LC_ALL=C sort -u)
+  [ "$matcher" = "$(agent-guard tools "$event")" ] || {
+    printf 'FAIL the %s matcher names %s, but the checks run on %s\n' "$key" "$(tr '\n' ' ' <<<"$matcher")" "$(agent-guard tools "$event" | tr '\n' ' ')"
+    exit 1
+  }
+done
+printf 'ok matchers name the checked tools\n'
+
+# the README names every check, so its list cannot fall behind guard/checks.go
+while IFS= read -r check; do
+  grep -qF -- "\`$check\`" "$root/modules/eric/ai/README.md" || {
+    printf 'FAIL README.md does not name the check %s\n' "$check"
+    exit 1
+  }
+done < <(agent-guard checks)
+printf 'ok README names every check\n'
+
 # claude and pi agents need different frontmatter but must share one body
 for pi_agent in "$root"/modules/eric/ai/pi/agents/*.md; do
   name=$(basename "$pi_agent")
@@ -184,6 +205,21 @@ while IFS= read -r cmd; do
   }
 done < <(jq -r '.hooks[][].hooks[].command | select(contains("guard.sh"))' "$settings" "$root/modules/eric/ai/codex/hooks.json")
 printf 'ok guard-command-fails-closed\n'
+
+# a post check warns with exit 2, which the post command passes through without claiming the guard did not run
+mkdir -p "$check_home/.agents/hooks"
+printf '#!/bin/sh\necho warned >&2\nexit 2\n' >"$check_home/.agents/hooks/guard.sh"
+chmod +x "$check_home/.agents/hooks/guard.sh"
+post_cmd=$(jq -r '.hooks.PostToolUse[].hooks[].command | select(contains("guard.sh"))' "$settings")
+set +e
+post_err=$(HOME=$check_home sh -c "$post_cmd" </dev/null 2>&1 >/dev/null)
+status=$?
+set -e
+[ "$status" -eq 2 ] && [ "$post_err" = warned ] || {
+  printf 'FAIL post command on a warning: exit %s, stderr %q\n' "$status" "$post_err"
+  exit 1
+}
+printf 'ok post-command-passes-warning\n'
 
 rules="$root/modules/eric/ai/codex/rules/default.rules"
 expect_rule() {

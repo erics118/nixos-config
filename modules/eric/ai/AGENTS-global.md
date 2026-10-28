@@ -86,6 +86,7 @@ These rules cover chat replies, not long-form work I ask for (drafts, scripts, p
 
 - `git config --get eric-agent.commit` sets whether you commit in a repo. `on`: commit. `branch`: commit, but only on a branch other than `main` or `master` (a detached HEAD counts as `main`). `ask`: commit, and the commit hook asks me to approve each one, so don't ask in chat first (under Codex, `ask` means `off`). Unset or `off`: don't commit. Tell me when the work is ready
 - `git config --get eric-agent.push` sets whether you push, the same way. `on`: push. `ask`: I approve each push. Unset or `off`: don't push. Codex never pushes
+- Name throwaway things `agent-test-<name>`. You may do anything to local `agent-test-*` branches and rex sessions (commit, rebase, reset, delete, close) whatever the settings above, but never push them. Delete them when the task ends
 - Make one commit per finished feature or fix, not one per edit and not while I am still tuning it, with a message that says what changed
 - After a push to a repo with CI, watch its run (`gh run watch`, in the background) before reporting done. A failed run is part of the work: fix it, push, and watch again
 - Never open, change, or merge a pull request, rebase, delete branches, or take another destructive, irreversible, or remote-affecting action unless I explicitly ask

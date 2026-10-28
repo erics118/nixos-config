@@ -157,8 +157,19 @@ local servers = {
 
 for name, config in pairs(servers) do
     vim.lsp.config(name, config)
-    vim.lsp.enable(name)
 end
+-- enabling reads every server's lsp/<name>.lua, so it waits for the first filetype and runs after it.
+-- enable then starts servers for the buffers already open, through its own FileType autocmd only.
+-- not VimEnter: that would also start filetype-less servers like typos_lsp in the empty startup buffer
+vim.api.nvim_create_autocmd("FileType", {
+    desc = "Enable LSP servers",
+    once = true,
+    callback = function()
+        vim.schedule(function()
+            vim.lsp.enable(vim.tbl_keys(servers))
+        end)
+    end,
+})
 
 vim.g.inlay_hints_enabled = true
 
@@ -238,6 +249,7 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
+map("n", "<leader>e", vim.diagnostic.open_float, "Open error float")
 map("n", "<leader>k", vim.lsp.buf.signature_help, "Signature help")
 map("n", "<leader>D", vim.lsp.buf.type_definition, "Type definition")
 map("n", "<leader>rn", vim.lsp.buf.rename, "Rename symbol")

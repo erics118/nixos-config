@@ -13,28 +13,11 @@ var smartPunct = []rune{0x2013, 0x2014, 0x2018, 0x2019, 0x201C, 0x201D, 0x2026}
 // preserve existing ones are not blocked
 func blockSmartPunct(h *hook) decision {
 	e := h.edit()
-	var news, olds []string
-	for _, s := range []*string{e.Content, e.NewString} {
-		if s != nil {
-			news = append(news, *s)
-		}
-	}
-	if e.OldString != nil {
-		olds = append(olds, *e.OldString)
-	}
-	for _, ed := range e.Edits {
-		if ed.NewString != nil {
-			news = append(news, *ed.NewString)
-		}
-		if ed.OldString != nil {
-			olds = append(olds, *ed.OldString)
-		}
-	}
-	added := strings.Join(news, "\n")
+	added := strings.Join(e.added(), "\n")
 	if added == "" {
 		return decision{}
 	}
-	if smartCount(added) > smartCount(strings.Join(olds, "\n")) {
+	if smartCount(added) > smartCount(strings.Join(e.removed(), "\n")) {
 		return deny(`smart punctuation (dash, curly quote, ellipsis) is blocked. use ASCII instead: "-", straight quotes, "...". ` +
 			`only if code must match or produce the exact character (e.g. normalizing scraped text), escape it: ` +
 			`\u{2019} in js, ts, rust, lua, swift; \N{RIGHT SINGLE QUOTATION MARK} or chr(0x2019) in python. ` +

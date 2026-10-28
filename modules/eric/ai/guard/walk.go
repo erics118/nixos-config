@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strings"
 
+	"mvdan.cc/sh/v3/expand"
 	"mvdan.cc/sh/v3/syntax"
 )
 
@@ -16,6 +17,9 @@ var parser = syntax.NewParser(syntax.Variant(syntax.LangZsh))
 
 // nested scripts and function calls are followed this many levels deep. deeper ones deny
 const maxDepth = 16
+
+// loops walk their bodies twice, so the walk denies past this many statements instead of growing exponentially
+const maxSteps = 10000
 
 type shellVar struct {
 	value    string
@@ -35,13 +39,17 @@ type state struct {
 	mayBeHome bool
 	// piped marks commands that read the output of the command before a pipe
 	piped bool
+	// pipe numbers the pipeline the commands are part of, or is 0 outside one
+	pipe int
 	// prev is the directory before the last cd, for cd -
 	prev  string
 	stack []string
 	// stackLost marks a pushd stack a branch may have changed
 	stackLost bool
-	vars      map[string]shellVar
-	funcs     map[string]*syntax.Stmt
+	// cdpath is the directories a cdpath or CDPATH assignment lets a relative cd land in
+	cdpath []string
+	vars   map[string]shellVar
+	funcs  map[string]*syntax.Stmt
 }
 
 func newState(dir string) *state {
@@ -52,6 +60,7 @@ func (s *state) clone() *state {
 	c := *s
 	c.maybe = slices.Clone(s.maybe)
 	c.stack = slices.Clone(s.stack)
+	c.cdpath = slices.Clone(s.cdpath)
 	c.vars = maps.Clone(s.vars)
 	c.funcs = maps.Clone(s.funcs)
 	return &c
@@ -68,6 +77,9 @@ func (s *state) child(dir string) *state {
 		if v.exported {
 			c.vars[k] = v
 		}
+	}
+	if s.vars["CDPATH"].exported {
+		c.cdpath = slices.Clone(s.cdpath)
 	}
 	return c
 }
@@ -95,6 +107,7 @@ func (s *state) merge(branch *state) {
 	if s.stackLost = s.stackLost || branch.stackLost || !slices.Equal(s.stack, branch.stack); s.stackLost {
 		s.stack = nil
 	}
+	s.cdpath = slices.Compact(slices.Sorted(slices.Values(slices.Concat(s.cdpath, branch.cdpath))))
 	for k, v := range branch.vars {
 		if s.vars[k] != v {
 			s.vars[k] = shellVar{exported: v.exported}
@@ -112,20 +125,34 @@ func (s *state) setDir(d string) {
 	s.prev, s.dir, s.maybe, s.moved, s.mayBeHome = s.dir, d, nil, true, false
 }
 
-// cdTo moves to p, relative to every directory the shell may be in
+// cdTo moves to p, relative to every directory the shell may be in or a cdpath entry offers.
+// a glob lands in whichever directory it matches
 func (s *state) cdTo(p string) {
-	if s.dir != "" || len(s.maybe) == 0 {
-		s.setDir(resolveIn(s.dir, p))
-		return
+	bases := s.dirs()
+	if len(bases) == 0 {
+		bases = []string{""}
 	}
-	var maybe []string
-	for _, d := range s.maybe {
-		if r := resolveIn(d, p); r != "" {
-			maybe = append(maybe, r)
+	if !strings.HasPrefix(p, "/") && !strings.HasPrefix(p, ".") && !strings.HasPrefix(p, "~") {
+		bases = append(bases, s.cdpath...)
+	}
+	var to []string
+	for _, d := range bases {
+		r := resolveIn(d, p)
+		switch {
+		case r == "":
+		case globChars.MatchString(r):
+			matches, _ := filepath.Glob(r)
+			to = append(to, matches...)
+		default:
+			to = append(to, r)
 		}
 	}
+	if len(to) == 1 {
+		s.setDir(to[0])
+		return
+	}
 	s.setDir("")
-	s.maybe = maybe
+	s.maybe = to
 }
 
 // resolveIn expands a leading ~, ~user, $HOME, or $PWD and joins a relative path onto dir.
@@ -154,7 +181,14 @@ func resolveIn(dir, p string) string {
 		}
 		p = dir + p[len("$PWD"):]
 	}
-	if strings.Contains(p, "$") {
+	// a variable the command never set, such as $TMPDIR, has the value the guard's own environment gives it
+	known := !strings.Contains(p, "$(")
+	p = os.Expand(p, func(name string) string {
+		v, ok := os.LookupEnv(name)
+		known = known && ok && name != ""
+		return v
+	})
+	if !known || strings.Contains(p, "$") {
 		return ""
 	}
 	if strings.HasPrefix(p, "/") {
@@ -209,7 +243,7 @@ func (s *state) apply(c call) {
 			delete(s.vars, a)
 		}
 	// these set the variables they name to values the walk cannot see
-	case "read", "mapfile", "readarray", "getopts", "printf", "vared", "zparseopts":
+	case "read", "mapfile", "readarray", "getopts", "printf", "print", "vared", "zparseopts":
 		for _, a := range args {
 			if v, ok := s.vars[a]; ok {
 				s.vars[a] = shellVar{exported: v.exported}
@@ -237,6 +271,17 @@ func (s *state) assign(a *syntax.Assign, export bool) {
 		v.value, v.known = s.literal(a.Value)
 	}
 	s.vars[name] = v
+	switch name {
+	case "cdpath":
+		s.cdpath = nil
+		if a.Array != nil {
+			for _, e := range a.Array.Elems {
+				s.cdpath = append(s.cdpath, s.word(e.Value))
+			}
+		}
+	case "CDPATH":
+		s.cdpath = strings.Split(v.value, ":")
+	}
 }
 
 // walker collects every simple command with the state the shell is in when it runs
@@ -245,10 +290,20 @@ type walker struct {
 	visited map[*syntax.CallExpr]bool
 	// missed counts the calls only the fallback reached
 	missed int
+	steps  int
+	pipes  int
+	// spans marks a walk of the agent's own command, whose top-level calls keep their words' positions
+	spans bool
 }
 
-func parseCalls(src, cwd string) ([]call, error) {
-	w := walker{visited: map[*syntax.CallExpr]bool{}}
+// parseCalls walks the agent's command, keeping where each top-level word sits in it
+func parseCalls(src, cwd string) ([]call, error) { return walk(src, cwd, true) }
+
+// parseScript walks shell code from elsewhere, such as a git alias body, whose positions name nothing in the command
+func parseScript(src, cwd string) ([]call, error) { return walk(src, cwd, false) }
+
+func walk(src, cwd string, spans bool) ([]call, error) {
+	w := walker{visited: map[*syntax.CallExpr]bool{}, spans: spans}
 	err := w.file(src, newState(cwd), 0)
 	return w.calls, err
 }
@@ -298,6 +353,9 @@ func (w *walker) stmts(list []*syntax.Stmt, st *state, depth int) error {
 }
 
 func (w *walker) stmt(s *syntax.Stmt, st *state, depth int) error {
+	if w.steps++; w.steps > maxSteps {
+		return fmt.Errorf("the command has more than %d statements to walk", maxSteps)
+	}
 	// a background job runs in a subshell
 	if s.Background || s.Coprocess || s.Disown {
 		st = st.clone()
@@ -305,7 +363,7 @@ func (w *walker) stmt(s *syntax.Stmt, st *state, depth int) error {
 	if _, ok := s.Cmd.(*syntax.CallExpr); !ok {
 		// a compound command's redirects, or a bare one that zsh runs as cat, still write
 		if len(s.Redirs) > 0 {
-			w.calls = append(w.calls, call{redirs: st.redirs(s.Redirs), dir: st.dir, maybe: slices.Clone(st.maybe), moved: st.moved})
+			w.calls = append(w.calls, st.newCall(s.Redirs, false))
 		}
 		for _, r := range s.Redirs {
 			if err := w.inner(r, st, depth); err != nil {
@@ -364,6 +422,9 @@ func (w *walker) stmt(s *syntax.Stmt, st *state, depth int) error {
 			return w.stmts(c.Do, in, depth)
 		})
 	case *syntax.DeclClause:
+		if err := w.declare(c, st, depth); err != nil {
+			return err
+		}
 		for _, a := range c.Args {
 			if err := w.inner(a, st, depth); err != nil {
 				return err
@@ -409,10 +470,13 @@ func (w *walker) binary(c *syntax.BinaryCmd, st *state, depth int) error {
 		return err
 	}
 	// bash runs every side of a pipe in a subshell, zsh keeps the last one in the shell
-	if err := w.stmt(c.X, st.clone(), depth); err != nil {
+	x, y := st.clone(), st.clone()
+	if st.pipe == 0 {
+		x.pipe, y.pipe = w.newPipe(), w.pipes
+	}
+	if err := w.stmt(c.X, x, depth); err != nil {
 		return err
 	}
-	y := st.clone()
 	y.piped = true
 	err := w.stmt(c.Y, y, depth)
 	st.merge(y)
@@ -481,21 +545,34 @@ func (w *walker) inner(node syntax.Node, st *state, depth int) error {
 			err = w.stmts(n.Stmts, st.clone(), depth)
 			return false
 		case *syntax.ProcSubst:
-			err = w.stmts(n.Stmts, st.clone(), depth)
+			// >(...) reads the output written to it, as the end of a pipe does
+			sub := st.clone()
+			if n.Op == syntax.CmdOut {
+				sub.piped, sub.pipe = true, w.newPipe()
+			}
+			err = w.stmts(n.Stmts, sub, depth)
 			return false
+		// ${x:=v} and ${x=v} assign x a value the walk does not track
+		case *syntax.ParamExp:
+			if n.Param != nil && n.Exp != nil && strings.Contains(n.Exp.Op.String(), "=") {
+				st.vars[n.Param.Value] = shellVar{exported: st.vars[n.Param.Value].exported}
+			}
 		}
 		return true
 	})
 	return err
 }
 
-func (s *state) redirs(rs []*syntax.Redirect) []redir {
+func (s *state) redirs(rs []*syntax.Redirect, top bool) []redir {
 	var out []redir
 	for _, r := range rs {
-		rd := redir{op: r.Op.String(), word: s.word(r.Word)}
+		rd := redir{op: r.Op, word: s.word(r.Word)}
 		if r.Hdoc != nil {
 			h := s.word(r.Hdoc)
 			rd.hdoc = &h
+			if top {
+				rd.hdocSpan = &[2]int{int(r.Hdoc.Pos().Offset()), int(r.Hdoc.End().Offset())}
+			}
 		}
 		out = append(out, rd)
 	}
@@ -504,13 +581,24 @@ func (s *state) redirs(rs []*syntax.Redirect) []redir {
 
 func (w *walker) call(ce *syntax.CallExpr, rs []*syntax.Redirect, st *state, depth int) error {
 	w.visited[ce] = true
-	c := call{dir: st.dir, maybe: slices.Clone(st.maybe), moved: st.moved, mayBeHome: st.mayBeHome, piped: st.piped, redirs: st.redirs(rs)}
+	top := w.spans && depth == 0
+	c := st.newCall(rs, top)
+	c.env = st.env(ce.Assigns)
 	for _, a := range ce.Args {
-		c.argv = append(c.argv, st.word(a))
-		c.dyn = append(c.dyn, st.dynamic(a))
+		words := st.fields(a)
+		c.argv = append(c.argv, words...)
+		for range words {
+			c.dyn = append(c.dyn, st.dynamic(a))
+			if top {
+				c.spans = append(c.spans, [2]int{int(a.Pos().Offset()), int(a.End().Offset())})
+			}
+		}
 	}
-	if len(ce.Args) > 0 {
-		c.opaque = st.opaque(ce.Args[0])
+	if len(ce.Args) > 0 && st.opaque(ce.Args[0]) {
+		c.hidden = hiddenName
+	}
+	if runsZshCode(ce) {
+		c.hidden = hiddenZsh
 	}
 	out := callsOf(c)
 	w.calls = append(w.calls, out...)
@@ -533,31 +621,107 @@ func (w *walker) call(ce *syntax.CallExpr, rs []*syntax.Redirect, st *state, dep
 		for _, a := range ce.Assigns {
 			st.assign(a, false)
 		}
-		return nil
+		return w.scripts(out, nil, st, depth)
 	}
 	real := out[len(out)-1]
 	// a function call runs its body in this shell, where the definition left it
 	if body, ok := st.funcs[real.tool()]; ok && len(real.prefix) == 0 {
 		return w.inlined(body, st, depth+1)
 	}
-	for _, oc := range out {
-		if oc.script == nil {
-			continue
-		}
-		// eval runs its script in this shell, so the script's cds and assignments stay
-		if base(at(oc.argv, 0)) == "eval" {
-			return w.file(*oc.script, st, depth+1)
-		}
-		child := st.child(oc.dir)
-		for _, a := range ce.Assigns {
-			child.assign(a, true)
-		}
-		if err := w.file(*oc.script, child, depth+1); err != nil {
-			return err
-		}
+	if err := w.scripts(out, ce.Assigns, st, depth); err != nil {
+		return err
 	}
 	st.apply(real)
 	return nil
+}
+
+// newCall is a call with what the shell's state says about where and how it runs. top keeps its heredocs' positions
+func (s *state) newCall(rs []*syntax.Redirect, top bool) call {
+	return call{dir: s.dir, maybe: slices.Clone(s.maybe), moved: s.moved, mayBeHome: s.mayBeHome, piped: s.piped, pipe: s.pipe, redirs: s.redirs(rs, top)}
+}
+
+func (w *walker) newPipe() int {
+	w.pipes++
+	return w.pipes
+}
+
+// declare records an export, local, or declare as a call with no command, so its assignments are checked like a prefix's
+func (w *walker) declare(c *syntax.DeclClause, st *state, depth int) error {
+	dc := st.newCall(nil, false)
+	dc.env = st.env(c.Args)
+	out := callsOf(dc)
+	w.calls = append(w.calls, out...)
+	return w.scripts(out, nil, st, depth)
+}
+
+// scripts walks the shell code each call runs. eval runs its script in this shell, so its cds and assignments stay.
+// any other script runs in a child shell, which sees the call's assignments
+func (w *walker) scripts(out []call, assigns []*syntax.Assign, st *state, depth int) error {
+	for _, oc := range out {
+		for _, s := range oc.scripts {
+			if oc.tool() == "eval" {
+				if err := w.file(s, st, depth+1); err != nil {
+					return err
+				}
+				continue
+			}
+			child := st.child(oc.dir)
+			// a wrapper's NAME=value words reach the child with values the walk does not track
+			for _, kv := range oc.env {
+				name, _, _ := strings.Cut(kv, "=")
+				child.vars[name] = shellVar{exported: true}
+			}
+			for _, a := range assigns {
+				child.assign(a, true)
+			}
+			if err := w.file(s, child, depth+1); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// env is the NAME=value text of the assignments that set a value
+func (s *state) env(assigns []*syntax.Assign) []string {
+	var out []string
+	for _, a := range assigns {
+		if a.Name != nil && !a.Naked {
+			out = append(out, a.Name.Value+"="+s.word(a.Value))
+		}
+	}
+	return out
+}
+
+// fields is the words w expands to. bash splits an unquoted known value on whitespace, so "rm f" in $x is two words.
+// zsh does not, but checking the split form covers both shells
+func (s *state) fields(w *syntax.Word) []string {
+	if len(w.Parts) == 1 {
+		if p, ok := w.Parts[0].(*syntax.ParamExp); ok {
+			if v, known := s.value(p); known && strings.ContainsAny(v, " \t\n") {
+				return strings.Fields(v)
+			}
+		}
+	}
+	return []string{s.word(w)}
+}
+
+// a zsh glob qualifier that runs code, (e:...:) or (+func), after a glob
+var codeQualifier = regexp.MustCompile(`^\([^)]*(e[^A-Za-z0-9\s)]|\+)`)
+
+// runsZshCode reports zsh's (e) expansion flag or a glob qualifier that runs code, anywhere in the call's words
+func runsZshCode(ce *syntax.CallExpr) bool {
+	found := false
+	syntax.Walk(ce, func(n syntax.Node) bool {
+		switch n := n.(type) {
+		case *syntax.ParamExp:
+			found = found || (n.Flags != nil && strings.Contains(n.Flags.Value, "e"))
+		case *syntax.Lit:
+			found = found || codeQualifier.MatchString(n.Value)
+		}
+		return !found
+	})
+	return found
 }
 
 func (w *walker) inlined(body *syntax.Stmt, st *state, depth int) error {
@@ -611,6 +775,13 @@ func (s *state) part(p syntax.WordPart) string {
 	case *syntax.Lit:
 		return escaped.ReplaceAllString(p.Value, "$1")
 	case *syntax.SglQuoted:
+		// $'...' decodes its escapes as printf does, so a literal % is doubled first
+		if p.Dollar {
+			if v, _, err := expand.Format(&expand.Config{}, strings.ReplaceAll(p.Value, "%", "%%"), nil); err == nil {
+				v, _, _ = strings.Cut(v, "\x00")
+				return v
+			}
+		}
 		return p.Value
 	case *syntax.DblQuoted:
 		var b strings.Builder
@@ -624,6 +795,11 @@ func (s *state) part(p syntax.WordPart) string {
 		}
 		if p.Param == nil {
 			return "$"
+		}
+		// a variable this command set to a value the walk cannot see reads as a substitution, so the guard's own
+		// environment never stands in for it
+		if _, set := s.vars[p.Param.Value]; set {
+			return "$(...)"
 		}
 		return "$" + p.Param.Value
 	}

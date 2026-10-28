@@ -43,6 +43,23 @@ func TestUnknownCheckDenies(t *testing.T) {
 	}
 }
 
+// tools lists the tools the checks run on, once each and sorted, for test.sh to compare with the hook matchers
+func TestToolsCommand(t *testing.T) {
+	for event, want := range map[string]string{"pre": "Bash\nEdit\nMonitor\nRead\nWrite\n", "post": "Edit\nWrite\n"} {
+		var out bytes.Buffer
+		if code := run([]string{"tools", event}, strings.NewReader(""), &out, io.Discard); code != 0 || out.String() != want {
+			t.Errorf("tools %s: exit %d, got %q, want %q", event, code, out.String(), want)
+		}
+	}
+}
+
+// a mistyped harness would otherwise run as claude, so under codex an ask would not become a deny
+func TestUnknownHarnessDenies(t *testing.T) {
+	if got := decide(t, "pre", "codx"); got != "deny" {
+		t.Fatalf("got %q, want deny", got)
+	}
+}
+
 func TestCheckTable(t *testing.T) {
 	known := []string{"Bash", "Monitor", "Read", "Write", "Edit"}
 	seen := map[string]bool{}
@@ -130,6 +147,14 @@ func TestWalkFollowsDirectories(t *testing.T) {
 		if got := calls[i].dir; got != tc.want {
 			t.Errorf("%q: rm runs in %q, want %q", tc.src, got, tc.want)
 		}
+	}
+}
+
+// each loop walks its body twice, so nested loops would take exponential time without a budget
+func TestNestedLoopsHitBudget(t *testing.T) {
+	src := strings.Repeat("for x in a; do ", 40) + "true" + strings.Repeat("; done", 40)
+	if _, err := parseCalls(src, "/repo"); err == nil || !strings.Contains(err.Error(), "statements") {
+		t.Fatalf("got %v, want a budget error", err)
 	}
 }
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -23,6 +24,8 @@ type hook struct {
 	tools map[string]bool
 	// aliases caches git alias lookups by repo and name
 	aliases map[string]string
+	// gitCommands caches the names git runs as commands, not aliases
+	gitCommands []string
 }
 
 func newHook(harness string, raw []byte) (*hook, error) {
@@ -54,7 +57,7 @@ func (h *hook) str(key string) string {
 	return s
 }
 
-// edit is the text a Write, Edit, or MultiEdit carries
+// edit is the text a Write or an Edit carries. pi sends its edits as a list
 type edit struct {
 	Content   *string `json:"content"`
 	NewString *string `json:"new_string"`
@@ -71,11 +74,56 @@ func (h *hook) edit() edit {
 	return e
 }
 
+// added is each text the call writes: a Write's content, an Edit's new_string, or each of pi's edits
+func (e edit) added() []string {
+	out := deref(e.Content, e.NewString)
+	for _, ed := range e.Edits {
+		out = append(out, deref(ed.NewString)...)
+	}
+	return out
+}
+
+// removed is each text the call replaces
+func (e edit) removed() []string {
+	out := deref(e.OldString)
+	for _, ed := range e.Edits {
+		out = append(out, deref(ed.OldString)...)
+	}
+	return out
+}
+
+func deref(ps ...*string) []string {
+	var out []string
+	for _, p := range ps {
+		if p != nil {
+			out = append(out, *p)
+		}
+	}
+	return out
+}
+
 // parse reads the command's calls and the tools they run
 func (h *hook) parse() error {
 	calls, err := parseCalls(h.command, h.cwd)
 	if err != nil {
 		return err
+	}
+	// git aliases expand here, once, so every check reads the command an alias stands for.
+	// a shell alias's code is walked as a script, and an alias that keeps calling one is cut off as a deep script is
+	scripts := 0
+	for i := 0; i < len(calls); i++ {
+		s, dir := h.expandAlias(&calls[i])
+		if s == "" {
+			continue
+		}
+		if scripts++; scripts > maxDepth {
+			return fmt.Errorf("git aliases run more than %d shell commands", maxDepth)
+		}
+		more, err := parseScript(s, dir)
+		if err != nil {
+			return err
+		}
+		calls = append(calls, more...)
 	}
 	h.calls = calls
 	for _, c := range calls {
@@ -106,35 +154,86 @@ func (h *hook) paths(c call, p string) []string {
 	return out
 }
 
-// scriptText is the command as written plus every word the shell passes, unquoted,
-// so a script given as python3 -c "open(\"f\", \"w\")" reads without its escapes
-func (h *hook) scriptText() string {
-	parts := []string{h.command}
-	for _, c := range h.calls {
-		parts = append(parts, c.argv...)
-	}
-	return strings.Join(parts, "\n")
+func absolute(p string) bool {
+	return strings.HasPrefix(p, "/") || strings.HasPrefix(p, "~") || strings.HasPrefix(p, "$HOME")
 }
 
-// text tools take patterns, files, or text as words, never a program to run
-var textTools = []string{"rg", "grep", "echo", "printf", "cat", "head", "tail", "less", "bat", "wc", "diff", "ls", "file", "sed", "awk", "fd", "find", "stat"}
+// a write is a target resolved to where it may land
+type write struct {
+	target
+	// paths is everywhere the target may land. a copy into a folder lands under each source's name
+	paths []string
+	// unresolved marks a target the guard cannot place: a relative path after a cd it cannot follow,
+	// or a path built from a value it cannot know
+	unresolved bool
+}
 
-// interpreters run a script given as a word, which can write files the shell never names
-var interpreters = regexp.MustCompile(`^(python(3(\.[0-9]+)?)?|node|ruby|perl)$`)
-
-// interpreter is the first call that runs an interpreter, as its command or through a runner like uv run
-func (h *hook) interpreter() (call, bool) {
+// written lists what every call writes, or the file a Write or Edit writes. fd duplicates and devices are not files
+func (h *hook) written() []write {
+	if f := h.str("file_path"); f != "" {
+		return []write{{target: target{word: f}, paths: []string{f}}}
+	}
+	var out []write
 	for _, c := range h.calls {
-		if !slices.Contains(textTools, c.tool()) && slices.ContainsFunc(c.argv, func(w string) bool { return interpreters.MatchString(base(w)) }) {
-			return c, true
+		for _, t := range c.targets() {
+			if t.word == "" || strings.HasPrefix(t.word, "/dev/") || strings.HasPrefix(t.word, "&") {
+				continue
+			}
+			w := write{target: t, unresolved: len(c.dirs()) == 0 && !absolute(t.word)}
+			for _, p := range h.paths(c, t.word) {
+				if len(t.into) == 0 || !(t.folder || isDir(p) || strings.HasSuffix(t.word, "/")) {
+					w.paths = append(w.paths, p)
+					continue
+				}
+				for _, s := range t.into {
+					for _, name := range h.sourceNames(c, s) {
+						w.paths = append(w.paths, filepath.Join(p, name))
+					}
+				}
+			}
+			w.unresolved = w.unresolved || len(w.paths) == 0
+			out = append(out, w)
 		}
 	}
-	return call{}, false
+	return out
+}
+
+// sourceNames is the name each file a copy source names lands under: its own, or each match of a glob
+func (h *hook) sourceNames(c call, s string) []string {
+	s = strings.TrimRight(s, "/")
+	var out []string
+	if strings.ContainsAny(s, "*?[") {
+		for _, p := range h.paths(c, s) {
+			matches, _ := filepath.Glob(p)
+			for _, m := range matches {
+				out = append(out, filepath.Base(m))
+			}
+		}
+	}
+	if len(out) == 0 {
+		out = []string{base(s)}
+	}
+	return out
+}
+
+// interpreterCalls is each call that runs python, node, ruby, or perl, as its command or behind a runner like uv run
+func (h *hook) interpreterCalls() []call {
+	return slices.DeleteFunc(slices.Clone(h.calls), func(c call) bool { return interpreter(c.tool()) == "" })
 }
 
 func isFile(p string) bool {
 	st, err := os.Stat(p)
 	return err == nil && st.Mode().IsRegular()
+}
+
+func exists(p string) bool {
+	_, err := os.Lstat(p)
+	return err == nil
+}
+
+func isDir(p string) bool {
+	st, err := os.Stat(p)
+	return err == nil && st.IsDir()
 }
 
 func isLink(p string) bool {
@@ -168,9 +267,15 @@ func gitOK(dir string, args ...string) bool {
 	return exec.Command("git", append([]string{"-C", dir}, args...)...).Run() == nil
 }
 
-// tracked reports whether f is an existing file that git tracks
+// tracked reports whether f is an existing file that git tracks. where git ignores case, as on macOS,
+// the filesystem finds the file under any case, so git's match ignores case too
 func tracked(f string) bool {
-	return isFile(f) && gitOK(filepath.Dir(f), "ls-files", "--error-unmatch", "--", filepath.Base(f))
+	if !isFile(f) {
+		return false
+	}
+	dir, name := filepath.Dir(f), filepath.Base(f)
+	return gitOK(dir, "ls-files", "--error-unmatch", "--", name) ||
+		(gitOut(dir, "config", "--get", "core.ignorecase") == "true" && gitOut(dir, "ls-files", "--", ":(icase)"+name) != "")
 }
 
 // binary reports a file git stores as binary, which the edit tool cannot change either

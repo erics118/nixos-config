@@ -121,6 +121,17 @@
             # direnv-instant starts a process at every prompt and at exit.
             # skip it while nothing is loaded or loading and no .envrc or .env is here or above
             functions[_direnv_instant_hook]=$functions[_direnv_hook]
+            # direnv approves an .envrc by its path, so each new worktree's starts blocked.
+            # prompt.zsh calls this with a blocked .envrc's folder, which is allowed when it is <repo>/.eric/worktrees/<name>
+            # and its .envrc matches <repo>/.envrc, which is allowed
+            _direnv_allow_worktree() {
+              local d=$1 repo=''${1%%/.eric/worktrees/*}
+              [[ $d == $repo/.eric/worktrees/''${d:t} ]] || return 1
+              cmp -s $d/.envrc $repo/.envrc || return 1
+              # direnv status reports allowed as 0. cd -q skips the chpwd hooks
+              [[ $(builtin cd -q -- $repo && direnv status 2>/dev/null) == *$'\nFound RC allowed 0'* ]] || return 1
+              direnv allow $d
+            }
             _direnv_hook() {
               if [[ -z $DIRENV_DIR$__DIRENV_INSTANT_CURRENT_DIR ]]; then
                 local d=$PWD

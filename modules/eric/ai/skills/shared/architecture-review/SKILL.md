@@ -18,6 +18,6 @@ Judge whether the existing code is split the right way across its parts, and nam
    - a boundary whose constraint still holds but whose mechanism forces workarounds: name the mechanism a fresh design would pick (survey it as in step 2 of [the approach survey](../approach/survey.md)) and the workarounds it removes
 4. Synthesize one target shape for the whole scope, not one per finding. With many parts, dispatch read-only `auditor` workers for the evidence in steps 1 and 2, but write the target shape yourself.
 
-Report each finding with: the current shape, the problem with `file:line` evidence, the recurring cost (what it makes every future change pay), the target shape, the first step toward it, and what should stay as is. Rate recurring cost and migration risk high, medium, or low. Rank by cost, then by lower risk. A finding with no recurring cost is note-only. If the split is already right, say so.
+Report each finding with: the current shape, the problem with `file:line` evidence, the defects it already causes, the recurring cost (what it makes every future change pay), the target shape, the first step toward it, and what should stay as is. Rate recurring cost and migration risk high, medium, or low. Rank by cost, then by lower risk. A finding with no recurring cost is note-only. If the split is already right, say so.
 
 Applying a finding is a separate request. A small one is a direct edit. A multi-step one goes to `writing-plans`.

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
@@ -8,17 +10,17 @@ import (
 
 // a filesystem-wide root: / , /nix, /nix/store, /nix/var(/nix), whole $HOME / ~ / /home/<user>, or a huge or
 // hang-prone system root. bounded subpaths (. , /home/eric/dev , ~/proj, /nix/store/<hash>-name) pass
-var searchRoot = regexp.MustCompile(`^(/|~/?|\$HOME/?|/nix(/(store|var(/nix)?))?/?\*?|/(home|Users)(/[^/]+)?/?|/(usr|var|proc|sys|System|Library|private|Volumes)/?)$`)
+var searchRoot = regexp.MustCompile(`^(/|~/?|\$HOME/?|/nix(/(store|var(/nix)?))?/?|/(home|Users)(/[^/]+)?/?|/(usr|var|proc|sys|System|Library|private|Volumes)/?)\*?$`)
 
 var searchTools = []string{"find", "fd", "rg", "grep", "egrep", "fgrep", "ugrep", "ag", "ack"}
 
-func absolute(p string) bool {
-	return strings.HasPrefix(p, "/") || strings.HasPrefix(p, "~") || strings.HasPrefix(p, "$HOME")
-}
-
 // atRoot reports a path that names a filesystem-wide root, as written or once cleaned, so /. and /tmp/.. count
 func atRoot(p string) bool {
-	return searchRoot.MatchString(p) || (absolute(p) && searchRoot.MatchString(resolveIn("/", p)))
+	if searchRoot.MatchString(p) {
+		return true
+	}
+	clean := resolveIn("/", p)
+	return absolute(p) && (searchRoot.MatchString(clean) || clean == filepath.Clean(os.Getenv("HOME")))
 }
 
 // block `find`, `fd`, `rg`, and `grep` commands rooted at / (or other filesystem-wide roots): scanning the
@@ -40,11 +42,15 @@ func blockGlobalSearch(h *hook) decision {
 			relative = []string{"."}
 		}
 		root := slices.ContainsFunc(paths, atRoot)
-		// a cd's own target counts, not the harness cwd, so a session started in ~ can still search .
-		if c.moved {
-			for _, d := range c.dirs() {
-				root = root || slices.ContainsFunc(relative, func(p string) bool { return atRoot(resolveIn(d, p)) })
-			}
+		// a cd's own target counts. without one, . stays allowed, so a session started in ~ can still search it,
+		// but a path such as .. climbs from the harness cwd
+		dirs := c.dirs()
+		if !c.moved {
+			dirs = []string{h.cwd}
+			relative = slices.DeleteFunc(relative, func(p string) bool { return p == "." || p == "./" })
+		}
+		for _, d := range dirs {
+			root = root || slices.ContainsFunc(relative, func(p string) bool { return atRoot(resolveIn(d, p)) })
 		}
 		if root {
 			return deny("find, fd, rg, or grep rooted at a filesystem-wide directory (/, /nix, ~, $HOME, /home/<user>, /Users/<user>, or a system root) scans far too much and can hang on special mounts. Search from a specific directory instead (e.g. `fd <pattern> .` or `fd <pattern> /path/to/project`).")
@@ -58,12 +64,7 @@ func blockGlobalSearch(h *hook) decision {
 
 // searchesHere reports a search that scans the current directory when it names no path
 func searchesHere(c call) bool {
-	if c.tool() != "grep" {
-		return true
-	}
-	return slices.ContainsFunc(c.args(), func(w string) bool {
-		return w == "--recursive" || w == "--dereference-recursive" || (!strings.HasPrefix(w, "--") && strings.ContainsAny(w, "rR") && strings.HasPrefix(w, "-"))
-	})
+	return c.tool() != "grep" || c.parsed().has("-r", "-R", "--recursive", "--dereference-recursive")
 }
 
 var findLeading = regexp.MustCompile(`^-([HLPEXdsx]|O[0-9]*)$`)
@@ -97,30 +98,16 @@ func searchPaths(c call) []string {
 		}
 		return out
 	}
-	// after -- every word is a pattern or a path, even one that starts with -
-	for i, w := range a {
-		if w == "--" {
-			out = append(out, a[i+1:]...)
-			break
-		}
-		if !strings.HasPrefix(w, "-") {
-			out = append(out, w)
-		}
-	}
-	patternFlag := slices.ContainsFunc(a, func(w string) bool {
-		return w == "-e" || w == "-f" || strings.HasPrefix(w, "--regexp") || strings.HasPrefix(w, "--file")
-	})
-	if !slices.Contains(a, "--files") && !patternFlag && len(out) > 0 {
+	p := c.parsed()
+	out = p.operands
+	// fd takes no pattern option, and rg and grep take no pattern word once -e or -f names one
+	patternFlag := c.tool() != "fd" && p.has("-e", "-f", "--regexp", "--file")
+	if !p.has("--files") && !patternFlag && len(out) > 0 {
 		out = out[1:]
 	}
-	for i, w := range a {
-		switch {
-		case strings.HasPrefix(w, "--base-directory=") || strings.HasPrefix(w, "--search-path="):
-			out = append(out, w[strings.Index(w, "=")+1:])
-		case w == "--base-directory" || w == "--search-path":
-			if i+1 < len(a) {
-				out = append(out, a[i+1])
-			}
+	for _, name := range []string{"--base-directory", "--search-path"} {
+		if dir, ok := p.value(name); ok {
+			out = append(out, dir)
 		}
 	}
 	return out

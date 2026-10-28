@@ -2,6 +2,7 @@ local map = require("user.utils.map")
 
 local function flash(mode)
     return function()
+        require("lz.n").trigger_load("flash.nvim")
         require("flash")[mode]()
     end
 end
@@ -16,7 +17,9 @@ map("c", "<C-s>", flash("toggle"), "Toggle Flash Search")
 
 return {
     {
+        -- loaded by its first key above
         "flash.nvim",
+        lazy = true,
         after = function()
             require("flash").setup({})
         end,
@@ -30,7 +33,8 @@ return {
         end,
     },
     {
-        -- loaded at startup: :enew buffers fire no read/new-file event, so lazy maps never appeared
+        -- loaded at startup: :enew buffers fire no read/new-file event, so lazy maps never appeared,
+        -- and keys typed before the first draw would miss it
         "nvim-surround",
         after = function()
             require("nvim-surround").setup({

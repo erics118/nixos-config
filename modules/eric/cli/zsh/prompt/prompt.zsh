@@ -49,12 +49,23 @@ if (($+functions[TRAPUSR1])); then
   TRAPUSR1() {
     # direnv's export runs inside this call, so a local named like an exported variable
     # (out, for one, in a nix shell) would take its value. hence the prefixed name
-    local _prompt_direnv_out=
+    local _prompt_direnv_out= _prompt_direnv_line=
+    local -a _prompt_direnv_lines
     if zle && [[ -s $__DIRENV_INSTANT_STDERR_FILE ]]; then
-      _prompt_direnv_out=$(<$__DIRENV_INSTANT_STDERR_FILE)
+      _prompt_direnv_lines=(${(f)"$(<$__DIRENV_INSTANT_STDERR_FILE)"})
       : >$__DIRENV_INSTANT_STDERR_FILE
+      # a blocked .envrc shows in the direnv segment instead, which reads its folder from _prompt_direnv_blocked
+      _prompt_direnv_line=${${(M)_prompt_direnv_lines:#*' is blocked. Run '*}[1]}
+      _prompt_direnv_out=${(F)_prompt_direnv_lines:#*' is blocked. Run '*}
+      typeset -g _prompt_direnv_blocked=${${_prompt_direnv_line#*direnv: error }%/.env*}
     fi
     _prompt_direnv_TRAPUSR1 "$@"
+    # zsh.nix's worktree auto-allow, which reloads at once when it allows
+    if [[ -n $_prompt_direnv_blocked ]] && (($+functions[_direnv_allow_worktree])) \
+      && _direnv_allow_worktree $_prompt_direnv_blocked; then
+      _prompt_direnv_blocked=
+      _direnv_hook
+    fi
     _prompt_build
     if [[ -n $_prompt_direnv_out ]]; then
       # a redraw first saves the cursor (\e7 in PROMPT) where the prompt starts now, after any scroll.

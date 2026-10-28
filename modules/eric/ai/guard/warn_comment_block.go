@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 )
 
@@ -43,25 +44,8 @@ func warnCommentBlock(h *hook) (string, int) {
 	if mode == "" {
 		return "", 0
 	}
-	// only the text this tool call wrote: Write content, Edit new_string, MultiEdit each new_string
-	e := h.edit()
-	var added string
-	switch {
-	case e.Content != nil:
-		added = *e.Content
-	case e.NewString != nil:
-		added = *e.NewString
-	case e.Edits != nil:
-		var parts []string
-		for _, ed := range e.Edits {
-			if ed.NewString != nil {
-				parts = append(parts, *ed.NewString)
-			} else {
-				parts = append(parts, "")
-			}
-		}
-		added = strings.Join(parts, "\n")
-	}
+	// only the text this tool call wrote. pi's edits are separate places, so a blank line keeps their comments apart
+	added := strings.Join(h.edit().added(), "\n\n")
 	if added == "" {
 		return "", 0
 	}
@@ -73,7 +57,7 @@ func warnCommentBlock(h *hook) (string, int) {
 	lines := strings.Split(added, "\n")
 	atTop := strings.SplitN(string(file), "\n", 2)[0] == lines[0]
 
-	longest, streak, end := 0, 0, ""
+	longest, streak, end := 0, 0, 0
 	inBlock, header := false, false
 	for i, line := range lines {
 		c := false
@@ -103,17 +87,19 @@ func warnCommentBlock(h *hook) (string, int) {
 		}
 		streak++
 		if !header && streak > longest {
-			longest, end = streak, line
+			longest, end = streak, i
 		}
 	}
 	if longest < 4 {
 		return "", 0
 	}
-	// locate the added block in the file for a real line number, else name the file alone
+	// locate the added block in the file for the line it ends on, else name the file alone
+	block := lines[end-longest+1 : end+1]
 	loc := f
-	for i, line := range strings.Split(string(file), "\n") {
-		if strings.Contains(line, end) {
-			loc = fmt.Sprintf("%s:%d", f, i+1)
+	fileLines := strings.Split(string(file), "\n")
+	for i := range fileLines {
+		if i+len(block) <= len(fileLines) && slices.Equal(fileLines[i:i+len(block)], block) {
+			loc = fmt.Sprintf("%s:%d", f, i+len(block))
 			break
 		}
 	}
