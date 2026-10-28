@@ -16,8 +16,9 @@ an area or path, or the uncommitted changes ("diff", "uncommitted", "staged", "w
 that ask, an audit reads everything. A branch or PR name means its diff against the merge base
 with the default branch, judged in the context of the whole repo.
 
-By default the sweep is complete: hunt everything a careful senior would flag as improper in
-any way. The lenses below are a checklist to force that breadth, not a fence -- a genuine
+By default the sweep is complete: review as a senior engineer would, for code they would call
+great, not merely code with no bugs. Hunt everything that engineer would flag as improper in any
+way, and the shape that keeps producing it. The lenses below are a checklist to force that breadth, not a fence -- a genuine
 problem that fits no named lens still counts. Reach for the list to check you have missed no
 dimension, never to bound what you look for. Narrow to a single lens, or to `cleanup` /
 `quality` for the debt+structure+modernize group, only when the ask names one. The
@@ -59,8 +60,9 @@ findings span subsystems, so they keep their own section instead of one subsyste
 Validate every finding against the current code before accepting it. Reject or demote
 findings that are vague, duplicate another, misread intentional semantics, or merely relocate
 complexity. A wrong "bug" or "bypass" claim costs more than a missed nitpick, so verify the
-decisive line before believing the worker. Deduplicate and assign each to one authoritative
-subsystem. Record skips as completed coverage.
+decisive line before believing the worker. Deduplicate, assign each to one authoritative
+subsystem, and tie each to its root cause: the architecture finding that produces it, or
+`local`. Record skips as completed coverage.
 
 Audit the audit with fresh passes: repository coverage and missing boundaries; duplication
 and ownership overlap; materiality and over-abstraction; severity and priority ranking. A real
@@ -164,11 +166,17 @@ Rank by what to fix first: correctness, security, and robustness defects by seve
 items by pain-to-effort. Lead with the highest-impact. For each: what and where (`file:line`),
 why it matters (a concrete failure scenario for a defect), and the fix with rough effort
 (small / medium / large). Group note-only items -- low value, or a design decision rather than
-a bug -- at the end with why they can wait. Architecture findings keep the shape
-`architecture-review` gives them, ranked into the same list by impact.
+a bug -- at the end with why they can wait.
+
+Give every defect a `Root cause:` line naming its architecture finding, or `local`. An
+architecture finding ranks by the combined impact of the defects it causes, and those defects
+sit under it, so the list reads cause first. Recommend what a senior engineer would: fix the
+shape first, then land its symptoms on the new shape. Architecture findings otherwise keep the
+shape `architecture-review` gives them.
 
 Present the ranked list and change nothing yet. On confirmation, apply the accepted findings
-in priority order, highest-impact first. This covers only fixes inside one subsystem. An
+in priority order, highest-impact first. Where accepted findings share a root cause, apply the
+root cause first. This covers only fixes inside one subsystem. An
 accepted architecture finding follows `architecture-review`'s last line. Every edit traces to a listed finding; make no change
 beyond the list, and leave note-only or risky items untouched unless explicitly approved. After
 applying, re-run the relevant tests or checks.

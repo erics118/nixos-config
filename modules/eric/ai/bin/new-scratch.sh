@@ -18,6 +18,11 @@ if common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null); 
 fi
 
 mkdir -p "$root/.eric/scratch"
+# scratch is throwaway, so tmutil's sticky exclusion keeps it out of time machine
+# tmutil can take seconds while a backup runs, so it runs in the background and only when the xattr is missing
+if [[ -x /usr/bin/tmutil ]] && ! /usr/bin/xattr -p com.apple.metadata:com_apple_backup_excludeItem "$root/.eric/scratch" &>/dev/null; then
+  /usr/bin/tmutil addexclusion "$root/.eric/scratch" &>/dev/null &
+fi
 base=$root/.eric/scratch/$(date +%F)-$topic
 dir=$base
 n=1

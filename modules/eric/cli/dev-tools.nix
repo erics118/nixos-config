@@ -14,7 +14,17 @@
         nix-direnv.enable = true;
         # nix pins bash, direnv, and nix-direnv together, so its per-load version check can't fail
         # unexported, so it stays out of the environment direnv hands to the shell
-        stdlib = "NIX_DIRENV_SKIP_VERSION_CHECK=1";
+        stdlib = ''
+          NIX_DIRENV_SKIP_VERSION_CHECK=1
+        ''
+        # .direnv is a rebuildable cache, so tmutil's sticky exclusion keeps it out of time machine
+        # tmutil can take seconds while a backup runs, so it runs in the background and only when the xattr is missing
+        # a new .direnv appears during its first load and gets excluded on the next one
+        + lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
+          if [[ -d .direnv ]] && ! /usr/bin/xattr -p com.apple.metadata:com_apple_backup_excludeItem .direnv &>/dev/null; then
+            /usr/bin/tmutil addexclusion .direnv &>/dev/null &
+          fi
+        '';
         config = {
           global = {
             load_dotenv = true;

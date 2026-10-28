@@ -5,7 +5,7 @@
       pname = "agent-guard";
       version = "0";
       src = ../eric/ai/guard;
-      vendorHash = "sha256-sULOJKCnZ9nS/EVH8Q4MhH7U9zdrcruxCKI6HqP/1a4=";
+      vendorHash = "sha256-5Ek77w2lFWehxLcQDOte4Gc4fiAzCdrTt6UGHY6JOlE=";
       # the check cases build git repos, dry-run just recipes, and load an .envrc for treefmt-on-edit
       nativeCheckInputs = [
         final.direnv

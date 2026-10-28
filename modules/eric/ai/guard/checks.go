@@ -39,6 +39,7 @@ var preChecks = []preCheck{
 	{meta{"ask-defaults-write", shellTools}, askDefaultsWrite},
 	{meta{"block-agent-commit", shellTools}, blockAgentCommit},
 	{meta{"block-agent-push", shellTools}, blockAgentPush},
+	{meta{"block-gh-write", shellTools}, blockGhWrite},
 	{meta{"block-smart-punct", fileTools}, blockSmartPunct},
 	{meta{"block-git-config-edit", append(slices.Clone(shellTools), fileTools...)}, blockGitConfigEdit},
 	{meta{"block-eric-top", append(slices.Clone(shellTools), fileTools...)}, blockEricTop},
@@ -54,6 +55,16 @@ var preChecks = []preCheck{
 var postChecks = []postCheck{
 	{meta{"treefmt-on-edit", fileTools}, treefmtOnEdit},
 	{meta{"warn-comment-block", fileTools}, warnCommentBlock},
+}
+
+// toolsOf is every tool some check runs on, once each and sorted, which the hook matchers must name
+func toolsOf[C interface{ info() meta }](checks []C) []string {
+	var tools []string
+	for _, c := range checks {
+		tools = append(tools, c.info().tools...)
+	}
+	slices.Sort(tools)
+	return slices.Compact(tools)
 }
 
 // pick returns the checks named, in that order, or every check that runs on tool when none are.

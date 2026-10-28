@@ -25,6 +25,76 @@ end
 rex.unbind("cmd+enter")
 rex.unbind("cmd+d")
 
+-- the app's shortcuts, grouped as settings > shortcuts shows them, so this file holds the whole keymap.
+-- cmd+w and alt+cmd+w are bound by guarded_close below
+rex.bind("cmd+n", "client.window.new")
+rex.bind("shift+cmd+w", "client.window.close")
+
+rex.bind("shift+cmd+p", "client.palette.toggle")
+rex.bind("cmd+,", "client.settings")
+rex.bind("shift+cmd+,", "client.diagnostics")
+rex.bind("shift+cmd+u", "client.update.accept")
+rex.bind("shift+cmd+.", "client.notice.dismiss")
+
+rex.bind("shift+cmd+n", "session.new")
+rex.bind("cmd+k", "session.switch")
+rex.bind("ctrl+alt+cmd+g", "session.next")
+rex.bind("ctrl+alt+cmd+n", "session.previous")
+rex.bind("cmd+s>r", "session.rename")
+rex.bind("cmd+r", "session.refresh")
+rex.bind("ctrl+alt+cmd+w", "session.open_on_web")
+
+rex.bind("cmd+t", "client.tab.new")
+rex.unbind("shift+cmd+]")
+rex.bind("ctrl+tab", "client.tab.next")
+rex.unbind("shift+cmd+[")
+rex.bind("ctrl+shift+tab", "client.tab.previous")
+for i = 1, 8 do
+    rex.bind("cmd+" .. i, "client.tab.goto", { index = i })
+end
+-- the last tab
+rex.bind("cmd+9", "client.tab.goto", { index = -1 })
+rex.bind("ctrl+shift+pageup", "client.tab.move.backward")
+rex.bind("ctrl+shift+pagedown", "client.tab.move.forward")
+
+-- shift+cmd+h/j/k/l split, in place of shift+cmd+arrows
+for key, direction in pairs({ h = "left", j = "down", k = "up", l = "right" }) do
+    rex.unbind("shift+cmd+" .. direction)
+    rex.bind("shift+cmd+" .. key, "pane.split." .. direction)
+    rex.unbind("alt+cmd+" .. direction)
+    rex.bind("alt+shift+cmd+" .. direction, "pane.move." .. direction)
+end
+rex.unbind("shift+cmd+d")
+rex.bind("cmd+]", "pane.focus_next")
+rex.bind("cmd+[", "pane.focus_previous")
+rex.bind("alt+cmd+enter", "pane.float")
+rex.unbind("shift+cmd+enter")
+rex.bind("shift+cmd+g", "pane.go_to_directory")
+rex.bind("ctrl+cmd+i", "pane.insert_path")
+rex.bind("cmd+s>e", "pane.balance")
+rex.bind("cmd+s>b", "pane.move_to_new_tab")
+rex.bind("cmd+s>shift+b", "pane.move_to_tab")
+
+-- readline keys for mac text navigation
+rex.bind("cmd+backspace", "pane.send_key", { key = "ctrl+u" })
+rex.bind("cmd+left", "pane.send_key", { key = "ctrl+a" })
+rex.bind("cmd+right", "pane.send_key", { key = "ctrl+e" })
+rex.bind("alt+left", "pane.send_key", { key = "alt+b" })
+rex.bind("alt+right", "pane.send_key", { key = "alt+f" })
+
+rex.bind("cmd+f", "client.find.open")
+rex.bind("cmd+g", "client.find.next")
+
+rex.bind("cmd+=", "client.font.increase")
+rex.unbind("shift+cmd+=")
+rex.bind("cmd+-", "client.font.decrease")
+rex.bind("cmd+0", "client.font.reset")
+rex.unbind("cmd+/")
+rex.bind("cmd+.", "client.sidebar.activity.toggle")
+rex.unbind("shift+cmd+s")
+rex.bind("ctrl+cmd+s", "client.sidebar.toggle")
+rex.bind("ctrl+cmd+v", "client.tab_style.toggle")
+
 -- programs that take ctrl-h/j/k/l themselves, matched against the foreground process name.
 -- a tmux client, or rtmux's mosh-client, hands them to the tmux inside
 local own_nav_keys = { "vim", "fzf", "tmux", "mosh-client" }
@@ -68,24 +138,73 @@ rex.bind("cmd+down", "client.prompt.next")
 require("rex-image-paste").setup()
 rex.bind("cmd+shift+v", "image_paste")
 
--- closing a pane or tab that runs anything but a shell asks first.
--- the key enters a one-shot confirm mode, whose key hints rex shows, where enter closes and escape cancels
+-- closing a pane or tab that runs anything but an idle shell asks first, in a macos alert.
+-- where osascript is missing, as on a linux server, the key enters a one-shot confirm mode instead,
+-- whose key hints rex shows, where enter closes and escape cancels
 local shells = { zsh = true, bash = true, sh = true, fish = true, nu = true }
 
--- a block's foreground program by argv0, since claude's executable is named after its version.
--- argv0 can be a path, and a login shell's starts with a dash
+-- a block's program, or nil once it has exited or while its login shell is in the foreground.
+-- only a login shell's argv0 starts with a dash, since a sh script or sh -c reports sh too.
+-- a failed lookup counts as busy, since a wrong guess ends a running program
 local function program(block_id)
-    local process = foreground(block_id)
-    return process and ((process.argv0 or process.name or ""):match("[^/]*$"):gsub("^%-", ""))
+    local info = rex.block.call(terminal, "process", { block_id = block_id })
+    if info and info.last_exit then
+        return nil
+    end
+    local process = info and info.foreground
+    if not process then
+        return "a program"
+    end
+    if shells[process.name] and (process.argv0 or ""):sub(1, 1) == "-" then
+        return nil
+    end
+    -- argv0 before name, since claude's executable is named after its version
+    return (process.script or process.argv0 or process.name):match("[^/]*$")
 end
 
-local function busy_program(block_ids)
+local function busy_programs(block_ids)
+    local names = {}
     for _, block_id in ipairs(block_ids) do
         local name = program(block_id)
-        if name and not shells[name] then
-            return name
+        if name then
+            table.insert(names, name)
         end
     end
+    return names
+end
+
+-- without the accessory policy the alert opens behind rex, and focus doesn't reliably return to rex after.
+-- the icon follows rex's app icon setting, by the asset names rex beta gives each choice.
+-- the alert cancels itself after 20 seconds, within the 30 an action gets
+local alert_script = [[
+ObjC.import("AppKit")
+function run(argv) {
+  const app = $.NSApplication.sharedApplication
+  const rex = $.NSRunningApplication.runningApplicationsWithBundleIdentifier("com.superlogical.rex").firstObject
+  const alert = $.NSAlert.alloc.init
+  alert.messageText = argv[0]
+  alert.informativeText = argv[1]
+  const choice = $.NSUserDefaults.alloc.initWithSuiteName("com.superlogical.rex").stringForKey("Workspace.appIcon").js
+  const chosen = choice && $.NSBundle.bundleWithURL(rex.bundleURL).imageForResource("PlainAppIcon" + choice[0].toUpperCase() + choice.slice(1) + "Beta")
+  alert.icon = chosen && !chosen.isNil() ? chosen : rex.icon
+  alert.addButtonWithTitle("Close")
+  alert.addButtonWithTitle("Cancel")
+  app.setActivationPolicy($.NSApplicationActivationPolicyAccessory)
+  app.activateIgnoringOtherApps(true)
+  app.performSelectorWithObjectAfterDelayInModes("abortModal", $(), 20, $([$.NSModalPanelRunLoopMode]))
+  const response = alert.runModal
+  rex.activateWithOptions(0)
+  return response == $.NSAlertFirstButtonReturn ? "Close" : "Cancel"
+}
+]]
+
+-- true or false for the alert's answer, or nil where osascript can't run
+local function confirm(title, text)
+    local reply = rex.exec({ "osascript", "-l", "JavaScript", "-e", alert_script, title, text }, { timeout = 25 })
+    if not reply then
+        return nil
+    end
+    return reply.ok and reply.stdout:match("^Close") ~= nil
 end
 
 -- every block in the window that holds block_id
@@ -103,7 +222,9 @@ local function window_blocks(block_id)
     return ids
 end
 
-local function guarded_close(name, title, key, close, blocks)
+-- what is the noun in the alert, close the client action, and close_by_id(ctx) closes the pressed pane's own,
+-- since the alert can move the app's focus away from it
+local function guarded_close(name, title, key, what, close, blocks, close_by_id)
     -- action names allow no dashes
     local action = (name:gsub("-", "_"))
     rex.mode(name, { exclusive = true })
@@ -112,21 +233,45 @@ local function guarded_close(name, title, key, close, blocks)
         name = action,
         title = title,
         run = function(ctx)
-            local busy = busy_program(blocks(ctx.block_id))
-            if not busy then
+            local busy = busy_programs(blocks(ctx.block_id))
+            if #busy == 0 then
                 rex.client.queue(close)
                 return
             end
-            rex.client.queue("client.mode.enter", { name = name, once = true })
+            local running = table.concat(busy, ", ") .. (#busy == 1 and " is" or " are")
+            local confirmed = confirm(
+                "Close " .. what .. "?",
+                running .. " still running. If you close the " .. what:lower() .. ", it will be killed."
+            )
+            if confirmed == nil then
+                rex.client.queue("client.mode.enter", { name = name, once = true })
+            elseif confirmed then
+                close_by_id(ctx)
+            end
         end,
     })
     rex.bind(key, action)
 end
 
-guarded_close("confirm-close", "Close Pane, Asking When Busy", "cmd+w", "pane.close", function(block_id)
+guarded_close("confirm-close", "Close Pane, Asking When Busy", "cmd+w", "Pane", "pane.close", function(block_id)
     return { block_id }
+end, function(ctx)
+    rex.call("block.close", { session_id = ctx.session_id, block_id = ctx.block_id })
 end)
-guarded_close("confirm-close-tab", "Close Tab, Asking When Busy", "alt+cmd+w", "client.tab.close", window_blocks)
+guarded_close(
+    "confirm-close-tab",
+    "Close Tab, Asking When Busy",
+    "alt+cmd+w",
+    "Tab",
+    "client.tab.close",
+    window_blocks,
+    function(ctx)
+        local window = find_block(rex.session.view({}), ctx.block_id)
+        if window then
+            rex.session.close_window({ window_id = window.window_id })
+        end
+    end
+)
 
 -- a popup is a program in a floating layer over the tab of the pane that pressed its key.
 -- its key hides it by detaching its pane, which keeps running, and shows it again.

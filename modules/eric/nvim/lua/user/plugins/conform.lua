@@ -9,6 +9,8 @@ local prettier = { "prettier" }
 
 return {
     "conform.nvim",
+    event = require("user.utils.lazy").file_events,
+    cmd = "ConformInfo",
     after = function()
         require("conform").setup({
             notify_on_error = false,

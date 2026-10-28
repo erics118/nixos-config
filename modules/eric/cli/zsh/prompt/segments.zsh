@@ -87,22 +87,23 @@ _pseg_git() {
   REPLY="${text//\%/%%}${marks:+ $marks}"
 }
 
-# a check once direnv has loaded an .envrc.
-# a dash while one exists here or above but is not loaded (blocked or still loading)
+# a check once direnv has loaded the nearest .envrc, a cross while it is blocked or denied, and a dash while it loads.
+# DIRENV_DIR is the loaded folder after a dash, and direnv keeps an outer .envrc loaded when a nearer one is blocked
 _pseg_direnv() {
-  if [[ -n $DIRENV_DIR ]]; then
-    _prompt_glyph $prompt_icon[direnv_loaded]
-    return
-  fi
   local d=$PWD
-  while [[ -n $d ]]; do
-    if [[ -e $d/.envrc ]]; then
-      REPLY=-
-      return
-    fi
+  while [[ -n $d && ! -e $d/.envrc ]]; do
     d=${d%/*}
   done
-  return 1
+  if [[ -n $DIRENV_DIR && ( -z $d || $DIRENV_DIR == -$d ) ]]; then
+    _prompt_glyph $prompt_icon[direnv_loaded]
+  elif [[ -z $d ]]; then
+    return 1
+  # set by prompt.zsh's TRAPUSR1 from direnv's blocked message
+  elif [[ $d == $_prompt_direnv_blocked ]]; then
+    _prompt_glyph $prompt_icon[direnv_blocked]
+  else
+    REPLY=-
+  fi
 }
 
 # a nix develop or nix-shell entered by hand. direnv's use flake sets IN_NIX_SHELL too

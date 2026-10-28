@@ -91,7 +91,10 @@
       "Bash(ntfy pub *)",
       "Bash(sketchybar --set apple *)"
     ],
-    "deny": ["EnterPlanMode", "ExitPlanMode"],
+    "deny": [
+      "EnterPlanMode",
+      "ExitPlanMode"
+    ],
     "defaultMode": "auto"
   },
   "hooks": {
@@ -101,7 +104,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.agents/hooks/guard.sh\" pre claude || { echo 'guard hook did not run, so the call was not checked' >&2; exit 2; }"
+            "command": "\"$HOME/.agents/hooks/guard.sh\" pre claude || { echo 'guard hook did not run, so the call was not checked' >&2; exit 2; }",
+            "timeout": 60,
+            "onFailure": "block"
           }
         ]
       }
@@ -112,7 +117,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.agents/hooks/guard.sh\" post claude || { echo 'guard hook did not run, so the edit was not checked' >&2; exit 2; }"
+            "command": "\"$HOME/.agents/hooks/guard.sh\" post claude; s=$?; [ $s -eq 0 ] || [ $s -eq 2 ] || { echo 'guard hook did not run, so the edit was not checked' >&2; exit 2; }; exit $s"
           }
         ]
       }
@@ -217,6 +222,7 @@
     }
   },
   "advisorModel": "fable",
+  "promptSuggestionEnabled": false,
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
@@ -224,6 +230,7 @@
   "editorMode": "normal",
   "verbose": true,
   "autoCompactEnabled": true,
+  "switchModelsOnFlag": false,
   "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
@@ -233,5 +240,5 @@
       "In /Users/eric/dev/resume, running the applying-to-jobs CLI (node .../applying-to-jobs/src/cli.ts) to submit job applications (submit, apply --submit, batch --submit) is authorized when the user asked in this session to submit them, and so is reading the receipt folders it writes."
     ]
   },
-  "promptSuggestionEnabled": false
+  "model": "claude-opus-4-8"
 }

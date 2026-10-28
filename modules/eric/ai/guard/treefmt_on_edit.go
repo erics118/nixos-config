@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"time"
 )
 
 // format the edited file with the project's own treefmt, reached through the direnv devShell
@@ -36,8 +38,13 @@ func treefmtOnEdit(h *hook) (string, int) {
 	if d == "" || slices.Contains([]string{home, home + "/dev", home + "/dev/other"}, d) {
 		return "", 0
 	}
-	cmd := exec.Command("direnv", "exec", d, "treefmt", f)
+	ctx, cancel := context.WithTimeout(context.Background(), treefmtTimeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "direnv", "exec", d, "treefmt", f)
 	cmd.Dir = d
 	_ = cmd.Run()
 	return "", 0
 }
+
+// a stale nix-direnv cache rebuilds the devShell on the first format, so a hung format is given up on
+var treefmtTimeout = 20 * time.Second

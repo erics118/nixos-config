@@ -2,7 +2,7 @@
 # segments are the _pseg_<name> functions in segments.zsh and statusline.zsh
 
 # segments in order. one that has nothing to show is left out
-typeset -ga prompt_line1=(dir host git direnv nix shlvl duration status)
+typeset -ga prompt_line1=(dir host git direnv nix duration status)
 typeset -ga prompt_line2=(os char)
 typeset -ga statusline=(dir host git worktree pr model lines usage)
 typeset -ga statusline_pi=(dir host git model usage cost)
@@ -29,7 +29,7 @@ typeset -ga prompt_bold=(direnv)
 # unicode codepoints, drawn before the segment's text with a space.
 # all are one cell wide in hack nerd font
 typeset -gA prompt_icon=(
-  lock 0xf033e git 0xf062c direnv 0xf107f direnv_loaded 0xf012c nix 0xf1105
+  lock 0xf033e git 0xf062c direnv 0xf107f direnv_loaded 0xf012c direnv_blocked 0xf073a nix 0xf1105
   duration 0xf06ad status 0xf0156 arrow 0x25b6 ellipsis 0x2026
   macos 0xf0035 linux 0xf31a nixos 0xf313 ubuntu 0xf31b arch 0xf31e debian 0xf306 fedora 0xf30a
 )
