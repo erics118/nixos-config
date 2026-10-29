@@ -17,7 +17,7 @@ typeset -gA prompt_palette=(
 
 # palette names. a segment with none uses the terminal's text color
 typeset -gA prompt_color=(
-  dir teal lock red host yellow git pink direnv bright-yellow nix blue shlvl mauve duration yellow
+  dir teal lock red host yellow git pink nix blue shlvl mauve duration yellow
   status red os green char teal char_error red separator surface1 continuation surface2
   worktree mauve pr sky model blue added green removed red label dim cost dim
   usage_low green usage_mid yellow usage_high red
@@ -29,7 +29,7 @@ typeset -ga prompt_bold=(direnv)
 # unicode codepoints, drawn before the segment's text with a space.
 # all are one cell wide in hack nerd font
 typeset -gA prompt_icon=(
-  lock 0xf033e git 0xf062c direnv 0xf107f direnv_loaded 0xf012c direnv_blocked 0xf073a nix 0xf1105
+  lock 0xf033e git 0xf062c direnv_base 0xf107f direnv_allowed 0x2713 direnv_notallowed 0x3f direnv_denied 0x2717 nix 0xf1105
   duration 0xf06ad status 0xf0156 arrow 0x25b6 ellipsis 0x2026
   macos 0xf0035 linux 0xf31a nixos 0xf313 ubuntu 0xf31b arch 0xf31e debian 0xf306 fedora 0xf30a
 )

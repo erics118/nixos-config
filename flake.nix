@@ -29,9 +29,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # fork with rex support until Mic92/direnv-instant#172 merges
+    # fork with rex support (Mic92/direnv-instant#172) + expose-allow-state: exports __DIRENV_INSTANT_ALLOWED for the prompt's direnv segment
     direnv-instant = {
-      url = "github:erics118/direnv-instant";
+      url = "github:erics118/direnv-instant/eric";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
       inputs.treefmt-nix.follows = "treefmt-nix";

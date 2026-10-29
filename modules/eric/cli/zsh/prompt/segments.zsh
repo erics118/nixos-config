@@ -87,23 +87,29 @@ _pseg_git() {
   REPLY="${text//\%/%%}${marks:+ $marks}"
 }
 
-# a check once direnv has loaded the nearest .envrc, a cross while it is blocked or denied, and a dash while it loads.
-# DIRENV_DIR is the loaded folder after a dash, and direnv keeps an outer .envrc loaded when a nearer one is blocked
+# direnv-instant's start exports __DIRENV_INSTANT_ALLOWED (0 allowed, 1 not-allowed, 2 denied) for the nearest .envrc.
+# before its first run (a new shell's first prompt) it is unset, so read direnv directly then, to avoid an async redraw
 _pseg_direnv() {
-  local d=$PWD
-  while [[ -n $d && ! -e $d/.envrc ]]; do
-    d=${d%/*}
-  done
-  if [[ -n $DIRENV_DIR && ( -z $d || $DIRENV_DIR == -$d ) ]]; then
-    _prompt_glyph $prompt_icon[direnv_loaded]
-  elif [[ -z $d ]]; then
-    return 1
-  # set by prompt.zsh's TRAPUSR1 from direnv's blocked message
-  elif [[ $d == $_prompt_direnv_blocked ]]; then
-    _prompt_glyph $prompt_icon[direnv_blocked]
-  else
-    REPLY=-
+  local a=$__DIRENV_INSTANT_ALLOWED
+  if [[ -z $a ]]; then
+    local d=$PWD
+    while [[ -n $d && ! -e $d/.envrc ]]; do d=${d%/*}; done
+    [[ -n $d ]] || return 1
+    local s=$(direnv status 2>/dev/null | grep 'Found RC allowed')
+    a=${s##* }
   fi
+  local g c
+  case $a in
+    0) g=direnv_allowed c=green ;;
+    1) g=direnv_notallowed c=red ;;
+    2) g=direnv_denied c=red ;;
+    *) return 1 ;;
+  esac
+  local base glyph
+  _prompt_glyph $prompt_icon[direnv_base]; base=$REPLY
+  _prompt_glyph $prompt_icon[$g]; glyph=$REPLY
+  _prompt_fg $c
+  REPLY="$REPLY$base $glyph%f"
 }
 
 # a nix develop or nix-shell entered by hand. direnv's use flake sets IN_NIX_SHELL too

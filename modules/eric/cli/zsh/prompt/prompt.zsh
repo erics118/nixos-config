@@ -41,44 +41,41 @@ _prompt_build() {
   PROMPT=$'%{\e7%}\n'"$start$prompt_line1_start%f$line1"$'\n'"$start$prompt_line2_start%f$REPLY "
 }
 
-# direnv-instant's TRAPUSR1 would print direnv's output after the shown prompt and leave two.
-# this prints it in place of the prompt instead, and rebuilds so the direnv segment is current.
-# __DIRENV_INSTANT_STDERR_FILE is direnv-instant's own (its hooks/zsh.sh)
+# wrap direnv-instant's TRAPUSR1 to rebuild the prompt after it loads the env,
+# and to auto-allow a fresh worktree whose .envrc matches its repo's (zsh.nix), reloading at once
 if (($+functions[TRAPUSR1])); then
   functions[_prompt_direnv_TRAPUSR1]=$functions[TRAPUSR1]
   TRAPUSR1() {
-    # direnv's export runs inside this call, so a local named like an exported variable
-    # (out, for one, in a nix shell) would take its value. hence the prefixed name
-    local _prompt_direnv_out= _prompt_direnv_line=
-    local -a _prompt_direnv_lines
-    if zle && [[ -s $__DIRENV_INSTANT_STDERR_FILE ]]; then
-      _prompt_direnv_lines=(${(f)"$(<$__DIRENV_INSTANT_STDERR_FILE)"})
+    # direnv's routine status is silenced, so its stderr here is real errors; drop the
+    # "is blocked" note (the segment's glyph already says that), keep the rest
+    local -a _errs
+    if [[ -n $__DIRENV_INSTANT_STDERR_FILE && -s $__DIRENV_INSTANT_STDERR_FILE ]]; then
+      _errs=(${(f)"$(<$__DIRENV_INSTANT_STDERR_FILE)"})
       : >$__DIRENV_INSTANT_STDERR_FILE
-      # a blocked .envrc shows in the direnv segment instead, which reads its folder from _prompt_direnv_blocked
-      _prompt_direnv_line=${${(M)_prompt_direnv_lines:#*' is blocked. Run '*}[1]}
-      _prompt_direnv_out=${(F)_prompt_direnv_lines:#*' is blocked. Run '*}
-      typeset -g _prompt_direnv_blocked=${${_prompt_direnv_line#*direnv: error }%/.env*}
+      _errs=(${_errs:#*' is blocked. Run '*})
     fi
-    _prompt_direnv_TRAPUSR1 "$@"
-    # zsh.nix's worktree auto-allow, which reloads at once when it allows
-    if [[ -n $_prompt_direnv_blocked ]] && (($+functions[_direnv_allow_worktree])) \
-      && _direnv_allow_worktree $_prompt_direnv_blocked; then
-      _prompt_direnv_blocked=
+    # apply the env direnv-instant loaded
+    [[ -n $__DIRENV_INSTANT_ENV_FILE && -f $__DIRENV_INSTANT_ENV_FILE ]] && eval "$(<$__DIRENV_INSTANT_ENV_FILE)"
+    # auto-allow a fresh worktree matching its repo (never an explicit deny, 2), then reload
+    local _auto=
+    if [[ $__DIRENV_INSTANT_ALLOWED == 1 && -n $__DIRENV_INSTANT_CURRENT_DIR ]] \
+      && (($+functions[_direnv_allow_worktree])) \
+      && _direnv_allow_worktree $__DIRENV_INSTANT_CURRENT_DIR; then
       _direnv_hook
+      _auto=1
     fi
-    _prompt_build
-    if [[ -n $_prompt_direnv_out ]]; then
-      # a redraw first saves the cursor (\e7 in PROMPT) where the prompt starts now, after any scroll.
-      # zle -I makes zle redraw the prompt wherever the cursor is when the trap ends.
-      # \e8 returns to where the prompt began and \e[J clears from there down
+    # a clean load redraws nothing, which is what avoids the new-shell double prompt (its
+    # async redraw stacked under Rex). errors print above a freshly drawn prompt; auto-allow just redraws.
+    if (($#_errs)) && zle; then
+      _prompt_build
       zle .reset-prompt && zle -R
       zle -I
       print -rn -- $'\e8\e[J'
-      print -r -- $_prompt_direnv_out
-    else
-      zle && zle .reset-prompt && zle -R
+      print -rl -- $_errs
+    elif [[ -n $_auto ]] && zle; then
+      _prompt_build
+      zle .reset-prompt && zle -R
     fi
-    # a nonzero return would make zsh act as if interrupted
     return 0
   }
 fi

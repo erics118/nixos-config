@@ -42,8 +42,11 @@
         enable = true;
         enableZshIntegration = false; # pre-computed in zsh.nix
         forceOverwriteSettings = true;
+        # threads capture records AI agent sessions, and needs the daemon
+        daemon.enable = true;
         settings = {
           enter_accept = true;
+          threads.capture = true;
           history_filter = [
             "^\\?"
             # literal secrets, while $VAR and $(...) references still get saved

@@ -36,7 +36,7 @@
 
       fzfInit = mkInit "fzf" "${pkgs.fzf}/bin/fzf --zsh";
 
-      atuinInit = mkInit "atuin" "${pkgs.atuin}/bin/atuin init zsh --disable-ai";
+      atuinInit = mkInit "atuin" "${pkgs.atuin}/bin/atuin init zsh --disable-ai --bind-ai-resume";
     in
     {
       home.sessionVariables.COLORTERM = "truecolor";

@@ -4,3 +4,7 @@ for _zsh_conf in options completion functions keys terminal; do
   source ${0:h}/$_zsh_conf.zsh
 done
 unset _zsh_conf
+
+# silence direnv's routine status (loading/using flake/cached); the prompt's direnv segment shows state, errors still print.
+# set here, before direnv-instant's daemon starts, because home.sessionVariables drops an empty value
+export DIRENV_LOG_FORMAT=
