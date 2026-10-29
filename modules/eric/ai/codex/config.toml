@@ -70,6 +70,7 @@ command = "/etc/profiles/per-user/eric/bin/context7-mcp"
 [mcp_servers.node_repl]
 args = []
 command = "/Applications/ChatGPT.app/Contents/Resources/cua_node/bin/node_repl"
+env_vars = ["BROWSER_USE_ACCESS_EXECUTOR_ID", "BROWSER_USE_ACCESS_PIPE_PATH", "BROWSER_USE_ACCESS_VERIFYING_IDENTITY"]
 startup_timeout_sec = 120
 
 [mcp_servers.node_repl.env]
@@ -84,8 +85,8 @@ NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = ""
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = ""
 NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE = ""
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.1007.71326"
-NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/eric/.codex/plugins/cache/openai-bundled/browser/26.1007.71326/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
+BROWSER_USE_CODEX_APP_VERSION = "26.1021.31345"
+NODE_REPL_TRUSTED_SERVICES = '{"browser":"/Users/eric/.codex/plugins/cache/openai-bundled/browser/26.1021.31345/scripts/browser-service.mjs","sky":"@oai/sky/service"}'
 SKY_CUA_SERVICE_PATH = "/Users/eric/.codex/computer-use/Codex Computer Use.app"
 CODEX_CLI_PATH = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex"
 
@@ -402,7 +403,7 @@ trusted_hash = "sha256:f27a4fda937303a82b584fd3a3acbbb561b32c64d5a09ea51ffe7177f
 trusted_hash = "sha256:fdcc0e8ab137e94aed9979e34df6b07780dced7150df9eba5c3bccd3855152e7"
 
 [hooks.state."/Users/eric/.codex/hooks.json:pre_tool_use:0:0"]
-trusted_hash = "sha256:d06868730b61f05db3f56714b5e7499632bd731c1905525d29d402477834ed44"
+trusted_hash = "sha256:25844fc66407feb12b4f52226477eb036644a5eea9be47f208536629bc6e181b"
 
 [hooks.state."/Users/eric/.codex/hooks.json:session_start:1:0"]
 trusted_hash = "sha256:3da181f6a6d78fa2e4446bb51881bea0b4d69562eb909961fa616df84970d643"

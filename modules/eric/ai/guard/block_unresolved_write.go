@@ -10,7 +10,10 @@ import (
 func blockUnresolvedWrite(h *hook) decision {
 	for _, w := range h.written() {
 		if w.unresolved && !w.creates {
-			return deny(fmt.Sprintf("This command writes %s after a cd the guard cannot follow, so it cannot tell which file that is. Use an absolute path, or cd to a literal path.", w.word))
+			if w.fromCd {
+				return deny(fmt.Sprintf("This command writes %s after a cd the guard cannot follow, so it cannot tell which file that is. Use an absolute path, or cd to a literal path.", w.word))
+			}
+			return deny(fmt.Sprintf("This command writes %s, a path built from a value the guard cannot resolve, so it cannot tell which file that is. Write to a literal path, such as one new-scratch.sh prints.", w.word))
 		}
 	}
 	if slices.ContainsFunc(h.interpreterCalls(), func(c call) bool { return len(c.dirs()) == 0 && writesFiles(c) }) {

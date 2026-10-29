@@ -274,6 +274,12 @@ var cases = map[string][]group{
 		{want: "deny", files: []string{"new.txt"}, content: "em dash: " + string(rune(0x2014))},
 		{want: "allow", files: []string{"new.txt"}, content: `dash: - quotes: "x"`},
 		{want: "allow", files: []string{"new.ts"}, content: `const q = /[\u{2018}\u{2019}]/gu, d = "\\u2014", p = "\N{EM DASH}"`},
+		// smart punctuation in a git commit message is blocked too, not only in file edits
+		{want: "deny", cmds: []string{"git commit -m 'fix " + string(rune(0x2014)) + " bug'",
+			"git commit -m '" + string(rune(0x2026)) + "'", "git commit -F - <<EOF\nfix " + string(rune(0x2019)) + " it\nEOF"}},
+		{want: "allow", cmds: []string{"git commit -m 'plain - ascii'", `git commit -m "straight 'quotes' only"`}},
+		// only the message: an em dash elsewhere on the shell is left alone
+		{want: "allow", cmds: []string{"rg " + string(rune(0x2014)) + " file", "echo 'a " + string(rune(0x2014)) + " b'"}},
 	},
 	"block-git-config-edit": {
 		{want: "deny", files: []string{".git/config", "{home}/.gitconfig"}},
@@ -548,7 +554,9 @@ var cases = map[string][]group{
 			`uv run python -c "open('tracked.txt', 'w').write('x')"`,
 			"{ echo x; } > tracked.txt", `perl -e 'open(F, ">tracked.txt")'`, `ruby -e "File.write('tracked.txt', 'x')"`,
 			`node -e "require('fs').appendFileSync('tracked.txt', 'x')"`, `python3 -c "open(\"tracked.txt\", \"w\")"`,
-			`d=sub; cd -- "${d:?}" && echo x > flake.nix`, `python3 -c "p='tracked.txt'; open(o, 'w').write(open(p).read())"`}},
+			`d=sub; cd -- "${d:?}" && echo x > flake.nix`, `python3 -c "p='tracked.txt'; open(o, 'w').write(open(p).read())"`,
+			// a scratch directory resolves to a concrete path, so a .. escape out of it onto a tracked file is still caught
+			`D=$(new-scratch.sh x); echo y > "$D/../../../tracked.txt"`}},
 		{env: map[string]string{"HOME": "{repo}"}, want: "deny", cmds: []string{`echo x > "$HOME/tracked.txt"`, "echo x > ${HOME}/tracked.txt"}},
 		// a copy into a folder writes the source's name there, and these tools overwrite their destination too
 		{want: "deny", cmds: []string{"cp /tmp/x/tracked.txt .", "cp /tmp/x/tracked.txt ./", "cp -t . /tmp/x/tracked.txt",
@@ -619,7 +627,11 @@ var cases = map[string][]group{
 			"GIT_PAGER=cat git log", "tmux -L x new-session -d nvim", "xargs -I@ echo @", "bash -c 'echo hi' arg0", "command -v rm",
 			`x="a b"; echo $x`, "git -c user.name=x status", "ksh --version", "nix develop -c true", "echo x | sudo tee f",
 			"python3 <<'EOF'\nprint(1)\nEOF", "python3 script.py", "python3 -c 'print(1)'", "node --version", "perl -ne 'print' f",
-			"python3 -m json.tool f", "awk '{print $1}' f", "sed -n p f", "env -i git status", "uv run pytest"}},
+			"python3 -m json.tool f", "awk '{print $1}' f", "sed -n p f", "env -i git status", "uv run pytest",
+			// a > or | inside an awk string literal is text, not a redirect or a pipe
+			`awk '{printf "lines>300=%d\n", x}' f`, `awk '{print length($0) "\t" NR}' f | sort -rn`,
+			`awk '{n=length($0); if(n>300)l++} END{printf "nonblank=%d lines>300=%d\n", c, l}' f`,
+			`awk 'BEGIN{printf "a|b system(x)\n"}'`}},
 		// an interpreter reading its program from a pipe or a terminal hides it, as Codex can type into one later
 		{want: "deny", cmds: []string{"echo 'import os' | python3", "node", "cat x.js | node -"}},
 		// the default lists run under pi as under claude
@@ -641,7 +653,10 @@ var cases = map[string][]group{
 		// and a kill inside a command tmux runs
 		{want: "deny", cmds: []string{"tmux -S /private/tmp/tmux-501/default kill-server", `tmux -S "${TMUX%%,*}" kill-session -t main`,
 			"kill $(pgrep tmux)", "pgrep tmux | xargs kill", "tmux respawn-pane -k -t main", "tmux run-shell 'tmux kill-server'",
-			"tmux if-shell true '' kill-server"}},
+			"tmux if-shell true '' kill-server",
+			// scratch rm kills the tmux and rex sessions inside the folder it trashes
+			"scratch rm", "scratch rm ~/dev/scratch/x", "cd ~/dev/scratch/x && scratch rm"}},
+		{want: "allow", cmds: []string{"scratch", "scratch --help"}},
 		{want: "allow", cmds: []string{"tmux -L agent kill-server", "tmux -Lagent kill-session -t main", "tmux -S /tmp/s kill-server",
 			"tmux ls", "pkill node", "pkill -u eric node", "pgrep tmux", "tmux -L agent respawn-pane -k -t x", "kill $(pgrep node)"}},
 		{want: "deny", cmds: []string{"rex kill main", "rex session kill main", "rex -S narwhal kill main", "rex --timeout 5s kill x",
@@ -691,6 +706,18 @@ var cases = map[string][]group{
 			`cd "$d" && make 2>&1`, "cd sub && echo x > f", `cd "$d" && sed -i s/a/b/ /tmp/abs`,
 			`d=sub; cd -- "${d:?}" && echo x > f`, `d=sub; cd "${d?}" && echo x > f`,
 			`cd "$d" && python3 --version; rg -n 'write_text' /abs/src`, "echo x > $HOME/f"}},
+		// a fresh directory from new-scratch.sh is new and untracked, so a write under it is safe
+		{want: "allow", cmds: []string{`D=$(new-scratch.sh x); echo y > "$D/len.txt"`, `echo y > "$(new-scratch.sh x)/out.txt"`,
+			`D=$(~/.agents/bin/new-scratch.sh x); sort in > "$D/s.txt"`}},
+		// a .eric/scratch directory is untracked, so a dynamic file name under one is safe, even after an unknown cd
+		{env: map[string]string{"HOME": "{repo}"}, want: "allow", cmds: []string{`echo y > ".eric/scratch/2026-01-01-x/f$(date +%s).txt"`,
+			`echo y > .eric/scratch/2026-01-01-x/f$RANDOM.txt`, `sort in > "$HOME/.eric/scratch/2026-01-01-x/$(id -u).txt"`,
+			`cd "$d" && echo y > .eric/scratch/2026-01-01-x/f$(date +%s).txt`}},
+		// a dynamic directory, or one that climbs out of scratch, is not placed, so it still denies
+		{want: "deny", cmds: []string{`echo y > ".eric/scratch/$(date +%F)/f.txt"`, `echo y > ".eric/scratch/x/../../tracked$(date).txt"`}},
+		// the deny names the real cause: a phantom cd, or a value the path is built from
+		{want: "deny", reason: "after a cd", cmds: []string{`cd "$d" && echo x > f`}},
+		{want: "deny", reason: "built from a value", cmds: []string{"r=$(pwd); echo x > $r/f", `echo x > "$(git rev-parse --show-toplevel)/f"`}},
 	},
 	"treefmt-on-edit": {
 		{want: "quiet", files: []string{"tracked.txt"}},
@@ -753,6 +780,18 @@ func TestStripAttributionRewrites(t *testing.T) {
 			slices.ContainsFunc([]string{"co-authored-by", "generated with", robot}, func(s string) bool { return strings.Contains(strings.ToLower(*o.command), s) }) {
 			t.Errorf("%q rewrote to %v", tc.cmd, o.command)
 		}
+	}
+}
+
+// with agent commits on, block-agent-commit allows the commit, so the full pre stack still reaches
+// block-smart-punct, which denies an em dash in the message
+func TestSmartPunctInCommitMessage(t *testing.T) {
+	f := newFixture(t)
+	config(".", "eric-agent.commit", "on")(f)
+	in := cmdInput(f.repo, "git commit -m 'fix "+string(rune(0x2014))+" bug'")
+	in["tool_name"] = "Bash"
+	if o := runPreHook(t, "claude", in); o.kind != "deny" || !strings.Contains(o.reason, "smart punctuation") {
+		t.Errorf("got %q (%s), want deny with the smart punctuation message", o.kind, o.reason)
 	}
 }
 

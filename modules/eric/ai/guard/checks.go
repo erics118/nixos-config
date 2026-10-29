@@ -40,7 +40,7 @@ var preChecks = []preCheck{
 	{meta{"block-agent-commit", shellTools}, blockAgentCommit},
 	{meta{"block-agent-push", shellTools}, blockAgentPush},
 	{meta{"block-gh-write", shellTools}, blockGhWrite},
-	{meta{"block-smart-punct", fileTools}, blockSmartPunct},
+	{meta{"block-smart-punct", append(slices.Clone(shellTools), fileTools...)}, blockSmartPunct},
 	{meta{"block-git-config-edit", append(slices.Clone(shellTools), fileTools...)}, blockGitConfigEdit},
 	{meta{"block-eric-top", append(slices.Clone(shellTools), fileTools...)}, blockEricTop},
 	{meta{"block-shell-edit", shellTools}, blockShellEdit},

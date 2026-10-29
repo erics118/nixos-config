@@ -165,6 +165,8 @@ var (
 	// awk's print and printf write to a file after > or >>, and run a command after | or |&
 	awkOutput = regexp.MustCompile(`\bprintf?\b[^;{}\n]*?(>>|>|\|&|\|)\s*("([^"]*)"|[^\s;}]+)`)
 	awkRuns   = regexp.MustCompile(`\bsystem\s*\(|\|\s*getline`)
+	// an awk string literal, so its contents can be masked before the output and run regexes read the program
+	awkStr = regexp.MustCompile(`"(?:\\.|[^"\\])*"`)
 	// sed's w and W commands and the w flag of s write the file named to the end of the line, and e runs a command
 	sedWrite = regexp.MustCompile(`(?m)(?:^|[;{}])\s*(?:[0-9$]+|/[^/]*/)?\s*[wW]\s+([^;}\n]+)|s/(?:\\.|[^\\/])*/(?:\\.|[^\\/])*/[gpiImM0-9]*w\s*([^;}\n]+)`)
 	sedRuns  = regexp.MustCompile(`(?m)(?:^|[;{}])\s*(?:[0-9$]+|/[^/]*/)?\s*e(\s|;|$)|s/(?:\\.|[^\\/])*/(?:\\.|[^\\/])*/[gpiImM0-9]*e`)
@@ -182,6 +184,7 @@ func programWrites(c call) programWrite {
 	var w programWrite
 	switch c.tool() {
 	case "awk":
+		text = maskAwkStrings(text)
 		w.runs = awkRuns.MatchString(text)
 		for _, m := range awkOutput.FindAllStringSubmatch(text, -1) {
 			if strings.HasPrefix(m[1], "|") || !strings.HasPrefix(m[2], `"`) {
@@ -197,6 +200,20 @@ func programWrites(c call) programWrite {
 		}
 	}
 	return w
+}
+
+// maskAwkStrings blanks the characters the output and run regexes key on inside awk string literals,
+// so a >, |, or system( in a printf format is read as text while a real redirect to a quoted file still parses
+func maskAwkStrings(text string) string {
+	b := []byte(text)
+	for _, span := range awkStr.FindAllStringIndex(text, -1) {
+		for i := span[0] + 1; i < span[1]-1; i++ {
+			if strings.IndexByte(">|&;{}(", b[i]) >= 0 {
+				b[i] = '_'
+			}
+		}
+	}
+	return string(b)
 }
 
 var (

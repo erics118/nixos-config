@@ -34,6 +34,9 @@ func blockMuxKill(h *hook) decision {
 			return rexKills(a)
 		case "pkill", "killall":
 			return killsMux(c)
+		// scratch rm kills the tmux and rex sessions in the folder it trashes
+		case "scratch":
+			return at(a, 0) == "rm"
 		}
 		return false
 	}) {

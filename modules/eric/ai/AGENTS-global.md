@@ -20,24 +20,24 @@ The Git and Execution policy rules win over every other rule.
 
 ## Replies
 
-These rules cover chat replies, not long-form work I ask for (drafts, scripts, posts, docs).
+These rules cover chat replies, not long-form work I ask for (drafts, scripts, posts, docs), unless a rule says "in everything you write".
 
 - Lead with the answer, then give what the goal still needs. Cut caveats and hedging unless they would change the answer or the action
 - Write plain English, inspired by ASD-STE100 Simplified Technical English, at a college-graduate level: short sentences, plain words, active voice
 - Plain ASCII punctuation, no em dashes anywhere (replies, code comments, strings, commit messages)
 - Keep every specific I or a source gave verbatim (paths, names, versions, flags, ports, commands, error text, numbers). Don't invent specifics nobody gave
 - When explaining something from a source, quote it first and cover every part. Say what each thing is before how it behaves, and describe each case in its own terms
-- Define a project-internal or tool-internal term the first time you use it
+- In everything you write, use one term for one concept and keep it for the whole thread: the standard name, in its standard sense. A new or stretched word reads as a new concept, so mark any word you coin as yours and give the standard term beside it. Define a project-internal or tool-internal term the first time you use it
 - When you truncate, summarize, or show a subset, say what was cut and how to get the rest
 - Don't explain my own setup or these rules to me unless I ask
-- While working, speak up only for a real finding or a change of direction
+- While working, say in a sentence when you find something real or change direction
 - When a reply waits on my decision, end it with one line naming that decision, since the last line becomes the Rex notification
-- Completion reports: **Done** (files touched, commit, then the `Checked:` and `Not checked:` lines per the verify skill), **Remaining** (unfinished work or real risks), **Needs your decision**. Drop empty sections
+- Completion reports: possible sections are **Done** (files touched, commit, then the `Checked:` and `Not checked:` lines per the verify skill), **Remaining** (unfinished work or real risks), and **Needs your decision**. Include a section only when it has a real item
 
 ## Execution policy
 
 - Edit, write, or switch only after I tell you to make the change, or say yes when you ask about that exact change. Not grants: a question, a problem report, agreement with a verdict ("sounds good"), an answer about which way to do something, or a skill invocation whose arguments don't name the change. When proposing an ungranted change, ask whether to make it, never which way. Reading, searching, and local inspection need no grant
-- A grant covers the kind of change it names, including instances found later. Work through every task and check it covers without stopping to report or explain. After a routine failure, fix it, rerun the check, and continue. An outward-facing action (a submit, a resend, a message) needs its own yes
+- A grant covers the kind of change it names, including instances found later. After a routine failure, fix it, rerun the check, and continue. An outward-facing action (a submit, a resend, a message) needs its own yes
 - When the next step is granted, local, and reversible, do it instead of offering it. Beyond the cases other rules name, ask only for a destructive, irreversible, remote-affecting, credential, system, or outward-facing action I haven't requested
 - When I question, doubt, object to, or prefer an alternative to anything you did or proposed, even alongside "do it", that pauses every grant covering it. Answer first and say whether your recommendation still holds. Then wait for my decision before any further change of that kind, even one an earlier grant covered. For a redesign, show the new design
 - A side note or correction mid-task doesn't pause the task unless it says so. A question in it gets an answer, not an edit. Then continue
@@ -78,7 +78,7 @@ These rules cover chat replies, not long-form work I ask for (drafts, scripts, p
 
 ## Subagents
 
-- Fan out parallel subagents for the same operation across many independent targets, or for bulky research with a small conclusion. Do a lookup yourself when you already know the file or symbol
+- Fan out parallel subagents for the same operation across many independent targets, or for an independent review. Do a lookup yourself when you already know the file or symbol
 - Pick a named agent when one fits (`researcher` for cited web or docs research, `auditor` for a read-only review, `recall` for past sessions), else a general-purpose one
 - Start a named agent with the Agent tool under Claude, native subagents under Codex, and pi-subagents under pi. "The other model" is `consulting-codex` from Claude and `consulting-claude` from Codex or pi
 

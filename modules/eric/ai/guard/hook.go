@@ -166,6 +166,8 @@ type write struct {
 	// unresolved marks a target the guard cannot place: a relative path after a cd it cannot follow,
 	// or a path built from a value it cannot know
 	unresolved bool
+	// fromCd marks a relative path after a cd the guard cannot follow, not a path built from a value it cannot know
+	fromCd bool
 }
 
 // written lists what every call writes, or the file a Write or Edit writes. fd duplicates and devices are not files
@@ -179,7 +181,8 @@ func (h *hook) written() []write {
 			if t.word == "" || strings.HasPrefix(t.word, "/dev/") || strings.HasPrefix(t.word, "&") {
 				continue
 			}
-			w := write{target: t, unresolved: len(c.dirs()) == 0 && !absolute(t.word)}
+			w := write{target: t, fromCd: len(c.dirs()) == 0 && !absolute(t.word)}
+			w.unresolved = w.fromCd
 			for _, p := range h.paths(c, t.word) {
 				if len(t.into) == 0 || !(t.folder || isDir(p) || strings.HasSuffix(t.word, "/")) {
 					w.paths = append(w.paths, p)
@@ -192,10 +195,28 @@ func (h *hook) written() []write {
 				}
 			}
 			w.unresolved = w.unresolved || len(w.paths) == 0
+			if w.unresolved && h.inScratchDir(c, t.word) {
+				w.unresolved = false
+			}
 			out = append(out, w)
 		}
 	}
 	return out
+}
+
+// inScratchDir reports whether word's parent directory resolves to a path inside a .eric/scratch tree.
+// that tree is untracked, so a write there is safe even when the file name is built from a value the guard cannot see
+func (h *hook) inScratchDir(c call, word string) bool {
+	i := strings.LastIndex(word, "/")
+	if i < 0 {
+		return false
+	}
+	for _, p := range h.paths(c, word[:i+1]) {
+		if strings.Contains(filepath.Clean(p)+"/", "/.eric/scratch/") {
+			return true
+		}
+	}
+	return false
 }
 
 // sourceNames is the name each file a copy source names lands under: its own, or each match of a glob

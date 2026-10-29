@@ -770,6 +770,30 @@ func (s *state) word(w *syntax.Word) string {
 	return b.String()
 }
 
+// scratchMark names the folder the guard stands in for a fresh scratch directory. the exact name does not
+// matter: it only has to resolve to an untracked path, so the write under it clears the checks
+const scratchMark = "agent-guard-fresh"
+
+// scratchSubst is the fresh directory a command substitution makes, when it runs new-scratch.sh.
+// such a directory is new and untracked, so a write under it is safe. the guard stands a concrete path in for it,
+// which the resolver and the other checks then read like any absolute path, so an escape with .. is still caught
+func (s *state) scratchSubst(cs *syntax.CmdSubst) (string, bool) {
+	if len(cs.Stmts) != 1 || cs.Stmts[0].Cmd == nil {
+		return "", false
+	}
+	ce, ok := cs.Stmts[0].Cmd.(*syntax.CallExpr)
+	if !ok || len(ce.Args) == 0 || base(s.word(ce.Args[0])) != "new-scratch.sh" {
+		return "", false
+	}
+	root := os.Getenv("HOME")
+	if s.dir != "" {
+		if top := gitOut(s.dir, "rev-parse", "--show-toplevel"); top != "" {
+			root = top
+		}
+	}
+	return filepath.Join(root, ".eric/scratch", scratchMark), true
+}
+
 func (s *state) part(p syntax.WordPart) string {
 	switch p := p.(type) {
 	case *syntax.Lit:
@@ -802,6 +826,10 @@ func (s *state) part(p syntax.WordPart) string {
 			return "$(...)"
 		}
 		return "$" + p.Param.Value
+	case *syntax.CmdSubst:
+		if d, ok := s.scratchSubst(p); ok {
+			return d
+		}
 	}
 	return "$(...)"
 }
@@ -821,7 +849,13 @@ func (s *state) literal(w *syntax.Word) (string, bool) {
 			return false
 		case *syntax.SglQuoted:
 			known = known && !n.Dollar
-		case *syntax.CmdSubst, *syntax.ProcSubst, *syntax.ArithmExp, *syntax.ExtGlob, *syntax.BraceExp:
+		case *syntax.CmdSubst:
+			// a fresh scratch directory stands in for a known path, so a variable set to it reads as that path
+			if _, ok := s.scratchSubst(n); !ok {
+				known = false
+			}
+			return false
+		case *syntax.ProcSubst, *syntax.ArithmExp, *syntax.ExtGlob, *syntax.BraceExp:
 			known = false
 			return false
 		}
