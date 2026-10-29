@@ -8,6 +8,8 @@
           "result"
           "result-*"
           "flake.lock"
+          # the codex app rewrites this file live, in its own format
+          "modules/eric/ai/codex/config.toml"
         ];
         on-unmatched = "info";
 
