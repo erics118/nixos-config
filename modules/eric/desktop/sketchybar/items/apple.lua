@@ -43,7 +43,7 @@ end
 
 sbar.add_event("toggle_zen")
 
-apple:subscribe("toggle_zen", function(env)
+apple:subscribe("toggle_zen", function()
     toggle_zen()
 end)
 

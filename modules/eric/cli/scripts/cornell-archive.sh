@@ -41,7 +41,7 @@ source=$1
 dest=${2%/}
 [[ $dest =~ ^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$ ]] || die "bad DEST: $dest"
 
-# prints a clonable URL for a path, URL, or GitHub repo name
+# prints a cloneable URL for a path, URL, or GitHub repo name
 resolve() {
   if [[ -d $1 ]]; then
     realpath -- "$1"

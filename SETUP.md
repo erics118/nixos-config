@@ -7,7 +7,7 @@ There are two paths:
 
 ## Install Nix
 
-macOS only. Use the official installer from nixos.org. nix-darwin manages nix here, and it aborts activation when Determinate Nix is installed
+macOS only. Use the official installer from nixos.org. This config runs upstream Nix and lets nix-darwin manage it (`nix.enable = true`); with that on, nix-darwin aborts activation if Determinate Nix is also installed
 
 Enable flakes and nix-command for the bootstrap shell:
 

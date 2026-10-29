@@ -175,7 +175,7 @@ local function tab_alert(tab_id, title, is_active)
 end
 
 -- custom tab bar
-wezterm.on("format-tab-title", function(tab, tabs, panes, conf, hover, max_width)
+wezterm.on("format-tab-title", function(tab, _, _, conf, hover, max_width)
     -- the fancy tab bar fills each pill with the title's first background.
     -- catppuccin mocha surface0 marks the active pill, half of it a hovered one, and the rest stay clear
     local bg = "rgba(0, 0, 0, 0)"

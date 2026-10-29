@@ -69,7 +69,7 @@ for i, mode in ipairs(energy_modes) do
         background = { drawing = false },
     })
 
-    item:subscribe("mouse.clicked", function(env)
+    item:subscribe("mouse.clicked", function()
         sbar.exec("/usr/bin/sudo /usr/bin/pmset -a powermode " .. (i - 1), update_popup)
     end)
 
@@ -112,7 +112,7 @@ battery:subscribe("power_source_change", function()
     sbar.delay(60, update_battery)
 end)
 
-battery:subscribe("mouse.clicked", function(env)
+battery:subscribe("mouse.clicked", function()
     local drawing = battery:query().popup.drawing
     sbar.toggle_popup(battery.name)
 

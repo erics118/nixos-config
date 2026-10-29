@@ -42,7 +42,7 @@ local weather_air = sbar.add_item("weather_air", {
     background = { drawing = false },
 })
 
-weather:subscribe("mouse.clicked", function(env)
+weather:subscribe("mouse.clicked", function()
     sbar.toggle_popup(weather.name)
 end)
 

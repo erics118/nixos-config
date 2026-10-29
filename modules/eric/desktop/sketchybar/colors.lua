@@ -66,7 +66,7 @@ local colors = {
 }
 
 setmetatable(colors, {
-    __index = function(_table, _key)
+    __index = function()
         return 0xffff0000
     end,
 })

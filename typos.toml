@@ -1,0 +1,15 @@
+[default]
+extend-ignore-re = ['-ot\b', '-Pn\b', '-fo\b', '-oout\b', '\.edn\b']
+
+[default.extend-identifiers]
+OnyX = "OnyX"
+PNGs = "PNGs"
+PNG = "PNG"
+E0BA = "E0BA"
+
+[default.extend-words]
+browseable = "browseable"
+illigal = "illigal"
+multline = "multline"
+oint = "oint"
+enew = "enew"

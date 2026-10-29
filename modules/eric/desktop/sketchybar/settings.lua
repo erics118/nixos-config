@@ -6,6 +6,6 @@ return {
     helpers_dir = os.getenv("HOME") .. "/.local/share/sketchybar_helpers/",
     ignored_apps = { Raycast = true, Finder = true, Dropover = true, ["CleanShot X"] = true },
     -- lua patterns for window titles to skip, per app
-    -- rex's settings window stays in yabai's list after it closes
-    ignored_titles = { ["Rex Beta"] = "^Settings %- " },
+    -- rex leaves its settings and diagnostics windows in yabai's list after they close
+    ignored_titles = { ["Rex Beta"] = { "^Settings %- ", " \u{2013} Diagnostics$" } },
 }

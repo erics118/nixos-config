@@ -88,7 +88,7 @@ local function add_rows(prefix, count)
             },
             background = { drawing = false },
         })
-        row.item:subscribe("mouse.clicked", function(env)
+        row.item:subscribe("mouse.clicked", function()
             if row.network and row.network.name ~= status.name then
                 join(row.network)
             end
@@ -226,7 +226,7 @@ wifi:subscribe({ "routine", "forced", "wifi_change", "system_woke" }, update_sta
 
 scan("cached")
 
-wifi:subscribe("mouse.clicked", function(env)
+wifi:subscribe("mouse.clicked", function()
     local drawing = wifi:query().popup.drawing
     sbar.toggle_popup(wifi.name)
 
@@ -238,12 +238,12 @@ wifi:subscribe("mouse.clicked", function(env)
     end
 end)
 
-other_header:subscribe("mouse.clicked", function(env)
+other_header:subscribe("mouse.clicked", function()
     show_other = not show_other
     update_popup()
 end)
 
-settings_row:subscribe("mouse.clicked", function(env)
+settings_row:subscribe("mouse.clicked", function()
     wifi:set({ popup = { drawing = false } })
     sbar.exec('open "x-apple.systempreferences:com.apple.wifi-settings-extension"')
 end)

@@ -79,6 +79,15 @@ local space_window_observer = sbar.add_watcher("space_window_observer")
 
 local window_query = "yabai -m query --windows space,title,app,subrole,is-sticky,stack-index,is-hidden 2>/dev/null"
 
+local function title_ignored(app, title)
+    for _, pattern in ipairs(settings.ignored_titles[app] or {}) do
+        if title:match(pattern) then
+            return true
+        end
+    end
+    return false
+end
+
 -- app names per space, in stack order, skipping sticky, hidden, untitled and system dialog windows
 local function apps_by_space(windows)
     local visible = {}
@@ -88,7 +97,7 @@ local function apps_by_space(windows)
             and not window["is-hidden"]
             and window.title ~= ""
             and window.subrole ~= "AXSystemDialog"
-            and not (settings.ignored_titles[window.app] and window.title:match(settings.ignored_titles[window.app]))
+            and not title_ignored(window.app, window.title)
         then
             window.order = i
             table.insert(visible, window)
@@ -111,7 +120,7 @@ local function apps_by_space(windows)
     return apps
 end
 
-space_window_observer:subscribe({ "space_windows_change" }, function(env)
+space_window_observer:subscribe({ "space_windows_change" }, function()
     sbar.exec(window_query, function(windows)
         local window_data = apps_by_space(windows)
 

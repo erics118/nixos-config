@@ -36,7 +36,7 @@ local function update_color()
     end)
 end
 
-calendar:subscribe({ "forced", "routine", "system_woke" }, function(env)
+calendar:subscribe({ "forced", "routine", "system_woke" }, function()
     calendar:set({ icon = os.date("%a %b %d"), label = os.date("%H:%M") })
     update_color()
 end)
