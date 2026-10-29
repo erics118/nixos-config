@@ -129,6 +129,8 @@
           FXDefaultSearchScope = "SCcf";
           FXEnableExtensionChangeWarning = false;
           FXPreferredViewStyle = "clmv";
+          # empties each trashed item after 30 days
+          FXRemoveOldTrashItems = true;
           ShowPathbar = true;
           ShowStatusBar = true;
         };
