@@ -97,6 +97,11 @@
           "com.apple.universalaccess".showWindowTitlebarIcons = true;
         };
 
+        CustomSystemPreferences = {
+          # app store app auto-updates; AutoUpdate lives in the system domain, not the user's
+          "com.apple.commerce".AutoUpdate = true;
+        };
+
         NSGlobalDomain = {
           AppleICUForce24HourTime = true;
           AppleIconAppearanceTheme = "RegularDark";
