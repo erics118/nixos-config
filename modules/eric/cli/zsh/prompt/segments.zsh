@@ -109,13 +109,16 @@ _pseg_direnv() {
   _prompt_glyph $prompt_icon[direnv_base]; base=$REPLY
   _prompt_glyph $prompt_icon[$g]; glyph=$REPLY
   _prompt_fg $c
-  REPLY="$REPLY$base $glyph%f"
+  # trailing space so the glyph is never the last cell (keeps its width whether or not a segment follows)
+  REPLY="$REPLY$base $glyph %f"
 }
 
 # a nix develop or nix-shell entered by hand. direnv's use flake sets IN_NIX_SHELL too
+# trailing space so the icon is never the last cell (keeps its width whether or not a segment follows)
 _pseg_nix() {
   [[ -n $IN_NIX_SHELL && -z $DIRENV_DIR ]] || return 1
-  REPLY=
+  _prompt_glyph $prompt_icon[nix_base]
+  REPLY="$REPLY "
 }
 
 _pseg_shlvl() {

@@ -29,7 +29,7 @@ typeset -ga prompt_bold=(direnv)
 # unicode codepoints, drawn before the segment's text with a space.
 # all are one cell wide in hack nerd font
 typeset -gA prompt_icon=(
-  lock 0xf033e git 0xf062c direnv_base 0xf107f direnv_allowed 0x2713 direnv_notallowed 0x3f direnv_denied 0x2717 nix 0xf1105
+  lock 0xf033e git 0xf062c direnv_base 0xf107f direnv_allowed 0xf42e direnv_notallowed 0xf420 direnv_denied 0xf467 nix_base 0xf1105
   duration 0xf06ad status 0xf0156 arrow 0x25b6 ellipsis 0x2026
   macos 0xf0035 linux 0xf31a nixos 0xf313 ubuntu 0xf31b arch 0xf31e debian 0xf306 fedora 0xf30a
 )
