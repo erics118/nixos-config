@@ -26,6 +26,10 @@ func blockMuxKill(h *hook) decision {
 	pids := h.anyCall(func(c call) bool { return (c.tool() == "pgrep" || c.tool() == "pidof") && killsMux(c) })
 	if (pids && h.has("kill")) || h.anyCall(func(c call) bool {
 		a := c.args()
+		// a tmux or rex --help/--version invocation prints and kills nothing
+		if info(c.argv) && (c.tool() == "tmux" || c.tool() == "rex") {
+			return false
+		}
 		switch c.tool() {
 		case "tmux":
 			return !tmuxPrivate(c.argv) && (slices.ContainsFunc(a, tmuxKill.MatchString) ||

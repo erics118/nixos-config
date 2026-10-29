@@ -42,6 +42,7 @@ var preChecks = []preCheck{
 	{meta{"block-gh-write", shellTools}, blockGhWrite},
 	{meta{"block-smart-punct", append(slices.Clone(shellTools), fileTools...)}, blockSmartPunct},
 	{meta{"block-git-config-edit", append(slices.Clone(shellTools), fileTools...)}, blockGitConfigEdit},
+	{meta{"block-hook-bypass", append(slices.Clone(shellTools), fileTools...)}, blockHookBypass},
 	{meta{"block-eric-top", append(slices.Clone(shellTools), fileTools...)}, blockEricTop},
 	{meta{"block-shell-edit", shellTools}, blockShellEdit},
 	{meta{"block-sudo-probe", shellTools}, blockSudoProbe},

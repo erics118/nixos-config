@@ -50,6 +50,8 @@ func (c call) streams() []string {
 type target struct {
 	// word is the path as written
 	word string
+	// alt is a redirect target's empty-var (cd-failed) rendering, checked alongside word; "" when there is none
+	alt string
 	// into lists the sources a copy writes into word under their own names, when word is a folder
 	into []string
 	// folder marks a word the call always treats as a folder, as cp -t does
@@ -70,7 +72,15 @@ func (c call) targets() []target {
 			out = append(out, target{word: w, creates: creates})
 		}
 	}
-	add(false, c.streams()...)
+	// redirect targets carry alt (the empty-var world); tee's file operands do not
+	for _, r := range c.redirs {
+		if slices.Contains(writeRedirs, r.op) || (r.op == syntax.DplOut && !fdNumber.MatchString(r.word)) {
+			out = append(out, target{word: r.word, alt: r.alt})
+		}
+	}
+	if c.tool() == "tee" {
+		add(false, c.parsed().operands...)
+	}
 	p := c.parsed()
 	switch t := c.tool(); {
 	case c.inPlaceEdit():

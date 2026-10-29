@@ -88,10 +88,12 @@ func (f *fixture) expand(s string) string {
 }
 
 type outcome struct {
-	empty   bool
-	kind    string
-	reason  string
-	command *string
+	empty      bool
+	kind       string
+	reason     string
+	command    *string
+	newContent *string
+	context    string
 }
 
 func runPreHook(t *testing.T, harness string, input any, checks ...string) outcome {
@@ -108,8 +110,10 @@ func runPreHook(t *testing.T, harness string, input any, checks ...string) outco
 		HookSpecificOutput struct {
 			PermissionDecision       string `json:"permissionDecision"`
 			PermissionDecisionReason string `json:"permissionDecisionReason"`
+			AdditionalContext        string `json:"additionalContext"`
 			UpdatedInput             struct {
 				Command *string `json:"command"`
+				Content *string `json:"content"`
 			} `json:"updatedInput"`
 		} `json:"hookSpecificOutput"`
 	}
@@ -117,7 +121,7 @@ func runPreHook(t *testing.T, harness string, input any, checks ...string) outco
 		t.Fatalf("output %q: %v", out.String(), err)
 	}
 	o := d.HookSpecificOutput
-	return outcome{kind: o.PermissionDecision, reason: o.PermissionDecisionReason, command: o.UpdatedInput.Command}
+	return outcome{kind: o.PermissionDecision, reason: o.PermissionDecisionReason, command: o.UpdatedInput.Command, newContent: o.UpdatedInput.Content, context: o.AdditionalContext}
 }
 
 func cmdInput(dir, cmd string) map[string]any {
@@ -200,6 +204,10 @@ func (g group) run(t *testing.T, check string, post bool) {
 		if o.empty {
 			got = "allow"
 		}
+		// a non-blocking warning: additionalContext with no deny or ask decision
+		if got == "" && o.context != "" {
+			got = "warn"
+		}
 		if got != g.want || !strings.Contains(o.reason, g.reason) {
 			t.Errorf("%s: got %s (%s), want %s with %q", name, got, o.reason, g.want, g.reason)
 		}
@@ -251,6 +259,29 @@ func TestSymlinkPathAllowsReads(t *testing.T) {
 	}
 }
 
+// block-smart-punct normalizes a Write's content to ASCII under Claude, and denies under pi (no content rewrite)
+func TestSmartPunctNormalizes(t *testing.T) {
+	f := newFixture(t)
+	content := "em " + string(rune(0x2014)) + " en " + string(rune(0x2013)) +
+		" s " + string(rune(0x2018)) + "x" + string(rune(0x2019)) +
+		" d " + string(rune(0x201C)) + "y" + string(rune(0x201D)) + " e" + string(rune(0x2026))
+	want := `em - en - s 'x' d "y" e...`
+	in := map[string]any{"cwd": f.repo, "tool_name": "Write",
+		"tool_input": map[string]any{"file_path": filepath.Join(f.repo, "new.txt"), "content": content}}
+	o := runPreHook(t, "claude", in, "block-smart-punct")
+	switch {
+	case o.newContent == nil:
+		t.Errorf("no content rewrite; context=%q", o.context)
+	case *o.newContent != want:
+		t.Errorf("content = %q, want %q", *o.newContent, want)
+	case o.context == "":
+		t.Errorf("want an additionalContext warning, got none")
+	}
+	if p := runPreHook(t, "pi", in, "block-smart-punct"); p.kind != "deny" {
+		t.Errorf("pi: got %q, want deny", p.kind)
+	}
+}
+
 // a script nested deeper than any fixed limit
 func nestedRm() string {
 	s := "rm f"
@@ -271,9 +302,15 @@ var cases = map[string][]group{
 			files: []string{"away/new.txt", "home/cfglink/new.txt", "new.txt"}},
 	},
 	"block-smart-punct": {
-		{want: "deny", files: []string{"new.txt"}, content: "em dash: " + string(rune(0x2014))},
+		{want: "warn", files: []string{"new.txt"}, content: "em dash: " + string(rune(0x2014))},
 		{want: "allow", files: []string{"new.txt"}, content: `dash: - quotes: "x"`},
 		{want: "allow", files: []string{"new.ts"}, content: `const q = /[\u{2018}\u{2019}]/gu, d = "\\u2014", p = "\N{EM DASH}"`},
+		// a file marked agent-verbatim keeps its bytes, so smart punctuation there is neither normalized nor denied
+		{setup: func(f *fixture) { f.write(".git/info/attributes", "verbatim.txt agent-verbatim\n") },
+			want: "allow", files: []string{"verbatim.txt"}, content: "em dash: " + string(rune(0x2014))},
+		// only .git/info/attributes sets the opt-out; a working-tree .gitattributes cannot, so this still normalizes
+		{setup: func(f *fixture) { f.write(".gitattributes", "wt.txt agent-verbatim\n") },
+			want: "warn", files: []string{"wt.txt"}, content: "em dash: " + string(rune(0x2014))},
 		// smart punctuation in a git commit message is blocked too, not only in file edits
 		{want: "deny", cmds: []string{"git commit -m 'fix " + string(rune(0x2014)) + " bug'",
 			"git commit -m '" + string(rune(0x2026)) + "'", "git commit -F - <<EOF\nfix " + string(rune(0x2019)) + " it\nEOF"}},
@@ -283,6 +320,9 @@ var cases = map[string][]group{
 	},
 	"block-git-config-edit": {
 		{want: "deny", files: []string{".git/config", "{home}/.gitconfig"}},
+		// a var set on an && right side may be empty (cd failed): "$d.git/config" then becomes .git/config,
+		// and the deny names that resolved path, not the harmless literal world
+		{want: "deny", reason: "/.git/config", cmds: []string{`cd sub && d=safe; echo x > "$d.git/config"`}},
 		{want: "allow", files: []string{"config"}},
 		{want: "deny", cmds: []string{"echo x > .git/config", "cp /tmp/x .git/config", "sudo cp /tmp/x .git/config",
 			"printf x > ~/.gitconfig", "cp /tmp/x ~/.config/git/config",
@@ -296,6 +336,29 @@ var cases = map[string][]group{
 			"git config --edit", "git config set eric-agent.commit list", "git config include.path get"}},
 		{want: "allow", cmds: []string{"git config --get eric-agent.commit", "git config -l", "git config get --all eric-agent.commit",
 			"git config user.name x"}},
+	},
+	"block-hook-bypass": {
+		// setting core.hooksPath repoints git's hooks; a read is fine
+		{want: "deny", cmds: []string{"git config core.hooksPath /tmp/x", "git config --add core.hooksPath /tmp/x",
+			"git config set core.hooksPath /tmp/x", "git -C . config core.hooksPath .husky"}},
+		{want: "allow", cmds: []string{"git config --get core.hooksPath", "git config get core.hooksPath", "git config -l",
+			"git config core.editor vim"}},
+		// a write onto a file under .git/hooks is a new or changed hook
+		{want: "deny", files: []string{".git/hooks/pre-commit"}},
+		// .git/info/attributes holds the opt-out markers, so only the user writes it
+		{want: "deny", files: []string{".git/info/attributes"}},
+		{want: "deny", cmds: []string{"echo x > .git/info/attributes", "cp /tmp/x .git/info/attributes"}},
+		{want: "allow", cmds: []string{"cat .git/info/attributes", "git check-attr agent-verbatim -- f"}},
+		{want: "deny", cmds: []string{"echo x > .git/hooks/pre-commit", "cp /tmp/x .git/hooks/pre-push",
+			"printf x > .git/hooks/commit-msg", "sed -n 'w .git/hooks/pre-commit' f", "cd .git/hooks && echo x > pre-commit",
+			`python3 -c "open('.git/hooks/pre-commit', 'w')"`}},
+		// --no-verify and commit -n skip the hooks git runs; -n elsewhere is harmless
+		{want: "deny", cmds: []string{"git commit --no-verify -m x", "git commit -n -m x", "git commit -nm x",
+			"git merge --no-verify topic", "git push --no-verify", "bash -c 'git commit --no-verify -m x'"}},
+		{want: "allow", cmds: []string{"git commit -m x", "git push -n", "git merge -n topic", "git push --dry-run"}},
+		// a hooks dir not under .git, a .github near-miss, and reads of a real hook are fine
+		{want: "allow", cmds: []string{"echo x > src/hooks/use.ts", "echo x > .github/hooks/run", "cat .git/hooks/pre-commit",
+			"rg -n foo .git/hooks"}},
 	},
 	"block-eric-top": {
 		{want: "deny", files: []string{".eric/x.txt", ".eric/tmp/x.txt"}},
@@ -317,9 +380,12 @@ var cases = map[string][]group{
 		{want: "allow", files: []string{"untracked.nix", "new.txt"}},
 	},
 	"git-add-before-nix": {
-		{want: "deny", cmds: []string{"nix build", "sudo darwin-rebuild switch --flake .", "just switch", "nh darwin switch",
-			"nix flake check", "nix -L build", "nix --print-build-logs build", "nix shell .#hello", "nix develop", "nix fmt",
-			"nix shell nixpkgs#jq .#hello", "nix eval --raw --inputs-from . nixpkgs#hello.version", "nix build -o result nixpkgs#hello"}},
+		{want: "warn", cmds: []string{"nix build", "nix flake check", "nix -L build", "nix --print-build-logs build", "nix fmt",
+			"nix eval --raw --inputs-from . nixpkgs#hello.version", "nix build -o result nixpkgs#hello"}},
+		// a system activation with untracked files asks, since a post-exec warning lands after the change
+		{want: "ask", cmds: []string{"sudo darwin-rebuild switch --flake .", "nh darwin switch", "just switch"}},
+		// nix shell/develop with no command reads stdin, so the parse-level check denies before git-add runs
+		{want: "deny", reason: "reads its script from standard input", cmds: []string{"nix shell .#hello", "nix develop"}},
 		{want: "allow", cmds: []string{"nix shell nixpkgs#jq --command jq .", "nix eval --raw nixpkgs#hello.version",
 			"nix run github:o/r -- .", "nix build --no-link nixpkgs#hello nixpkgs/nixos-unstable#jq", "nix shell nixpkgs#jq -c jq ."}},
 		{want: "allow", cmds: []string{"git status", "rg -n home-manager modules", "ls ~/.local/state/home-manager /tmp",
@@ -327,14 +393,15 @@ var cases = map[string][]group{
 			"git status && cd jb && just build",
 			`cd "$d" && nix build`}},
 		{dir: "jb", want: "allow", cmds: []string{"just build"}},
-		{dir: "jb", want: "deny", cmds: []string{"just switch", "just -f justfile switch"}},
-		{dir: "sub", want: "deny", cmds: []string{"darwin-rebuild switch --flake ."}},
+		{dir: "jb", want: "warn", cmds: []string{"just switch", "just -f justfile switch"}},
+		{dir: "sub", want: "ask", cmds: []string{"darwin-rebuild switch --flake ."}},
 		{dir: "sub", setup: func(f *fixture) { f.git("sub", "add", "new.lua") }, want: "allow", cmds: []string{"nix build"}},
 		// the repo checked is the flake the command names, and a remote flake has no local files
 		{setup: func(f *fixture) { f.git("sub", "add", "new.lua") }, want: "allow", cmds: []string{"nix develop ./sub --command true",
 			"nix build ./sub#x", "nix develop nixpkgs#go --command true", "darwin-rebuild switch --flake ./sub"}},
-		{dir: "sub", setup: func(f *fixture) { f.git("sub", "add", "new.lua") }, want: "deny", cmds: []string{"nix build ../jb#x",
-			"nix develop {repo}/jb -c true", "darwin-rebuild switch --flake ../jb#host"}},
+		{dir: "sub", setup: func(f *fixture) { f.git("sub", "add", "new.lua") }, want: "warn", cmds: []string{"nix build ../jb#x",
+			"nix develop {repo}/jb -c true"}},
+		{dir: "sub", setup: func(f *fixture) { f.git("sub", "add", "new.lua") }, want: "ask", cmds: []string{"darwin-rebuild switch --flake ../jb#host"}},
 	},
 	"strip-claude-attribution": {
 		{want: "allow", cmds: []string{"git commit -m 'x'"}},
@@ -541,6 +608,12 @@ var cases = map[string][]group{
 			"gh api graphql -f query='{ a }' -f query='mutation { x }'", "gh api repos/o/r/issues -f query='{ a }' -f title=x",
 			"gh api -X POST graphql -f query='{ a }'", "gh pr comment 1 --body --help --edit-last", "gh repo deploy-key add k",
 			"gh repo autolink create x y", "gh variable set X", "gh project item-add 1", "gh auth token", "gh browse"}},
+		// leading global flags (-R/--repo, --hostname) before the subcommand must not shift where it is read
+		{want: "allow", cmds: []string{"gh -R owner/repo run list", "gh --repo owner/repo pr view 5", "gh -R o/r run watch 123",
+			"gh --hostname github.com run list", `gh -R "$(git remote get-url origin)" run list -L1`, "gh -R o/r --version"}},
+		// a write still denies behind a leading flag
+		{want: "deny", cmds: []string{"gh -R o/r pr create", "gh --repo o/r pr merge 5", "gh -R o/r api -X POST repos/o/r/issues",
+			"gh -R o/r api repos/o/r/issues -f title=x"}},
 	},
 	"block-shell-edit": {
 		// a shell alias runs at the top of the repo, wherever git starts
@@ -556,7 +629,9 @@ var cases = map[string][]group{
 			`node -e "require('fs').appendFileSync('tracked.txt', 'x')"`, `python3 -c "open(\"tracked.txt\", \"w\")"`,
 			`d=sub; cd -- "${d:?}" && echo x > flake.nix`, `python3 -c "p='tracked.txt'; open(o, 'w').write(open(p).read())"`,
 			// a scratch directory resolves to a concrete path, so a .. escape out of it onto a tracked file is still caught
-			`D=$(new-scratch.sh x); echo y > "$D/../../../tracked.txt"`}},
+			`D=$(new-scratch.sh x); echo y > "$D/../../../tracked.txt"`,
+			// the cd-failed world of a conditionally-set var expands empty: "../${p}tracked.txt" becomes ../tracked.txt
+			`cd sub && p=safe; echo x > "../${p}tracked.txt"`}},
 		{env: map[string]string{"HOME": "{repo}"}, want: "deny", cmds: []string{`echo x > "$HOME/tracked.txt"`, "echo x > ${HOME}/tracked.txt"}},
 		// a copy into a folder writes the source's name there, and these tools overwrite their destination too
 		{want: "deny", cmds: []string{"cp /tmp/x/tracked.txt .", "cp /tmp/x/tracked.txt ./", "cp -t . /tmp/x/tracked.txt",
@@ -634,6 +709,11 @@ var cases = map[string][]group{
 			`awk 'BEGIN{printf "a|b system(x)\n"}'`}},
 		// an interpreter reading its program from a pipe or a terminal hides it, as Codex can type into one later
 		{want: "deny", cmds: []string{"echo 'import os' | python3", "node", "cat x.js | node -"}},
+		// zsh -n parses but runs nothing, and a quoted "(...)" is text, not a glob qualifier that runs code
+		{want: "allow", cmds: []string{"zsh -n script.zsh", "for f in x.zsh; do zsh -n \"$f\"; done", `zsh -n "$(ls)"`,
+			`echo "(no source_up / parent refs)"`, `echo "(e.g. x)"`, `echo "(a e_ b)"`}},
+		// the (e) expansion flag runs code even inside quotes, and a real glob qualifier still denies
+		{want: "deny", cmds: []string{`x='$(rm f)'; echo "${(e)x}"`, "echo *(e:'rm f':)"}},
 		// the default lists run under pi as under claude
 		{harness: "pi", want: "deny", cmds: []string{"rm f"}},
 		// a command the guard cannot parse is denied before any check runs
@@ -641,6 +721,8 @@ var cases = map[string][]group{
 		// other tools that delete with no way back
 		{want: "deny", cmds: []string{"unlink f", "sudo unlink f", "find . -name x -delete", "fd -0 x | xargs -0 unlink",
 			"rsync -a --delete src/ dst/", "rsync -a --delete-after src/ dst/", "rsync --del src/ dst/", "rsync --remove-source-files a b"}},
+		// a var set on an && right side stays opaque as a command name: the cd-failed world runs a different program
+		{want: "deny", reason: "which program this command runs", cmds: []string{`cd sub && c=ls; $c -la`}},
 		{want: "allow", cmds: []string{"find . -name x", "rsync -a src/ dst/", "rsync -an --exclude x src/ dst/"}},
 		{want: "allow", cmds: []string{"trash f", "git rm f", "echo rm", "watch -n 1 ls", "chronic ls", "[ -f x ] && echo y",
 			`"$HOME/bin/tool" x`, "f() { echo; }; f"}},
@@ -657,6 +739,9 @@ var cases = map[string][]group{
 			// scratch rm kills the tmux and rex sessions inside the folder it trashes
 			"scratch rm", "scratch rm ~/dev/scratch/x", "cd ~/dev/scratch/x && scratch rm"}},
 		{want: "allow", cmds: []string{"scratch", "scratch --help"}},
+		// a --help or --version invocation prints and kills nothing; bare `rex server stop` still denies (below)
+		{want: "allow", cmds: []string{"rex block close --help", "rex server stop --help", "rex window close --help",
+			"rex session kill --help", "rex kill --help", "rex --version", "tmux kill-server --help"}},
 		{want: "allow", cmds: []string{"tmux -L agent kill-server", "tmux -Lagent kill-session -t main", "tmux -S /tmp/s kill-server",
 			"tmux ls", "pkill node", "pkill -u eric node", "pgrep tmux", "tmux -L agent respawn-pane -k -t x", "kill $(pgrep node)"}},
 		{want: "deny", cmds: []string{"rex kill main", "rex session kill main", "rex -S narwhal kill main", "rex --timeout 5s kill x",
@@ -681,8 +766,13 @@ var cases = map[string][]group{
 			"head -n 5 <(nix build .)", "tail -n 20 < <(nix build . 2>&1)", "nix build . 2>&1 > >(tail -n 5)", `head -c 10 <<< "$(git log)"`,
 			"echo hi | tee out.log; git log | head", "git log | head -5 | tee out.log",
 			// - reads the pipe beside a file, and a tee into a substitution saves nothing
-			"git log | head -n 5 - f", "git log | tee >(cat) | head"}},
-		{want: "allow", cmds: []string{"tail -n 20 out.log", "head -c 100 /dev/urandom", "nix build . 2>&1 | tee out.log | tail -n 5",
+			"git log | head -n 5 - f", "git log | tee >(cat) | head",
+			// a plain tee feeding head is unsound: tee exits on the broken pipe and truncates the file too
+			"nix build . 2>&1 | tee out.log | tail -n 5"}},
+		{want: "allow", cmds: []string{"tail -n 20 out.log", "head -c 100 /dev/urandom",
+			// a SIGPIPE-tolerant tee saves the full output, and tail -n +N prints to the end so it drops nothing unseen
+			"nix build . 2>&1 | tee -p out.log | tail -n 5", "ls | tee --output-error=warn-nopipe out.log | tail",
+			"nix build . 2>&1 | tail -n +5", "git log | tail -n +2",
 			"tail -f log | rg error", "ls | rg x", "cat f | head -n 5 f", `echo "ls | head"`, "ls > out.log; tail out.log"}},
 	},
 	"block-exec-flags": {
@@ -715,6 +805,11 @@ var cases = map[string][]group{
 			`cd "$d" && echo y > .eric/scratch/2026-01-01-x/f$(date +%s).txt`}},
 		// a dynamic directory, or one that climbs out of scratch, is not placed, so it still denies
 		{want: "deny", cmds: []string{`echo y > ".eric/scratch/$(date +%F)/f.txt"`, `echo y > ".eric/scratch/x/../../tracked$(date).txt"`}},
+		// a var set on the && right side keeps its literal (the cd-ok world) and is checked empty (cd failed),
+		// so a redirect under it resolves instead of reading as a value the guard cannot know
+		{want: "allow", cmds: []string{`cd sub && d=inner; echo x > "$d/new.txt"`, `cd sub && out=note.txt; echo x > "$out"`,
+			// re-setting the same literal on a second conditional branch keeps it resolvable, not unknown
+			`cd sub && d=inner; cd sub && d=inner; echo x > "$d/new.txt"`}},
 		// the deny names the real cause: a phantom cd, or a value the path is built from
 		{want: "deny", reason: "after a cd", cmds: []string{`cd "$d" && echo x > f`}},
 		{want: "deny", reason: "built from a value", cmds: []string{"r=$(pwd); echo x > $r/f", `echo x > "$(git rev-parse --show-toplevel)/f"`}},

@@ -2,19 +2,23 @@ package main
 
 import (
 	"cmp"
+	"context"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
+	"time"
 )
 
 var nixWord = regexp.MustCompile(`(^|\W)(nix|nh|darwin-rebuild|nixos-rebuild|home-manager)(\W|$)`)
 
-// block flake-evaluating commands when untracked files exist: flakes only see git-tracked files,
-// so a new module, config file, or skill is silently invisible and the change appears to do nothing
+// warn on flake-evaluating commands when untracked files exist: flakes only see git-tracked files,
+// so a new module, config file, or skill is silently invisible and the change appears to do nothing.
+// a warning, not a block, since the miss is recoverable (git add and rerun)
 func gitAddBeforeNix(h *hook) decision {
 	checked := map[string]bool{}
+	note, asking := "", false
 	for _, c := range h.calls {
 		// a cd the guard cannot follow leaves no repo to check. the check only warns, so it lets the call run
 		if c.moved && len(c.dirs()) == 0 {
@@ -39,12 +43,49 @@ func gitAddBeforeNix(h *hook) decision {
 					continue
 				}
 				if untracked := gitOut(root, "ls-files", "--others", "--exclude-standard"); untracked != "" {
-					return deny("Untracked files are invisible to flake eval. git add them first: " + strings.ReplaceAll(untracked, "\n", " "))
+					note = "Untracked files are invisible to flake eval; if your change should take effect, git add them: " + strings.ReplaceAll(untracked, "\n", " ")
+					if isSwitch(c, dir) {
+						asking = true
+					}
 				}
 			}
 		}
 	}
+	// a wasted build is recoverable, so warn; a system activation that silently drops the change is not
+	// caught in time by a post-exec warning, so ask before it runs
+	if asking {
+		return ask(note + " This activates the system, so approve it (the warning would otherwise land only after the change).")
+	}
+	if note != "" {
+		return decision{context: []string{note}}
+	}
 	return decision{}
+}
+
+// a command that activates the system (a rebuild or nh switch), as seen in a just recipe's dry run
+var activates = regexp.MustCompile(`\b(darwin-rebuild|nixos-rebuild)\b[^\n]*\bswitch\b|\bnh\b[^\n]*\bswitch\b`)
+
+// isSwitch reports a command that activates the system, where a missed untracked file is worse than a
+// wasted build: a rebuild or nh switch directly, or a just recipe whose dry run runs one
+func isSwitch(c call, dir string) bool {
+	switch c.tool() {
+	case "darwin-rebuild", "nixos-rebuild", "nh":
+		return slices.Contains(c.args(), "switch")
+	case "just":
+		if args, ok := justDryRunArgs(c.args()); ok {
+			// just --dry-run evaluates the justfile, including backtick assignments, so bound it:
+			// on a timeout the exec errors and the check falls back to the name test below
+			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			defer cancel()
+			cmd := exec.CommandContext(ctx, "just", append([]string{"--dry-run"}, args...)...)
+			cmd.Dir = dir
+			if out, err := cmd.CombinedOutput(); err == nil {
+				return lineMatch(activates, string(out))
+			}
+		}
+		return slices.Contains(c.args(), "switch")
+	}
+	return false
 }
 
 // flakePaths is where the local flakes a call evaluates live: each installable's or --flake's path, before any #,

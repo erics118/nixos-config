@@ -22,9 +22,13 @@ const maxDepth = 16
 const maxSteps = 10000
 
 type shellVar struct {
-	value    string
-	known    bool
-	exported bool
+	value string
+	known bool
+	// maybeEmpty marks a var a conditional branch set to a known literal, so it is either that literal
+	// (the branch ran) or empty (it did not). treated as unknown everywhere except a redirect target,
+	// which is checked under both the literal and the empty value
+	maybeEmpty bool
+	exported   bool
 }
 
 // state is what the walk knows about the shell before a command runs
@@ -109,7 +113,14 @@ func (s *state) merge(branch *state) {
 	}
 	s.cdpath = slices.Compact(slices.Sorted(slices.Values(slices.Concat(s.cdpath, branch.cdpath))))
 	for k, v := range branch.vars {
-		if s.vars[k] != v {
+		if s.vars[k] == v {
+			continue
+		}
+		// a branch set this to a known literal where the base had no known value, or the same literal it was
+		// already maybe-set to: it is that literal (branch ran) or empty (it did not), so keep both
+		if v.known && !v.maybeEmpty && (!s.vars[k].known || (s.vars[k].maybeEmpty && s.vars[k].value == v.value)) {
+			s.vars[k] = shellVar{value: v.value, known: true, maybeEmpty: true, exported: v.exported}
+		} else {
 			s.vars[k] = shellVar{exported: v.exported}
 		}
 	}
@@ -566,7 +577,8 @@ func (w *walker) inner(node syntax.Node, st *state, depth int) error {
 func (s *state) redirs(rs []*syntax.Redirect, top bool) []redir {
 	var out []redir
 	for _, r := range rs {
-		rd := redir{op: r.Op, word: s.word(r.Word)}
+		word, alt := s.maybeWord(r.Word)
+		rd := redir{op: r.Op, word: word, alt: alt}
 		if r.Hdoc != nil {
 			h := s.word(r.Hdoc)
 			rd.hdoc = &h
@@ -709,19 +721,28 @@ func (s *state) fields(w *syntax.Word) []string {
 // a zsh glob qualifier that runs code, (e:...:) or (+func), after a glob
 var codeQualifier = regexp.MustCompile(`^\([^)]*(e[^A-Za-z0-9\s)]|\+)`)
 
-// runsZshCode reports zsh's (e) expansion flag or a glob qualifier that runs code, anywhere in the call's words
+// runsZshCode reports zsh's (e) expansion flag or a glob qualifier that runs code in the call's words.
+// the (e) flag runs code even inside quotes, so it is looked for anywhere; a glob qualifier is code only
+// when unquoted, so only a top-level literal of a word counts, not quoted text that merely looks like one
 func runsZshCode(ce *syntax.CallExpr) bool {
 	found := false
 	syntax.Walk(ce, func(n syntax.Node) bool {
-		switch n := n.(type) {
-		case *syntax.ParamExp:
-			found = found || (n.Flags != nil && strings.Contains(n.Flags.Value, "e"))
-		case *syntax.Lit:
-			found = found || codeQualifier.MatchString(n.Value)
+		if p, ok := n.(*syntax.ParamExp); ok && p.Flags != nil && strings.Contains(p.Flags.Value, "e") {
+			found = true
 		}
 		return !found
 	})
-	return found
+	if found {
+		return true
+	}
+	for _, w := range ce.Args {
+		for _, p := range w.Parts {
+			if lit, ok := p.(*syntax.Lit); ok && codeQualifier.MatchString(lit.Value) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (w *walker) inlined(body *syntax.Stmt, st *state, depth int) error {
@@ -753,6 +774,11 @@ func (s *state) value(p *syntax.ParamExp) (string, bool) {
 		return "", false
 	}
 	v := s.vars[p.Param.Value]
+	// a maybeEmpty var reads as unknown everywhere this renders: command names and cd targets then stay
+	// opaque. only a redirect target resolves it, through maybeWord, which also checks the empty value
+	if v.maybeEmpty {
+		return "", false
+	}
 	return v.value, v.known
 }
 
@@ -768,6 +794,34 @@ func (s *state) word(w *syntax.Word) string {
 		b.WriteString(s.part(p))
 	}
 	return b.String()
+}
+
+// maybeWord renders w for a redirect target. a maybeEmpty var takes its literal (the cd-succeeded world)
+// in the returned word, so the write resolves, and its empty value (the cd-failed world) in alt, which a
+// write check resolves too. alt is "" when no maybeEmpty var changes w, or when the empty world is itself empty
+func (s *state) maybeWord(w *syntax.Word) (string, string) {
+	has := false
+	for _, v := range s.vars {
+		if v.maybeEmpty {
+			has = true
+			break
+		}
+	}
+	if !has {
+		return s.word(w), ""
+	}
+	lit, empty := s.clone(), s.clone()
+	for k, v := range s.vars {
+		if v.maybeEmpty {
+			lit.vars[k] = shellVar{value: v.value, known: true, exported: v.exported}
+			empty.vars[k] = shellVar{known: true, exported: v.exported}
+		}
+	}
+	word := lit.word(w)
+	if alt := empty.word(w); alt != word {
+		return word, alt
+	}
+	return word, ""
 }
 
 // scratchMark names the folder the guard stands in for a fresh scratch directory. the exact name does not

@@ -6,17 +6,23 @@ import (
 	"io"
 	"os"
 	"slices"
+	"strings"
 )
 
 func main() {
 	os.Exit(run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr))
 }
 
-// a decision with no kind and no command lets the call through
+// a decision with no kind, no command, and no context lets the call through
 type decision struct {
 	kind    string
 	reason  string
 	command *string
+	// updated overrides fields of the tool input (updatedInput), such as a Write's content normalized to ASCII
+	updated map[string]json.RawMessage
+	// context is additionalContext added to the model's context alongside the tool result: a non-blocking
+	// warning that lets the call run. several checks' contexts accumulate
+	context []string
 }
 
 func deny(reason string) decision { return decision{kind: "deny", reason: reason} }
@@ -75,7 +81,7 @@ func run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 0
 	}
 	d := runPre(h, checks)
-	if d.kind == "" && d.command == nil {
+	if d.kind == "" && d.command == nil && len(d.updated) == 0 && len(d.context) == 0 {
 		return 0
 	}
 	writeDecision(stdout, h, d)
@@ -130,13 +136,20 @@ func runPre(h *hook, checks []preCheck) decision {
 		if d.command != nil {
 			out.command = d.command
 		}
+		for k, v := range d.updated {
+			if out.updated == nil {
+				out.updated = map[string]json.RawMessage{}
+			}
+			out.updated[k] = v
+		}
+		out.context = append(out.context, d.context...)
 	}
 	// codex runs an ask as allow and applies a rewrite only with an allow
 	if h.harness == "codex" {
 		if out.kind == "ask" {
 			return deny(out.reason + " Codex cannot ask for approval, so this was denied. Tell the user what to run.")
 		}
-		out.command = nil
+		out.command, out.updated = nil, nil
 	}
 	return out
 }
@@ -179,15 +192,24 @@ func writeDecision(w io.Writer, h *hook, d decision) {
 		PermissionDecision       string                     `json:"permissionDecision,omitempty"`
 		PermissionDecisionReason string                     `json:"permissionDecisionReason,omitempty"`
 		UpdatedInput             map[string]json.RawMessage `json:"updatedInput,omitempty"`
+		AdditionalContext        string                     `json:"additionalContext,omitempty"`
 	}
 	s := specific{HookEventName: "PreToolUse", PermissionDecision: d.kind, PermissionDecisionReason: d.reason}
-	if d.command != nil && h != nil {
+	if len(d.context) > 0 {
+		s.AdditionalContext = strings.Join(d.context, "\n")
+	}
+	if (d.command != nil || len(d.updated) > 0) && h != nil {
 		s.UpdatedInput = map[string]json.RawMessage{}
 		for k, v := range h.toolInput {
 			s.UpdatedInput[k] = v
 		}
-		cmd, _ := json.Marshal(*d.command)
-		s.UpdatedInput["command"] = cmd
+		if d.command != nil {
+			cmd, _ := json.Marshal(*d.command)
+			s.UpdatedInput["command"] = cmd
+		}
+		for k, v := range d.updated {
+			s.UpdatedInput[k] = v
+		}
 	}
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)

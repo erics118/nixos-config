@@ -93,10 +93,12 @@
     ],
     "deny": [
       "EnterPlanMode",
-      "ExitPlanMode"
+      "ExitPlanMode",
+      "SendUserFile"
     ],
     "defaultMode": "auto"
   },
+  "model": "claude-opus-4-8",
   "hooks": {
     "PreToolUse": [
       {
@@ -239,6 +241,5 @@
       "$defaults",
       "In /Users/eric/dev/resume, running the applying-to-jobs CLI (node .../applying-to-jobs/src/cli.ts) to submit job applications (submit, apply --submit, batch --submit) is authorized when the user asked in this session to submit them, and so is reading the receipt folders it writes."
     ]
-  },
-  "model": "claude-opus-4-8"
+  }
 }

@@ -170,6 +170,21 @@ type write struct {
 	fromCd bool
 }
 
+// report is the path to name in a deny: the word as written when it itself matches (a direct write, so the
+// message stays the path the user typed), else the first resolved path that matches (such as the empty-var
+// world of a redirect target, which word does not show)
+func (w write) report(match func(string) bool) string {
+	if match(w.word) {
+		return w.word
+	}
+	for _, p := range w.paths {
+		if match(p) {
+			return p
+		}
+	}
+	return w.word
+}
+
 // written lists what every call writes, or the file a Write or Edit writes. fd duplicates and devices are not files
 func (h *hook) written() []write {
 	if f := h.str("file_path"); f != "" {
@@ -183,6 +198,10 @@ func (h *hook) written() []write {
 			}
 			w := write{target: t, fromCd: len(c.dirs()) == 0 && !absolute(t.word)}
 			w.unresolved = w.fromCd
+			// the empty-var (cd-failed) world of a redirect target lands on its own paths, checked alongside word
+			if t.alt != "" {
+				w.paths = append(w.paths, h.paths(c, t.alt)...)
+			}
 			for _, p := range h.paths(c, t.word) {
 				if len(t.into) == 0 || !(t.folder || isDir(p) || strings.HasSuffix(t.word, "/")) {
 					w.paths = append(w.paths, p)
@@ -302,6 +321,18 @@ func tracked(f string) bool {
 // binary reports a file git stores as binary, which the edit tool cannot change either
 func binary(f string) bool {
 	return lineMatch(textlessInGit, gitOut(filepath.Dir(f), "ls-files", "--eol", "--", filepath.Base(f)))
+}
+
+// git's empty tree, a --source with no .gitattributes
+const emptyTree = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+
+// hasGitAttr reports attr on f from .git/info/attributes alone (user-only), for the agent-verbatim and
+// agent-generated opt-outs. --source=<empty tree> and core.attributesFile=/dev/null exclude the working-tree
+// and committed .gitattributes and the global file, so an agent cannot set the opt-out by writing one
+func hasGitAttr(f, attr string) bool {
+	return f != "" && strings.HasSuffix(
+		gitOut(filepath.Dir(f), "-c", "core.attributesFile=/dev/null", "check-attr", "--source="+emptyTree, attr, "--", filepath.Base(f)),
+		": "+attr+": set")
 }
 
 var textlessInGit = regexp.MustCompile(`^i/-text`)

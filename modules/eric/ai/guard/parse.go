@@ -56,6 +56,9 @@ const (
 type redir struct {
 	op   syntax.RedirOperator
 	word string
+	// alt is the target rendered with maybeEmpty vars empty (the cd-failed world), when that differs from
+	// word. a write check resolves it too, so an empty expansion that lands on a protected path is caught
+	alt  string
 	hdoc *string
 	// hdocSpan is the heredoc body's byte range in the command, when the call is top level
 	hdocSpan *[2]int
@@ -318,6 +321,10 @@ func readsScript(a []string) bool {
 		return false
 	case slices.Contains(shells, c):
 		lead := leadingArgs(c, words)
+		// -n parses the script but runs nothing, so where the script comes from does not matter
+		if lead.has("-n") {
+			return false
+		}
 		return lead.has("-s") || len(lead.operands) == 0 || pipeFile(lead.operands[0])
 	case c == "source" || c == ".":
 		return pipeFile(at(parseArgs(c, words).operands, 0))

@@ -32,6 +32,7 @@ var valueOpts = map[string]map[string]int{
 	"git stash":      opts("-m --message"),
 	"git worktree":   opts("-b -B --reason"),
 	"git difftool":   opts("-x -t --extcmd --tool"),
+	"gh":             opts("-R --repo --hostname"),
 	"gh pr checkout": opts("-b -R --branch --repo"),
 	"exec":           opts("-a"),
 	"doas":           opts("-u -C"),

@@ -49,7 +49,7 @@ func blockGitConfigEdit(h *hook) decision {
 	// each write, as written or as the call's directory resolves it
 	for _, w := range h.written() {
 		if isGitConfig(w.word) || slices.ContainsFunc(w.paths, isGitConfig) {
-			return deny(w.word + " " + gitConfigReason)
+			return deny(w.report(isGitConfig) + " " + gitConfigReason)
 		}
 	}
 	// any other command naming a git config file, unless it only reads it. git config is the way to change one
