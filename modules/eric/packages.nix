@@ -38,7 +38,7 @@
           hyperfine
           onefetch
           yq-go
-          scc
+          tokei
           railway
           docker-sbx
           screen

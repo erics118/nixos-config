@@ -171,13 +171,34 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
-vim.g.inlay_hints_enabled = true
+vim.g.inlay_hints_enabled = false
 
 -- non-file buffers (hover floats, plugin views) never get inlay hints
 local function apply_inlay_hints(buf)
     if ui_guard.is_file_backed_buffer(buf) then
         vim.lsp.inlay_hint.enable(vim.g.inlay_hints_enabled, { bufnr = buf })
     end
+end
+
+-- peek: flash inlay hints for the current buffer until the next keyboard key
+-- mouse scroll, clicks, drags, and moves are ignored, so scrolling keeps the peek
+local peek_ns = vim.api.nvim_create_namespace("peek_inlay_hints")
+local function peek_inlay_hints()
+    local buf = vim.api.nvim_get_current_buf()
+    if vim.g.inlay_hints_enabled or not ui_guard.is_file_backed_buffer(buf) then
+        return
+    end
+    vim.lsp.inlay_hint.enable(true, { bufnr = buf })
+    vim.on_key(function(key)
+        local k = vim.fn.keytrans(key)
+        if k == "" or k:find("Mouse") or k:find("ScrollWheel") or k:find("Drag") or k:find("Release") then
+            return
+        end
+        vim.on_key(nil, peek_ns)
+        if not vim.g.inlay_hints_enabled and vim.api.nvim_buf_is_valid(buf) then
+            vim.lsp.inlay_hint.enable(false, { bufnr = buf })
+        end
+    end, peek_ns)
 end
 
 local group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true })
@@ -264,5 +285,6 @@ map("n", "<leader>ti", function()
     end
     vim.notify("Inlay hints: " .. (vim.g.inlay_hints_enabled and "ON" or "OFF"), vim.log.levels.INFO)
 end, "Toggle inlay hints")
+map("n", "<C-A-i>", peek_inlay_hints, "Peek inlay hints")
 map("n", "<leader>wa", vim.lsp.buf.add_workspace_folder, "Add workspace folder")
 map("n", "<leader>wr", vim.lsp.buf.remove_workspace_folder, "Remove workspace folder")

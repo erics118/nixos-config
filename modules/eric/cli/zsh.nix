@@ -204,8 +204,6 @@
 
           ws = "wezterm cli spawn -- ";
 
-          scc = "scc --no-cocomo";
-
           # flake refs can carry glob characters, like ? in github:owner/repo?ref=main
           nix = "noglob nix";
         }

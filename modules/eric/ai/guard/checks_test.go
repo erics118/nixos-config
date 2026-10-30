@@ -760,7 +760,7 @@ var cases = map[string][]group{
 			"rex api ls", "rex api call session.list", `rex do -e 'return rex.call("session.list")'`}},
 	},
 	"block-pipe-head-tail": {
-		{want: "deny", cmds: []string{"ssh turtle 'ls ~/.ssh' | tail -6", "nix build . 2>&1 | tail -n 20", "rg x . | head", "a | b | head -1",
+		{want: "warn", cmds: []string{"ssh turtle 'ls ~/.ssh' | tail -6", "nix build . 2>&1 | tail -n 20", "rg x . | head", "a | b | head -1",
 			"git log | head -c 100", `bash -c "ls | tail"`, "ls | tee /dev/null | tail -3", "ls | sudo tail -2", "cat log | tail -", "ls |& head",
 			// a process substitution or a here-string of command output is a pipe too, and a tee saves only its own pipeline
 			"head -n 5 <(nix build .)", "tail -n 20 < <(nix build . 2>&1)", "nix build . 2>&1 > >(tail -n 5)", `head -c 10 <<< "$(git log)"`,

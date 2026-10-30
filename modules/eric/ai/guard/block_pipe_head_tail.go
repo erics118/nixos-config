@@ -7,14 +7,16 @@ import (
 	"mvdan.cc/sh/v3/syntax"
 )
 
-// block piping output into head or tail, which drops lines before anyone has seen them.
+// warn when output is piped into head or tail, which drops the rest before anyone has seen it. the call still runs:
+// cost depends on the invocation, not the command name, so a static check cannot tell a cheap peek from a lost build log
 // a tee to a file earlier in the same pipeline saves the full output, and head or tail on a file reads what was saved
 func blockPipeHeadTail(h *hook) decision {
 	// calls come in walk order, left to right, so a tee before the head in its pipeline has been seen by then
 	saved := map[int]bool{}
+	warn := false
 	for _, c := range h.calls {
 		if t := c.tool(); (t == "head" || t == "tail") && readsOutput(c) && !saved[c.pipe] && !tailToEnd(c) {
-			return deny("Piping output into head or tail drops lines before you've seen them. Save the full output to a file in the scratch directory (`cmd > <scratch>/out.log 2>&1`, or `cmd | tee <scratch>/out.log`), then read or search that file. To get one value, use the command's own option (`git log -n 1`, `nix build --print-out-paths`).")
+			warn = true
 		}
 		// a tee feeding head saves the output only if it keeps writing after head closes the pipe (-p or
 		// --output-error=warn); a plain tee exits on the broken pipe (GNU default) and truncates the file too
@@ -23,6 +25,9 @@ func blockPipeHeadTail(h *hook) decision {
 		}) {
 			saved[c.pipe] = true
 		}
+	}
+	if warn {
+		return decision{context: []string{"head or tail dropped the rest of this pipeline's output, and nothing saved it. If you need the full output, rerun the command to a file (`cmd > <scratch>/out.log 2>&1`, or `cmd | tee <scratch>/out.log`) and read that, or use the command's own limit (`git log -n 1`, `nix build --print-out-paths`)."}}
 	}
 	return decision{}
 }

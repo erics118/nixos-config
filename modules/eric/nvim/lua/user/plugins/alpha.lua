@@ -10,8 +10,8 @@ local function button(shortcut, text, command)
         end,
         opts = {
             shortcut = shortcut,
-            -- width of longest button text
-            width = 50,
+            -- longest button text (a 60-wide recent path) plus a gap before the shortcut
+            width = 64,
             align_shortcut = "right",
             hl_shortcut = "Keyword",
             position = "center",
@@ -24,27 +24,30 @@ end
 local function shorten_path(file)
     local short = vim.fn.fnamemodify(file, ":~:.")
     for _, keep in ipairs({ { -2, -1 }, { -1 } }) do
-        if #short <= 46 then
+        if #short <= 60 then
             break
         end
         short = require("plenary.path"):new(vim.fn.fnamemodify(file, ":~:.")):shorten(1, keep)
     end
-    if #short > 46 then
+    if #short > 60 then
         -- U+2026 ellipsis
-        short = "\226\128\166" .. string.sub(short, -45)
+        short = "\226\128\166" .. string.sub(short, -59)
     end
     return short
 end
 
 -- numbered buttons for up to 9 recent files under the folder nvim was opened in, like <leader>fr
+-- files inside a .eric/worktrees/ worktree stay hidden unless nvim was opened inside a worktree
 local function recent_file_buttons()
     local buttons = {}
     local cwd = vim.fn.getcwd()
+    local cwd_in_worktree = cwd:find("/.eric/worktrees/", 1, true) ~= nil
     for _, file in ipairs(vim.v.oldfiles) do
         if #buttons == 9 then
             break
         end
-        if vim.fn.filereadable(file) == 1 and vim.fs.relpath(cwd, file) then
+        local hide_worktree = not cwd_in_worktree and file:find("/.eric/worktrees/", 1, true) ~= nil
+        if vim.fn.filereadable(file) == 1 and vim.fs.relpath(cwd, file) and not hide_worktree then
             local key = tostring(#buttons + 1)
             table.insert(buttons, button(key, shorten_path(file), "edit " .. vim.fn.fnameescape(file)))
         end

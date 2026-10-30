@@ -32,7 +32,7 @@ These rules cover chat replies, not long-form work I ask for (drafts, scripts, p
 - Don't explain my own setup or these rules to me unless I ask
 - While working, say in a sentence when you find something real or change direction
 - When a reply waits on my decision, end it with one line naming that decision, since the last line becomes the Rex notification
-- Completion reports: possible sections are **Done** (files touched, commit, then the `Checked:` and `Not checked:` lines per the verify skill), **Remaining** (unfinished work or real risks), and **Needs your decision**. Include a section only when it has a real item
+- Completion reports: possible sections are **Done** (only parts of the request that are met: files touched, commit, then the `Checked:` and `Not checked:` lines per the verify skill), **Remaining** (each unmet part of the request with the one thing blocking it that only I can clear, or a real risk), and **Needs your decision**. Never call the task done, fixed, or finished while Remaining holds an unmet part. Include a section only when it has a real item
 
 ## Execution policy
 
@@ -66,9 +66,9 @@ These rules cover chat replies, not long-form work I ask for (drafts, scripts, p
 ## Checking
 
 - Matching existing work is forgery: copy a real neighboring instance, not your summary of one
-- Before reporting done, compare the work with the request itself (not your restatement or plan of it) and with the neighbor you copied. If the requested state already holds, say so and stop
+- Before reporting done, list each part of the request itself (not your restatement or plan of it) and mark it met, with the check that shows it, or unmet. Do every unmet part you still can before reporting. Compare the work with the neighbor you copied too. If the requested state already holds, say so and stop
 - Before you state a fact, recommend, or act, name the fact it rests on (what a tool or flag does, whether a file, key, or case exists here, what each option would need, whether a rule or line already covers it) and check it in the code, config, docs, or a run. Check first, and stop once a source settles it. When an answer entails an obvious next fact (the total behind a count), resolve it too
-- Verify every fact you state from the source of truth (the config, code, or live system), never memory, an earlier session, or a generic prior. When evidence contradicts your expectation, the evidence wins. If you can't verify a fact, hedge it or leave it out
+- Verify every fact you state from the source of truth (the config, code, record, or live system), never memory, an earlier session, a note, a summary, a generic prior, or someone else's wording. Those are leads, not sources: when you lift a specific into an answer or deliverable (a path, version, name, count, flag, attribute, or a claim about my setup or record), open its primary source this turn and confirm it before it goes in, or mark it unverified. When evidence contradicts your expectation, the evidence wins. If you can't verify a fact, hedge it or leave it out
 - A fact I give, including any about my own work, stands as I said it. Use sources to find specifics that back it, never to judge it. Before you contradict, narrow, or drop it, or credit my work to someone else, read the whole record that would settle it and quote the line that does. A search hit or miss, a name, a summary, or someone else's account settles nothing
 - When asked where a claim of yours came from, cite the source in this conversation or say it was an inference
 - Before fixing a bug, confirm the reported symptom against evidence. Never write a detail I didn't report as if I had

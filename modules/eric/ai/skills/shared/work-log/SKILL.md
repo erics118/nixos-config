@@ -5,6 +5,8 @@ description: Use when the user asks to update, write, or post their CEV work log
 
 # work-log
 
+Never do the work log without Eric's explicit approval.
+
 The work log is the Confluence page "Eric's Work Logs 2026-27" (page id 758874338, space `cev`), edited through the `cornell-confluence` MCP. It has one entry for every Tuesday and Saturday, newest first.
 
 1. Read the page. Note the newest dated entry. The dates to write are every Tuesday and Saturday after it, up to today. Done when you have that list of dates.
