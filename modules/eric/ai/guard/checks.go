@@ -37,6 +37,7 @@ var preChecks = []preCheck{
 	{meta{"block-symlink-clobber", shellTools}, blockSymlinkClobber},
 	{meta{"ask-dangerous-git", shellTools}, askDangerousGit},
 	{meta{"ask-defaults-write", shellTools}, askDefaultsWrite},
+	{meta{"ask-system-switch", shellTools}, askSystemSwitch},
 	{meta{"block-agent-commit", shellTools}, blockAgentCommit},
 	{meta{"block-agent-push", shellTools}, blockAgentPush},
 	{meta{"block-gh-write", shellTools}, blockGhWrite},

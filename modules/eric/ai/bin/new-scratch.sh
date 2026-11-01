@@ -6,16 +6,9 @@ set -euo pipefail
 
 topic=${1:?usage: new-scratch.sh TOPIC}
 
-# the main repo's root, also from a worktree, else home.
-# a submodule's common dir sits under .git/modules, so it uses its own top folder
-root=$HOME
-if common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null); then
-  if [[ ${common##*/} == .git ]]; then
-    root=${common%/.git}
-  else
-    root=$(git rev-parse --show-toplevel)
-  fi
-fi
+# the current checkout's top folder, else home.
+# a linked worktree uses its own, since claude's worktree isolation refuses git outside it
+root=$(git rev-parse --show-toplevel 2>/dev/null) || root=$HOME
 
 mkdir -p "$root/.eric/scratch"
 # scratch is throwaway, so tmutil's sticky exclusion keeps it out of time machine

@@ -206,7 +206,8 @@
     "security-guidance@claude-plugins-official": false,
     "lua-lsp@claude-plugins-official": false,
     "remember@claude-plugins-official": false,
-    "railway@claude-plugins-official": false
+    "railway@claude-plugins-official": false,
+    "notion@anthropic-plugin-directory": true
   },
   "extraKnownMarketplaces": {
     "impeccable": {

@@ -656,6 +656,14 @@ var cases = map[string][]group{
 		{want: "allow", cmds: []string{"defaults read com.x", "defaults read-type com.x k", "defaults domains", "defaults find x",
 			"defaults export com.x -", "defaults -currentHost read com.x", `echo "defaults write com.x k 1"`}},
 	},
+	"ask-system-switch": {
+		{want: "ask", cmds: []string{"just switch", "sudo darwin-rebuild switch --flake .", "nixos-rebuild switch", "nh darwin switch",
+			"nh os switch .", "cd sub && just switch", `bash -c "just switch"`}},
+		{want: "allow", cmds: []string{"just build", "nh darwin build", "darwin-rebuild build --flake .", "nix build", `echo "just switch"`}},
+		// the recipe counts by what its dry run runs, not by its name
+		{dir: "jb", want: "allow", cmds: []string{"just switch"}},
+		{setup: func(f *fixture) { f.write("act/justfile", "deploy:\n    nh darwin switch\n") }, dir: "act", want: "ask", cmds: []string{"just deploy"}},
+	},
 	"block-sudo-probe": {
 		{env: map[string]string{"PATH": "{repo}/bin:{path}"}, want: "deny",
 			cmds: []string{"sudo -n true", "sudo --non-interactive true", "sudo -u root -n true", "sudo -nv"}},
