@@ -1,6 +1,8 @@
 -- caches compiled lua, since nix byte-compiles nothing here
 vim.loader.enable()
 
+require("user.direnv")
+
 require("user.options")
 -- before plugins, so ui2 owns the cmdline and messages from the start
 require("user.cmdline")
