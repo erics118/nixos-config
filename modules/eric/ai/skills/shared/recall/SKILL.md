@@ -1,11 +1,11 @@
 ---
 name: recall
-description: Last resort for an earlier session, past decision, or work already done ("last time", "we decided", "you did this before") that memory, project notes, and git history don't settle. Searches past Claude, Codex, and pi transcripts
+description: Use when the user asks for past conversations, sessions, or transcripts, or as a last resort for an earlier session, past decision, or work already done ("last time", "we decided", "you did this before") that memory, project notes, and git history don't settle. Searches past Claude, Codex, and pi transcripts
 ---
 
-Transcripts are the last resort. First check the written record: loaded memory, the repo's notes and docs (plans, designs, a personal notes dir such as `.eric/`), and `git log`. Search transcripts only if those don't settle it, and before asking the user to repeat themselves. Say which records you checked.
+When the user asks for past conversations, sessions, or transcripts, search the transcripts directly. For any other question about past work, check the written record first: loaded memory, the repo's notes and docs (plans, designs, a personal notes dir such as `.eric/`), and `git log`. Search transcripts only if those don't settle it, and before asking the user to repeat themselves. Say which records you checked.
 
-Transcripts are large, so hand the search to the `recall` agent with the question and what the written record already ruled out. Search yourself, as below, only when you are the `recall` agent or no subagent mechanism exists.
+When you know a phrase the session must contain (a pasted line, a name, a file path), run `rg -l '<phrase>' ~/.claude/projects ~/.codex/sessions ~/.pi/agent/sessions` yourself first. Hand the search to the `recall` agent only when no such phrase exists or the hits need a long read. Give it the question and what you already ruled out. If you are the `recall` agent, or no subagent mechanism exists, do the whole search yourself, as below.
 
 Each agent stores sessions as JSONL:
 

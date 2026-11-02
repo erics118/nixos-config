@@ -1,6 +1,6 @@
 ---
 name: recall
-description: Finds what was said, decided, or done in an earlier Claude, Codex, or pi session when memory, notes, and git history don't settle it. Read-only. Returns quotes with transcript paths and dates
+description: Finds what was said, decided, or done in an earlier Claude, Codex, or pi session, when the user asks for past conversations or when memory, notes, and git history don't settle it. Read-only. Returns quotes with transcript paths and dates
 tools: read, grep, find, ls, bash
 inheritProjectContext: true
 inheritGlobalContext: true

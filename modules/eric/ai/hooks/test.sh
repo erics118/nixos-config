@@ -126,7 +126,7 @@ printf 'ok reminders-both\n'
 
 # every script settings.json runs from this directory
 # guard/checks_test.go covers every agent-guard check
-configured=$(jq -r '.hooks | to_entries[] | .value[] | .hooks[] | .command | select(startswith("\"$HOME/.agents/hooks/"))' "$settings" |
+configured=$(jq -r '.hooks | to_entries[] | .value[] | .hooks[] | .command // empty | select(startswith("\"$HOME/.agents/hooks/"))' "$settings" |
   sed -E 's#.*/##; s/"//g; s/ .*//' | grep -vx guard.sh | sort -u)
 covered=$(printf '%s\n' "${tested[@]}" | sort -u)
 [ "$configured" = "$covered" ] || {
@@ -203,7 +203,7 @@ while IFS= read -r cmd; do
     printf 'FAIL guard command exited %s without guard.sh: %s\n' "$status" "$cmd"
     exit 1
   }
-done < <(jq -r '.hooks[][].hooks[].command | select(contains("guard.sh"))' "$settings" "$root/modules/eric/ai/codex/hooks.json")
+done < <(jq -r '.hooks[][].hooks[].command // empty | select(contains("guard.sh"))' "$settings" "$root/modules/eric/ai/codex/hooks.json")
 printf 'ok guard-command-fails-closed\n'
 
 # a post check warns with exit 2, which the post command passes through without claiming the guard did not run
