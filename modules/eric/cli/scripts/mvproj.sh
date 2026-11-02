@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# move a project folder and carry its claude and pi history, memory, and tmux and rex sessions along
+# move a project folder and carry its claude and pi history, memory, settings, and tmux and rex sessions along
 
 set -euo pipefail
 
@@ -13,9 +13,9 @@ usage() {
 Usage: mvproj [--dry-run] [OLD] NEW
 
   Move the folder OLD to NEW, then carry along what is keyed by its path:
-  claude sessions and memory, pi sessions and project memory, and tmux and
-  rex sessions named after the folder (see project-name). Subfolders of OLD
-  are covered too.
+  claude sessions, memory, and settings such as trust and mcp servers, pi
+  sessions, project memory, and trust, and tmux and rex sessions named after
+  the folder (see project-name). Subfolders of OLD are covered too.
   OLD defaults to the current folder.
   A NEW without a / is a name, and renames OLD in place.
   For a folder directly in ~/dev/scratch, the name moves it to ~/dev/NEW instead.
@@ -144,9 +144,24 @@ while IFS=$'\t' read -r from to; do
 done <<<"$claude_moves
 $pi_moves"
 
-old_mem=$HOME/.pi/agent/projects-memory/$(basename "$old")
-new_mem=$HOME/.pi/agent/projects-memory/$(basename "$new")
-if [[ $old_mem != "$new_mem" && -d $old_mem ]]; then
+mem_root=$HOME/.pi/agent/projects-memory
+# the memory folder pi-hermes-memory gives a folder (resolveProjectName in its src/project.ts):
+# inside a repo it is the repo's, unless only a folder named after the folder itself exists
+pi_mem_name() {
+  local dir=$1 name repo
+  name=$(basename "$dir")
+  if repo=$(git -C "$dir" rev-parse --path-format=absolute --git-common-dir 2>/dev/null); then
+    [[ ${repo##*/} != .git ]] || repo=${repo%/.git}
+    if [[ $repo != "$dir" && $repo != "$HOME" && ${repo##*/} != "$name" ]] &&
+      [[ -e $mem_root/${repo##*/} || ! -e $mem_root/$name ]]; then
+      name=${repo##*/}
+    fi
+  fi
+  printf '%s' "$name"
+}
+old_mem=$mem_root/$(basename "$old")
+new_mem=$mem_root/$(basename "$new")
+if [[ $old_mem != "$new_mem" && -d $old_mem && $(pi_mem_name "$old") == "$(basename "$old")" ]]; then
   [[ ! -e $new_mem ]] || die "pi project memory already exists: $new_mem"
 else
   old_mem=
@@ -190,20 +205,36 @@ done <<<"$pi_moves"
 
 [[ -z $old_mem ]] || run mv "$old_mem" "$new_mem"
 
-# claude keys trust by path, so carry it to NEW
+# claude and pi key settings such as trust and mcp servers by path, so move the keys for OLD and its subfolders to NEW.
+# keys already under NEW are stale, since NEW did not exist
+# shellcheck disable=SC2016
+moved='def moved:
+  with_entries(select(.key != $n and (.key | startswith($n + "/") | not)))
+  | with_entries(if .key == $o or (.key | startswith($o + "/")) then .key = $n + .key[($o | length):] else . end);
+def has_old: keys | any(. == $o or startswith($o + "/"));'
+# rewrite FILE with the jq FILTER, in place since its owner keeps its mode
+rewrite_json() {
+  local file=$1 filter=$2 json
+  if [[ -n $dry ]]; then
+    echo "move $old settings to $new in $file"
+    return
+  fi
+  json=$(jq --arg o "$old" --arg n "$new" "$moved $filter" "$file")
+  printf '%s\n' "$json" >"$file"
+}
 # a scratch folder counts as trusted, since scripts/scratch.sh made it empty
 claude_json=$HOME/.claude.json
-if [[ -f $claude_json ]] && {
-  [[ $(dirname "$old") == "$HOME/dev/scratch" ]] ||
-    jq -e --arg p "$old" '.projects[$p].hasTrustDialogAccepted == true' "$claude_json" >/dev/null
-}; then
-  if [[ -n $dry ]]; then
-    echo "trust $new in $claude_json"
-  else
-    # rewritten in place, since claude owns the file and its mode
-    json=$(jq --arg p "$new" '.projects[$p].hasTrustDialogAccepted = true' "$claude_json")
-    printf '%s\n' "$json" >"$claude_json"
+if [[ -f $claude_json ]]; then
+  if [[ $(dirname "$old") == "$HOME/dev/scratch" ]]; then
+    # shellcheck disable=SC2016
+    rewrite_json "$claude_json" '.projects |= moved | .projects[$n].hasTrustDialogAccepted = true'
+  elif jq -e --arg o "$old" --arg n "$new" "$moved .projects | has_old" "$claude_json" >/dev/null; then
+    rewrite_json "$claude_json" '.projects |= moved'
   fi
+fi
+pi_trust=$HOME/.pi/agent/trust.json
+if [[ -f $pi_trust ]] && jq -e --arg o "$old" --arg n "$new" "$moved has_old" "$pi_trust" >/dev/null; then
+  rewrite_json "$pi_trust" moved
 fi
 
 # a session named after OLD, or after a folder below it, gets project-name's name for its new place.
@@ -213,9 +244,22 @@ renamed() {
   [[ $old_name != "$new_name" && ($1 == "$old_name" || $1 == "$old_name"/*) ]] || return 1
   printf '%s' "$new_name${1#"$old_name"}"
 }
+# tmux refuses to attach from inside a session, so the attach below drops TMUX and names its server's socket instead
+tmux_socket=()
+[[ -z ${TMUX-} ]] || tmux_socket=(-S "${TMUX%%,*}")
 while IFS=$'\t' read -r name path; do
   [[ $path == "$old" || $path == "$old"/* ]] || continue
-  new_label=$(renamed "$name") && run tmux rename-session -t "=$name" "$new_label"
+  if new_label=$(renamed "$name"); then
+    run tmux rename-session -t "=$name" "$new_label"
+    name=$new_label
+  fi
+  # new windows start in the session's folder, which only attach-session -c changes, so a control-mode client attaches and leaves
+  path=$new${path#"$old"}
+  if [[ -n $dry ]]; then
+    echo "tmux attach-session -t =$name -c $path"
+  else
+    env -u TMUX tmux "${tmux_socket[@]}" -C attach-session -t "=$name" -c "$path" </dev/null >/dev/null
+  fi
 done <<<"$tmux_sessions"
 # rex sessions have no folder, so a label alone ties one to OLD, as rext opens them by label
 while IFS=$'\t' read -r id label; do

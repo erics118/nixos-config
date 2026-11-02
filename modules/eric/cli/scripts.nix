@@ -36,6 +36,7 @@ in
         git-filter-repo
       ];
       mvproj = with pkgs; [
+        git
         gnused
         gnugrep
         lsof
