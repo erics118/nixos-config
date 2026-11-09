@@ -12,6 +12,10 @@
       cargoBuildFlags = [ "--ignore-rust-version" ];
       cargoTestFlags = [ "--ignore-rust-version" ];
 
+      # nixpkgs' cargo setup hook makes rusqlite link system sqlite instead of its bundled copy
+      nativeBuildInputs = [ final.pkg-config ];
+      buildInputs = [ final.sqlite ];
+
       # a test runs the pi extension
       nativeCheckInputs = [ final.nodejs ];
 
