@@ -17,7 +17,7 @@
       # on a caddy or plugin bump, set hash = lib.fakeHash and copy the hash the build reports
       package = pkgs.caddy.withPlugins {
         plugins = [ "github.com/caddy-dns/cloudflare@v0.2.4" ];
-        hash = "sha256-5a5cpFl90pEWt0lUC4ZJQ7g+1//ZvsRhee64Dt9vh5o=";
+        hash = "sha256-QSiwKqKvSxhksWBF4/MlBOpyXba5xOQ2sRwA0R7399E=";
       };
 
       globalConfig = ''
