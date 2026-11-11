@@ -25,7 +25,7 @@ func gitAddBeforeNix(h *hook) decision {
 			continue
 		}
 		for _, dir := range h.paths(c, ".") {
-			if !evaluatesFlake(c, dir) {
+			if !evaluatesFlake(h, c, dir) {
 				continue
 			}
 			for _, f := range flakePaths(c) {
@@ -44,7 +44,7 @@ func gitAddBeforeNix(h *hook) decision {
 				}
 				if untracked := gitOut(root, "ls-files", "--others", "--exclude-standard"); untracked != "" {
 					note = "Untracked files are invisible to flake eval; if your change should take effect, git add them: " + strings.ReplaceAll(untracked, "\n", " ")
-					if isSwitch(c, dir) {
+					if isSwitch(h, c, dir) {
 						asking = true
 					}
 				}
@@ -67,20 +67,14 @@ var activates = regexp.MustCompile(`\b(darwin-rebuild|nixos-rebuild)\b[^\n]*\bsw
 
 // isSwitch reports a command that activates the system, where a missed untracked file is worse than a
 // wasted build: a rebuild or nh switch directly, or a just recipe whose dry run runs one
-func isSwitch(c call, dir string) bool {
+func isSwitch(h *hook, c call, dir string) bool {
 	switch c.tool() {
 	case "darwin-rebuild", "nixos-rebuild", "nh":
 		return slices.Contains(c.args(), "switch")
 	case "just":
 		if args, ok := justDryRunArgs(c.args()); ok {
-			// just --dry-run evaluates the justfile, including backtick assignments, so bound it:
-			// on a timeout the exec errors and the check falls back to the name test below
-			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-			defer cancel()
-			cmd := exec.CommandContext(ctx, "just", append([]string{"--dry-run"}, args...)...)
-			cmd.Dir = dir
-			if out, err := cmd.CombinedOutput(); err == nil {
-				return lineMatch(activates, string(out))
+			if out, ok := h.justDryRun(dir, args); ok {
+				return lineMatch(activates, out)
 			}
 		}
 		return slices.Contains(c.args(), "switch")
@@ -88,9 +82,34 @@ func isSwitch(c call, dir string) bool {
 	return false
 }
 
+type dryRun struct {
+	out string
+	ok  bool
+}
+
+// justDryRun is just's dry run of a recipe in dir. it runs once per call, since several checks read it,
+// and has a deadline, since a just that stalls would stall the guard. ok is false when it failed or timed out
+func (h *hook) justDryRun(dir string, args []string) (string, bool) {
+	key := dir + "\x00" + strings.Join(args, "\x00")
+	if r, seen := h.dryRuns[key]; seen {
+		return r.out, r.ok
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "just", append([]string{"--dry-run"}, args...)...)
+	cmd.Dir = dir
+	cmd.WaitDelay = time.Second
+	out, err := cmd.CombinedOutput()
+	if h.dryRuns == nil {
+		h.dryRuns = map[string]dryRun{}
+	}
+	h.dryRuns[key] = dryRun{string(out), err == nil}
+	return string(out), err == nil
+}
+
 // flakePaths is where the local flakes a call evaluates live: each installable's or --flake's path, before any #,
 // or . when it names none. a remote flake such as nixpkgs#jq has no local files. options that read local files,
-// such as --inputs-from or --file, count too, and any other option's value counts as local, so a misread denies
+// such as --inputs-from or --file, count too, and any other option's value counts as local, so a misread still warns
 func flakePaths(c call) []string {
 	var out []string
 	named := false
@@ -141,8 +160,8 @@ var remoteFlake = regexp.MustCompile(`^(nixpkgs([/#]|$)|(github|gitlab|sourcehut
 
 // evaluatesFlake reports a call that evaluates the flake in dir.
 // a just recipe counts only when its dry run calls nix, since many repos with a flake use just for other builds.
-// a dry run that fails falls back to the recipe name, so an unreadable justfile still blocks
-func evaluatesFlake(c call, dir string) bool {
+// a dry run that fails or times out falls back to the recipe name, so an unreadable justfile still warns
+func evaluatesFlake(h *hook, c call, dir string) bool {
 	a, t := c.argv, c.tool()
 	switch {
 	case t == "nix":
@@ -153,10 +172,8 @@ func evaluatesFlake(c call, dir string) bool {
 		return (at(a, 1) == "darwin" || at(a, 1) == "os" || at(a, 1) == "home") && (at(a, 2) == "build" || at(a, 2) == "switch")
 	case t == "just":
 		if args, ok := justDryRunArgs(c.args()); ok {
-			cmd := exec.Command("just", append([]string{"--dry-run"}, args...)...)
-			cmd.Dir = dir
-			if out, err := cmd.CombinedOutput(); err == nil {
-				return lineMatch(nixWord, string(out))
+			if out, ok := h.justDryRun(dir, args); ok {
+				return lineMatch(nixWord, out)
 			}
 		}
 		return slices.ContainsFunc(c.args(), func(w string) bool { return slices.Contains([]string{"build", "switch", "check", "dev"}, w) })

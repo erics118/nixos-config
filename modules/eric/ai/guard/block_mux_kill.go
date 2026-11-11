@@ -44,7 +44,7 @@ func blockMuxKill(h *hook) decision {
 		}
 		return false
 	}) {
-		return deny("Agents never kill sessions, close tabs or panes, or stop the server on the user's tmux or rex. Label what you create agent-test-<name> (rex new agent-test-x, rex split --label agent-test-x) and close it by that label, run your own server (tmux -L <name>), or tell the user what to close.")
+		return deny("Agents never kill sessions, close tabs or panes, or stop the server on the user's tmux or rex. Label what you create eric-agent-scratch-<name> (rex new eric-agent-scratch-x, rex split --label eric-agent-scratch-x) and close it by that label, run your own server (tmux -L <name>), or tell the user what to close.")
 	}
 	return decision{}
 }
@@ -79,10 +79,10 @@ func rexKills(a []string) bool {
 	return false
 }
 
-// agents label what they create agent-test-<name>, and rex resolves a target by its label.
+// agents label what they create eric-agent-scratch-<name>, and rex resolves a target by its label.
 // an id could name anything, so only labels with the prefix are the agent's to close
 func agentTargets(targets []string) bool {
-	return len(targets) > 0 && !slices.ContainsFunc(targets, func(t string) bool { return !strings.HasPrefix(t, agentTest) })
+	return len(targets) > 0 && !slices.ContainsFunc(targets, func(t string) bool { return !strings.HasPrefix(t, agentScratch) })
 }
 
 // a host label or a network address can be the user's, and the default socket is

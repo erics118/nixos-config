@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// gate agent pushes on `git config eric-agent.push`: off (default), ask, or on. agent-test- branches are never pushed
+// gate agent pushes on `git config eric-agent.push`: off (default), ask, or on. eric-agent-scratch- branches are never pushed
 func blockAgentPush(h *hook) decision {
 	if d := h.configOverride(); d.kind != "" {
 		return d
@@ -19,9 +19,9 @@ func blockAgentPush(h *hook) decision {
 	if d.kind != "" {
 		return d
 	}
-	// agent-test- branches are throwaway, so they never leave the machine, whatever the setting.
+	// eric-agent-scratch- branches are throwaway, so they never leave the machine, whatever the setting.
 	// a push names its remote, unless --repo does, then the refspecs it pushes
-	pushesAgentTest := h.anyCall(func(c call) bool {
+	pushesAgentScratch := h.anyCall(func(c call) bool {
 		g := c.gitArgs()
 		if at(g, 0) != "push" {
 			return false
@@ -31,10 +31,10 @@ func blockAgentPush(h *hook) decision {
 		if !p.has("--repo") {
 			refspecs = refspecs[min(1, len(refspecs)):]
 		}
-		return slices.ContainsFunc(refspecs, func(w string) bool { return strings.Contains(w, agentTest) })
+		return slices.ContainsFunc(refspecs, func(w string) bool { return strings.Contains(w, agentScratch) })
 	})
-	if pushesAgentTest || slices.ContainsFunc(slices.Collect(maps.Keys(repos)), onAgentTestBranch) {
-		return deny("agent-test- branches are throwaway and never pushed. Tell the user what to push from a real branch.")
+	if pushesAgentScratch || slices.ContainsFunc(slices.Collect(maps.Keys(repos)), onAgentScratchBranch) {
+		return deny("eric-agent-scratch- branches are throwaway and never pushed. Tell the user what to push from a real branch.")
 	}
 	return gate("push", repos, nil,
 		"Agent pushes are off in this repo. Tell the user the work is ready so they push it.",

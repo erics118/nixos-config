@@ -17,7 +17,7 @@ Use something else for:
 ## Recipe
 
 ```sh
-S=agent-$$-$RANDOM
+S=eric-agent-scratch-$$-$RANDOM
 tmx() { tmux -L "$S" -f /dev/null "$@"; }
 tmx new-session -d -s main -x 120 -y 40 -c "$PWD" 'nvim -n file.lua'
 tmx set -t main remain-on-exit on

@@ -8,7 +8,7 @@ import (
 )
 
 // gate agent commits on `git config eric-agent.commit`: off (default), ask, branch (not main or master), or on.
-// an agent-test- branch is the agent's own, so commits that move only it need no setting
+// an eric-agent-scratch- branch is the agent's own, so commits that move only it need no setting
 func blockAgentCommit(h *hook) decision {
 	if d := h.configOverride(); d.kind != "" {
 		return d
@@ -17,10 +17,10 @@ func blockAgentCommit(h *hook) decision {
 	if d.kind != "" {
 		return d
 	}
-	// a command that moves only the checked-out branch needs no setting on an agent-test- branch,
+	// a command that moves only the checked-out branch needs no setting on an eric-agent-scratch- branch,
 	// the agent's own throwaway branch
 	for dir, cmds := range repos {
-		if !slices.ContainsFunc(cmds, movesOther) && onAgentTestBranch(dir) {
+		if !slices.ContainsFunc(cmds, movesOther) && onAgentScratchBranch(dir) {
 			delete(repos, dir)
 		}
 	}
@@ -69,9 +69,9 @@ func commits(g []string) bool {
 	return makes && !backsOut && !(g[0] == "commit" && gitDryRun(g))
 }
 
-// onAgentTestBranch reports a repo on an agent-test- branch.
+// onAgentScratchBranch reports a repo on an eric-agent-scratch- branch.
 // mid-rebase HEAD is detached, so the branch being rebased comes from the rebase's head-name file
-func onAgentTestBranch(dir string) bool {
+func onAgentScratchBranch(dir string) bool {
 	branch := gitOut(dir, "symbolic-ref", "--short", "-q", "HEAD")
 	for _, p := range []string{"rebase-merge/head-name", "rebase-apply/head-name"} {
 		if branch != "" {
@@ -81,7 +81,7 @@ func onAgentTestBranch(dir string) bool {
 			branch = strings.TrimPrefix(strings.TrimSpace(string(b)), "refs/heads/")
 		}
 	}
-	return strings.HasPrefix(branch, agentTest)
+	return strings.HasPrefix(branch, agentScratch)
 }
 
 // headOnly reports a commit command that moves only the checked-out branch.

@@ -7,5 +7,9 @@ return {
     ignored_apps = { Raycast = true, Finder = true, Dropover = true, ["CleanShot X"] = true },
     -- lua patterns for window titles to skip, per app
     -- rex leaves its settings and diagnostics windows in yabai's list after they close
-    ignored_titles = { ["Rex Beta"] = { "^Settings %- ", " \u{2013} Diagnostics$" } },
+    -- reminders keeps a hidden 184x64 dialog titled "Window"
+    ignored_titles = {
+        ["Rex Beta"] = { "^Settings %- ", " \u{2013} Diagnostics$" },
+        ["Reminders"] = { "^Window$" },
+    },
 }

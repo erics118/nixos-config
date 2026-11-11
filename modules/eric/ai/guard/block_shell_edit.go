@@ -7,7 +7,7 @@ import "slices"
 // binary files, which the edit tool cannot change either, are exempt
 func blockShellEdit(h *hook) decision {
 	for _, w := range h.written() {
-		if !w.creates && slices.ContainsFunc(w.paths, func(p string) bool { return tracked(p) && !binary(p) }) {
+		if !w.creates && slices.ContainsFunc(w.paths, editable) {
 			return deny(w.word + " is tracked by git. Use the edit tool so the change shows as a diff and /rewind can undo it.")
 		}
 	}

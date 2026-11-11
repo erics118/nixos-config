@@ -37,6 +37,17 @@ func TestPanickingCheckDenies(t *testing.T) {
 	}
 }
 
+// a rewritten command is what runs, so the checks judge it again
+func TestRewrittenCommandIsChecked(t *testing.T) {
+	saved := preChecks
+	defer func() { preChecks = saved }()
+	rm := "rm x"
+	preChecks = append(slices.Clone(saved), preCheck{meta{"test-rewrite", shellTools}, func(*hook) decision { return decision{command: &rm} }})
+	if got := decide(t, "pre", "claude", "test-rewrite", "block-rm"); got != "deny" {
+		t.Fatalf("got %q, want deny", got)
+	}
+}
+
 func TestUnknownCheckDenies(t *testing.T) {
 	if got := decide(t, "pre", "claude", "no-such-check"); got != "deny" {
 		t.Fatalf("got %q, want deny", got)
@@ -45,7 +56,7 @@ func TestUnknownCheckDenies(t *testing.T) {
 
 // tools lists the tools the checks run on, once each and sorted, for test.sh to compare with the hook matchers
 func TestToolsCommand(t *testing.T) {
-	for event, want := range map[string]string{"pre": "Bash\nEdit\nMonitor\nRead\nWrite\n", "post": "Edit\nWrite\n"} {
+	for event, want := range map[string]string{"pre": "Agent\nBash\nEdit\nMonitor\nRead\nWrite\n", "post": "Edit\nWrite\n"} {
 		var out bytes.Buffer
 		if code := run([]string{"tools", event}, strings.NewReader(""), &out, io.Discard); code != 0 || out.String() != want {
 			t.Errorf("tools %s: exit %d, got %q, want %q", event, code, out.String(), want)
@@ -61,7 +72,8 @@ func TestUnknownHarnessDenies(t *testing.T) {
 }
 
 func TestCheckTable(t *testing.T) {
-	known := []string{"Bash", "Monitor", "Read", "Write", "Edit"}
+	// claude sends Agent for a subagent
+	known := []string{"Agent", "Bash", "Monitor", "Read", "Write", "Edit"}
 	seen := map[string]bool{}
 	var all []meta
 	for _, c := range preChecks {

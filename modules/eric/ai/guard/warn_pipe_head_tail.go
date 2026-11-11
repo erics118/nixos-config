@@ -10,7 +10,7 @@ import (
 // warn when output is piped into head or tail, which drops the rest before anyone has seen it. the call still runs:
 // cost depends on the invocation, not the command name, so a static check cannot tell a cheap peek from a lost build log
 // a tee to a file earlier in the same pipeline saves the full output, and head or tail on a file reads what was saved
-func blockPipeHeadTail(h *hook) decision {
+func warnPipeHeadTail(h *hook) decision {
 	// calls come in walk order, left to right, so a tee before the head in its pipeline has been seen by then
 	saved := map[int]bool{}
 	warn := false

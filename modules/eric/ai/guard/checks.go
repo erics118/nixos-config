@@ -50,7 +50,9 @@ var preChecks = []preCheck{
 	{meta{"block-exec-flags", shellTools}, blockExecFlags},
 	{meta{"block-rm", shellTools}, blockRm},
 	{meta{"block-mux-kill", shellTools}, blockMuxKill},
-	{meta{"block-pipe-head-tail", shellTools}, blockPipeHeadTail},
+	{meta{"block-worktree", shellTools}, blockWorktree},
+	{meta{"block-agent-worktree", []string{"Agent"}}, blockAgentWorktree},
+	{meta{"warn-pipe-head-tail", shellTools}, warnPipeHeadTail},
 	{meta{"block-write-tracked", []string{"Write"}}, blockWriteTracked},
 }
 

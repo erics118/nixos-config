@@ -6,9 +6,10 @@ source ${XDG_CONFIG_HOME:-$HOME/.config}/zsh/conf/prompt/config.zsh
 source ${XDG_CONFIG_HOME:-$HOME/.config}/zsh/conf/prompt/segments.zsh
 
 # one jq pass into _sl, keyed by field. "${(@f)...}" keeps empty lines, so every field keeps its place
-typeset -ga _sl_keys=(cwd model effort ctx five_hour seven_day seven_day_opus seven_day_sonnet fable
+typeset -ga _sl_keys=(session cwd model effort ctx five_hour seven_day seven_day_opus seven_day_sonnet fable
   reset_secs worktree pr_number pr_state added removed cost)
-typeset -ga _sl_values=("${(@f)$(jq -r '.workspace.current_dir // .cwd // "",
+typeset -ga _sl_values=("${(@f)$(jq -r '.session_id // "",
+  .workspace.current_dir // .cwd // "",
   .model.display_name // "",
   .effort.level // "",
   .context_window.used_percentage // "",
@@ -92,6 +93,14 @@ _statusline_git() {
   VCS_STATUS_ACTION+=${step:+ $step}
 }
 _statusline_git
+
+# the session's mode file, written by ai/bin/agent-mode.sh
+_pseg_mode() {
+  [[ -n $_sl[session] ]] || return 1
+  local f=${XDG_STATE_HOME:-$HOME/.local/state}/agent-mode/$_sl[session]
+  [[ -r $f && $(<$f) == autonomous ]] || return 1
+  REPLY=AUTO
+}
 
 _pseg_worktree() {
   [[ -n $_sl[worktree] ]] || return 1

@@ -16,7 +16,7 @@ mkdir -p "$root/.eric/scratch"
 if [[ -x /usr/bin/tmutil ]] && ! /usr/bin/xattr -p com.apple.metadata:com_apple_backup_excludeItem "$root/.eric/scratch" &>/dev/null; then
   /usr/bin/tmutil addexclusion "$root/.eric/scratch" &>/dev/null &
 fi
-base=$root/.eric/scratch/$(date +%F)-$topic
+base=$root/.eric/scratch/eric-agent-scratch-$(date +%F)-$topic
 dir=$base
 n=1
 # mkdir without -p fails on a taken name

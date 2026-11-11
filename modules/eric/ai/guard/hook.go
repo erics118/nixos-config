@@ -26,6 +26,8 @@ type hook struct {
 	aliases map[string]string
 	// gitCommands caches the names git runs as commands, not aliases
 	gitCommands []string
+	// dryRuns caches just's dry runs by directory and arguments
+	dryRuns map[string]dryRun
 }
 
 func newHook(harness string, raw []byte) (*hook, error) {
@@ -321,6 +323,11 @@ func tracked(f string) bool {
 // binary reports a file git stores as binary, which the edit tool cannot change either
 func binary(f string) bool {
 	return lineMatch(textlessInGit, gitOut(filepath.Dir(f), "ls-files", "--eol", "--", filepath.Base(f)))
+}
+
+// editable reports a tracked text file, which only the edit tool should change, so the change shows as a diff
+func editable(f string) bool {
+	return tracked(f) && !binary(f)
 }
 
 // git's empty tree, a --source with no .gitattributes

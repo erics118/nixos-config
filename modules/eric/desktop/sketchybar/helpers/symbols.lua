@@ -21,10 +21,14 @@ return function(symbol, color, size, value, callback)
     local color_arg = type(color) == "string" and color or string.format("0x%08x", color)
     local path = string.format("%s%s.%s.%g%s.png", dir, symbol, color_arg, size, value and "." .. value_arg or "")
 
-    sbar.exec(
-        string.format("[ -f '%s' ] || '%s' %s %s %g '%s' %s", path, renderer, symbol, color_arg, size, path, value_arg),
-        function()
-            callback(path, png_width(path))
-        end
-    )
+    -- a cached png needs no shell
+    local width = png_width(path)
+    if width > 0 then
+        callback(path, width)
+        return
+    end
+
+    sbar.exec(string.format("'%s' %s %s %g '%s' %s", renderer, symbol, color_arg, size, path, value_arg), function()
+        callback(path, png_width(path))
+    end)
 end

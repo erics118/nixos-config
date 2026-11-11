@@ -78,38 +78,53 @@ end
 
 update_popup()
 
-local function update_battery()
-    sbar.battery_status(function(charge, on_ac, charging)
-        local color = colors.green
-        if not on_ac and charge <= 10 then
-            color = colors.red
-        elseif not on_ac and charge <= 30 then
-            color = colors.orange
-        end
+-- info is the json sketchybar sends with battery_change
+local function render(info)
+    if type(info) ~= "table" then
+        return
+    end
+    local charge = math.max(info.percentage or 0, 0)
+    local on_ac = info.source == "AC Power"
+    local charging = on_ac and info.charging == true
 
-        local symbol = "battery"
-        if charging then
-            symbol = "battery.bolt"
-        elseif on_ac then
-            symbol = "battery.plug"
-        end
+    local color = colors.green
+    if not on_ac and charge <= 10 then
+        color = colors.red
+    elseif not on_ac and charge <= 30 then
+        color = colors.orange
+    end
 
-        render_symbol(symbol, color, 15, charge / 100, function(path, width)
-            battery:set({
-                icon = { width = width + 10, background = { image = path } },
-                label = { string = charge .. "%" },
-            })
-        end)
+    local symbol = "battery"
+    if charging then
+        symbol = "battery.bolt"
+    elseif on_ac then
+        symbol = "battery.plug"
+    end
+
+    render_symbol(symbol, color, 15, charge / 100, function(path, width)
+        battery:set({
+            icon = { width = width + 10, background = { image = path } },
+            label = { string = charge .. "%" },
+        })
     end)
 end
 
-battery:subscribe({ "battery_change", "forced", "system_woke" }, update_battery)
+battery:subscribe("battery_change", function(env)
+    render(env.INFO)
+end)
+
+-- triggering battery_change makes sketchybar reread the battery and send a fresh event
+local function refresh()
+    sbar.trigger("battery_change")
+end
+
+battery:subscribe({ "forced", "system_woke" }, refresh)
 
 battery:subscribe("power_source_change", function()
-    update_battery()
+    refresh()
     -- macos can report "not charging" for up to a minute after plugging in
-    sbar.delay(15, update_battery)
-    sbar.delay(60, update_battery)
+    sbar.delay(15, refresh)
+    sbar.delay(60, refresh)
 end)
 
 battery:subscribe("mouse.clicked", function()

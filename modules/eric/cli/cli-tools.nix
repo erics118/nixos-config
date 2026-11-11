@@ -130,6 +130,14 @@
 
       programs.fd.enable = true;
 
+      # rg and fd read .ignore, claude's ugrep grep reads .gitignore
+      home.file."Library/.ignore" = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+        text = "/CloudStorage/\n/Mobile Documents/\n";
+      };
+      home.file."Library/.gitignore" = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+        text = "/CloudStorage/\n/Mobile Documents/\n";
+      };
+
       # macOS ships /usr/bin/trash
       home.packages = lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.trash-cli;
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # make a git worktree for one task and print its path (see the .eric/ rules in AGENTS-global.md)
 # usage: new-worktree.sh BRANCH [BASE]
-# makes BRANCH from BASE (default HEAD) in the main repo's .eric/worktrees, named after the branch's last part
+# makes BRANCH from BASE (default HEAD) in the main repo's .eric/worktrees, named eric-agent-scratch- and the branch's last part
 set -euo pipefail
 
 branch=${1:?usage: new-worktree.sh BRANCH [BASE]}
@@ -14,7 +14,8 @@ if [[ ${common##*/} != .git ]]; then
   exit 1
 fi
 root=${common%/.git}
-dir=$root/.eric/worktrees/${branch##*/}
+name=${branch##*/}
+dir=$root/.eric/worktrees/eric-agent-scratch-${name#eric-agent-scratch-}
 
 git worktree add -q -b "$branch" "$dir" "$base" >&2
 

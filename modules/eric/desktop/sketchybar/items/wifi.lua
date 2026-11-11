@@ -18,7 +18,7 @@ local wifi = sbar.add_item("wifi", {
         },
     },
     label = { drawing = false },
-    update_freq = 10,
+    update_freq = 60,
     popup = { align = "left", height = 24 },
 })
 

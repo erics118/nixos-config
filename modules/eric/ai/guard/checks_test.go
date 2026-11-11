@@ -146,6 +146,9 @@ type group struct {
 	files   []string
 	content string
 	edits   string
+	// inputs are tool_input objects sent under tool, for a tool that takes no command or file (Agent)
+	tool   string
+	inputs []map[string]any
 }
 
 // groups run one at a time, since the walk's parser is shared
@@ -170,6 +173,9 @@ func (g group) run(t *testing.T, check string, post bool) {
 			tool, in = "Edit", map[string]any{"file_path": in["file_path"], "edits": []any{map[string]any{"new_string": g.edits}}}
 		}
 		inputs = append(inputs, map[string]any{"cwd": f.repo, "tool_name": tool, "tool_input": in})
+	}
+	for _, in := range g.inputs {
+		inputs = append(inputs, map[string]any{"cwd": f.repo, "tool_name": g.tool, "tool_input": in})
 	}
 	// the cases name the check, which skips routing, so each tool must also route to it
 	for _, in := range inputs {
@@ -259,7 +265,7 @@ func TestSymlinkPathAllowsReads(t *testing.T) {
 	}
 }
 
-// block-smart-punct normalizes a Write's content to ASCII under Claude, and denies under pi (no content rewrite)
+// block-smart-punct normalizes a Write's content to ASCII under Claude, and denies under pi and codex (no content rewrite)
 func TestSmartPunctNormalizes(t *testing.T) {
 	f := newFixture(t)
 	content := "em " + string(rune(0x2014)) + " en " + string(rune(0x2013)) +
@@ -277,8 +283,10 @@ func TestSmartPunctNormalizes(t *testing.T) {
 	case o.context == "":
 		t.Errorf("want an additionalContext warning, got none")
 	}
-	if p := runPreHook(t, "pi", in, "block-smart-punct"); p.kind != "deny" {
-		t.Errorf("pi: got %q, want deny", p.kind)
+	for _, harness := range []string{"pi", "codex"} {
+		if p := runPreHook(t, harness, in, "block-smart-punct"); p.kind != "deny" || !strings.Contains(p.reason, "smart punctuation") {
+			t.Errorf("%s: got %q (%s), want deny with the smart punctuation message", harness, p.kind, p.reason)
+		}
 	}
 }
 
@@ -377,7 +385,8 @@ var cases = map[string][]group{
 	},
 	"block-write-tracked": {
 		{want: "deny", files: []string{"tracked.txt"}},
-		{want: "allow", files: []string{"untracked.nix", "new.txt"}},
+		// Edit cannot change a binary file either, so Write over one is the only way
+		{want: "allow", files: []string{"untracked.nix", "new.txt", "blob.png"}},
 	},
 	"git-add-before-nix": {
 		{want: "warn", cmds: []string{"nix build", "nix flake check", "nix -L build", "nix --print-build-logs build", "nix fmt",
@@ -460,6 +469,17 @@ var cases = map[string][]group{
 			"git restore --staged f", "git restore -S f", "git branch -d x", "git rebase --continue", "git rebase --abort",
 			"git rebase --quit", "git reset", "git reset -q", "git reset -- f", "git reset HEAD -- f", "gh pr checkout 1"}},
 	},
+	"block-worktree": {
+		{want: "deny", reason: "new-worktree.sh", cmds: []string{"git worktree add ../wt", "git worktree add -b x /tmp/wt", "git worktree add .claude/worktrees/a"}},
+		{want: "allow", cmds: []string{"git worktree add .eric/worktrees/x", "git worktree add -b x .eric/worktrees/x HEAD", "git worktree list"}},
+		{want: "deny", reason: "plain git worktree remove", cmds: []string{"git worktree remove --force .eric/worktrees/x", "git worktree remove -f -f x"}},
+		{setup: func(f *fixture) { f.write("sub/.gitmodules", "") }, want: "allow", cmds: []string{"git worktree remove --force sub"}},
+		{want: "allow", cmds: []string{"git worktree remove .eric/worktrees/x", "git worktree prune"}},
+	},
+	"block-agent-worktree": {
+		{tool: "Agent", want: "deny", reason: "new-worktree.sh", inputs: []map[string]any{{"prompt": "x", "isolation": "worktree"}}},
+		{tool: "Agent", want: "allow", inputs: []map[string]any{{"prompt": "x"}, {"prompt": "x", "isolation": "remote"}}},
+	},
 	"block-agent-commit": {
 		{want: "deny", cmds: []string{"git status --short\ngit commit -m x", "direnv exec . git commit -m x", `bash -c "git commit -m x"`,
 			"git -c 'alias.c=commit -m x' c", "git -calias.c=commit c", "bash -c 'echo \"a\nb\"\ngit commit -m x'", "git pull",
@@ -531,18 +551,18 @@ var cases = map[string][]group{
 		}, want: "allow", cmds: []string{"git commit -m x", "git pull"}},
 		{setup: config(".", "eric-agent.commit", "branch"), want: "deny", cmds: []string{"git commit -m x", "git pull",
 			"git subtree add --prefix=x r main"}},
-		// an agent-test- branch is the agent's own, so a command that moves only it needs no setting,
+		// an eric-agent-scratch- branch is the agent's own, so a command that moves only it needs no setting,
 		// but one that can move another branch still does
-		{setup: func(f *fixture) { f.git(".", "checkout", "-q", "-b", "agent-test-x") }, want: "allow", cmds: []string{
+		{setup: func(f *fixture) { f.git(".", "checkout", "-q", "-b", "eric-agent-scratch-x") }, want: "allow", cmds: []string{
 			"git commit -m x", "git commit --amend -m x", "git merge feat", "git cherry-pick abc", "git revert abc", "git pull",
 			"git rebase main", "git rebase -i main", "git rebase --onto main a", "git rebase -X theirs main"}},
-		{setup: func(f *fixture) { f.git(".", "checkout", "-q", "-b", "agent-test-x") }, want: "deny", cmds: []string{
+		{setup: func(f *fixture) { f.git(".", "checkout", "-q", "-b", "eric-agent-scratch-x") }, want: "deny", cmds: []string{
 			"git update-ref refs/heads/main HEAD", "git rebase main feat", "git rebase --onto main a feat",
 			"git subtree add --prefix=x r main", "git commit -m x; git -C sub commit -m x", "git pull . feat:main"}},
 		// the prefix must start the branch name
-		{setup: func(f *fixture) { f.git(".", "checkout", "-q", "-b", "my-agent-test-x") }, want: "deny", cmds: []string{"git commit -m x"}},
+		{setup: func(f *fixture) { f.git(".", "checkout", "-q", "-b", "my-eric-agent-scratch-x") }, want: "deny", cmds: []string{"git commit -m x"}},
 		// mid-rebase HEAD is detached, so the branch being rebased names whose branch it is
-		{setup: midRebase("agent-test-x"), want: "allow", cmds: []string{"git rebase --continue", "git commit -m x"}},
+		{setup: midRebase("eric-agent-scratch-x"), want: "allow", cmds: []string{"git rebase --continue", "git commit -m x"}},
 		{setup: midRebase("feat"), want: "deny", cmds: []string{"git rebase --continue"}},
 		{setup: config(".", "eric-agent.commit", "ask"), want: "ask", cmds: []string{"git commit -m x"}},
 		{setup: func(f *fixture) {
@@ -573,21 +593,21 @@ var cases = map[string][]group{
 		{setup: config("sub", "eric-agent.push", "on"), want: "allow", cmds: []string{"git -C sub push"}},
 		{setup: config("sub", "eric-agent.push", "on"), want: "deny", cmds: []string{"git -C sub push; git push"}},
 		{setup: config(".", "eric-agent.push", "on"), want: "allow", cmds: []string{"git push", "git send-pack origin main",
-			"git subtree push --prefix=x origin main", "git lfs push origin main", "git push origin main -o agent-test-note"}},
-		// agent-test- branches never leave the machine, even where pushes are on
+			"git subtree push --prefix=x origin main", "git lfs push origin main", "git push origin main -o eric-agent-scratch-note"}},
+		// eric-agent-scratch- branches never leave the machine, even where pushes are on
 		{setup: config(".", "eric-agent.push", "on"), want: "deny", reason: "throwaway",
-			cmds: []string{"git push origin agent-test-x", "git push origin HEAD:agent-test-x", "git push -u origin agent-test-x:main",
-				"git push --repo=origin agent-test-x"}},
+			cmds: []string{"git push origin eric-agent-scratch-x", "git push origin HEAD:eric-agent-scratch-x", "git push -u origin eric-agent-scratch-x:main",
+				"git push --repo=origin eric-agent-scratch-x"}},
 		// an alias chain longer than the guard follows is unreadable
 		{setup: config(".", "alias.a1", "a2", "alias.a2", "a3", "alias.a3", "a4", "alias.a4", "a5", "alias.a5", "a6", "alias.a6", "push"),
 			want: "deny", cmds: []string{"git a1"}},
 		{setup: func(f *fixture) {
 			config(".", "eric-agent.push", "on")(f)
-			f.git(".", "checkout", "-q", "-b", "agent-test-x")
+			f.git(".", "checkout", "-q", "-b", "eric-agent-scratch-x")
 		}, want: "deny", reason: "throwaway", cmds: []string{"git push", "git push origin main"}},
 		{setup: func(f *fixture) {
 			config(".", "eric-agent.push", "on")(f)
-			midRebase("agent-test-x")(f)
+			midRebase("eric-agent-scratch-x")(f)
 		}, want: "deny", reason: "throwaway", cmds: []string{"git push"}},
 	},
 	"block-gh-write": {
@@ -756,18 +776,18 @@ var cases = map[string][]group{
 			`rex block close -s "$REX_SESSION" block:1`, "rex window close window:1", "rex server stop", "rex do pane.close",
 			"rex -C studio do client.tab.close", "rex do session.close", "rex do confirm_close_tab", "rex do -b block:1 pane.close",
 			"rex -S 'unix:///Users/eric/Library/Application%20Support/rex/server.sock' kill x", "pkill rex", "killall 'Rex Beta'",
-			"pkill -f 're[x]'", "rex kill agent-test-a main", "rex kill agent-x", "rex block close session:1",
-			"rex session kill agent-test", "rex kill",
+			"pkill -f 're[x]'", "rex kill eric-agent-scratch-a main", "rex kill agent-x", "rex block close session:1",
+			"rex session kill eric-agent-scratch", "rex kill",
 			// rex api and Lua reach the same actions
 			"rex api call -s main session.destroy", `rex api call block.close '{"block_id":"block:1"}'`, "rex api call server.stop",
 			"rex api call session.close_window", `rex do -e 'rex.call("session.destroy", {session_id="x"})'`, "rex do - < kill.lua"}},
 		{want: "allow", cmds: []string{"rex ls", "rex new x", "rex split --split=right", "rex do popup_closed", "rex do session.select",
 			"rex do -e 'return 1'", "rex -S unix:///tmp/agent.sock kill x", "rex --server=/tmp/agent.sock block close block:1",
-			"rex block inspect block:1", "rex capture -b block:1", "rex kill agent-test-popup", "rex kill agent-test-a agent-test-b",
-			"rex session kill agent-test-x", `rex block close -s "$REX_SESSION" agent-test-codex`, "rex window close agent-test-w",
+			"rex block inspect block:1", "rex capture -b block:1", "rex kill eric-agent-scratch-popup", "rex kill eric-agent-scratch-a eric-agent-scratch-b",
+			"rex session kill eric-agent-scratch-x", `rex block close -s "$REX_SESSION" eric-agent-scratch-codex`, "rex window close eric-agent-scratch-w",
 			"rex api ls", "rex api call session.list", `rex do -e 'return rex.call("session.list")'`}},
 	},
-	"block-pipe-head-tail": {
+	"warn-pipe-head-tail": {
 		{want: "warn", cmds: []string{"ssh turtle 'ls ~/.ssh' | tail -6", "nix build . 2>&1 | tail -n 20", "rg x . | head", "a | b | head -1",
 			"git log | head -c 100", `bash -c "ls | tail"`, "ls | tee /dev/null | tail -3", "ls | sudo tail -2", "cat log | tail -", "ls |& head",
 			// a process substitution or a here-string of command output is a pipe too, and a tee saves only its own pipeline
@@ -895,6 +915,35 @@ func TestSmartPunctInCommitMessage(t *testing.T) {
 	in["tool_name"] = "Bash"
 	if o := runPreHook(t, "claude", in); o.kind != "deny" || !strings.Contains(o.reason, "smart punctuation") {
 		t.Errorf("got %q (%s), want deny with the smart punctuation message", o.kind, o.reason)
+	}
+}
+
+// a dry run that hangs cannot stall the guard
+func TestJustDryRunHasDeadline(t *testing.T) {
+	f := newFixture(t)
+	f.write("bin/just", "#!/bin/sh\nexec sleep 8\n")
+	t.Setenv("PATH", f.repo+"/bin:"+os.Getenv("PATH"))
+	start := time.Now()
+	runPreHook(t, "claude", cmdInput(filepath.Join(f.repo, "jb"), "just build"), "git-add-before-nix")
+	if took := time.Since(start); took > 6*time.Second {
+		t.Errorf("the dry run took %s, past its deadline", took)
+	}
+}
+
+// one call's checks share one dry run of a recipe, so the guard starts just once per recipe
+func TestJustDryRunOncePerCall(t *testing.T) {
+	just, err := exec.LookPath("just")
+	if err != nil {
+		t.Skip("just is not on PATH")
+	}
+	f := newFixture(t)
+	f.write("bin/just", "#!/bin/sh\necho run >> "+f.real+"/just.log\nexec "+just+" \"$@\"\n")
+	f.write("act/justfile", "deploy:\n    nh darwin switch\n")
+	t.Setenv("PATH", f.repo+"/bin:"+os.Getenv("PATH"))
+	runPreHook(t, "claude", cmdInput(filepath.Join(f.repo, "act"), "just deploy"), "git-add-before-nix", "ask-system-switch")
+	got, _ := os.ReadFile(filepath.Join(f.real, "just.log"))
+	if n := strings.Count(string(got), "run"); n != 1 {
+		t.Errorf("just ran %d times, want 1", n)
 	}
 }
 

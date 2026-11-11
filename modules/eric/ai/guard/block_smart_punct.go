@@ -33,13 +33,8 @@ func blockSmartPunct(h *hook) decision {
 	if f := h.str("file_path"); hasGitAttr(f, "agent-verbatim") {
 		return decision{}
 	}
-	// only Claude applies a content rewrite: codex drops rewrites, and pi reads only updatedInput.command,
-	// so there the write is denied instead, as before
-	if h.harness != "claude" {
-		return deny(smartPunctMsg)
-	}
 	if updated := h.normalizeWrittenPunct(); updated != nil {
-		return decision{updated: updated, context: []string{"Normalized smart punctuation to ASCII (en/em dash to -, curly quotes to straight, ellipsis to ...). If a literal smart character was intended (e.g. a scraped-text fixture), write it with a unicode escape in code, or mark the path agent-verbatim in .git/info/attributes."}}
+		return decision{updated: updated, unapplied: smartPunctMsg, context: []string{"Normalized smart punctuation to ASCII (en/em dash to -, curly quotes to straight, ellipsis to ...). If a literal smart character was intended (e.g. a scraped-text fixture), write it with a unicode escape in code, or mark the path agent-verbatim in .git/info/attributes."}}
 	}
 	return deny(smartPunctMsg)
 }

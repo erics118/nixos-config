@@ -56,16 +56,21 @@ local function render(window_data, space_data)
 end
 
 -- one space switch fires several of these events, so a burst runs one update plus at most one rerun
-local running, dirty = false, false
-local function update()
+local running, dirty, dirty_space = false, false, false
+
+-- a focus change cannot change the space type, so the last space query is reused unless with_space is set
+local space_data
+
+local function update(with_space)
     if running then
         dirty = true
+        dirty_space = dirty_space or with_space
         return
     end
     running = true
 
-    local window_data, space_data
-    local pending = 2
+    local window_data
+    local pending = with_space and 2 or 1
     local function done()
         pending = pending - 1
         if pending > 0 then
@@ -74,8 +79,9 @@ local function update()
         render(window_data, space_data)
         running = false
         if dirty then
-            dirty = false
-            update()
+            local rerun_space = dirty_space
+            dirty, dirty_space = false, false
+            update(rerun_space)
         end
     end
 
@@ -84,11 +90,20 @@ local function update()
         window_data = result
         done()
     end)
-    sbar.exec(space_query, function(result)
-        space_data = result
-        done()
-    end)
+    if with_space then
+        sbar.exec(space_query, function(result)
+            space_data = result
+            done()
+        end)
+    end
 end
 
+yabai:subscribe({ "user_app_switched", "window_focused" }, function()
+    update(false)
+end)
+
 -- space and display changes can change the layout shown, even when no window takes focus
-yabai:subscribe({ "user_app_switched", "window_focused", "forced", "yabai", "space_change", "display_change" }, update)
+-- smhkd triggers the yabai event after a layout change
+yabai:subscribe({ "forced", "yabai", "space_change", "display_change" }, function()
+    update(true)
+end)

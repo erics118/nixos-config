@@ -118,6 +118,21 @@
               touch $out
             '';
 
+            # the agent config files agree with each other and with the guard's checks
+            agent-config =
+              pkgs.runCommand "agent-config"
+                {
+                  nativeBuildInputs = [
+                    pkgs.agent-guard
+                    pkgs.jq
+                  ];
+                }
+                ''
+                  export HOME=$TMPDIR
+                  ${lib.getExe pkgs.bash} ${../modules/eric/ai/consistency.sh} ${../modules/eric/ai}
+                  touch $out
+                '';
+
             firefox-js = pkgs.runCommand "firefox-js" { } ''
               for f in ${../modules/eric/desktop/firefox/chrome/JS}/*.js; do
                 ${lib.getExe pkgs.nodejs} --check "$f"

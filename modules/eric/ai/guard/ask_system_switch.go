@@ -5,7 +5,7 @@ package main
 func askSystemSwitch(h *hook) decision {
 	for _, c := range h.calls {
 		for _, dir := range h.paths(c, ".") {
-			if isSwitch(c, dir) {
+			if isSwitch(h, c, dir) {
 				return ask("This activates the system configuration. Approve it, or run it yourself.")
 			}
 		}

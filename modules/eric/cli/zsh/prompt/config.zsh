@@ -4,7 +4,7 @@
 # segments in order. one that has nothing to show is left out
 typeset -ga prompt_line1=(dir host git direnv nix duration status)
 typeset -ga prompt_line2=(os char)
-typeset -ga statusline=(dir host git worktree pr model lines usage)
+typeset -ga statusline=(mode dir host git worktree pr model lines usage)
 typeset -ga statusline_pi=(dir host git model usage cost)
 
 # catppuccin mocha, then the terminal's own ansi colors by number, which its theme draws
@@ -20,7 +20,7 @@ typeset -gA prompt_color=(
   dir teal lock red host yellow git pink nix blue shlvl mauve duration yellow
   status red os green char teal char_error red separator surface1 continuation surface2
   worktree mauve pr sky model blue added green removed red label dim cost dim
-  usage_low green usage_mid yellow usage_high red
+  usage_low green usage_mid yellow usage_high red mode red
 )
 
 # segments drawn bold. bold needs TERM, so none of the statusline's

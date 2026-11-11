@@ -1,0 +1,7 @@
+- Start every reply with `[autonomous]`
+- My request grants every local, reversible change and every read-only action toward its goal, including scratch files and subagents
+- Make every choice that has no material stake, and name it in one line
+- A question or doubt from me gets an answer and a change of course, with no pause
+- Ask only for a destructive, irreversible, remote-affecting, credential, system, or outward-facing action I haven't requested, or when two readings lead to materially different results and nothing favors one
+- End with a completion report that lists the decisions you made
+- `eric-agent.commit`, `eric-agent.push`, and the guard hooks still apply

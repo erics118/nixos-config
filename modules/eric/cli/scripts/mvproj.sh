@@ -10,7 +10,7 @@ die() {
 
 usage() {
   cat <<EOF
-Usage: mvproj [--dry-run] [OLD] NEW
+Usage: mvproj [--dry-run] [--force] [OLD] NEW
 
   Move the folder OLD to NEW, then carry along what is keyed by its path:
   claude sessions, memory, and settings such as trust and mcp servers, pi
@@ -19,23 +19,33 @@ Usage: mvproj [--dry-run] [OLD] NEW
   OLD defaults to the current folder.
   A NEW without a / is a name, and renames OLD in place.
   For a folder directly in ~/dev/scratch, the name moves it to ~/dev/NEW instead.
-  Refuses while any process other than the calling shell runs inside OLD.
+  Shells sitting in OLD are ignored. If any other process runs inside OLD,
+  asks before moving, or refuses when there is no terminal to ask in.
 
-  --dry-run  print every move and rewrite without doing them
+  --dry-run    print every move and rewrite without doing them
+  -f, --force  move even while processes run inside OLD, without asking
 EOF
 }
 
 dry=
-case ${1-} in
--h | --help)
-  usage
-  exit
-  ;;
---dry-run)
-  dry=1
-  shift
-  ;;
-esac
+force=
+while :; do
+  case ${1-} in
+  -h | --help)
+    usage
+    exit
+    ;;
+  --dry-run)
+    dry=1
+    shift
+    ;;
+  -f | --force)
+    force=1
+    shift
+    ;;
+  *) break ;;
+  esac
+done
 [[ $# -eq 1 ]] && set -- . "$1"
 [[ $# -eq 2 ]] || {
   usage >&2
@@ -70,27 +80,23 @@ run() {
   fi
 }
 
-# shells this command runs under may sit in OLD, since their cwd follows the folder
-skip=" $$ "
-pid=$PPID
-while [[ $pid -gt 1 ]]; do
-  comm=$(ps -o comm= -p "$pid") || break
-  case ${comm##*/} in
-  sh | -sh | bash | -bash | zsh | -zsh | fish | -fish) skip+="$pid " ;;
-  esac
-  pid=$(ps -o ppid= -p "$pid" | tr -d ' ')
-done
-
-busy=$(lsof -w -d cwd -Fpcn | awk -v old="$old" -v skip="$skip" '
+# idle shells may sit in OLD, since their cwd follows the folder.
+# programs running inside them are separate processes and still count
+busy=$(lsof -w -d cwd -Fpcn | awk -v old="$old" -v self="$$" '
   /^p/ { pid = substr($0, 2) }
   /^c/ { comm = substr($0, 2) }
   /^n/ {
     path = substr($0, 2)
-    if ((path == old || index(path, old "/") == 1) && index(skip, " " pid " ") == 0)
+    if ((path == old || index(path, old "/") == 1) && pid != self && comm !~ /^-?(sh|bash|zsh|fish)$/)
       print "  " pid " " comm " in " path
   }')
-[[ -z $busy ]] || die "processes are running inside $old:
+if [[ -n $busy && -z $force ]]; then
+  { : </dev/tty; } 2>/dev/null || die "processes are running inside $old (use --force to move anyway):
 $busy"
+  printf 'mvproj: processes are running inside %s:\n%s\nmove anyway? [y/N] ' "$old" "$busy" >/dev/tty
+  read -r answer </dev/tty || answer=
+  [[ $answer == [yY]* ]] || die "not moved"
+fi
 
 claude_enc() { printf '%s' "$1" | sed 's/[^A-Za-z0-9]/-/g'; }
 pi_enc() {

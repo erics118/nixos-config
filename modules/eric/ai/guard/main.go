@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -23,6 +24,8 @@ type decision struct {
 	// context is additionalContext added to the model's context alongside the tool result: a non-blocking
 	// warning that lets the call run. several checks' contexts accumulate
 	context []string
+	// unapplied is the deny reason when the harness cannot apply updated
+	unapplied string
 }
 
 func deny(reason string) decision { return decision{kind: "deny", reason: reason} }
@@ -98,8 +101,23 @@ func failClosed(event string, stdout, stderr io.Writer, reason string) int {
 	return 0
 }
 
-// runPre combines the checks. a deny wins at once, the first ask wins over later ones, and the last rewrite wins
+// runPre combines the checks, then judges a rewritten command again, since the rewrite is what runs
 func runPre(h *hook, checks []preCheck) decision {
+	out := checkOnce(h, checks)
+	if out.kind == "deny" || out.command == nil || *out.command == h.command {
+		return out
+	}
+	again := *h
+	again.command, again.calls = *out.command, nil
+	second := checkOnce(&again, checks)
+	if second.kind == "deny" || (second.kind == "ask" && out.kind == "") {
+		return second
+	}
+	return out
+}
+
+// checkOnce combines the checks. a deny wins at once, the first ask wins over later ones, and the last rewrite wins
+func checkOnce(h *hook, checks []preCheck) decision {
 	if h.command != "" {
 		var err error
 		if panicked := safely(func() { err = h.parse() }); panicked != nil {
@@ -142,16 +160,31 @@ func runPre(h *hook, checks []preCheck) decision {
 			}
 			out.updated[k] = v
 		}
+		if d.unapplied != "" {
+			out.unapplied = d.unapplied
+		}
 		out.context = append(out.context, d.context...)
 	}
-	// codex runs an ask as allow and applies a rewrite only with an allow
-	if h.harness == "codex" {
-		if out.kind == "ask" {
-			return deny(out.reason + " Codex cannot ask for approval, so this was denied. Tell the user what to run.")
-		}
-		out.command, out.updated = nil, nil
+	return shape(h.harness, out)
+}
+
+// shape fits a decision to what the harness can do. claude does all of it. codex runs an ask as allow and
+// applies a rewrite only with an allow, so an ask denies and rewrites drop. pi applies only a command rewrite.
+// a rewrite of tool input other than the command, which codex and pi cannot apply, denies instead
+func shape(harness string, d decision) decision {
+	if harness == "claude" {
+		return d
 	}
-	return out
+	if len(d.updated) > 0 {
+		return deny(cmp.Or(d.unapplied, "A guard check rewrote this call's input, which this harness cannot apply."))
+	}
+	if harness == "codex" {
+		if d.kind == "ask" {
+			return deny(d.reason + " Codex cannot ask for approval, so this was denied. Tell the user what to run.")
+		}
+		d.command = nil
+	}
+	return d
 }
 
 // safely runs f and turns a panic into an error, so one broken check fails closed instead of crashing the hook

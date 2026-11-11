@@ -33,7 +33,7 @@ func ericStray(p string) string {
 }
 
 func ericDeny(entry string) decision {
-	return deny(".eric/" + entry + " is not an entry the global instructions allow at the top of .eric/. Put task files under .eric/scratch/<YYYY-MM-DD>-<topic>/ instead.")
+	return deny(".eric/" + entry + " is not an entry the global instructions allow at the top of .eric/. Put task files under .eric/scratch/eric-agent-scratch-<YYYY-MM-DD>-<topic>/ instead.")
 }
 
 // block a write into a file or folder directly under ~/.eric/ or a repo's .eric/

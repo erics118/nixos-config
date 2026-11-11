@@ -12,7 +12,7 @@ Write a plan that an engineer with zero context on this codebase can execute tas
 
 Read the request and the code or files it touches first, so you never ask for a fact you could look up. For each mechanism choice, cite a verdict from `.eric/approach/`. Without one, work the steps in [survey.md](../approach/survey.md) here. Record a verdict as a decided choice. Then run the grilling skill on what only the user can decide: purpose, scope, constraints, and choices between valid options.
 
-Done when: the user confirms the shared understanding, and every requirement has an exact value or a decision.
+Done when: the user confirms the shared understanding, and every requirement has an exact value or a decision. In autonomous mode, grilling takes its recommended answers and lists them, and no confirmation is needed unless a real fork went to the user.
 
 ## 2. Map the files
 

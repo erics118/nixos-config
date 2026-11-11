@@ -186,7 +186,7 @@ func gitDryRun(g []string) bool {
 }
 
 // agents name their throwaway branches, sessions, and panes with this prefix
-const agentTest = "agent-test-"
+const agentScratch = "eric-agent-scratch-"
 
 // gate reads eric-agent.<key> in each repo: on allows, ask asks for approval, and modes decides any other setting,
 // such as branch for commits. a setting modes does not know, unset or off included, denies with off

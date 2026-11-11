@@ -102,7 +102,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash|Monitor|Read|Write|Edit",
+        "matcher": "Agent|Bash|Monitor|Read|Write|Edit",
         "hooks": [
           {
             "type": "command",
@@ -130,12 +130,16 @@
           {
             "type": "command",
             "command": "\"$HOME/.agents/hooks/tmux-bell.sh\""
-          },
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
           {
-            "type": "prompt",
-            "model": "claude-haiku-5-5",
-            "timeout": 30,
-            "prompt": "The agent may stop when its final message to the user (last_assistant_message in the input) passes this check.\n\nIt passes when any one of these holds:\n- it makes no claim that a change is fixed, works, is verified, is live, or is done (questions, proposals, plans, explanations, and promises of later work pass);\n- it names a check that exercised the end result: running the changed program or command and seeing the right behavior, reproducing the original symptom and seeing it gone, or a test that covers that exact behavior;\n- the change only touches prose (notes, docs, memory files, comments) and the transcript shows the changed text read back, or the paths and links it names checked to exist. For prose the text is the end result, and how a later session loads or uses it is out of scope;\n- it clearly says what is untested;\n- stop_hook_active is true in the input.\n\nIt fails only when it claims a change is fixed, works, is verified, is live, or is done, and nothing in the transcript shows a check that exercised the end result. A build, type-check, lint, an unrelated test, reading the code, a restart with no look at the result, or \"should work\" is not such a check.\n\nAnswer ok=true when it passes. Answer ok=false when it fails, with a reason that names the unchecked claim.\n\nInput: $ARGUMENTS"
+            "type": "command",
+            "command": "\"$HOME/.agents/hooks/agent-mode.sh\""
           }
         ]
       }
@@ -239,6 +243,7 @@
   "editorMode": "normal",
   "verbose": true,
   "autoCompactEnabled": true,
+  "idleCompaction": false,
   "switchModelsOnFlag": false,
   "remoteControlAtStartup": true,
   "inputNeededNotifEnabled": true,
@@ -248,5 +253,10 @@
       "$defaults",
       "In /Users/eric/dev/resume, running the applying-to-jobs CLI (node .../applying-to-jobs/src/cli.ts) to submit job applications (submit, apply --submit, batch --submit) is authorized when the user asked in this session to submit them, and so is reading the receipt folders it writes."
     ]
+  },
+  "voiceEnabled": true,
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
   }
 }

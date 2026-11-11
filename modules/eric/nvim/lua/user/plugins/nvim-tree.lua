@@ -1,6 +1,6 @@
 local map = require("user.utils.map")
 
-map("n", "<C-b>", "<Cmd>NvimTreeToggle<CR>", "Toggle file tree")
+map({ "n", "i", "x", "s", "o", "t", "c" }, "<C-b>", "<Cmd>NvimTreeToggle<CR>", "Toggle file tree")
 
 local group = vim.api.nvim_create_augroup("UserNvimTree", { clear = true })
 
