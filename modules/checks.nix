@@ -1,12 +1,6 @@
 # expose this system's host toplevels, config checks and the devShell as flake checks
 # so `nix flake check` builds them. CI's runner matrix covers the other systems
-{
-  lib,
-  config,
-  inputs,
-  ...
-}:
-{
+{ lib, config, ... }: {
   perSystem =
     {
       system,
@@ -115,12 +109,11 @@
               touch $out
             '';
 
-            # rex loads init.lua with its required modules beside it, as rex.nix links them
+            # rex loads init.lua from ~/.config/rex, as rex.nix links it
             rex-config = pkgs.runCommand "rex-config" { } ''
               export HOME=$TMPDIR
               mkdir -p $HOME/.config/rex
               ln -s ${../modules/eric/cli/rex/init.lua} $HOME/.config/rex/init.lua
-              ln -s ${inputs.rex-image-paste-src} $HOME/.config/rex/rex-image-paste
               ${lib.getExe pkgs.inputs.rex.rex} --autostart=false config check
               touch $out
             '';

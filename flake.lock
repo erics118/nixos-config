@@ -586,22 +586,6 @@
         "url": "https://pkgs.superlogical.com/rex/nix/preview.tar.gz"
       }
     },
-    "rex-image-paste-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1792816498,
-        "narHash": "sha256-bbClHHHmhovu0A862BgwhhDDZuUNfICDOCPQyh+F6Oo=",
-        "owner": "pablasso",
-        "repo": "rex-image-paste",
-        "rev": "1d883efb5d348477796733555306f2e445a3593e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "pablasso",
-        "repo": "rex-image-paste",
-        "type": "github"
-      }
-    },
     "rexume-src": {
       "flake": false,
       "locked": {
@@ -638,7 +622,6 @@
         "nixos-config-private": "nixos-config-private",
         "nixpkgs": "nixpkgs",
         "rex": "rex",
-        "rex-image-paste-src": "rex-image-paste-src",
         "rexume-src": "rexume-src",
         "sketchybar-src": "sketchybar-src",
         "smart-splits-backend-rex-src": "smart-splits-backend-rex-src",

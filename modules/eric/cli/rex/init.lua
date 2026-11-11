@@ -135,10 +135,6 @@ rex.bind("cmd+z", "pane.zoom")
 rex.bind("cmd+up", "client.prompt.previous")
 rex.bind("cmd+down", "client.prompt.next")
 
--- pastes a clipboard image's path, first copying the image to a pane on another rex server (rex-image-paste in rex.nix)
-require("rex-image-paste").setup()
-rex.bind("cmd+shift+v", "image_paste")
-
 -- closing a pane or tab that runs anything but an idle shell asks first, in a macos alert.
 -- where osascript is missing, as on a linux server, the key enters a one-shot confirm mode instead,
 -- whose key hints rex shows, where enter closes and escape cancels

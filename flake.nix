@@ -130,11 +130,6 @@
       flake = false;
     };
 
-    rex-image-paste-src = {
-      url = "github:pablasso/rex-image-paste";
-      flake = false;
-    };
-
     smart-splits-backend-rex-src = {
       url = "github:rawnly/smart-splits-backend-rex";
       flake = false;

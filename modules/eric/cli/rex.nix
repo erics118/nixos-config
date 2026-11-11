@@ -24,9 +24,6 @@
       # rex/catppuccin-mocha.conf is not linked: the app keeps its own copy, imported with Import Theme File
       home.file.".config/rex/init.lua".source = repoFile "modules/eric/cli/rex/init.lua";
 
-      # rex requires modules from beside the init.lua link
-      home.file.".config/rex/rex-image-paste".source = inputs.rex-image-paste-src;
-
       # rex itself comes from PATH, so a rex terminal uses the rex matching its server
       home.packages = [
         (pkgs.writeShellApplication {
