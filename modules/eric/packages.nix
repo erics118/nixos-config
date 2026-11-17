@@ -42,7 +42,7 @@
           railway
           docker-sbx
           screen
-          poppler # pdf rendering
+          poppler-utils # pdf rendering
 
           # fonts
           nerd-fonts.hack
