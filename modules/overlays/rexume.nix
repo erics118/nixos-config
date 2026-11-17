@@ -16,13 +16,20 @@
       nativeBuildInputs = [ final.pkg-config ];
       buildInputs = [ final.sqlite ];
 
-      # a test runs the pi extension
-      nativeCheckInputs = [ final.nodejs ];
+      # a test runs the pi extension, and the snapshot tests run git and git lfs
+      nativeCheckInputs = [
+        final.nodejs
+        final.git
+        final.git-lfs
+      ];
 
       # these start a daemon against the rex cli the app installs, which the build lacks
       checkFlags = [
         "--skip=wait::a_daemon_starts_as_soon_as_a_server_appears_under_directories_that_did_not_exist"
         "--skip=upgrade::a_daemon_exits_when_an_upgrade_replaces_its_executable"
+        # these run git filters under sandbox-exec, which cannot nest inside the nix build sandbox
+        "--skip=git::filter::tests::a_changed_file_runs_its_filter_only_denied_writes_to_the_repository"
+        "--skip=git::filter::tests::a_filter_runs_for_no_file_unchanged_or_deleted"
       ];
 
       meta = {

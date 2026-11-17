@@ -136,7 +136,7 @@
     };
 
     rexume-src = {
-      url = "github:Entwining/rexume";
+      url = "github:erics118/rexume";
       flake = false;
     };
   };

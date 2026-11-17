@@ -26,11 +26,6 @@
           # the app's own rex, so its api always matches the server the app runs
           "--rex"
           "/Users/eric/Library/Application Support/com.superlogical.rex/RexServer/Versions/Current/Rex Server.app/Contents/MacOS/rex"
-          # catppuccin mocha, so restored terminals answer color queries before the app shows them
-          "--theme-foreground"
-          "#CDD6F4"
-          "--theme-background"
-          "#1E1E2E"
         ];
         # the daemon finds codex on PATH to send it notices
         EnvironmentVariables.PATH = config.launchdUserPath;

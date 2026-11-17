@@ -589,15 +589,15 @@
     "rexume-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1794226714,
-        "narHash": "sha256-sS8cij0sGQ74kcteLaQlC7Jny2IeCsmBSzeFTcZONbA=",
-        "owner": "Entwining",
+        "lastModified": 1794883792,
+        "narHash": "sha256-+DJKlkN/GbcIbXAJvg7Z2huUKK3P8RmmeSHBo8Il7qo=",
+        "owner": "erics118",
         "repo": "rexume",
-        "rev": "797284c6717e976320f6db7213f3f81e8e7c7dd2",
+        "rev": "b1a86a282765b2293bd945f3faee99143895d5ca",
         "type": "github"
       },
       "original": {
-        "owner": "Entwining",
+        "owner": "erics118",
         "repo": "rexume",
         "type": "github"
       }
