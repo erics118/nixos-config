@@ -66,7 +66,12 @@ func commits(g []string) bool {
 		slices.ContainsFunc(g, func(w string) bool {
 			return w == "--abort" || w == "--quit" || w == "--edit-todo" || w == "--show-current-patch"
 		})
-	return makes && !backsOut && !(g[0] == "commit" && gitDryRun(g))
+	return makes && !backsOut && !(g[0] == "commit" && gitDryRun(g)) && !noCommit(g)
+}
+
+// noCommit reports a cherry-pick or revert that only applies its change to the index and working tree
+func noCommit(g []string) bool {
+	return (g[0] == "cherry-pick" || g[0] == "revert") && parseArgs("git "+g[0], g[1:]).has("-n", "--no-commit")
 }
 
 // onAgentScratchBranch reports a repo on an eric-agent-scratch- branch.

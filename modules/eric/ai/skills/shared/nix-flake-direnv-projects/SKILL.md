@@ -10,5 +10,5 @@ Most of the user's projects (`~/dev/*`, `~/nixos-config`) get their dev environm
 - `.envrc` is almost always just `use flake`, sometimes with extra `export`s, sometimes `use nix -p <pkg>` to add a package without a `flake.nix`
 - If the session started in a directory at or under the project's `.envrc`, the devshell is already loaded: invoke commands directly. For any other project, run `direnv exec <project-dir> <cmd>`
 - Need a CLI tool that isn't in the devshell? For a one-off, run `nix shell nixpkgs#<pkg> --command <cmd>`. Add it to `flake.nix`'s devShell `packages` (search nixpkgs for the right attr name) only when the project needs it for good
-- Never fall back to brew, pip, or a system binary. Never report the task blocked
+- Never fall back to brew, pip, or a system binary. A missing tool is not a blocker: get it through `nix shell` as above
 - Match whatever the project already uses; some are not nix projects at all

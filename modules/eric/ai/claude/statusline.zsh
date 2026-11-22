@@ -167,12 +167,11 @@ _pseg_usage() {
   _statusline_hot $_sl[fable] && _statusline_usage fable $_sl[fable] && parts+=($REPLY)
   if [[ $_sl[reset_secs] == <-> && $_sl[seven_day] == <->(|.<->) ]] &&
     ((secs >= 1 && secs < 259200 && ${_sl[seven_day]%%.*} > 50)); then
-    # hours when a day or less out, else days, rounded up
-    if ((secs <= 86400)); then
-      label="$(((secs + 3599) / 3600))h"
-    else
-      label="$(((secs + 86399) / 86400))d"
-    fi
+    # days and hours, hours rounded down, at least 1h
+    local -i hours=$((secs / 3600))
+    ((hours)) || hours=1
+    label="$((hours % 24))h"
+    ((hours >= 24)) && label="$((hours / 24))d$label"
     _prompt_fg label
     parts+=("$REPLY(resets $label)%f")
   fi

@@ -30,6 +30,8 @@ var (
 // preChecks run in this order: a deny wins at once, the first ask wins over later ones, and the last rewrite wins
 var preChecks = []preCheck{
 	{meta{"deny-symlink-path", []string{"Read", "Write", "Edit"}}, denySymlinkPath},
+	{meta{"load-repo-instructions", []string{"Read", "Write", "Edit"}}, loadRepoInstructions},
+	{meta{"note-durable-write", fileTools}, noteDurableWrite},
 	{meta{"git-add-before-nix", shellTools}, gitAddBeforeNix},
 	{meta{"strip-claude-attribution", shellTools}, stripClaudeAttribution},
 	{meta{"block-global-search", shellTools}, blockGlobalSearch},

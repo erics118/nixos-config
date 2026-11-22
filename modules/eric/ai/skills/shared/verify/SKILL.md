@@ -12,9 +12,13 @@ A check counts only when it exercises the behavior the user will use, on the rea
 
 Done when: the report carries a `Checked: <command> -> <result>` line from step 3 for every behavior the request named.
 
+A change to instruction text (a skill, an `AGENTS.md`, docs, notes) has no behavior to exercise. Its check is the text itself: the paths and commands it names exist, the facts it states trace to a source, and `consistency.sh` passes where it applies.
+
+A review (codex, advisor, a subagent) covers only the version it read. After any edit to the work, rerun it before reporting its verdict.
+
 ## Recipes
 
-The user works at the screen while you do. Before a recipe that opens a window, takes a screen capture, moves focus, or sends key events, say what will appear, for how long, and what gets captured, then wait for a yes. Then turn on the red apple warning from the Execution policy rules before the first action.
+The user works at the screen while you do. Before a recipe that opens a window, takes a screen capture, moves focus, or sends key events, say what will appear and what gets captured, then wait for a yes.
 
 Prefer a headless recipe when one reaches the behavior.
 
@@ -27,3 +31,5 @@ Prefer a headless recipe when one reaches the behavior.
 - A remote host or root context: run it the way the real caller does. Use `sudo env -i <cmd>` for a systemd unit, since plain `sudo` leaks `SUDO_UID`.
 
 When no recipe reaches the behavior, write `Not checked: <what> (needs your eyes: <how>)`, listing every recipe you tried and why it fell short.
+
+`Not checked:` names only a result that could really be wrong and that you could not exercise. Behavior the platform's docs settle, such as a file or skill loading in a new session, is never a `Not checked:` item.

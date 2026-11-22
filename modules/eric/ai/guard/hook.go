@@ -20,8 +20,10 @@ type hook struct {
 	command   string
 	calls     []call
 	// cwd is where the harness runs the command
-	cwd   string
-	tools map[string]bool
+	cwd string
+	// transcript is the session's transcript file, which only Claude sends
+	transcript string
+	tools      map[string]bool
 	// aliases caches git alias lookups by repo and name
 	aliases map[string]string
 	// gitCommands caches the names git runs as commands, not aliases
@@ -32,14 +34,16 @@ type hook struct {
 
 func newHook(harness string, raw []byte) (*hook, error) {
 	var in struct {
-		ToolName  string          `json:"tool_name"`
-		Cwd       string          `json:"cwd"`
-		ToolInput json.RawMessage `json:"tool_input"`
+		ToolName       string          `json:"tool_name"`
+		Cwd            string          `json:"cwd"`
+		TranscriptPath string          `json:"transcript_path"`
+		ToolInput      json.RawMessage `json:"tool_input"`
 	}
 	if err := json.Unmarshal(raw, &in); err != nil {
 		return nil, err
 	}
-	h := &hook{harness: harness, toolName: in.ToolName, rawInput: in.ToolInput, cwd: in.Cwd, tools: map[string]bool{}, aliases: map[string]string{}}
+	h := &hook{harness: harness, toolName: in.ToolName, rawInput: in.ToolInput, cwd: in.Cwd, transcript: in.TranscriptPath,
+		tools: map[string]bool{}, aliases: map[string]string{}}
 	if len(in.ToolInput) > 0 && string(in.ToolInput) != "null" {
 		if err := json.Unmarshal(in.ToolInput, &h.toolInput); err != nil {
 			return nil, err

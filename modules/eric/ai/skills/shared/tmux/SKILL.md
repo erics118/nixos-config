@@ -82,7 +82,7 @@ Wait by polling a condition with a bound, and print the screen when the bound ru
 - `-e` keeps color escapes. Truecolor shows as `38;2;R;G;B`. Pipe through `cat -v` to read it.
 - Full-screen apps use the alternate screen, which has no history.
 - `#{cursor_x},#{cursor_y}` gives the cursor cell, `#{pane_width}x#{pane_height}` the size.
-- `pipe-pane -O -t main 'cat >> log'` records the raw stream, for transient output a capture can miss.
+- `pipe-pane -O -t main 'cat >> <scratch>/log'` records the raw stream, for transient output a capture can miss.
 - Messages can land in a float or notification instead of the bottom line. Search the whole capture.
 - Save a capture you will assert on to a file in the scratch directory and read it whole. Keep `| grep -q` for the readiness polls under Waiting.
 

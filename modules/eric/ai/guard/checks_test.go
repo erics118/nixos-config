@@ -383,6 +383,14 @@ var cases = map[string][]group{
 		// a .eric folder inside another one is checked too
 		{want: "deny", files: []string{".eric/scratch/2026-01-01-x/wt/.eric/stray.txt"}},
 	},
+	// the case table sends no transcript, so the check stays quiet. TestDurableWriteNote covers the rest
+	"note-durable-write": {
+		{want: "allow", files: []string{".eric/notes/2026-01-01-x.md"}},
+	},
+	// the case table sends no transcript, so the check stays quiet. TestRepoInstructions covers the rest
+	"load-repo-instructions": {
+		{setup: func(f *fixture) { f.write("AGENTS.md", "rules\n") }, want: "allow", files: []string{"new.txt"}},
+	},
 	"block-write-tracked": {
 		{want: "deny", files: []string{"tracked.txt"}},
 		// Edit cannot change a binary file either, so Write over one is the only way
@@ -506,7 +514,9 @@ var cases = map[string][]group{
 		{want: "deny", cmds: []string{"caffeinate git commit -m x", "noglob git commit -m x", "stdbuf -o0 git commit -m x",
 			"flock /tmp/l git commit -m x", "flock /tmp/l -c 'git commit -m x'", "env --frob x git commit -m x", "xcrun git commit -m x", "env -S 'git commit -m x'",
 			"bash <<<'git commit -m x'", "bash <<'EOF'\ngit commit -m x\nEOF", "nix run nixpkgs#git -- commit -m x",
-			"nix-shell -p git --run 'git commit -m x'", "git update-ref refs/heads/main HEAD"}},
+			"nix-shell -p git --run 'git commit -m x'", "git update-ref refs/heads/main HEAD",
+			// an option value is not -n, and --continue commits
+			"git cherry-pick -X n abc", "git cherry-pick --strategy-option n abc", "git cherry-pick --continue"}},
 		// a shell reading its script from a pipe hides it from every guard
 		{want: "deny", reason: "standard input", cmds: []string{"echo 'git status' | bash"}},
 		// a nested parse error names the script
@@ -517,6 +527,9 @@ var cases = map[string][]group{
 			"bash ./run.sh", "caffeinate -i sleep 1", "flock /tmp/l true", "command -v bash", "command -V zsh", "bash --version | head -1",
 			"/bin/bash --help", "git merge --abort", "git cherry-pick --quit", "git pull --ff-only", "git config --get alias.lg",
 			"git commit --dry-run --short -- a b", "git commit -m x --dry-run", "git rebase --abort", "git rebase --edit-todo",
+			// -n applies the change without committing it
+			"git cherry-pick -n abc", "git cherry-pick --no-commit abc", "git cherry-pick -nx abc", "git revert -n abc",
+			"git cherry-pick -m 1 -n abc",
 			// commit-tree only writes an object, so a trial merge needs no setting
 			"git commit-tree HEAD^{tree} -m x", "git merge-tree --write-tree main feat",
 			"git config --get eric-agent.commit", "git -C . config --show-origin --get-all eric-agent.commit",
@@ -1114,5 +1127,100 @@ func TestTreefmtOnEditRunsTreefmt(t *testing.T) {
 	}
 	if got, _ := os.ReadFile(dir + "/file.txt"); string(got) != "formatted\n" {
 		t.Errorf("treefmt did not run: file holds %q", got)
+	}
+}
+
+// a file in a repo outside the session's folder gets that repo's AGENTS.md once: as context on Read, as a deny on an edit
+func TestRepoInstructions(t *testing.T) {
+	f := newFixture(t)
+	t.Setenv("HOME", f.home)
+	other, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	inst := filepath.Join(other, "AGENTS.md")
+	transcript := filepath.Join(t.TempDir(), "session.jsonl")
+	for p, s := range map[string]string{inst: "other rules\n", other + "/sub/x.txt": "x\n", transcript: "{}\n"} {
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(s), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	call := func(harness, tool, cwd string) outcome {
+		in := map[string]any{"cwd": cwd, "tool_name": tool, "transcript_path": transcript,
+			"tool_input": map[string]any{"file_path": other + "/sub/x.txt"}}
+		return runPreHook(t, harness, in, "load-repo-instructions")
+	}
+	if o := call("claude", "Read", f.repo); o.kind != "" || !strings.Contains(o.context, "other rules") {
+		t.Errorf("Read: got %q (%s), want context with the repo's AGENTS.md", o.kind, o.context)
+	}
+	for _, tool := range []string{"Edit", "Write"} {
+		if o := call("claude", tool, f.repo); o.kind != "deny" || !strings.Contains(o.reason, "other rules") {
+			t.Errorf("%s: got %q (%s), want deny with the repo's AGENTS.md", tool, o.kind, o.reason)
+		}
+	}
+	// a session started in that repo, or below it, loaded the file already
+	if o := call("claude", "Edit", other+"/sub"); !o.empty {
+		t.Errorf("inside the repo: got %q (%s), want allow", o.kind, o.reason)
+	}
+	if o := call("codex", "Edit", f.repo); !o.empty {
+		t.Errorf("codex: got %q (%s), want allow", o.kind, o.reason)
+	}
+	// the user-level ~/.claude/CLAUDE.md loads in every session, so files under ~/.claude get nothing
+	userDir := filepath.Join(f.home, ".claude")
+	for p, s := range map[string]string{userDir + "/CLAUDE.md": "global\n", userDir + "/projects/p/memory/m.md": "m\n"} {
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(s), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	in := map[string]any{"cwd": f.repo, "tool_name": "Edit", "transcript_path": transcript,
+		"tool_input": map[string]any{"file_path": userDir + "/projects/p/memory/m.md"}}
+	if o := runPreHook(t, "claude", in, "load-repo-instructions"); !o.empty {
+		t.Errorf("memory file under ~/.claude: got %q (%s), want allow", o.kind, o.reason)
+	}
+	if err := os.WriteFile(transcript, []byte(`{"content":"Project instructions from `+inst+`:"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if o := call("claude", "Edit", f.repo); !o.empty {
+		t.Errorf("shown already: got %q (%s), want allow", o.kind, o.reason)
+	}
+}
+
+// the first write into memory, notes, or a handoff gets a sourcing note, once per session
+func TestDurableWriteNote(t *testing.T) {
+	f := newFixture(t)
+	transcript := filepath.Join(t.TempDir(), "session.jsonl")
+	if err := os.WriteFile(transcript, []byte("{}\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	call := func(harness, file string) outcome {
+		in := map[string]any{"cwd": f.repo, "tool_name": "Write", "transcript_path": transcript,
+			"tool_input": map[string]any{"file_path": file, "content": "x"}}
+		return runPreHook(t, harness, in, "note-durable-write")
+	}
+	for _, p := range []string{f.repo + "/.eric/notes/2026-01-01-x.md", f.repo + "/.eric/handoffs/2026-01-01-x.md",
+		f.home + "/.claude/projects/p/memory/m.md"} {
+		if o := call("claude", p); o.kind != "" || !strings.Contains(o.context, durableMarker) {
+			t.Errorf("%s: got %q (%s), want the sourcing note", p, o.kind, o.context)
+		}
+	}
+	for _, p := range []string{f.repo + "/src/main.go", f.repo + "/.eric/scratch/eric-agent-scratch-2026-01-01-x/a.txt"} {
+		if o := call("claude", p); !o.empty {
+			t.Errorf("%s: got %q (%s), want nothing", p, o.kind, o.context)
+		}
+	}
+	if o := call("codex", f.repo+"/.eric/notes/2026-01-01-x.md"); !o.empty {
+		t.Errorf("codex: got %q, want nothing", o.kind)
+	}
+	if err := os.WriteFile(transcript, []byte(`{"content":"`+durableMarker+`: later"}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if o := call("claude", f.repo+"/.eric/notes/2026-01-01-x.md"); !o.empty {
+		t.Errorf("shown already: got %q, want nothing", o.kind)
 	}
 }

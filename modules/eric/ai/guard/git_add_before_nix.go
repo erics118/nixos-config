@@ -15,7 +15,7 @@ var nixWord = regexp.MustCompile(`(^|\W)(nix|nh|darwin-rebuild|nixos-rebuild|hom
 
 // warn on flake-evaluating commands when untracked files exist: flakes only see git-tracked files,
 // so a new module, config file, or skill is silently invisible and the change appears to do nothing.
-// a warning, not a block, since the miss is recoverable (git add and rerun)
+// a warning, not a block, since the miss is recoverable (git add -N and rerun)
 func gitAddBeforeNix(h *hook) decision {
 	checked := map[string]bool{}
 	note, asking := "", false
@@ -43,7 +43,7 @@ func gitAddBeforeNix(h *hook) decision {
 					continue
 				}
 				if untracked := gitOut(root, "ls-files", "--others", "--exclude-standard"); untracked != "" {
-					note = "Untracked files are invisible to flake eval; if your change should take effect, git add them: " + strings.ReplaceAll(untracked, "\n", " ")
+					note = "Untracked files are invisible to flake eval; if your change should take effect, stage only the files you created, not their content, with git add -N: " + strings.ReplaceAll(untracked, "\n", " ") + ". Stage nothing unrelated. Staging is not permission to commit."
 					if isSwitch(h, c, dir) {
 						asking = true
 					}

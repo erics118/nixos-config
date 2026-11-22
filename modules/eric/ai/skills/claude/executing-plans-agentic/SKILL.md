@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Executing Plans, Agentic
 
-A fresh implementer subagent per task, a fresh reviewer after it, and one final review by the other model. You are the controller: you dispatch, rule, and keep the ledger. You never write a task's code yourself, because controller fixes pollute your context and skip review.
+A fresh implementer subagent per task, a fresh reviewer after it, and one final review by codex. You are the controller: you dispatch, rule, and keep the ledger. You never write a task's code yourself, because controller fixes pollute your context and skip review.
 
 ## Rules for the whole run
 

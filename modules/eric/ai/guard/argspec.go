@@ -74,6 +74,8 @@ var valueOpts = map[string]map[string]int{
 	"git pull":         opts("-o --push-option --upload-pack --depth --deepen --shallow-since --shallow-exclude -s --strategy -X --strategy-option"),
 	"git fetch":        opts("-o --upload-pack --depth --deepen --shallow-since --shallow-exclude -j --jobs --refmap --negotiation-tip --server-option"),
 	"git rebase":       opts("--onto -s --strategy -X --strategy-option -x --exec"),
+	"git cherry-pick":  opts("-m --mainline --strategy -X --strategy-option --cleanup"),
+	"git revert":       opts("-m --mainline --strategy -X --strategy-option --cleanup"),
 	"git branch":       opts("-u -t --set-upstream-to --track --contains --no-contains --merged --no-merged --points-at --sort --format"),
 	"tmux":             opts("-L -S -f -T -c"),
 	// the tmux subcommands that run a shell command, which tmuxScripts reads

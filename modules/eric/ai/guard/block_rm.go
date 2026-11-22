@@ -8,7 +8,7 @@ import (
 // block rm and the other tools that delete with no way back. trash keeps a way back
 func blockRm(h *hook) decision {
 	if h.anyCall(deletes) {
-		return deny("Agents never run rm, unlink, find -delete, or rsync --delete or --remove-source-files. Delete with `trash <path>` instead.")
+		return deny("Agents never run rm, unlink, find -delete, or rsync --delete or --remove-source-files. Delete with `trash <path>` instead. On macOS it keeps Finder's Put Back. On Linux it is trash-cli, restored with `trash-restore`.")
 	}
 	return decision{}
 }

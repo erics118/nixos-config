@@ -31,6 +31,15 @@ while IFS= read -r check; do
 done < <(agent-guard checks)
 printf 'ok README names every check\n'
 
+# block-eric-top keeps its own list of .eric entries, so it must name the same ones the global instructions list
+guard_entries=$(grep -oE 'ericEntries = \[\]string\{[^}]*\}' "$ai/guard/block_eric_top.go" | grep -oE '"[^"]+"' | tr -d '"' | LC_ALL=C sort)
+doc_entries=$(sed -n '/^- `\.eric\/`/,/^- /p' "$ai/AGENTS-global.md" | grep '^  - `' | grep -oE '(^  - |, )`[^`/]+' | sed -E 's/.*`//' | LC_ALL=C sort)
+[ -n "$guard_entries" ] && [ "$guard_entries" = "$doc_entries" ] || {
+  printf 'FAIL .eric entries: block_eric_top.go names %s, AGENTS-global.md lists %s\n' "$(tr '\n' ' ' <<<"$guard_entries")" "$(tr '\n' ' ' <<<"$doc_entries")"
+  exit 1
+}
+printf 'ok .eric entries match block-eric-top\n'
+
 # claude and pi agents need different frontmatter but must share one body
 for pi_agent in "$ai"/pi/agents/*.md; do
   name=$(basename "$pi_agent")

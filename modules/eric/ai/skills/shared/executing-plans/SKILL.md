@@ -21,9 +21,9 @@ The plan already did the thinking. Execute it exactly and prove every task with 
 3. The progress file is `.eric/plans/<plan-basename>/progress.md`, where `<plan-basename>` is the plan file name without `.md`.
    - If the progress file exists, every task with a `Task N: done` line is finished. Resume at the first task without one.
    - Otherwise run `mkdir -p .eric/plans/<plan-basename>` and create the file with the first line `# progress - plan: <plan path>`.
-4. On a fresh start, snapshot the working tree without touching the index or history, and record it as `Start: <sha>` in the progress file:
+4. On a fresh start, snapshot the working tree without touching the index or history, and record it as `Start: <sha>` in the progress file. Make the run's scratch folder with `~/.agents/bin/new-scratch.sh <plan-basename>`, then run this with `<scratch>` as its printed path:
    ```bash
-   t=$(mktemp); cp "$(git rev-parse --git-dir)/index" "$t"; GIT_INDEX_FILE=$t git add -A; GIT_INDEX_FILE=$t git write-tree; trash "$t"
+   t=<scratch>/index; cp "$(git rev-parse --git-dir)/index" "$t"; GIT_INDEX_FILE=$t git add -A; GIT_INDEX_FILE=$t git write-tree; trash "$t"
    ```
 5. Load test-driven-development if any task's check is a test.
 
@@ -42,7 +42,7 @@ Done when: every `Expected:` line was compared against real output, the check pa
 
 ## Final review
 
-Take a second snapshot the same way, and run `git diff <start> <end> > .eric/plans/<plan-basename>/final.diff`. The diff includes new files. Send it to the other model. Give it the plan path and its Review Focus section verbatim, and ask it to report where the diff misses a requirement, breaks on a Review Focus input, or does anything the plan did not ask for.
+Take a second snapshot the same way, and run `git diff <start> <end> > .eric/plans/<plan-basename>/final.diff`. The diff includes new files. Send it to codex via the consulting-codex skill. Give it the plan path and its Review Focus section verbatim, and ask it to report where the diff misses a requirement, breaks on a Review Focus input, or does anything the plan did not ask for.
 
 Grade each finding by what a person using the result gets. Fix Critical and Important findings, each with its check re-run. Record a finding you decline as a ruling, and a minor one as `Final: minor (deferred): <one line>`.
 

@@ -1,6 +1,6 @@
 ---
 name: review
-description: Red-team the diff, a file, or a plan with the auditor agent and the other model in parallel, then merge their findings
+description: Red-team the diff, a file, or a plan with the auditor agent and codex in parallel, then merge their findings
 argument-hint: "[empty for uncommitted changes | file | area | plan]"
 disable-model-invocation: true
 effort: high
@@ -19,15 +19,15 @@ Done when: the brief file exists and names every path in scope.
 Give both the same brief, before reading anything yourself:
 
 - First start the `auditor` agent in the background.
-- Then run the other model as its consulting skill says.
+- Then run codex as the consulting-codex skill says.
 
-Read the target yourself while they run, or after if the other model's call blocks, so you can judge their findings.
+Read the target yourself while they run, or after if the codex call blocks, so you can judge their findings.
 
 Done when: both have returned, or one failed and you say which and why.
 
 ## 3. Merge
 
-Verify the decisive line of every finding against the current code before keeping it. Drop findings that are vague, misread intent, or relocate complexity, and say which you dropped. Merge duplicates and mark each finding's source: auditor, the other model, or both. Agreement is high confidence. Where they disagree, dig into why instead of averaging. Quote the other model's verdict verbatim.
+Verify the decisive line of every finding against the current code before keeping it. Drop findings that are vague, misread intent, or relocate complexity, and say which you dropped. Merge duplicates and mark each finding's source: auditor, codex, or both. Agreement is high confidence. Where they disagree, dig into why instead of averaging. Quote codex's verdict verbatim.
 
 Done when: every finding is kept with its line checked, or listed as dropped with a reason.
 
