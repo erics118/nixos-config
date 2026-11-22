@@ -1,4 +1,5 @@
-// osascript is Apple-signed, so CoreWiFi returns network names without location access
+// on macOS 27.2 CoreWLAN's cached scan results still carry network names for osascript; CoreWiFi's do not
+// CoreWiFi scans the radio more fully than CoreWLAN, and its results land in that cache
 // with the argument "cached" it returns the system's recent scan results instead of scanning
 ObjC.import("CoreWLAN");
 $.NSBundle.bundleWithPath(
@@ -6,27 +7,31 @@ $.NSBundle.bundleWithPath(
 ).load;
 
 function run(argv) {
+  if (argv[0] !== "cached") {
+    const scanner =
+      $.NSClassFromString("CWFInterface").alloc.initWithServiceType(5);
+    scanner.activate;
+    const params = $.NSClassFromString("CWFScanParameters").alloc.init;
+    scanner.performScanWithParametersError(params, null);
+  }
+
+  const wifi = $.CWWiFiClient.sharedWiFiClient.interface;
+
   const known = new Set();
-  const profiles =
-    $.CWWiFiClient.sharedWiFiClient.interface.configuration.networkProfiles
-      .array;
+  const profiles = wifi.configuration.networkProfiles.array;
   for (let i = 0; i < profiles.count; i++) {
     known.add(ObjC.unwrap(profiles.objectAtIndex(i).ssid));
   }
 
-  const wifi = $.NSClassFromString("CWFInterface").alloc.init;
-  wifi.activate;
-
-  const params = $.NSClassFromString("CWFScanParameters").alloc.init;
-  params.setCacheOnly(argv[0] === "cached");
-  const results = wifi.performScanWithParametersError(params, null);
+  const set = wifi.cachedScanResults;
+  const results = set.isNil() ? [] : ObjC.unwrap(set.allObjects);
 
   // one entry per network name, keeping its strongest access point
   const networks = {};
-  for (let i = 0; !results.isNil() && i < results.count; i++) {
-    const result = results.objectAtIndex(i);
-    const name = ObjC.unwrap(result.networkName);
-    const strength = ObjC.unwrap(result.signalStrength);
+  for (const result of results) {
+    const name = ObjC.unwrap(result.ssid);
+    // the scale of CoreWiFi's signalStrength, which the lua side expects
+    const strength = (Number(result.rssiValue) + 90) / 60;
     if (!name || (networks[name] && networks[name].strength >= strength)) {
       continue;
     }

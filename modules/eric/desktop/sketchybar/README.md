@@ -32,6 +32,10 @@ macOS 14.4+ hides SSIDs from processes without Location Services access.
 - CoreWLAN (`CWWiFiClient`) in a compiled binary returns `ssid nil` and `nil` scan names. Signal (`rssiValue`) and known networks (`configuration.networkProfiles`) work without permission. Ad-hoc signing a binary with an Apple-looking identifier does not help.
 - Apple-signed interpreters get names. `osascript -l JavaScript` (JXA) and the Xcode `swift` interpreter both return scan names, even when launched by sketchybar.
 - The private CoreWiFi framework (`/System/Library/PrivateFrameworks/CoreWiFi.framework`) through JXA gives everything with the default `HideWiFiInfo`: `CWFInterface.networkName` is the current SSID, `currentScanResult.signalStrength` its signal. Load the bundle and use `$.NSClassFromString("CWFInterface")`, since JXA does not expose it as `$.CWFInterface`.
+- On macOS 27.2.1, `CWFInterface.alloc.init` leaves `interfaceName` nil and `powerOn` false. `initWithServiceType(5)` binds `en0` and gives power and signal, but `networkName` and scan names are nil: locationd now checks osascript's location authorization.
+- On macOS 27.2.1, the current SSID is hidden everywhere tried: CoreWLAN `ssid`, scutil `SSID_STR`, `ipconfig getsummary` (even after `ipconfig setverbose 1`), `system_profiler`. BSSIDs are hidden too. CoreWLAN `cachedScanResults` through JXA still has names, so `status.js` takes the cached result on the interface's channel with the nearest RSSI. That is a guess and can pick the wrong network when two share a channel at similar strength.
+- CoreWLAN's own `scanForNetworksWithNameError` finds only 1 to 3 networks, while a `CWFInterface` scan finds about 10 and fills the CoreWLAN cache. `scan.js` scans with CoreWiFi and reads names from that cache.
+- CoreWiFi's `signalStrength` is `(RSSI + 90) / 60`. JXA returns CoreWLAN integers like `rssiValue` as strings.
 - A helper `.app` holding Location permission was the other route. It was never needed.
 
 ### Scanning

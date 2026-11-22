@@ -196,7 +196,7 @@ function update_status()
         status = result
 
         local symbol = status.power and "wifi" or "wifi.slash"
-        local value = status.power and (status.name ~= "" and status.strength or 0) or nil
+        local value = status.power and status.strength or nil
         local connected = status.name ~= ""
         render_symbol(symbol, colors.text, 15, value, function(path, width)
             wifi:set({
