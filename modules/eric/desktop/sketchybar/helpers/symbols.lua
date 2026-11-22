@@ -1,6 +1,18 @@
+local settings = require("settings")
+
 local renderer = settings.helpers_dir .. "symbol_image"
-local dir = os.getenv("HOME") .. "/.cache/sketchybar/symbols/"
+
+-- each helper build caches apart, so pngs drawn by an older symbol_image.m are never served
+-- a build is named by its nix store directory, and other builds' caches are removed at load
+local cache = os.getenv("HOME") .. "/.cache/sketchybar/symbols/"
+local handle = io.popen("readlink -f '" .. renderer .. "'")
+local build = (handle and handle:read("*l") or ""):match("^/nix/store/([^/]+)/") or "unversioned"
+if handle then
+    handle:close()
+end
+local dir = cache .. build .. "/"
 os.execute("mkdir -p '" .. dir .. "'")
+os.execute("find '" .. cache .. "' -mindepth 1 -maxdepth 1 ! -name '" .. build .. "' -exec rm -rf {} +")
 
 -- point width of a 2x png, read from the ihdr chunk
 local function png_width(path)

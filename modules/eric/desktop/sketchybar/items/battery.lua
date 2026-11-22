@@ -1,18 +1,7 @@
-local render_symbol = require("helpers.symbols")
-
-local battery = sbar.add_item("battery", {
+local battery = sbar.add_symbol_item("battery", {
     position = "right",
     padding_left = 2,
-    icon = {
-        string = "",
-        width = 36,
-        padding_left = 0,
-        padding_right = 0,
-        background = {
-            drawing = true,
-            image = { scale = 0.5, padding_left = 7 },
-        },
-    },
+    icon = { width = 36 },
     popup = { align = "left", height = 24 },
 })
 
@@ -29,6 +18,7 @@ local energy_modes = {
 }
 
 local energy_mode_items = {}
+local mode_rows = sbar.symbol_rows(battery)
 
 local function update_popup()
     sbar.exec("pmset -g batt; pmset -g", function(info)
@@ -41,33 +31,13 @@ local function update_popup()
 
         for i, item in ipairs(energy_mode_items) do
             local color = tonumber(mode) == i - 1 and colors.blue or colors.text
-            render_symbol(energy_modes[i].symbol, color, 15, nil, function(path, width)
-                item:set({ icon = { width = width, background = { image = path } } })
-            end)
+            mode_rows.show(item, { symbol = energy_modes[i].symbol, color = color, size = 15 })
         end
     end)
 end
 
 for i, mode in ipairs(energy_modes) do
-    local item = sbar.add_item("energy_mode." .. (i - 1), {
-        position = "popup." .. battery.name,
-        padding_left = 12,
-        icon = {
-            string = "",
-            padding_left = 0,
-            padding_right = 0,
-            background = {
-                drawing = true,
-                image = { scale = 0.5 },
-            },
-        },
-        label = {
-            string = mode.name,
-            padding_left = 8,
-            padding_right = 12,
-        },
-        background = { drawing = false },
-    })
+    local item = mode_rows.add("energy_mode." .. (i - 1), mode.name)
 
     item:subscribe("mouse.clicked", function()
         sbar.exec("/usr/bin/sudo /usr/bin/pmset -a powermode " .. (i - 1), update_popup)
@@ -83,16 +53,8 @@ local function render(info)
     if type(info) ~= "table" then
         return
     end
-    local charge = math.max(info.percentage or 0, 0)
-    local on_ac = info.source == "AC Power"
-    local charging = on_ac and info.charging == true
-
-    local color = colors.green
-    if not on_ac and charge <= 10 then
-        color = colors.red
-    elseif not on_ac and charge <= 30 then
-        color = colors.orange
-    end
+    local charge, on_ac, charging = sbar.parse_battery_info(info)
+    local color = sbar.battery_color(charge, on_ac, colors.green)
 
     local symbol = "battery"
     if charging then
@@ -101,12 +63,11 @@ local function render(info)
         symbol = "battery.plug"
     end
 
-    render_symbol(symbol, color, 15, charge / 100, function(path, width)
-        battery:set({
-            icon = { width = width + 10, background = { image = path } },
-            label = { string = charge .. "%" },
-        })
-    end)
+    sbar.set_symbol(
+        battery,
+        { symbol = symbol, color = color, size = 15, value = charge / 100 },
+        { label = { string = charge .. "%" } }
+    )
 end
 
 battery:subscribe("battery_change", function(env)

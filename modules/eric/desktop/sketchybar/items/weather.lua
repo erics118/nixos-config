@@ -1,15 +1,4 @@
-local render_symbol = require("helpers.symbols")
-
-local weather = sbar.add_item("weather", {
-    icon = {
-        string = "",
-        padding_left = 0,
-        padding_right = 0,
-        background = {
-            drawing = true,
-            image = { scale = 0.5, padding_left = 7 },
-        },
-    },
+local weather = sbar.add_symbol_item("weather", {
     position = "right",
     padding_left = 2,
     padding_right = 1,
@@ -189,11 +178,8 @@ local weather_icons_night = setmetatable({
     ["severe sandstorm"] = "moon.dust.fill",
 }, { __index = weather_icons_day })
 
--- icon padding_left 7 plus the 3pt gap to the label, as for font icons
 local function set_icon(symbol, color)
-    render_symbol(symbol, color, 13, nil, function(path, width)
-        weather:set({ icon = { width = width + 10, background = { image = path } } })
-    end)
+    sbar.set_symbol(weather, { symbol = symbol, color = color, size = 13 })
 end
 
 local function get_condition_icon(condition, is_day)

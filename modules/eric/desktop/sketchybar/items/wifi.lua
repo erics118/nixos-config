@@ -1,22 +1,11 @@
-local render_symbol = require("helpers.symbols")
-
 local status_script = "osascript -l JavaScript $CONFIG_DIR/helpers/wifi/status.js"
 local scan_script = "osascript -l JavaScript $CONFIG_DIR/helpers/wifi/scan.js"
 
-local wifi = sbar.add_item("wifi", {
+local wifi = sbar.add_symbol_item("wifi", {
     position = "right",
     padding_left = 2,
     padding_right = 1,
-    icon = {
-        string = "",
-        width = 34,
-        padding_left = 0,
-        padding_right = 0,
-        background = {
-            drawing = true,
-            image = { scale = 0.5, padding_left = 7 },
-        },
-    },
+    icon = { width = 34 },
     label = { drawing = false },
     update_freq = 60,
     popup = { align = "left", height = 24 },
@@ -28,7 +17,7 @@ local status = { power = false, name = "", strength = 0 }
 local networks = {}
 local show_other = false
 local joining = nil
-local icon_slot = 0
+local rows = sbar.symbol_rows(wifi)
 
 local update_popup, update_status
 
@@ -65,37 +54,19 @@ local function join(network)
 end
 
 local function add_rows(prefix, count)
-    local rows = {}
+    local list = {}
     for i = 1, count do
         ---@type { item: table, network: { name: string, strength: integer, known: boolean }? }
         local row = { network = nil }
-        row.item = sbar.add_item(prefix .. "." .. i, {
-            position = "popup." .. wifi.name,
-            drawing = false,
-            padding_left = 12,
-            icon = {
-                string = "",
-                padding_left = 0,
-                padding_right = 0,
-                background = {
-                    drawing = true,
-                    image = { scale = 0.5 },
-                },
-            },
-            label = {
-                padding_left = 8,
-                padding_right = 12,
-            },
-            background = { drawing = false },
-        })
+        row.item = rows.add(prefix .. "." .. i)
         row.item:subscribe("mouse.clicked", function()
             if row.network and row.network.name ~= status.name then
                 join(row.network)
             end
         end)
-        rows[i] = row
+        list[i] = row
     end
-    return rows
+    return list
 end
 
 local hotspot_header = add_header("wifi_hotspot_header", "Personal Hotspot")
@@ -105,20 +76,10 @@ local known_rows = add_rows("wifi_known", 6)
 local other_header = add_header("wifi_other_header", "Other Networks")
 local other_rows = add_rows("wifi_other", 6)
 
-local settings_row = sbar.add_item("wifi_settings", {
-    position = "popup." .. wifi.name,
-    padding_left = 12,
-    icon = { drawing = false },
-    label = {
-        string = "Wi-Fi Settings...",
-        padding_left = 0,
-        padding_right = 12,
-    },
-    background = { drawing = false },
-})
+local settings_row = sbar.add_popup_row(wifi, "wifi_settings", "Wi-Fi Settings...")
 
-local function show_rows(rows, list, visible)
-    for i, row in ipairs(rows) do
+local function show_rows(group, list, visible)
+    for i, row in ipairs(group) do
         local network = visible and list[i] or nil
         row.network = network
         if not network then
@@ -130,18 +91,11 @@ local function show_rows(rows, list, visible)
             if network.name == joining then
                 symbol, value = "progress.indicator", nil
             end
-            render_symbol(symbol, connected and colors.blue or colors.text, 15, value, function(path, width)
-                -- rows share the widest icon's width so their names line up
-                if width > icon_slot then
-                    icon_slot = width
-                    sbar.set("/wifi_.*\\..*/", { icon = { width = icon_slot } })
-                end
-                row.item:set({
-                    drawing = true,
-                    icon = { background = { image = path } },
-                    label = network.name .. (network.secure and "  " .. icons.lock or ""),
-                })
-            end)
+            rows.show(
+                row.item,
+                { symbol = symbol, color = connected and colors.blue or colors.text, size = 15, value = value },
+                network.name .. (network.secure and "  " .. icons.lock or "")
+            )
         end
     end
 end
@@ -195,19 +149,14 @@ function update_status()
         end
         status = result
 
-        local symbol = status.power and "wifi" or "wifi.slash"
-        local value = status.power and status.strength or nil
         local connected = status.name ~= ""
-        render_symbol(symbol, colors.text, 15, value, function(path, width)
-            wifi:set({
-                icon = {
-                    -- with no label the 7pt padding_left is mirrored on the right
-                    width = width + (connected and 10 or 14),
-                    background = { image = path },
-                },
-                label = { drawing = connected, string = status.name },
-            })
-        end)
+        sbar.set_symbol(wifi, {
+            symbol = status.power and "wifi" or "wifi.slash",
+            color = colors.text,
+            size = 15,
+            value = status.power and status.strength or nil,
+            labeled = connected,
+        }, { label = { drawing = connected, string = status.name } })
 
         update_popup()
     end)

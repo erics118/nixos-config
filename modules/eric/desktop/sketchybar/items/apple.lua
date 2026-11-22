@@ -28,12 +28,14 @@ local function toggle_zen()
         sbar.set("smhkd", { drawing = switch })
         sbar.set("yabai", { drawing = switch })
         sbar.set("front_app", { drawing = switch })
-        sbar.set("/cpu\\..*/", { drawing = switch })
-        sbar.set("battery", { drawing = switch })
-        sbar.set("sleep", { drawing = switch })
-        sbar.set("wifi", { drawing = switch })
-        sbar.set("calendar", { icon = { drawing = switch } })
-        sbar.set("weather", { drawing = switch })
+        -- the right side keeps only the clock's time
+        for _, name in ipairs(sbar.query("bar").items) do
+            if name == "calendar" then
+                sbar.set(name, { icon = { drawing = switch } })
+            elseif sbar.query(name).geometry.position == "right" then
+                sbar.set(name, { drawing = switch })
+            end
+        end
 
         sbar.set("/space\\..*/", { background = { drawing = switch }, label = { drawing = switch } })
     else

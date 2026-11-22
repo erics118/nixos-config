@@ -19,21 +19,21 @@ local calendar = sbar.add_item("calendar", {
 })
 
 -- the battery item is hidden in zen mode, so the clock warns about low battery instead
-local function update_color()
+local function update_color(env)
     if sbar.get_mode() ~= "zen" then
         calendar:set({ label = { color = colors.text } })
         return
     end
 
-    sbar.battery_status(function(charge, on_ac)
-        local color = colors.text
-        if not on_ac and charge <= 10 then
-            color = colors.red
-        elseif not on_ac and charge <= 30 then
-            color = colors.orange
-        end
-        calendar:set({ label = { color = color } })
-    end)
+    local function set_color(charge, on_ac)
+        calendar:set({ label = { color = sbar.battery_color(charge, on_ac, colors.text) } })
+    end
+
+    if env and env.SENDER == "battery_change" and type(env.INFO) == "table" then
+        set_color(sbar.parse_battery_info(env.INFO))
+    else
+        sbar.battery_status(set_color)
+    end
 end
 
 local function update_time()

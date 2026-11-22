@@ -1,3 +1,7 @@
+-- loaded here, before any item spawns a lasting child like cpu_load
+-- its load-time shell commands wait on children, so loading it later hangs the config
+local render_symbol = require("helpers.symbols")
+
 local set_padding = function(options)
     options.padding_left = options.padding_left or settings.outer_padding
     options.padding_right = options.padding_right or settings.outer_padding
@@ -64,6 +68,75 @@ sbar.add_popup_row = function(parent, name, text, color)
         },
         background = { drawing = false },
     })
+end
+
+-- an item whose icon is a symbol image, drawn with sbar.set_symbol
+sbar.add_symbol_item = function(name, options)
+    options.icon = options.icon or {}
+    options.icon.string = ""
+    options.icon.padding_left = 0
+    options.icon.padding_right = 0
+    options.icon.background = {
+        drawing = true,
+        image = { scale = 0.5, padding_left = settings.inside_background_padding },
+    }
+    return sbar.add_item(name, options)
+end
+
+-- spec is { symbol, color, size, value, labeled }, the first four as helpers/symbols.lua takes them
+-- renders the symbol into the item's icon and sets props in the same update
+-- the icon is padded like a font icon: 7pt before, then 3pt before a label or 7pt with none
+sbar.set_symbol = function(item, spec, props)
+    props = props or {}
+    render_symbol(spec.symbol, spec.color, spec.size, spec.value, function(path, width)
+        local after = spec.labeled == false and settings.inside_background_padding
+            or settings.between_icon_label_padding
+        props.icon = props.icon or {}
+        props.icon.width = width + settings.inside_background_padding + after
+        props.icon.background = { image = path }
+        item:set(props)
+    end)
+end
+
+-- popup rows with a symbol icon and a label, made hidden by add and drawn by show
+-- rows of one group share the widest icon's width, so their labels line up
+sbar.symbol_rows = function(parent)
+    local items = {}
+    local slot = 0
+    local rows = {}
+
+    function rows.add(name, label)
+        local item = sbar.add_item(name, {
+            position = "popup." .. parent.name,
+            drawing = false,
+            padding_left = 12,
+            icon = {
+                string = "",
+                padding_left = 0,
+                padding_right = 0,
+                background = { drawing = true, image = { scale = 0.5 } },
+            },
+            label = { string = label, padding_left = 8, padding_right = 12 },
+            background = { drawing = false },
+        })
+        table.insert(items, item)
+        return item
+    end
+
+    -- spec is { symbol, color, size, value }, and label replaces the row's label when given
+    function rows.show(item, spec, label)
+        render_symbol(spec.symbol, spec.color, spec.size, spec.value, function(path, width)
+            if width > slot then
+                slot = width
+                for _, other in ipairs(items) do
+                    other:set({ icon = { width = slot } })
+                end
+            end
+            item:set({ drawing = true, icon = { width = slot, background = { image = path } }, label = label })
+        end)
+    end
+
+    return rows
 end
 
 sbar.add_graph = function(name, width, options)
@@ -147,6 +220,23 @@ sbar.battery_status = function(callback)
         local charging = on_ac and batt_info:find("; charging") ~= nil
         callback(tonumber(charge) or 0, on_ac, charging)
     end)
+end
+
+-- charge, on_ac and charging from the json sketchybar sends with battery_change
+sbar.parse_battery_info = function(info)
+    local charge = math.max(info.percentage or 0, 0)
+    local on_ac = info.source == "AC Power"
+    return charge, on_ac, on_ac and info.charging == true
+end
+
+-- on battery, red at 10% and orange at 30%, otherwise normal
+sbar.battery_color = function(charge, on_ac, normal)
+    if not on_ac and charge <= 10 then
+        return colors.red
+    elseif not on_ac and charge <= 30 then
+        return colors.orange
+    end
+    return normal
 end
 
 -- front app switches that items should not react to

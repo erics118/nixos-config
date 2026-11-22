@@ -76,6 +76,20 @@ static void draw_battery(CGFloat size, double level, NSString *glyph, NSSize pt)
   [top drawInRect:g];
 }
 
+// tailscale's own menu bar icons, template images in the app's asset catalog
+static NSImage *tailscale_icon(NSString *name) {
+  NSString *asset = [name isEqualToString:@"tailscale"]       ? @"StatusBarIcon"
+                    : [name isEqualToString:@"tailscale.off"] ? @"StatusBarIconDimmed"
+                                                              : nil;
+  if (!asset) return nil;
+  NSImage *icon = [[NSBundle bundleWithPath:@"/Applications/Tailscale.app"] imageForResource:asset];
+  if (!icon) {
+    fprintf(stderr, "Tailscale.app has no %s\n", asset.UTF8String);
+    exit(1);
+  }
+  return icon;
+}
+
 int main(int argc, char **argv) {
   @autoreleasepool {
     if (argc != 5 && argc != 6) {
@@ -83,7 +97,8 @@ int main(int argc, char **argv) {
               "usage: %s <symbol> <0xAARRGGBB | multicolor[:0xAARRGGBB]> <point size> <out.png> [value]\n"
               "  multicolor:0xAARRGGBB recolors the white parts of the multicolor symbol\n"
               "  value is the variable value (0-1) of the symbol\n"
-              "  symbol battery, battery.bolt or battery.plug draws a battery filled to value\n",
+              "  symbol battery, battery.bolt or battery.plug draws a battery filled to value\n"
+              "  symbol tailscale or tailscale.off draws Tailscale.app's menu bar icon on a canvas of point size\n",
               argv[0]);
       return 1;
     }
@@ -105,7 +120,10 @@ int main(int argc, char **argv) {
 
     NSString *glyph = battery_glyph(name);
     BOOL battery = glyph || [name isEqualToString:@"battery"];
-    NSSize pt = battery ? battery_canvas(size, glyph) : load_symbol(name, size, value, nil).size;
+    NSImage *tailscale = tailscale_icon(name);
+    NSSize pt = battery     ? battery_canvas(size, glyph)
+                : tailscale ? NSMakeSize(size, size)
+                            : load_symbol(name, size, value, nil).size;
 
     // render at 2x for retina, sketchybar shows it 1:1 with image.scale 0.5
     NSBitmapImageRep *rep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
@@ -127,6 +145,12 @@ int main(int argc, char **argv) {
     NSRectFillUsingOperation(NSMakeRect(0, 0, pt.width, pt.height), NSCompositingOperationClear);
     if (battery) {
       draw_battery(size, isnan(value) ? 1 : value, glyph, pt);
+    } else if (tailscale) {
+      // a template image keeps its alpha and takes the color
+      NSRect rect = NSMakeRect(0, 0, pt.width, pt.height);
+      [tailscale drawInRect:rect];
+      [g_color set];
+      NSRectFillUsingOperation(rect, NSCompositingOperationSourceAtop);
     } else {
       [load_symbol(name, size, value, nil) drawInRect:NSMakeRect(0, 0, pt.width, pt.height)];
     }
