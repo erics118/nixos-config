@@ -903,11 +903,11 @@
     "yabai-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1791825437,
-        "narHash": "sha256-+vXq2fib5RDKSWEEYo0QfiaWoFEEIPJZpgGKOX5NqNI=",
+        "lastModified": 1795318798,
+        "narHash": "sha256-rHFIO5dq/fVkZB/Hxm7Rsn/goU8BtaejL+X6ZtKJ15Q=",
         "owner": "erics118",
         "repo": "yabai",
-        "rev": "2ec8fc97ee6d1847bf8f846be0972ef93e1979e6",
+        "rev": "993acff9d81a5a6a379c145ebce0afb058f57ca6",
         "type": "github"
       },
       "original": {

@@ -87,9 +87,41 @@
                   "/Applications/Notion.app"
                   "/System/Applications/Messages.app"
                   "/Applications/Firefox Developer Edition.app"
-                  "/Applications/WezTerm.app"
+                  "/Applications/Rex Beta.app"
                   "/Applications/Slack.app"
                   "/Applications/Spotify.app"
+                ];
+            # the tile records system.defaults.dock.persistent-others builds from folder paths
+            # arrangement 1 sorts by name, 2 by date added; showas 0 is automatic, 1 is fan
+            persistent-others =
+              map
+                (folder: {
+                  tile-data = {
+                    inherit (folder) arrangement showas;
+                    displayas = 0;
+                    file-data = {
+                      _CFURLString = "file://${folder.path}/";
+                      _CFURLStringType = 15;
+                    };
+                  };
+                  tile-type = "directory-tile";
+                })
+                [
+                  {
+                    path = "/Users/eric/Documents/cornell/fa26";
+                    arrangement = 1;
+                    showas = 0;
+                  }
+                  {
+                    path = "/Users/eric/Documents";
+                    arrangement = 1;
+                    showas = 1;
+                  }
+                  {
+                    path = "/Users/eric/Downloads";
+                    arrangement = 2;
+                    showas = 1;
+                  }
                 ];
           };
           # document icons in window title bars. macos protects this domain, so the

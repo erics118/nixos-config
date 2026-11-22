@@ -43,7 +43,6 @@ rex.bind("ctrl+alt+cmd+n", "session.previous")
 rex.bind("cmd+s>r", "client.tab.rename")
 rex.bind("cmd+s>shift+r", "session.rename")
 rex.bind("cmd+r", "session.refresh")
-rex.bind("ctrl+alt+cmd+w", "session.open_on_web")
 
 rex.bind("cmd+t", "client.tab.new")
 rex.unbind("shift+cmd+]")
@@ -272,22 +271,22 @@ guarded_close(
 
 -- a popup is a program in a floating layer over the tab of the pane that pressed its key.
 -- its key hides it by detaching its pane, which keeps running, and shows it again.
--- its label, "popup:<name> <block id>", finds it again and names the pane that opened it
-local function popup_label(name, opener)
-    return "popup:" .. name .. " " .. opener
-end
+-- its title is its pane's label, which the header shows and which finds it again
+local popup_titles = {}
+local popup_names = {}
 
--- the popup's name and opener, or nil for a pane that isn't a popup
-local function parse_popup(label)
-    return (label or ""):match("^popup:(%S+) (%S+)$")
-end
+-- the pane that opened each popup, by the popup's block id.
+-- it lasts until init.lua reloads, and after that a hiding popup leaves focus where rex puts it
+local openers = {}
 
--- popups that close instead of hiding, since rext's list and client would be stale when shown again
-local closes_on_hide = { projects = true }
+-- the popup's name, or nil for a pane that isn't a popup
+local function popup_name(label)
+    return popup_names[label or ""]
+end
 
 -- rex focuses some other pane when a focused popup goes away, so its opener is focused first
 local function return_focus(window, block)
-    local _, opener = parse_popup(block.label)
+    local opener = openers[block.block_id]
     if opener and window.focused_block_id == block.block_id then
         rex.session.focus_block({ block_id = opener })
     end
@@ -296,11 +295,7 @@ end
 local function hide_popup(window, layer)
     local block = layer.blocks[1]
     return_focus(window, block)
-    if closes_on_hide[parse_popup(block.label)] then
-        rex.session.close_layer({ layer_id = layer.layer_id })
-    else
-        rex.session.detach_block({ block_id = block.block_id })
-    end
+    rex.session.detach_block({ block_id = block.block_id })
 end
 
 -- runs the popup's program, or a login shell, then closes the popup through popup_closed.
@@ -343,7 +338,7 @@ local function toggle_popup(ctx, name, bounds, command)
         return
     end
     for _, layer in ipairs(window.layers) do
-        if layer.kind == "floating" and parse_popup(layer.blocks[1].label) == name then
+        if layer.kind == "floating" and popup_name(layer.blocks[1].label) == name then
             hide_popup(window, layer)
             return
         end
@@ -351,15 +346,12 @@ local function toggle_popup(ctx, name, bounds, command)
     -- a key pressed in another popup opens this one for that popup's opener
     local opener = ctx.block_id
     if ctx_layer.kind == "floating" then
-        for _, block in ipairs(ctx_layer.blocks) do
-            local _, other = parse_popup(block.label)
-            opener = block.block_id == ctx.block_id and other or opener
-        end
+        opener = openers[ctx.block_id] or opener
     end
     local process = foreground(opener)
     -- other popups in the tab hide, and floating panes that aren't popups stay
     for _, layer in ipairs(window.layers) do
-        if layer.kind == "floating" and parse_popup(layer.blocks[1].label) then
+        if layer.kind == "floating" and popup_name(layer.blocks[1].label) then
             hide_popup(window, layer)
         end
     end
@@ -367,54 +359,102 @@ local function toggle_popup(ctx, name, bounds, command)
     local blocks, err = rex.session.list_blocks({})
     check(blocks, err)
     for _, block in ipairs(blocks.blocks) do
-        if parse_popup(block.label) == name then
+        if popup_name(block.label) == name then
             local anchor = tiled_anchor(window)
             if not anchor then
                 error("this tab has no tiled pane to show " .. name .. " over", 0)
             end
-            check(rex.session.set_block_label({ block_id = block.block_id, label = popup_label(name, opener) }))
+            openers[block.block_id] = opener
             check(rex.session.move_block({ block_id = block.block_id, anchor_block_id = anchor }))
             check(rex.session.float_block({ block_id = block.block_id, bounds = bounds }))
             check(rex.session.focus_block({ block_id = block.block_id }))
             return
         end
     end
-    check(rex.session.new_layer({
+    local layer, layer_err = rex.session.new_layer({
         window_id = window.window_id,
         bounds = bounds,
         focus = true,
         layout = rex.layout.block({
             flavor = terminal .. ".shell",
-            label = popup_label(name, opener),
+            label = popup_titles[name],
             options = {
                 command = { "/bin/sh", "-c", popup_wrapper, "popup", unpack(command or {}) },
                 cwd = process and process.cwd,
             },
         }),
-    }))
+    })
+    check(layer, layer_err)
+    openers[layer.block_ids[1]] = opener
 end
 
 -- the action and key for a popup.
--- command is an argv list, a function of ctx that returns one, or nil for a shell
+-- command is an argv list, or nil for a shell
 local function popup(name, title, key, bounds, command)
-    -- popup labels split their fields on whitespace
-    assert(not name:find("%s"), "popup name has whitespace: " .. name)
+    popup_titles[name] = title
+    popup_names[title] = name
     rex.action({
         name = name,
         title = title,
         run = function(ctx)
-            toggle_popup(ctx, name, bounds, type(command) == "function" and command(ctx) or command)
+            toggle_popup(ctx, name, bounds, command)
         end,
     })
     rex.bind(key, name)
 end
 
 popup("files", "Files", "cmd+e", { 0.05, 0.05, 0.9, 0.9 }, { "yazi" })
-popup("scratch", "Scratch Shell", "cmd+j", { 0, 0.6, 1, 0.4 })
--- rext switches the app that pressed the key, which a new popup terminal can't tell it
-popup("projects", "Projects", "cmd+p", { 0.3, 0.2, 0.4, 0.6 }, function(ctx)
-    return { "env", "REX_CLIENT=" .. (ctx.client_id or ""), "REXT_POPUP=1", "rext" }
-end)
+popup("scratch", "Scratch", "cmd+j", { 0, 0.6, 1, 0.4 })
+
+-- cmd-p picks a row of rext's all view in the command palette: a session, a sesh config entry or a zoxide dir.
+-- typed text that matches nothing goes to rext --new
+local function rext(ctx, args)
+    -- rext switches the app that pressed the key, which it can't tell from the server's environment
+    local reply = rex.exec(args, { env = { REX_CLIENT = ctx.client_id }, timeout = 20 })
+    if not (reply and reply.ok) then
+        error("rext failed: " .. (reply and reply.stderr or "rext is not on PATH"), 0)
+    end
+    return reply.stdout
+end
+
+rex.action({
+    name = "projects",
+    title = "Projects",
+    run = function(ctx)
+        local rows, items = {}, {}
+        for line in rext(ctx, { "rext", "--list", "d" }):gmatch("[^\n]+") do
+            local session, row = line:match("^([^\t]*)\t(.*)$")
+            -- each row starts with a colored nerd font icon, which the palette can't show
+            local name = (row:gsub("\27%[[%d;]*m", "")):match("^%S+ (.+)$")
+            if name then
+                local icon = session ~= "" and "terminal" or name:match("^[~/]") and "folder" or "gear"
+                local detail = session == ctx.session_id and "current" or session ~= "" and "running" or nil
+                table.insert(rows, { session = session ~= "" and session or nil, name = name })
+                table.insert(items, { id = tostring(#rows), title = name, icon = icon, detail = detail })
+            end
+        end
+        local choice = rex.ui.pick({
+            title = "Projects",
+            placeholder = "Filter, or type a new ~/dev name or scratch/",
+            items = items,
+            allow_other = true,
+        })
+        if choice == nil then
+            return
+        end
+        if type(choice) == "table" then
+            rext(ctx, { "rext", "--new", choice.text })
+            return
+        end
+        local row = rows[tonumber(choice)]
+        if row.session then
+            rex.client.queue("session.select", { session_id = row.session })
+        else
+            rext(ctx, { "rext", row.name })
+        end
+    end,
+})
+rex.bind("cmd+p", "projects")
 
 -- run by a popup's wrapper once its program exits, from inside the popup
 rex.action({
@@ -424,6 +464,7 @@ rex.action({
         local window, layer = find_block(rex.session.view({}), ctx.block_id)
         if layer and layer.kind == "floating" then
             return_focus(window, layer.blocks[1])
+            openers[layer.blocks[1].block_id] = nil
             rex.session.close_layer({ layer_id = layer.layer_id })
         end
     end,

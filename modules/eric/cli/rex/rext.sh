@@ -24,7 +24,7 @@ session_id() {
 }
 
 # switches the app that shows this terminal, since rex refuses to guess when another app such as a phone is connected.
-# the cmd-p popup sets REX_CLIENT itself (see rex/init.lua)
+# the cmd-p picker sets REX_CLIENT itself (see rex/init.lua)
 select_session() {
   local owner=''
   if [[ -z ${REX_CLIENT:-} && -n ${REX_BLOCK:-} ]]; then
@@ -55,6 +55,31 @@ open_config() {
   open_session "$1" "$(sesh list -c -j | jq -r --arg n "$1" 'first(.[] | select(.Name == $n) | .Path) // empty')"
 }
 
+# a new project named $1: scratch/ makes a scratch folder, and anything else ~/dev/$1
+open_new() {
+  local name
+  name=$(printf '%s' "$1" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+  [[ -n $name ]] || exit 0
+  if [[ $name == scratch/ ]]; then
+    open_dir "$(scratch)"
+    exit
+  fi
+  mkdir -p "$HOME/dev/$name"
+  open_dir "$HOME/dev/$name"
+}
+
+# zoxide dirs the picker never lists: ~/Library, /Library and /Applications with everything under them,
+# and each folder directly under /
+hidden_dir() {
+  local path=${1/#\~/$HOME}
+  case $path in
+  "$HOME"/Library | "$HOME"/Library/* | /Library/* | /Applications/*) return 0 ;;
+  /*/*) return 1 ;;
+  /?*) return 0 ;;
+  esac
+  return 1
+}
+
 # rows for a view, d all, t sessions, c config entries, z zoxide dirs, as "<session id or nothing><tab><icon> <name>".
 # the all view lists a config entry's dir once (sesh's -d) and leaves out any whose session runs.
 # only a dir whose folder name ends some label is looked up there, since project-name runs git
@@ -74,6 +99,8 @@ list() {
   local -A flags=([d]=-czd [c]=-c [z]=-z)
   [[ -n ${flags[$1]:-} ]] || return 0
   sesh list -i "${flags[$1]}" | while IFS= read -r row; do
+    # sesh colors each row's icon
+    [[ ${row%% *} == *"$dir"* ]] && hidden_dir "${row#* }" && continue
     if [[ $1 == d ]]; then
       path=${row#* } base=${row##*/}
       # a label's last part has project-name's _ for . and :
@@ -103,7 +130,8 @@ Usage: rext [--sessions] [TARGET]
   --list F     print the rows of view F (d all, t sessions, c configs, z zoxide), each with its session id or
                nothing, a tab, then the row the picker shows
   --kill ID    kill the session with id ID, as ^d does
-  TARGET       show the session labeled TARGET, else open a sesh config entry or a dir by that name.
+  --new NAME   create ~/dev/NAME and open it, or a new scratch folder for scratch/, as ^n does
+  TARGET      show the session labeled TARGET, else open a sesh config entry or a dir by that name.
                a label that several sessions share fails, since only the picker tells them apart
 EOF
     exit
@@ -114,6 +142,10 @@ EOF
     ;;
   --kill)
     [[ -n $2 ]] && rex kill "$2" >/dev/null
+    exit
+    ;;
+  --new)
+    open_new "$2"
     exit
     ;;
   --sessions) sessions_only=1 ;;
@@ -153,9 +185,6 @@ new_bind='ctrl-n:transform:[[ -n $FZF_QUERY ]] && echo print-query || echo "chan
 # enter on a match prints that row, with its session id and tab, though fzf shows and searches only the part after the tab.
 # enter with no match, or ^n always, prints the typed text instead, which names a new project.
 # ^n is needed since most short names fuzzy-match some zoxide dir
-# the projects popup sets REXT_POPUP, so fzf fills it
-height=60%
-[[ -n ${REXT_POPUP:-} ]] && height=100%
 # fzf exits 1 with no match and 130 on esc, which are no pick. any other failure, such as a rejected flag, is an error
 printf -v preview 'printf %%s %q' "$help"
 printf -v kill 'execute-silent(%q --kill {1})' "$0"
@@ -168,7 +197,7 @@ show_configs=$REPLY
 show "$dir" "$shown" z
 show_dirs=$REPLY
 rc=0
-sel=$(list "$start_flags" | fzf --height "$height" --border --border-label ' rext ' \
+sel=$(list "$start_flags" | fzf --height 60% --border --border-label ' rext ' \
   --no-sort --ansi --prompt "$start_prompt  " --delimiter '\t' --with-nth 2.. \
   --preview "$preview" --preview-window "$start_window" --color 'preview-fg:#f38ba8' \
   --bind "tab:down,btab:up,enter:accept-or-print-query" --bind "$new_bind" \
@@ -195,11 +224,4 @@ if [[ $sel == *$'\t'* ]]; then
   exit
 fi
 
-name=$(printf '%s' "$sel" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
-[[ -n $name ]] || exit 0
-if [[ $name == scratch/ ]]; then
-  open_dir "$(scratch)"
-  exit
-fi
-mkdir -p "$HOME/dev/$name"
-open_dir "$HOME/dev/$name"
+open_new "$sel"
