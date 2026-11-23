@@ -45,7 +45,7 @@ jobs:
           ssh-private-key: ${{ secrets.PRIVATE_FLAKE_DEPLOY_KEY }}
 
       # the cache list and keys live in modules/features/base/nix-common.nix
-      - uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
+      - uses: cachix/install-nix-action@bb0495a1086c46893eee56f32fd192dfe4a15bb9 # v32.0.0
         with:
           extra_nix_config: |
             extra-substituters = https://cache.numtide.com
@@ -138,7 +138,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: cachix/install-nix-action@3dc140bfc76c49fbd4dd958429132e3746bcb086 # v31.11.5
+      - uses: cachix/install-nix-action@bb0495a1086c46893eee56f32fd192dfe4a15bb9 # v32.0.0
 
       # go builds agent-guard and jq reads the hook decisions
       # the check cases run in the agent-guard package build, which flake-check does
