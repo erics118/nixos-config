@@ -87,7 +87,7 @@
                   "/Applications/Notion.app"
                   "/System/Applications/Messages.app"
                   "/Applications/Firefox Developer Edition.app"
-                  "/Applications/Rex Beta.app"
+                  "/Applications/Rex.app"
                   "/Applications/Slack.app"
                   "/Applications/Spotify.app"
                 ];

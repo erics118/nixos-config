@@ -788,7 +788,7 @@ var cases = map[string][]group{
 		{want: "deny", cmds: []string{"rex kill main", "rex session kill main", "rex -S narwhal kill main", "rex --timeout 5s kill x",
 			`rex block close -s "$REX_SESSION" block:1`, "rex window close window:1", "rex server stop", "rex do pane.close",
 			"rex -C studio do client.tab.close", "rex do session.close", "rex do confirm_close_tab", "rex do -b block:1 pane.close",
-			"rex -S 'unix:///Users/eric/Library/Application%20Support/rex/server.sock' kill x", "pkill rex", "killall 'Rex Beta'",
+			"rex -S 'unix:///Users/eric/Library/Application%20Support/rex/server.sock' kill x", "pkill rex", "killall 'Rex'",
 			"pkill -f 're[x]'", "rex kill eric-agent-scratch-a main", "rex kill agent-x", "rex block close session:1",
 			"rex session kill eric-agent-scratch", "rex kill",
 			// rex api and Lua reach the same actions

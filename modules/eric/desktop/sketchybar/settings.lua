@@ -9,7 +9,7 @@ return {
     -- rex leaves its settings and diagnostics windows in yabai's list after they close
     -- reminders keeps a hidden 184x64 dialog titled "Window"
     ignored_titles = {
-        ["Rex Beta"] = { "^Settings %- ", " \u{2013} Diagnostics$" },
+        ["Rex"] = { "^Settings %- ", " \u{2013} Diagnostics$" },
         ["Reminders"] = { "^Window$" },
     },
 }
