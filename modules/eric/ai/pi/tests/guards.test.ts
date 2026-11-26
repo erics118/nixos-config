@@ -4,7 +4,6 @@ import {
   chmodSync,
   mkdirSync,
   mkdtempSync,
-  renameSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -33,20 +32,20 @@ module.default({
   on: (event, handler) => handlers.set(event, handler as never),
 } as never);
 
-// runs fn with ~/.agents/hooks swapped for a dir holding only the given guard.sh, or none
+// runs fn with PATH holding only the given agent-guard script, or none, ahead of the system dirs
 async function withGuard(script: string | undefined, fn: () => Promise<void>) {
   const dir = mkdtempSync(path.join(os.tmpdir(), "pi-guards-fake-"));
   if (script !== undefined) {
-    writeFileSync(path.join(dir, "guard.sh"), script);
-    chmodSync(path.join(dir, "guard.sh"), 0o755);
+    writeFileSync(path.join(dir, "agent-guard"), script);
+    chmodSync(path.join(dir, "agent-guard"), 0o755);
   }
-  renameSync(hooksLink, `${hooksLink}.real`);
-  symlinkSync(dir, hooksLink);
+  const realPath = process.env.PATH;
+  process.env.PATH = `${dir}:/usr/bin:/bin`;
   try {
     await fn();
   } finally {
-    rmSync(hooksLink);
-    renameSync(`${hooksLink}.real`, hooksLink);
+    process.env.PATH = realPath;
+    rmSync(dir, { recursive: true });
   }
 }
 
@@ -110,18 +109,18 @@ test("checks file tools under their Claude Code names", async () => {
   assert.match(result.reason, /smart punctuation/);
 });
 
-test("fails closed when guard.sh is missing", async () => {
+test("fails closed when agent-guard is missing", async () => {
   await withGuard(undefined, async () => {
     const result = (await bash("git status").result) as {
       block: boolean;
       reason: string;
     };
     assert.equal(result.block, true);
-    assert.match(result.reason, /guard\.sh failed/);
+    assert.match(result.reason, /agent-guard failed/);
   });
 });
 
-test("fails closed when guard.sh prints output that is not JSON", async () => {
+test("fails closed when agent-guard prints output that is not JSON", async () => {
   await withGuard("#!/bin/sh\necho nope\n", async () => {
     const result = (await bash("git status").result) as {
       block: boolean;

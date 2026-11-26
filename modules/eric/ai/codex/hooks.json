@@ -4,7 +4,7 @@
       {
         "hooks": [
           {
-            "command": "\"$HOME/.agents/hooks/guard.sh\" pre codex || { echo 'guard hook did not run, so the call was not checked' >&2; exit 2; }",
+            "command": "agent-guard pre codex || { echo 'guard hook did not run, so the call was not checked' >&2; exit 2; }",
             "type": "command"
           }
         ],

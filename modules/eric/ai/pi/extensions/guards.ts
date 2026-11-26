@@ -39,14 +39,10 @@ function runScript(
   });
 }
 
-// guard.sh picks the checks for the tool and combines their decisions.
-// before a tool runs, a guard that fails or prints bad output blocks the call
+// agent-guard picks the checks for the tool and combines their decisions.
+// before a tool runs, a guard that fails, is missing from PATH, or prints bad output blocks the call
 async function guard(when: "pre" | "post", event: HookEvent): Promise<Outcome> {
-  const run = await runScript(
-    path.join(hooks, "guard.sh"),
-    [when, "pi"],
-    event,
-  );
+  const run = await runScript("agent-guard", [when, "pi"], event);
   const out: Outcome = { context: [] };
   const problem = (msg: string) => {
     if (when === "pre") out.deny = msg;
@@ -55,23 +51,23 @@ async function guard(when: "pre" | "post", event: HookEvent): Promise<Outcome> {
   };
   if (run.status === 2) return problem(run.stderr.trim());
   if (run.status !== 0)
-    return problem("guard.sh failed, so the call was not checked");
+    return problem("agent-guard failed, so the call was not checked");
   if (!run.stdout.trim()) return out;
   let d;
   try {
     d = JSON.parse(run.stdout)?.hookSpecificOutput ?? {};
   } catch {
-    return problem("guard.sh printed output that is not JSON");
+    return problem("agent-guard printed output that is not JSON");
   }
   if (d.permissionDecision === "deny")
-    out.deny = d.permissionDecisionReason ?? "guard.sh blocked this";
+    out.deny = d.permissionDecisionReason ?? "agent-guard blocked this";
   if (d.permissionDecision === "ask") out.ask = d.permissionDecisionReason;
   if (typeof d.updatedInput?.command === "string")
     out.command = d.updatedInput.command;
   return out;
 }
 
-// pi's tool calls in the shape guard.sh reads (Claude Code's tool names and fields)
+// pi's tool calls in the shape agent-guard reads (Claude Code's tool names and fields)
 function toHookEvent(
   toolName: string,
   input: Record<string, unknown>,

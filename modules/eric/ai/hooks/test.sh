@@ -8,7 +8,7 @@ settings="$root/modules/eric/ai/claude/settings.json"
 repo=$(mktemp -d)
 trap 'rm -rf "$repo"' EXIT
 
-# guard.sh runs agent-guard from PATH, so build the working tree's copy first
+# the harnesses run agent-guard from PATH, so build the working tree's copy first
 (cd "$hooks/../guard" && go build -o "$repo/guard-bin/agent-guard" .)
 PATH=$repo/guard-bin:$PATH
 
@@ -31,22 +31,13 @@ expect_allow() {
   printf 'ok %s\n' "$name"
 }
 
-# guard.sh runs the checks, whose cases are the go tests in guard/
-json "$repo" 'rm f' | "$hooks/guard.sh" pre claude block-rm | jq -e '.hookSpecificOutput.permissionDecision == "deny"' >/dev/null || {
-  printf 'FAIL guard.sh did not run a check\n'
+# agent-guard runs the checks, whose cases are the go tests in guard/.
+# that a missing agent-guard blocks is ai/consistency.sh's, since the hook commands do it
+json "$repo" 'rm f' | agent-guard pre claude block-rm | jq -e '.hookSpecificOutput.permissionDecision == "deny"' >/dev/null || {
+  printf 'FAIL agent-guard did not run a check\n'
   exit 1
 }
 printf 'ok guard runs a check\n'
-# a missing agent-guard must exit 2, since claude code and codex run the command on any other code
-set +e
-json "$repo" 'ls' | PATH=/usr/bin:/bin "$hooks/guard.sh" pre claude >/dev/null 2>&1
-status=$?
-set -e
-[ "$status" -eq 2 ] || {
-  printf 'FAIL guard.sh exited %s without agent-guard\n' "$status"
-  exit 1
-}
-printf 'ok guard fails closed without agent-guard\n'
 
 # a stub tmux names a plain file as the pane's tty, so the test never rings a real bell
 mkdir "$repo/tmux-bin"
@@ -147,7 +138,7 @@ printf 'ok agent-mode-per-session\n'
 # every script settings.json runs from this directory
 # guard/checks_test.go covers every agent-guard check
 configured=$(jq -r '.hooks | to_entries[] | .value[] | .hooks[] | .command // empty | select(startswith("\"$HOME/.agents/hooks/"))' "$settings" |
-  sed -E 's#.*/##; s/"//g; s/ .*//' | grep -vx guard.sh | sort -u)
+  sed -E 's#.*/##; s/"//g; s/ .*//' | sort -u)
 # a test skipped for a missing tool still counts, since it printed its skip line
 covered=$(printf '%s\n' "${tested[@]}" "${skipped[@]}" | sort -u)
 [ "$configured" = "$covered" ] || {

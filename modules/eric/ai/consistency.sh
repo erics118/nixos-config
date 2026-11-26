@@ -5,7 +5,8 @@
 # shellcheck disable=SC2016
 set -euo pipefail
 
-ai=$1
+# absolute, since the check links $ai/hooks into a temp home and a relative link target dangles there
+ai=$(cd -- "$1" && pwd)
 settings=$ai/claude/settings.json
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
@@ -71,32 +72,37 @@ ln -s "$ai/hooks" "$check_home/.agents/hooks"
   exit 1
 }
 rm "$check_home/.agents/hooks"
-HOME=$check_home bash -c "$startup_check" | jq -e '.systemMessage | contains("guard.sh")' >/dev/null || {
+HOME=$check_home bash -c "$startup_check" | jq -e '.systemMessage | contains("tmux-bell.sh")' >/dev/null || {
   printf 'FAIL session-start-hook-check: did not name a missing hook\n'
   exit 1
 }
 printf 'ok session-start-hook-check\n'
 
-# with guard.sh missing, sh exits 127, which the harnesses treat as non-blocking, so the commands turn it into a block
+# with agent-guard off PATH, sh exits 127, which the harnesses treat as non-blocking, so the commands turn it into a block
+guard_cmds=$(jq -r '.hooks[][].hooks[].command // empty | select(startswith("agent-guard "))' "$settings" "$ai/codex/hooks.json")
+[ "$(printf '%s\n' "$guard_cmds" | grep -c .)" -eq 3 ] || {
+  printf 'FAIL expected the claude pre and post and the codex pre guard commands, found:\n%s\n' "$guard_cmds"
+  exit 1
+}
 while IFS= read -r cmd; do
   set +e
-  HOME=$check_home sh -c "$cmd" </dev/null >/dev/null 2>&1
+  PATH=/usr/bin:/bin sh -c "$cmd" </dev/null >/dev/null 2>&1
   status=$?
   set -e
   [ "$status" -eq 2 ] || {
-    printf 'FAIL guard command exited %s without guard.sh: %s\n' "$status" "$cmd"
+    printf 'FAIL guard command exited %s without agent-guard: %s\n' "$status" "$cmd"
     exit 1
   }
-done < <(jq -r '.hooks[][].hooks[].command // empty | select(contains("guard.sh"))' "$settings" "$ai/codex/hooks.json")
+done <<<"$guard_cmds"
 printf 'ok guard-command-fails-closed\n'
 
 # a post check warns with exit 2, which the post command passes through without claiming the guard did not run
-mkdir -p "$check_home/.agents/hooks"
-printf '#!/bin/sh\necho warned >&2\nexit 2\n' >"$check_home/.agents/hooks/guard.sh"
-chmod +x "$check_home/.agents/hooks/guard.sh"
-post_cmd=$(jq -r '.hooks.PostToolUse[].hooks[].command | select(contains("guard.sh"))' "$settings")
+mkdir -p "$check_home/bin"
+printf '#!/bin/sh\necho warned >&2\nexit 2\n' >"$check_home/bin/agent-guard"
+chmod +x "$check_home/bin/agent-guard"
+post_cmd=$(jq -r '.hooks.PostToolUse[].hooks[].command | select(startswith("agent-guard "))' "$settings")
 set +e
-post_err=$(HOME=$check_home sh -c "$post_cmd" </dev/null 2>&1 >/dev/null)
+post_err=$(PATH=$check_home/bin:/usr/bin:/bin sh -c "$post_cmd" </dev/null 2>&1 >/dev/null)
 status=$?
 set -e
 [ "$status" -eq 2 ] && [ "$post_err" = warned ] || {

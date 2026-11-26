@@ -156,7 +156,7 @@ jobs:
 
       - run: bash modules/eric/ai/hooks/test.sh
 
-      # the pi guards test runs the real hooks/guard.sh, which execs agent-guard from PATH
+      # the pi guards test runs the real agent-guard from PATH
       - run: mkdir -p "$HOME/.local/bin" && go build -C modules/eric/ai/guard -o "$HOME/.local/bin/agent-guard" .
 
       # pi loads extensions with full typescript support, plain type stripping rejects parameter properties

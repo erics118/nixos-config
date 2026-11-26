@@ -106,7 +106,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.agents/hooks/guard.sh\" pre claude || { echo 'guard hook did not run, so the call was not checked' >&2; exit 2; }",
+            "command": "agent-guard pre claude || { echo 'guard hook did not run, so the call was not checked' >&2; exit 2; }",
             "timeout": 60,
             "onFailure": "block"
           }
@@ -119,7 +119,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$HOME/.agents/hooks/guard.sh\" post claude; s=$?; [ $s -eq 0 ] || [ $s -eq 2 ] || { echo 'guard hook did not run, so the edit was not checked' >&2; exit 2; }; exit $s"
+            "command": "agent-guard post claude; s=$?; [ $s -eq 0 ] || [ $s -eq 2 ] || { echo 'guard hook did not run, so the edit was not checked' >&2; exit 2; }; exit $s"
           }
         ]
       }
