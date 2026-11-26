@@ -16,7 +16,7 @@
 
   // round the search box and moz-buttons; the tokens inherit across shadow
   // boundaries into every matched panel
-  root.style.setProperty("--input-text-border-radius", "9999px");
+  root.style.setProperty("--input-search-border-radius", "9999px");
   root.style.setProperty("--button-border-radius", "9999px");
 
   root.style.boxSizing = "border-box";

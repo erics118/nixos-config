@@ -18,6 +18,9 @@
   --chrome-pill-radius: 9999px;
   --urlbar-control-size: 26px;
   --urlbar-icon-size: 16px;
+  /* nova's 8px popover overhang pokes past the window top.
+     set on :root, where firefox derives the results panel's outsets from it */
+  --urlbar-background-overhang-open: 4px !important;
 }
 
 /* ===== Sidebery-driven layout =====
@@ -87,6 +90,9 @@
   /* --- Sidebery pane (#sidebar-box) --- */
   #sidebar-box {
     padding: 0 !important;
+    /* nova borders and rounds the box unless the launcher is [hidden], and the footer launcher isn't */
+    border: none !important;
+    border-radius: 0 !important;
     position: relative !important;
     z-index: 5 !important;
     /* sidebar-launcher-footer.uc.js keeps this synced to PersonalToolbar's live
@@ -157,11 +163,11 @@
    Fully rounded (semicircle ends) + extra right inner padding.
    Note: the painted box is div.urlbar-background (class, not id). */
 
-/* Half the idle urlbar height = a perfect pill when closed. When the results
-   panel expands the box the radius stays ~16px, so no giant ellipse. */
-#urlbar,
-#urlbar .urlbar-background {
-  border-radius: calc(var(--urlbar-height, 32px) / 2) !important;
+/* pill radius through firefox's own variables, as its [in-page] urlbar does.
+   on open, firefox squares the corners where the input meets the results popover */
+#urlbar {
+  --urlbar-border-radius: calc(var(--urlbar-height) / 2) !important;
+  --urlbarview-border-radius: var(--urlbar-border-radius) !important;
 }
 
 #urlbar-input {

@@ -1,6 +1,7 @@
 // kill-tab-shortcuts.uc.js
 // strip Firefox's native tab-switching keys (Ctrl+Tab, Cmd+1-9, show-all-tabs)
 // so Sidebery owns them; keep Alt+PgUp/PgDn tab nav in the chrome
+// mark Sidebery's Ctrl+Alt+PgUp/PgDn keys reserved, so pages like GitHub can't eat them
 
 (function () {
   const badCommands = [
@@ -29,16 +30,31 @@
     }
   }
 
+  // reserved keys fire before the page sees the keydown
+  const sideberyKeyset = "ext-keyset-id-sidebery-fork_erics118";
+  function reserveSideberyKey(el) {
+    if (el?.tagName !== "key" || el.parentNode?.id !== sideberyKeyset) return;
+    const code = el.getAttribute("keycode");
+    if (code === "VK_PAGE_UP" || code === "VK_PAGE_DOWN") {
+      el.setAttribute("reserved", "true");
+    }
+  }
+
   // remove anything already present
-  document.querySelectorAll("key").forEach(nukeKey);
+  document.querySelectorAll("key").forEach((el) => {
+    nukeKey(el);
+    reserveSideberyKey(el);
+  });
 
   // catch keys ctrlTab inserts lazily on first real use
   new MutationObserver((muts) => {
     for (const m of muts) {
       for (const node of m.addedNodes) {
         if (node.nodeType !== 1) continue;
-        if (node.tagName === "key") nukeKey(node);
-        node.querySelectorAll?.("key").forEach(nukeKey);
+        for (const el of [node, ...(node.querySelectorAll?.("key") ?? [])]) {
+          nukeKey(el);
+          reserveSideberyKey(el);
+        }
       }
     }
   }).observe(document.documentElement, { childList: true, subtree: true });
