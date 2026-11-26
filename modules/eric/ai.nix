@@ -112,9 +112,10 @@
       # npm 11 warns on npm_config_python as an unknown config, so point node-gyp at python directly
       home.sessionVariables.NODE_GYP_FORCE_PYTHON = lib.getExe pkgs.python3;
 
-      # agent shells pass unmatched globs and words starting with = through like bash
+      # agent shells pass unmatched globs and words starting with = through, and split unquoted
+      # expansions, like bash
       programs.zsh.envExtra = ''
-        [[ -n ''${CLAUDECODE-} || -n ''${CODEX_SHELL-} ]] && setopt no_nomatch no_equals
+        [[ -n ''${CLAUDECODE-} || -n ''${CODEX_SHELL-} ]] && setopt no_nomatch no_equals sh_word_split
       '';
 
       home.packages = with pkgs; [

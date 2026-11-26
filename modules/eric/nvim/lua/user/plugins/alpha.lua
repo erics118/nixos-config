@@ -123,7 +123,10 @@ return {
                     opts = { hl = "Constant", position = "center" },
                 },
             },
-            opts = { noautocmd = true },
+            opts = {
+                noautocmd = true,
+                keymap = { press = { "<CR>", "<2-LeftMouse>" } },
+            },
         })
     end,
 }

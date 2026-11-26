@@ -59,11 +59,16 @@
           core = {
             editor = "nvim";
             ignorecase = false;
+            # status skips rereading folders whose mtime is unchanged
+            untrackedCache = true;
           };
           pull.ff = "only";
           push.autoSetupRemote = true;
           branch.autoSetupMerge = "simple";
           fetch.prune = true;
+          # commands that write objects pack the loose ones once there are 100 (maintenance.loose-objects.auto).
+          # without it, the default auto maintenance leaves loose objects alone
+          maintenance.loose-objects.enabled = true;
           rerere.enabled = true;
           rebase.autoStash = true;
           diff.colorMoved = "zebra";
@@ -116,6 +121,7 @@
           };
         };
         extensions = with pkgs; [
+          gh-actions-lock
           gh-markdown-preview
           gh-notify
           gh-skyline

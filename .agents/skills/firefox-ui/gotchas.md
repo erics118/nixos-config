@@ -4,7 +4,7 @@ Paths are relative to `modules/eric/desktop/firefox/` unless they name a file in
 
 ## Urlbar popover
 
-Proton branch (`browser.nova.enabled` off). Read the installed `urlbar.css`, `urlbar/*.css`, and `chrome/browser/content/browser/urlbar/UrlbarInputBase.mjs` first. `UrlbarInput.mjs` is only a subclass of it.
+Nova branch. Firefox 162 locks `browser.nova.enabled` on in `defaults/preferences/firefox.js`, so a `user.js` override does nothing. Read the installed `urlbar.css`, `urlbar/*.css`, and `chrome/browser/content/browser/urlbar/UrlbarInputBase.mjs` first. `UrlbarInput.mjs` is only a subclass of it.
 
 - While results show, `updatePopover()` in `UrlbarInputBase.mjs` sets `[popover-open]` on `#urlbar`. Older builds used `[breakout]` and `[breakout-extend]`, which no longer exist.
 - Under `[popover-open]`, `urlbar.css` grows `.urlbar-input-container` with negative margins and matching padding (`--urlbar-input-growth-open-*`), so the toolbar layout does not move.
@@ -32,12 +32,12 @@ The sidebar revamp rounds the web content's chrome-facing corners and draws a se
 
 The source is `chrome/browser/skin/classic/browser/tabbrowser/content-area.css` in the browser jar. The rounding rules belong to separate branches:
 
-- Under `@media -moz-pref("browser.nova.enabled")`, `#tabbrowser-tabpanels > :not(.split-view-panel) .browserContainer` sets `border-start-start-radius: var(--content-area-start-radius)` plus a `--chrome-content-separator-color` border on the chrome-facing edges. This branch is inactive in this profile.
-- Under `@media -moz-pref("sidebar.revamp")` with Nova off, the plain `.browserContainer` rule sets `border-start-start-radius: var(--border-radius-medium)` under `[sidebar-shown]` when `sidebar.position_start` is on, or `border-start-end-radius` when it is off. The sidebar revamp also sets `overflow: clip` and an `outline` using `--chrome-content-separator-color`.
+- Under `@media -moz-pref("browser.nova.enabled")`, `#tabbrowser-tabpanels > :not(.split-view-panel) .browserContainer` sets `border-start-start-radius: var(--content-area-start-radius)` plus a `--chrome-content-separator-color` border on the chrome-facing edges. This branch is active, since Nova is locked on.
+- Under `@media -moz-pref("sidebar.revamp")` with Nova off (inactive since 162), the plain `.browserContainer` rule sets `border-start-start-radius: var(--border-radius-medium)` under `[sidebar-shown]` when `sidebar.position_start` is on, or `border-start-end-radius` when it is off. The sidebar revamp also sets `overflow: clip` and an `outline` using `--chrome-content-separator-color`.
 
 Overriding `--content-area-start-radius` alone does not reach the active literal radius or remove the clip. The working override is the `.browserContainer` rule in `chrome/userChrome.css` that sets the variable and the radii flat outright.
 
-The active separator is an `outline`. The Nova branch uses a `border`; `outline: none` does not remove that border.
+The active separator is Nova's `border`, and `outline: none` does not remove it. The Proton branch used an `outline`.
 
 ## ⇧⌘C copy URL
 

@@ -62,6 +62,9 @@ let
       # running it again at the system level doubles startup cost
       enableGlobalCompInit = false;
 
+      # bashcompinit only serves bash-style `complete` scripts, which no shell init here uses
+      enableBashCompletion = false;
+
       # skip default prompt theme b/c zsh/prompt already sets the prompt
       promptInit = "";
     };

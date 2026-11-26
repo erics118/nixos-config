@@ -7,6 +7,8 @@
       src = ../eric/ai/claude/mods/tex-math/render;
       npmDepsHash = "sha256-D1wWQjvLq+VsRacRMTDI6HzHm46SpfpmisZugb8owJY=";
       dontNpmBuild = true;
+      # npm 11 warns on the nodedir, platform, and arch configs that nixpkgs' npm hooks export
+      npmFlags = [ "--loglevel=error" ];
       nativeBuildInputs = [ final.makeWrapper ];
       postInstall = ''
         wrapProgram $out/bin/tex-math-render --prefix PATH : ${final.lib.makeBinPath [ final.resvg ]}

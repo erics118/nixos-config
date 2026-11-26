@@ -29,7 +29,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # fork with rex support (Mic92/direnv-instant#172) + expose-allow-state: exports __DIRENV_INSTANT_ALLOWED for the prompt's direnv segment
+    # fork with expose-allow-state: exports __DIRENV_INSTANT_ALLOWED for the prompt
     direnv-instant = {
       url = "github:erics118/direnv-instant/eric";
       inputs.nixpkgs.follows = "nixpkgs";

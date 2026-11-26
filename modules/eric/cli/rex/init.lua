@@ -37,7 +37,7 @@ rex.bind("shift+cmd+u", "client.update.accept")
 rex.bind("shift+cmd+.", "client.notice.dismiss")
 
 rex.bind("shift+cmd+n", "session.new")
-rex.bind("cmd+k", "session.switch")
+rex.bind("cmd+k", "pane.go_to")
 rex.bind("ctrl+alt+cmd+g", "session.next")
 rex.bind("ctrl+alt+cmd+n", "session.previous")
 rex.bind("cmd+s>r", "client.tab.rename")
@@ -83,7 +83,7 @@ rex.bind("alt+left", "pane.send_key", { key = "alt+b" })
 rex.bind("alt+right", "pane.send_key", { key = "alt+f" })
 
 rex.bind("cmd+f", "client.find.open")
-rex.bind("cmd+g", "client.find.next")
+-- cmd+g opens the lazygit popup below
 
 rex.bind("cmd+=", "client.font.increase")
 rex.unbind("shift+cmd+=")
@@ -405,6 +405,7 @@ end
 
 popup("files", "Files", "cmd+e", { 0.05, 0.05, 0.9, 0.9 }, { "yazi" })
 popup("scratch", "Scratch", "cmd+j", { 0, 0.6, 1, 0.4 })
+popup("git", "Git", "cmd+g", { 0.05, 0.05, 0.9, 0.9 }, { "lazygit" })
 
 -- cmd-p picks a row of rext's all view in the command palette: a session, a sesh config entry or a zoxide dir.
 -- typed text that matches nothing goes to rext --new
@@ -417,10 +418,17 @@ local function rext(ctx, args)
     return reply.stdout
 end
 
+-- true while the projects list is open.
+-- a second cmd+p closes the list and also runs the action again, which this stops from reopening it
+local projects_open = false
+
 rex.action({
     name = "projects",
     title = "Projects",
     run = function(ctx)
+        if projects_open then
+            return
+        end
         local rows, items = {}, {}
         for line in rext(ctx, { "rext", "--list", "d" }):gmatch("[^\n]+") do
             local session, row = line:match("^([^\t]*)\t(.*)$")
@@ -430,15 +438,19 @@ rex.action({
                 local icon = session ~= "" and "terminal" or name:match("^[~/]") and "folder" or "gear"
                 local detail = session == ctx.session_id and "current" or session ~= "" and "running" or nil
                 table.insert(rows, { session = session ~= "" and session or nil, name = name })
-                table.insert(items, { id = tostring(#rows), title = name, icon = icon, detail = detail })
+                local item = { id = tostring(#rows), title = name, icon = icon, detail = detail }
+                -- the palette highlights the first row and has no field to start on another
+                table.insert(items, session == ctx.session_id and 1 or #items + 1, item)
             end
         end
+        projects_open = true
         local choice = rex.ui.pick({
             title = "Projects",
             placeholder = "Filter, or type a new ~/dev name or scratch/",
             items = items,
             allow_other = true,
         })
+        projects_open = false
         if choice == nil then
             return
         end
@@ -456,6 +468,166 @@ rex.action({
 })
 rex.bind("cmd+p", "projects")
 
+-- prints a transcript folder's 40 newest claude conversations as id, date and the last ai-title line.
+-- the folder is named after the conversation's directory, as claude names it
+local claude_list = [[
+cd -- "$HOME/.claude/projects/$1" 2>/dev/null || exit 0
+for f in $(ls -t -- *.jsonl 2>/dev/null | head -n 40); do
+  printf '%s\t%s\t%s\n' "${f%.jsonl}" "$(date -r "$f" '+%b %d %H:%M')" "$(grep -F '"type":"ai-title"' "$f" | tail -n 1)"
+done
+]]
+
+-- picks a past claude conversation of the pane's folder and resumes it in a split
+rex.action({
+    name = "claude_conversations",
+    title = "Resume Claude Conversation",
+    run = function(ctx)
+        local cwd = (foreground(ctx.block_id) or {}).cwd
+        if not cwd then
+            return
+        end
+        -- claude names the folder after the path, with each character but letters, digits and dashes as a dash
+        local reply = rex.exec(
+            { "/bin/sh", "-c", claude_list, "claude_list", (cwd:gsub("[^%w%-]", "-")) },
+            { timeout = 10 }
+        )
+        if not (reply and reply.ok) then
+            error("listing conversations failed: " .. (reply and reply.stderr or "no /bin/sh"), 0)
+        end
+        local items = {}
+        for line in reply.stdout:gmatch("[^\n]+") do
+            local id, date, title_line = line:match("^([^\t]+)\t([^\t]*)\t(.*)$")
+            if id then
+                local decoded, entry = pcall(rex.json.decode, title_line)
+                local title = decoded and type(entry) == "table" and entry.aiTitle or "untitled"
+                table.insert(items, { id = id, title = title, subtitle = id, detail = date, icon = "clock" })
+            end
+        end
+        local choice = rex.ui.pick({
+            title = "Claude Conversations",
+            placeholder = #items == 0 and "No conversations in this folder" or "Filter conversations",
+            items = items,
+        })
+        -- typed into a shell below, so it must be a bare id
+        if choice == nil or not choice:match("^[%w%-]+$") then
+            return
+        end
+        local split, err = rex.session.new_split({
+            anchor_id = ctx.block_id,
+            direction = "horizontal",
+            side = "after",
+            focus = true,
+            layout = rex.layout.block({ flavor = terminal .. ".shell", options = { cwd = cwd } }),
+        })
+        check(split, err)
+        -- typed at the shell's prompt, so claude gets the shell's PATH and the shell is back when it quits
+        rex.block.call(
+            terminal,
+            "write",
+            { block_id = split.block_ids[1], data = "claude --resume " .. choice .. "\r" }
+        )
+    end,
+})
+rex.bind("cmd+s>c", "claude_conversations")
+
+-- the path in paths that holds dir: the longest one, since linked worktrees can sit inside the main one
+local function owning_worktree(paths, dir)
+    local best
+    for _, path in ipairs(paths) do
+        if (dir == path or dir:sub(1, #path + 1) == path .. "/") and (not best or #path > #best) then
+            best = path
+        end
+    end
+    return best
+end
+
+-- picks a worktree of the pane's repo and goes to a pane already in it, in any session, or else a new tab there
+rex.action({
+    name = "worktrees",
+    title = "Switch Worktree",
+    run = function(ctx)
+        local cwd = (foreground(ctx.block_id) or {}).cwd
+        if not cwd then
+            return
+        end
+        local reply = rex.exec({ "git", "worktree", "list", "--porcelain" }, { cwd = cwd, timeout = 10 })
+        if not (reply and reply.ok) then
+            error("git worktree list failed: " .. (reply and reply.stderr or "git is not on PATH"), 0)
+        end
+        local paths, branches = {}, {}
+        for line in reply.stdout:gmatch("[^\n]+") do
+            local path = line:match("^worktree (.+)$")
+            if path then
+                table.insert(paths, path)
+            end
+            local branch = line:match("^branch refs/heads/(.+)$")
+            if branch then
+                branches[paths[#paths]] = branch
+            end
+        end
+        -- the first tiled pane found in each worktree
+        local open = {}
+        local list, list_err = rex.call("session.list", {})
+        check(list, list_err)
+        for _, session in ipairs(list.sessions or {}) do
+            local view = rex.session.view({ session_id = session.session_id })
+            for _, window in ipairs(view and view.windows or {}) do
+                for _, layer in ipairs(window.layers) do
+                    for _, block in ipairs(layer.kind ~= "floating" and layer.blocks or {}) do
+                        local dir = (foreground(block.block_id) or {}).cwd
+                        local path = dir and owning_worktree(paths, dir)
+                        if path and not open[path] then
+                            open[path] = {
+                                session_id = session.session_id,
+                                window_id = window.window_id,
+                                block_id = block.block_id,
+                            }
+                        end
+                    end
+                end
+            end
+        end
+        local current = owning_worktree(paths, cwd)
+        local items = {}
+        for _, path in ipairs(paths) do
+            local item = {
+                id = path,
+                title = branches[path] or path:match("[^/]+$"),
+                subtitle = path,
+                icon = "branch",
+                detail = path == current and "current" or open[path] and "open" or nil,
+            }
+            table.insert(items, path == current and 1 or #items + 1, item)
+        end
+        local choice = rex.ui.pick({ title = "Worktrees", placeholder = "Filter worktrees", items = items })
+        if choice == nil or choice == current then
+            return
+        end
+        -- the server's focus doesn't change the tab the app shows, which the app's session.select with a window does.
+        -- asked of the pressing app directly, since queueing it left the app on its old tab
+        local function show(session_id, window_id)
+            check(rex.call("client.perform", {
+                client_id = ctx.client_id,
+                action = "session.select",
+                args = { session_id = session_id, window_id = window_id },
+            }))
+        end
+        local target = open[choice]
+        if target then
+            check(rex.session.focus_block({ session_id = target.session_id, block_id = target.block_id }))
+            show(target.session_id, target.window_id)
+            return
+        end
+        local window, err = rex.session.new_window({
+            focus = true,
+            layout = rex.layout.block({ flavor = terminal .. ".shell", options = { cwd = choice } }),
+        })
+        check(window, err)
+        show(ctx.session_id, window.window_id)
+    end,
+})
+rex.bind("cmd+s>w", "worktrees")
+
 -- run by a popup's wrapper once its program exits, from inside the popup
 rex.action({
     name = "popup_closed",
@@ -469,3 +641,9 @@ rex.action({
         end
     end,
 })
+
+-- rex resumes no program. rexume reopens agent conversations instead
+-- rex.set is missing in server preview.21
+if rex.set then
+    rex.set("resume.defaults", false)
+end

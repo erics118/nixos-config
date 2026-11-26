@@ -38,6 +38,11 @@ opt.sidescrolloff = 10
 -- one global statusline
 opt.laststatus = 3
 
+-- the default with '1000 in place of '100: v:oldfiles is shared across folders
+-- and the dashboard keeps only the current folder's files
+-- rfugitive: keeps fugitive's git-revision buffers out of v:oldfiles
+opt.shada = "!,'1000,<50,s10,h,r/tmp/,r/private/,rfugitive:"
+
 -- the statusline shows the mode, so the cmdline doesn't repeat -- INSERT --
 opt.showmode = false
 
