@@ -409,9 +409,35 @@ popup("git", "Git", "cmd+g", { 0.05, 0.05, 0.9, 0.9 }, { "lazygit" })
 
 -- cmd-p picks a row of rext's all view in the command palette: a session, a sesh config entry or a zoxide dir.
 -- typed text that matches nothing goes to rext --new
+-- the mac app starts its server with only /usr/bin:/bin:/usr/sbin:/sbin on PATH
+local rext_path = table.concat({
+    "/etc/profiles/per-user/" .. os.getenv("USER") .. "/bin",
+    "/run/current-system/sw/bin",
+    "/nix/var/nix/profiles/default/bin",
+    os.getenv("PATH"),
+}, ":")
+
+local function sh_quote(s)
+    return "'" .. s:gsub("'", "'\\''") .. "'"
+end
+
+-- actions run on this mac's server even for a pane on another host, which sets ctx.server to that host's label.
+-- there rext runs over ssh, and finds the app to switch from the block that pressed the key
 local function rext(ctx, args)
-    -- rext switches the app that pressed the key, which it can't tell from the server's environment
-    local reply = rex.exec(args, { env = { REX_CLIENT = ctx.client_id }, timeout = 20 })
+    local reply
+    if ctx.server then
+        local cmd = { "REX_BLOCK=" .. sh_quote(ctx.block_id) }
+        for _, arg in ipairs(args) do
+            table.insert(cmd, sh_quote(arg))
+        end
+        reply = rex.exec(
+            { "/usr/bin/ssh", "-o", "BatchMode=yes", ctx.server, table.concat(cmd, " ") },
+            { timeout = 20 }
+        )
+    else
+        -- rext switches the app that pressed the key, which it can't tell from the server's environment
+        reply = rex.exec(args, { env = { REX_CLIENT = ctx.client_id, PATH = rext_path }, timeout = 20 })
+    end
     if not (reply and reply.ok) then
         error("rext failed: " .. (reply and reply.stderr or "rext is not on PATH"), 0)
     end
@@ -459,7 +485,10 @@ rex.action({
             return
         end
         local row = rows[tonumber(choice)]
-        if row.session then
+        if row.session and ctx.server then
+            -- a queued session.select finds only this server's sessions
+            rext(ctx, { "rext", row.session })
+        elseif row.session then
             rex.client.queue("session.select", { session_id = row.session })
         else
             rext(ctx, { "rext", row.name })

@@ -24,7 +24,7 @@ session_id() {
 }
 
 # switches the app that shows this terminal, since rex refuses to guess when another app such as a phone is connected.
-# the cmd-p picker sets REX_CLIENT itself (see rex/init.lua)
+# the cmd-p picker sets REX_CLIENT itself, or REX_BLOCK on another host (see rex/init.lua)
 select_session() {
   local owner=''
   if [[ -z ${REX_CLIENT:-} && -n ${REX_BLOCK:-} ]]; then
@@ -131,7 +131,7 @@ Usage: rext [--sessions] [TARGET]
                nothing, a tab, then the row the picker shows
   --kill ID    kill the session with id ID, as ^d does
   --new NAME   create ~/dev/NAME and open it, or a new scratch folder for scratch/, as ^n does
-  TARGET      show the session labeled TARGET, else open a sesh config entry or a dir by that name.
+  TARGET      show the session with id TARGET (session:...) or labeled TARGET, else open a sesh config entry or a dir by that name.
                a label that several sessions share fails, since only the picker tells them apart
 EOF
     exit
@@ -149,6 +149,10 @@ EOF
     exit
     ;;
   --sessions) sessions_only=1 ;;
+  session:*)
+    select_session "$1"
+    exit
+    ;;
   *)
     id=$(session_id "$1") || exit 1
     if [[ -n $id ]]; then
